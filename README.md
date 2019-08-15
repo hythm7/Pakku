@@ -1,7 +1,7 @@
 NAME
 ====
 
-Pakku - blah blah blah
+Pakku - Module management
 
 SYNOPSIS
 ========
@@ -13,17 +13,17 @@ use Pakku;
 DESCRIPTION
 ===========
 
-Pakku is ...
+Pakku is package manager for `Raku`
 
 AUTHOR
 ======
 
-Haythem Elganiny <haythem.elganiny@moorecap.com>
+Haytham Elganiny <elganiny.haytham@gmail.com>
 
 COPYRIGHT AND LICENSE
 =====================
 
-Copyright 2019 Haythem Elganiny
+Copyright 2019 Haytham Elganiny
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
 
