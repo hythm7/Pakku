@@ -1,7 +1,7 @@
 NAME
 ====
 
-Pakku - Module management
+Pakku - Module Manager
 
 SYNOPSIS
 ========
@@ -13,7 +13,7 @@ use Pakku;
 DESCRIPTION
 ===========
 
-Pakku is package manager for `Raku`
+Pakku is a package manager for `Raku`
 
 AUTHOR
 ======
