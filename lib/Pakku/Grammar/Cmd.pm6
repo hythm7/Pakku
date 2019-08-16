@@ -1,5 +1,5 @@
 
-grammar Pakku::Grammar::CMD {
+grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
   rule TOP:sym<add>    { <add>    <addopt>*    <dist>+   }
@@ -8,6 +8,7 @@ grammar Pakku::Grammar::CMD {
   proto token add { * }
   token add:sym<add> { «<sym>» }
   token add:sym<a>   { «<sym>» }
+  token add:sym<↓>   { <sym> }
 
   proto token remove { * }
   token remove:sym<remove> { «<sym>» }
@@ -45,13 +46,14 @@ grammar Pakku::Grammar::CMD {
   proto token yolo { * }
   token yolo:sym<yolo> { «<sym>» }
   token yolo:sym<y>    { «<sym>» }
+  token yolo:sym<✓>    { «<sym>» }
 
   token dist { «.*» }
 
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 }
 
-class Pakku::Grammar::CMD::Actions {
+class Pakku::Grammar::Cmd::Actions {
 
   method TOP:sym<add> ( $/ ) {
 
