@@ -4,6 +4,7 @@ grammar Pakku::Grammar::Cmd {
   proto rule TOP { * }
   rule TOP:sym<add>    { <add>    <addopt>*    <dist>+   }
   rule TOP:sym<remove> { <remove> <removeopt>* <dist>+   }
+  rule TOP:sym<search> { <search> <searchopt>* <dist>+   }
 
   proto token add { * }
   token add:sym<add> { «<sym>» }
@@ -13,6 +14,10 @@ grammar Pakku::Grammar::Cmd {
   proto token remove { * }
   token remove:sym<remove> { «<sym>» }
   token remove:sym<r>      { «<sym>» }
+
+  proto token search { * }
+  token search:sym<search> { «<sym>» }
+  token search:sym<s>      { «<sym>» }
 
   proto rule addopt { * }
   rule addopt:sym<deps> { «<deps>» }
@@ -25,6 +30,9 @@ grammar Pakku::Grammar::Cmd {
   rule removeopt:sym<yolo>   { «<yolo>» }
   rule removeopt:sym<from>   { «<from> <path>» }
  
+  proto rule searchopt { * }
+  rule searchopt:sym<deps>   { «<deps>» }
+  
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
   token deps:sym<d>      { «<sym>» }
@@ -59,9 +67,9 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
     
-    %cmd<cmd>  = 'add';
-    %cmd<add>  = $<addopt>».ast.hash if $<addopt>;
-    %cmd<dist> = $<dist>».Str;
+    %cmd<cmd>       = 'add';
+    %cmd<add>       = $<addopt>».ast.hash if $<addopt>;
+    %cmd<add><dist> = $<dist>».Str;
 
     make %cmd;
     
@@ -71,13 +79,26 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
     
-    %cmd<cmd>  = 'remove';
-    %cmd<add>  = $<removeopt>».ast.hash if $<removeopt>;
-    %cmd<dist> = $<dist>».Str;
+    %cmd<cmd>          = 'remove';
+    %cmd<remove>       = $<removeopt>».ast.hash if $<removeopt>;
+    %cmd<remove><dist> = $<dist>».Str;
 
     make %cmd;
     
   }
+  
+  method TOP:sym<search> ( $/ ) {
+
+    my %cmd;
+    
+    %cmd<cmd>          = 'search';
+    %cmd<search>       = $<searchopt>».ast.hash if $<searchopt>;
+    %cmd<search><dist> = $<dist>».Str;
+
+    make %cmd;
+    
+  }
+
 
   method addopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method addopt:sym<test> ( $/ ) { make $<test>.ast }
@@ -88,6 +109,8 @@ class Pakku::Grammar::Cmd::Actions {
   method removeopt:sym<from> ( $/ ) { make ( from => $<path>.IO )  }
   method removeopt:sym<yolo> ( $/ ) { make ( :yolo )  }
 
+  method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
+  
   method deps:sym<deps>   ( $/ )  { make ( :deps  ) }
   method deps:sym<d>      ( $/ )  { make ( :deps  ) }
   method deps:sym<nodeps> ( $/ )  { make ( :!deps ) }

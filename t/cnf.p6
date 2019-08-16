@@ -10,6 +10,6 @@ my $parser  = Pakku::Grammar::Cnf;
 my $actions = Pakku::Grammar::Cnf::Actions;
 my $cnf     = $parser.parsefile( $config, :$actions, :rule<TOP> );
 
-say $cnf.ast;
+say $cnf.ast<source>.perl;
 
 

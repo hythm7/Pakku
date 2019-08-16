@@ -1,24 +1,27 @@
+#no precompilation;
+#use Grammar::Tracer;
+
 grammar Pakku::Grammar::Cnf {
 
   token TOP { <sections> }
 
-  token sections { <.ws> <section>* %% <.nl> }
+  token sections { <.ws> <section>* }
 
   proto rule section { * }
-  rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>+    % <.nl> }
-  rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>+ % <.nl> }
-  rule section:sym<source> { <lt> <sym> <gt> <.nl> <source>+ % <.nl> }
+  rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>+    }
+  rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>+ }
+  rule section:sym<source> { <lt> <sym> <gt> <.nl> <source>+    }
 
   proto rule addopt { * }
-  rule addopt:sym<deps> { <.ws> <deps> }
-  rule addopt:sym<test> { <.ws> <test> }
-  rule addopt:sym<yolo> { <.ws> <yolo> }
-  rule addopt:sym<into> { <.ws> <into> <path> }
+  rule addopt:sym<deps> { <.ws> <deps> <.eol> }
+  rule addopt:sym<test> { <.ws> <test> <.eol> }
+  rule addopt:sym<yolo> { <.ws> <yolo> <.eol> }
+  rule addopt:sym<into> { <.ws> <into> <path> <.eol> }
 
   proto rule removeopt { * }
-  rule removeopt:sym<deps> { <.ws> <deps> }
-  rule removeopt:sym<yolo> { <.ws> <yolo> }
-  rule removeopt:sym<from> { <.ws> <from> <path> }
+  rule removeopt:sym<deps> { <.ws> <deps> <.eol> }
+  rule removeopt:sym<yolo> { <.ws> <yolo> <.eol> }
+  rule removeopt:sym<from> { <.ws> <from> <path> <.eol> }
 
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
@@ -43,10 +46,10 @@ grammar Pakku::Grammar::Cnf {
   token from:sym<from> { «<sym>» }
 
 
-
-  #token source { <-[ \s ]> }
-  token source { .* }
+  token source { <.ws> $<url>=<-[\n]>* <.eol> }
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
+
+  token eol { [ [ <[#;]> \N* ]? \n ]+ }
 
   token nl { [ <comment>? \h* \n ]+ }
 
@@ -87,5 +90,5 @@ class Pakku::Grammar::Cnf::Actions {
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
 
-  method source     ( $/ )  { make $/.Str }
+  method source     ( $/ )  { make $<url>.Str }
 }
