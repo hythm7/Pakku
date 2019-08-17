@@ -8,20 +8,28 @@ grammar Pakku::Grammar::Cnf {
   token sections { <.ws> <section>* }
 
   proto rule section { * }
+  rule section:sym<pakku>  { <lt> <sym> <gt> <.nl> <pakkuopt>+  }
   rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>+    }
   rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>+ }
-  rule section:sym<source> { <lt> <sym> <gt> <.nl> <source>+    }
+  rule section:sym<search> { <lt> <sym> <gt> <.nl> <searchopt>+    }
+
+  proto rule pakkuopt { * }
+  rule pakkuopt:sym<yolo>    { <.ws> <yolo>    <.eol> }
+  rule pakkuopt:sym<force>   { <.ws> <force>   <.eol> }
+  rule pakkuopt:sym<verbose> { <.ws> <verbose> <.eol> }
+  rule pakkuopt:sym<source>  { <.ws> <sym>     <source> <.eol> }
 
   proto rule addopt { * }
   rule addopt:sym<deps> { <.ws> <deps> <.eol> }
   rule addopt:sym<test> { <.ws> <test> <.eol> }
-  rule addopt:sym<yolo> { <.ws> <yolo> <.eol> }
   rule addopt:sym<into> { <.ws> <into> <path> <.eol> }
 
   proto rule removeopt { * }
   rule removeopt:sym<deps> { <.ws> <deps> <.eol> }
-  rule removeopt:sym<yolo> { <.ws> <yolo> <.eol> }
   rule removeopt:sym<from> { <.ws> <from> <path> <.eol> }
+
+  proto rule searchopt { * }
+  rule searchopt:sym<deps> { <.ws> <deps> <.eol> }
 
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
@@ -39,6 +47,14 @@ grammar Pakku::Grammar::Cnf {
   token yolo:sym<yolo> { «<sym>» }
   token yolo:sym<y>    { «<sym>» }
 
+  proto token force { * }
+  token force:sym<force> { «<sym>» }
+  token force:sym<f>     { «<sym>» }
+
+  proto token verbose { * }
+  token verbose:sym<verbose> { «<sym>» }
+  token verbose:sym<v>       { «<sym>» }
+
   proto token into { * }
   token into:sym<into> { «<sym>» }
 
@@ -46,7 +62,7 @@ grammar Pakku::Grammar::Cnf {
   token from:sym<from> { «<sym>» }
 
 
-  token source { <.ws> $<url>=<-[\n]>* <.eol> }
+  token source { $<url>=<-[\n]>+ }
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
   token eol { [ [ <[#;]> \N* ]? \n ]+ }
@@ -67,18 +83,24 @@ class Pakku::Grammar::Cnf::Actions {
 
   method sections ( $/ ) { make $<section>».ast.hash }
 
+  method section:sym<pakku>  ( $/ ) { make ~$<sym> => $<pakkuopt>».ast.hash }
   method section:sym<add>    ( $/ ) { make ~$<sym> => $<addopt>».ast.hash }
   method section:sym<remove> ( $/ ) { make ~$<sym> => $<removeopt>».ast.hash }
-  method section:sym<source> ( $/ ) { make ~$<sym> => $<source>».ast }
+  method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast }
+
+  method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
+  method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
+  method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }
+  method pakkuopt:sym<source>  ( $/ ) { make ( $<sym>.Str => $<source>.ast )  }
 
   method addopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method addopt:sym<test> ( $/ ) { make $<test>.ast }
   method addopt:sym<into> ( $/ ) { make ( into => $<path>.IO )  }
-  method addopt:sym<yolo> ( $/ ) { make ( :yolo )  }
 
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method removeopt:sym<from> ( $/ ) { make ( from => $<path>.IO )  }
-  method removeopt:sym<yolo> ( $/ ) { make ( :yolo )  }
+
+  method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
 
   method deps:sym<deps>   ( $/ )  { make ( :deps  ) }
   method deps:sym<d>      ( $/ )  { make ( :deps  ) }

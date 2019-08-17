@@ -4,9 +4,9 @@
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <add>    <addopt>*    <idents> }
-  rule TOP:sym<remove> { <remove> <removeopt>* <idents> }
-  rule TOP:sym<search> { <search> <searchopt>* <idents> }
+  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <idents> }
+  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <idents> }
+  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <idents> }
 
   proto token add { * }
   token add:sym<add> { «<sym>» }
@@ -21,15 +21,18 @@ grammar Pakku::Grammar::Cmd {
   token search:sym<search> { «<sym>» }
   token search:sym<s>      { «<sym>» }
 
+  proto rule pakkuopt { * }
+  rule pakkuopt:sym<verbose> { «<verbose>» }
+  rule pakkuopt:sym<force>   { «<force>» }
+  rule pakkuopt:sym<yolo>    { «<yolo>» }
+
   proto rule addopt { * }
   rule addopt:sym<deps> { «<deps>» }
   rule addopt:sym<test> { «<test>» }
-  rule addopt:sym<yolo> { «<yolo>» }
   rule addopt:sym<into> { «<into> <path>» }
 
   proto rule removeopt { * }
   rule removeopt:sym<deps>   { «<deps>» }
-  rule removeopt:sym<yolo>   { «<yolo>» }
   rule removeopt:sym<from>   { «<from> <path>» }
  
   proto rule searchopt { * }
@@ -52,6 +55,14 @@ grammar Pakku::Grammar::Cmd {
 
   proto token from { * }
   token from:sym<from> { «<sym>» }
+
+  proto token verbose { * }
+  token verbose:sym<verbose> { «<sym>» }
+  token verbose:sym<v>    { «<sym>» }
+
+  proto token force { * }
+  token force:sym<force> { «<sym>» }
+  token force:sym<f>    { «<sym>» }
 
   proto token yolo { * }
   token yolo:sym<yolo> { «<sym>» }
@@ -89,7 +100,8 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
     
     %cmd<cmd>        = 'add';
-    %cmd<add>        = $<addopt>».ast.hash if $<addopt>;
+    %cmd<pakku>      = $<pakkuopt>».ast.hash if $<pakkuopt>;
+    %cmd<add>        = $<addopt>».ast.hash   if $<addopt>;
     %cmd<add><ident> = $<idents>.ast;
 
     make %cmd;
@@ -101,6 +113,7 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
     
     %cmd<cmd>           = 'remove';
+    %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<remove>        = $<removeopt>».ast.hash if $<removeopt>;
     %cmd<remove><ident> = $<idents>.ast;
 
@@ -113,6 +126,7 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
     
     %cmd<cmd>           = 'search';
+    %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<search>        = $<searchopt>».ast.hash if $<searchopt>;
     %cmd<search><ident> = $<idents>.ast;
 
@@ -120,15 +134,16 @@ class Pakku::Grammar::Cmd::Actions {
     
   }
 
+  method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
+  method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
+  method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }
 
   method addopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method addopt:sym<test> ( $/ ) { make $<test>.ast }
   method addopt:sym<into> ( $/ ) { make ( into => $<path>.IO )  }
-  method addopt:sym<yolo> ( $/ ) { make ( :yolo )  }
 
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method removeopt:sym<from> ( $/ ) { make ( from => $<path>.IO )  }
-  method removeopt:sym<yolo> ( $/ ) { make ( :yolo )  }
 
   method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
   

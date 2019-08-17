@@ -17,6 +17,7 @@ submethod BUILD ( ) {
   %!config = $cnf.ast.merge: $cmd.ast;
 
   
+  say %!config;
 
   given %!config<cmd> {
 
