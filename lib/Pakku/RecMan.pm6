@@ -1,6 +1,8 @@
 use JSON::Fast;
 use LibCurl::Easy;
 
+use Pakku::Dist;
+
 
 unit class Pakku::RecMan;
 
@@ -13,16 +15,16 @@ submethod TWEAK ( ) {
 
     my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
     
-    for flat $json -> %dist {
-      %!ecosystem.push: ( %dist<name> => %dist ); 
+    for flat $json -> %meta {
+      %!ecosystem.push: ( %meta<name> => %meta ); 
     }
   }
 }
 
-method search ( :@dist! ) {
+method search ( :@ident! ) {
   
-    for @dist -> $dist {
-      .say for %!ecosystem{$dist};
+    for @ident -> $ident {
+      say %!ecosystem{$ident<name>};
     }
 }
 

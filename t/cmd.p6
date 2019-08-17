@@ -8,6 +8,6 @@ my $parser  = Pakku::Grammar::Cmd;
 my $actions = Pakku::Grammar::Cmd::Actions;
 my $cmd = $parser.parse( @*ARGS, :$actions, :rule<TOP> );
 
-say $cmd.ast with $cmd;
+say $cmd.ast;
 
 

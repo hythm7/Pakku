@@ -16,22 +16,31 @@ submethod BUILD ( ) {
   
   %!config = $cnf.ast.merge: $cmd.ast;
 
-  $!recman = Pakku::RecMan.new: source => flat %!config<source>;
   
 
   given %!config<cmd> {
 
-    self.add(    |%!config<add> )    when 'add';
-    self.remove( |%!config<remove> ) when 'remove';
-    self.search( |%!config<search> ) when 'search';
+    when 'add' {
+      $!recman = Pakku::RecMan.new: source => flat %!config<source>;
+      self.add(    |%!config<add> );
+    }
+
+    when 'remove' {
+      self.remove(    |%!config<remove> );
+    }
+
+    when 'search' {
+      $!recman = Pakku::RecMan.new: source => flat %!config<source>;
+      self.search(    |%!config<search> );
+    }
 
   }
  
 }
 
-method search ( :@dist! ) {
+method search ( :@ident! ) {
 
-  $!recman.search: :@dist;
+  $!recman.search: :@ident;
 
 }
 
