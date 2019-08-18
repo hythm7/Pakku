@@ -86,7 +86,7 @@ class Pakku::Grammar::Cnf::Actions {
   method section:sym<pakku>  ( $/ ) { make ~$<sym> => $<pakkuopt>».ast.hash }
   method section:sym<add>    ( $/ ) { make ~$<sym> => $<addopt>».ast.hash }
   method section:sym<remove> ( $/ ) { make ~$<sym> => $<removeopt>».ast.hash }
-  method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast }
+  method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast.hash }
 
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }

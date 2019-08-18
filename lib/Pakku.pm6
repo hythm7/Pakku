@@ -16,13 +16,13 @@ submethod BUILD ( ) {
   
   %!config = $cnf.ast.merge: $cmd.ast;
 
-  
-  say %!config;
-
+ 
   given %!config<cmd> {
 
+    my @source = flat %!config<pakku><source>;
+
     when 'add' {
-      $!recman = Pakku::RecMan.new: source => flat %!config<source>;
+      $!recman = Pakku::RecMan.new: :@source;
       self.add(    |%!config<add> );
     }
 
@@ -31,7 +31,7 @@ submethod BUILD ( ) {
     }
 
     when 'search' {
-      $!recman = Pakku::RecMan.new: source => flat %!config<source>;
+      $!recman = Pakku::RecMan.new: :@source;
       self.search(    |%!config<search> );
     }
 
