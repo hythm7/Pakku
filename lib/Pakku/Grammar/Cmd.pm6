@@ -1,5 +1,7 @@
 #no precompilation;
 #use Grammar::Tracer;
+#
+use Pakku::Identity;
 
 grammar Pakku::Grammar::Cmd {
 
@@ -165,7 +167,7 @@ class Pakku::Grammar::Cmd::Actions {
     %ident<name> = $<name>.Str;
     %ident.push: ( $<keyval>».ast ) if $<keyval>;
 
-    make %ident;
+    make Pakku::Identity.new: |%ident;
 
   }
 

@@ -45,7 +45,13 @@ method search ( :@ident! ) {
 
 }
 
-method add ( ) {
+method add ( :@ident! ) {
+
+  my @cand = $!recman.search: :@ident;
+
+  CompUnit::Repository::Installation.new( prefix => '/tmp'.IO ).install(@cand.head);
+
+  #say @cand;
 
 }
 
