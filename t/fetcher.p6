@@ -4,6 +4,6 @@ use lib 'lib';
 
 use Pakku::Fetcher;
 
-my $src = 'github.com/hythm/akku';
+my $src = '/home/helganin/dev/Pakku';
 
 Pakku::Fetcher.fetch: :$src;

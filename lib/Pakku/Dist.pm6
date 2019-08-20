@@ -45,5 +45,5 @@ method meta (--> Hash:D) {
 }
 
 method content ($name-path --> IO::Handle:D) {
-  Distribution::Hash.new( $.meta, prefix => '/tmp'.IO ).content( $name-path );
+  IO::Handle.new: path => $name-path;
 }

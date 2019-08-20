@@ -2,8 +2,10 @@ use Hash::Merge::Augment;
 use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
 use Pakku::RecMan;
+use Pakku::Fetcher;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
+  also does Pakku::Fetcher;
 
 
 has %!config;
@@ -39,18 +41,27 @@ submethod BUILD ( ) {
  
 }
 
-method search ( :@ident! ) {
+method search ( :@dist! ) {
 
-  $!recman.search: :@ident;
+  $!recman.search: :@dist;
 
 }
 
-method add ( :@ident! ) {
+method add ( :@dist! ) {
 
-  my @cand = $!recman.search: :@ident;
+  my @cand = $!recman.recommend: :@dist;
 
-  CompUnit::Repository::Installation.new( prefix => '/tmp'.IO ).install(@cand.head);
+  for @cand -> %cand {
 
+    my $distdir = self.fetch: src => %cand<source-url>;
+
+    my $dist = Pakku::Dist.new: |%cand;
+
+    my $repo = CompUnit::RepositoryRegistry.repository-for-name('site');
+
+    indir($distdir, { $repo.install($dist) });
+
+  }
   #say @cand;
 
 }

@@ -1,29 +1,40 @@
+use Cro::Uri;
 use File::Temp;
 use LibCurl::Easy;
-use Cro::Uri;
+use Libarchive::Simple;
 
-use Pakku::Fetcher::Git;
-use Pakku::Fetcher::Curl;
-use Pakku::Fetcher::Local;
-
-unit class Pakku::Fetcher;
+unit role Pakku::Fetcher;
 
 
-multi method fetch ( :$src!, :$dst = tempdir ) {
+method fetch ( :$src!, :$dst = tempdir ) {
 
-  my Cro::Uri $uri .= parse-ref: $src;
+  my $uri = Cro::Uri.parse-ref: $src;
 
   given $uri {
 
     when .scheme.so and .path.IO.extension ~~ any('git', '') {
 
-      Pakku::Fetcher::Git.fetch( ~$uri, $dst );
+      run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
+      
+      $dst.IO.dir.first: *.d;
     } 
 
-    Pakku::Fetcher::Curl.fetch( ~$uri, $dst )  when .scheme.so;
+    when .scheme.so {
+      
+      my $download = $dst.IO.add( $uri.path.IO.basename ).Str;
 
-    Pakku::Fetcher::Local.fetch( ~$uri, $dst ) when not .scheme.so;
+      LibCurl::Easy.new( URL => $uri.Str, :$download ).perform;
 
+      .extract: destpath => $dst for archive-read $download;
+      
+      $dst.IO.dir.first: *.d;
+    }
+
+    when not .scheme.so {
+
+     $src.IO; 
+
+    }
   }
 
 }

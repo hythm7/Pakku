@@ -1,14 +1,15 @@
 #no precompilation;
 #use Grammar::Tracer;
 #
+use Cro::Uri;
 use Pakku::Identity;
 
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <idents> }
-  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <idents> }
-  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <idents> }
+  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <dists> }
+  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <dists> }
+  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <dists> }
 
   proto token add { * }
   token add:sym<add> { «<sym>» }
@@ -71,12 +72,15 @@ grammar Pakku::Grammar::Cmd {
   token yolo:sym<y>    { «<sym>» }
   token yolo:sym<✓>    { «<sym>» }
 
-  token idents { <ident>+ %% \s+ }
-  token ident { <name> <keyval>* }
+  token dists { <dist>+ %% \s+ }
+  proto token dist { * }
+  token dist:sym<ident> { <name> <keyval>* }
+  token dist:sym<path>  { <path> }
+  
   token keyval { ':' <key> <value> }
 
   #token name { <-[:<>]>+ %% '::' }
-  token name { [<-[:<>()]>+]+ % '::' }
+  token name { [<-[./:<>()]>+]+ % '::' }
 
   proto token key { * }
   token key:sym<ver>  { <sym> }
@@ -104,7 +108,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>        = 'add';
     %cmd<pakku>      = $<pakkuopt>».ast.hash if $<pakkuopt>;
     %cmd<add>        = $<addopt>».ast.hash   if $<addopt>;
-    %cmd<add><ident> = $<idents>.ast;
+    %cmd<add><dist>  = $<dists>.ast;
 
     make %cmd;
     
@@ -117,7 +121,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>           = 'remove';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<remove>        = $<removeopt>».ast.hash if $<removeopt>;
-    %cmd<remove><ident> = $<idents>.ast;
+    %cmd<remove><dist>  = $<dists>.ast;
 
     make %cmd;
     
@@ -130,7 +134,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>           = 'search';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<search>        = $<searchopt>».ast.hash if $<searchopt>;
-    %cmd<search><ident> = $<idents>.ast;
+    %cmd<search><dist>  = $<dists>.ast;
 
     make %cmd;
     
@@ -159,18 +163,21 @@ class Pakku::Grammar::Cmd::Actions {
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
 
-  method idents ( $/ ) { make $<ident>».ast }
+  method dists ( $/ ) { make $<dist>».ast }
 
-  method ident ( $/ ) {
-    my %ident;
+  method dist:sym<ident> ( $/ ) {
+    my %dist;
 
-    %ident<name> = $<name>.Str;
-    %ident.push: ( $<keyval>».ast ) if $<keyval>;
+    %dist<name> = $<name>.Str;
+    %dist.push: ( $<keyval>».ast ) if $<keyval>;
 
-    make Pakku::Identity.new: |%ident;
+    #say %dist;
+    make Pakku::Identity.new: |%dist;
 
   }
 
+  method dist:sym<path> ( $/ ) { make $/.IO }
+    
   method keyval ( $/ ) { make ( $<key>.Str => $<value>.ast ) }
   method value ( $/ ) { make $<val>.Str }
 
