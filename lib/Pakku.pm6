@@ -1,3 +1,4 @@
+use JSON::Fast;
 use Hash::Merge::Augment;
 use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
@@ -11,21 +12,26 @@ unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
 has %!config;
 
-has Pakku::Ecosystem $!ecosystem;
-has Pakku::RecMan    $!recman;
+has Pakku::Ecosystem     $!ecosystem;
+has Pakku::RecMan        $!recman;
+has CompUnit::Repository $!repo;
 
 submethod BUILD ( ) {
 
   my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions );
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
-  
+
   %!config = $cnf.ast.merge: $cmd.ast;
 
+  my $repo   = %!config<pakku><repo> // "inst#$*HOME/.pakku";
   my @source = flat %!config<pakku><source>;
+
+  #$!repo = CompUnit::RepositoryRegistry.repository-for-spec: $repo, name => 'pakku', next-repo => $*REPO;
+  $!repo = CompUnit::RepositoryRegistry.repository-for-name: 'site';
 
   $!ecosystem = Pakku::Ecosystem.new: :@source;
   $!recman    = Pakku::RecMan.new:    :$!ecosystem;
- 
+
   given %!config<cmd> {
 
     self.add(    |%!config<add> )    when 'add';
@@ -34,34 +40,47 @@ submethod BUILD ( ) {
 
     self.search( |%!config<search> ) when 'search';
   }
- 
-}
-
-method search ( :@dist! ) {
-
-  $!recman.recommend: :@dist;
 
 }
 
-method add ( :@dist! ) {
+method search ( :@ident! ) {
 
-  my @cand = $!recman.recommend: :@dist;
+  $!recman.recommend: :@ident;
 
-  for @cand -> %cand {
+}
 
-    my $distdir = self.fetch: src => %cand<source-url>;
+method add ( :@ident! ) {
 
-    my $dist = Pakku::Dist.new: |%cand;
+  my @candsrc = $!recman.recommend: :@ident;
 
-    my $repo = CompUnit::RepositoryRegistry.repository-for-name('site');
+  for @candsrc -> $src {
 
-    indir($distdir, { $repo.install($dist) });
+    my $distdir = self.fetch: :$src;
+
+    my %meta = from-json slurp $distdir.add: 'META6.json';
+
+    my $dist = Pakku::Dist.new: |%meta;
+
+    indir( $distdir, { $!repo.install( $dist ) } );
 
   }
 
 }
 
-method remove ( ) {
+method remove ( :@ident! ) {
+
+   # Bug: Only %meta<files> getting deleted
+
+   for @ident -> $ident {
+
+    my $dist = $!repo.candidates( $ident.name ).head;
+
+    $!repo.uninstall: $dist;
+
+
+  }
+
+
 
 }
 

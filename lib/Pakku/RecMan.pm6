@@ -1,31 +1,29 @@
 use Pakku::Dist;
+use Pakku::Ecosystem;
 use Pakku::Identity;
 
 
 unit class Pakku::RecMan;
 
-has $.ecosystem;
+has Pakku::Ecosystem $.ecosystem;
 
-method recommend ( :@dist! ) {
-  
+method recommend ( :@ident! ) {
+  # should return modules as well
+
   my @*cand;
 
-  for @dist -> $dist {
-    given $dist {
-      
+  for @ident -> $ident {
+    given $ident {
+
       when Pakku::Identity {
-        
-        @*cand.push: $!ecosystem.find( $dist ).first;
-      
+
+        @*cand.push: $!ecosystem.find( $ident ).first.<source-url>;
+
       }
-      
+
       when IO::Path {
 
-        my $json = from-json slurp $dist.add: 'META6.json';
-
-        $json<source-url> = $dist;
-        
-        @*cand.push: $json;
+        @*cand.push: $ident;
 
       }
     }

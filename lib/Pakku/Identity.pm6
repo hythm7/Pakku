@@ -1,6 +1,6 @@
 unit class Pakku::Identity;
 
-has $.name;
+has $.name is required;
 has $.ver;
 has $.auth;
 has $.api;

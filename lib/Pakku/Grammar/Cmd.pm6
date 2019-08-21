@@ -1,15 +1,15 @@
 #no precompilation;
 #use Grammar::Tracer;
-#
+
 use Cro::Uri;
 use Pakku::Identity;
 
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <dists> }
-  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <dists> }
-  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <dists> }
+  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <idents> }
+  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <idents> }
+  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <idents> }
 
   proto token add { * }
   token add:sym<add> { «<sym>» }
@@ -72,10 +72,10 @@ grammar Pakku::Grammar::Cmd {
   token yolo:sym<y>    { «<sym>» }
   token yolo:sym<✓>    { «<sym>» }
 
-  token dists { <dist>+ %% \s+ }
-  proto token dist { * }
-  token dist:sym<ident> { <name> <keyval>* }
-  token dist:sym<path>  { <path> }
+  token idents { <ident>+ %% \s+ }
+  proto token ident { * }
+  token ident:sym<ident> { <name> <keyval>* }
+  token ident:sym<path>  { <path> }
   
   token keyval { ':' <key> <value> }
 
@@ -108,7 +108,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>        = 'add';
     %cmd<pakku>      = $<pakkuopt>».ast.hash if $<pakkuopt>;
     %cmd<add>        = $<addopt>».ast.hash   if $<addopt>;
-    %cmd<add><dist>  = $<dists>.ast;
+    %cmd<add><ident>  = $<idents>.ast;
 
     make %cmd;
     
@@ -121,7 +121,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>           = 'remove';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<remove>        = $<removeopt>».ast.hash if $<removeopt>;
-    %cmd<remove><dist>  = $<dists>.ast;
+    %cmd<remove><ident>  = $<idents>.ast;
 
     make %cmd;
     
@@ -134,7 +134,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>           = 'search';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<search>        = $<searchopt>».ast.hash if $<searchopt>;
-    %cmd<search><dist>  = $<dists>.ast;
+    %cmd<search><ident>  = $<idents>.ast;
 
     make %cmd;
     
@@ -163,20 +163,20 @@ class Pakku::Grammar::Cmd::Actions {
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
 
-  method dists ( $/ ) { make $<dist>».ast }
+  method idents ( $/ ) { make $<ident>».ast }
 
-  method dist:sym<ident> ( $/ ) {
-    my %dist;
+  method ident:sym<ident> ( $/ ) {
+    my %ident;
 
-    %dist<name> = $<name>.Str;
-    %dist.push: ( $<keyval>».ast ) if $<keyval>;
+    %ident<name> = $<name>.Str;
+    %ident.push: ( $<keyval>».ast ) if $<keyval>;
 
-    #say %dist;
-    make Pakku::Identity.new: |%dist;
+    #say %ident;
+    make Pakku::Identity.new: |%ident;
 
   }
 
-  method dist:sym<path> ( $/ ) { make $/.IO }
+  method ident:sym<path> ( $/ ) { make $/.IO }
     
   method keyval ( $/ ) { make ( $<key>.Str => $<value>.ast ) }
   method value ( $/ ) { make $<val>.Str }
