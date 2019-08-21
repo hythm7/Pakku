@@ -1,14 +1,10 @@
-use JSON::Fast;
-use LibCurl::Easy;
-
 use Pakku::Dist;
 use Pakku::Identity;
 
 
 unit class Pakku::RecMan;
 
-has @.source;
-has %!ecosystem;
+has $.ecosystem;
 
 method recommend ( :@dist! ) {
   
@@ -19,9 +15,7 @@ method recommend ( :@dist! ) {
       
       when Pakku::Identity {
         
-        self!update;
-
-        @*cand.push: %!ecosystem{$dist.name}.first;
+        @*cand.push: $!ecosystem.find( $dist ).first;
       
       }
       
@@ -34,25 +28,8 @@ method recommend ( :@dist! ) {
         @*cand.push: $json;
 
       }
-      
     }
   }
 
   @*cand;
 }
-
-method !update ( ) {
-  
-  for @!source -> $source {
-
-    my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
-
-    for flat $json -> %meta {
-      %!ecosystem.push: ( %meta<name> => %meta ); 
-    }
-  }
-
-
-}
-
-

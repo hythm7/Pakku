@@ -80,7 +80,7 @@ grammar Pakku::Grammar::Cmd {
   token keyval { ':' <key> <value> }
 
   #token name { <-[:<>]>+ %% '::' }
-  token name { [<-[./:<>()]>+]+ % '::' }
+  token name { [<-[./:<>()\h]>+]+ % '::' }
 
   proto token key { * }
   token key:sym<ver>  { <sym> }

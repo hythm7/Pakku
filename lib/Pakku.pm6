@@ -1,6 +1,7 @@
 use Hash::Merge::Augment;
 use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
+use Pakku::Ecosystem;
 use Pakku::RecMan;
 use Pakku::Fetcher;
 
@@ -9,7 +10,9 @@ unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
 
 has %!config;
-has Pakku::RecMan $!recman;
+
+has Pakku::Ecosystem $!ecosystem;
+has Pakku::RecMan    $!recman;
 
 submethod BUILD ( ) {
 
@@ -18,32 +21,25 @@ submethod BUILD ( ) {
   
   %!config = $cnf.ast.merge: $cmd.ast;
 
+  my @source = flat %!config<pakku><source>;
+
+  $!ecosystem = Pakku::Ecosystem.new: :@source;
+  $!recman    = Pakku::RecMan.new:    :$!ecosystem;
  
   given %!config<cmd> {
 
-    my @source = flat %!config<pakku><source>;
+    self.add(    |%!config<add> )    when 'add';
 
-    when 'add' {
-      $!recman = Pakku::RecMan.new: :@source;
-      self.add(    |%!config<add> );
-    }
+    self.remove( |%!config<remove> ) when 'remove';
 
-    when 'remove' {
-      self.remove(    |%!config<remove> );
-    }
-
-    when 'search' {
-      $!recman = Pakku::RecMan.new: :@source;
-      self.search(    |%!config<search> );
-    }
-
+    self.search( |%!config<search> ) when 'search';
   }
  
 }
 
 method search ( :@dist! ) {
 
-  $!recman.search: :@dist;
+  $!recman.recommend: :@dist;
 
 }
 
@@ -62,7 +58,6 @@ method add ( :@dist! ) {
     indir($distdir, { $repo.install($dist) });
 
   }
-  #say @cand;
 
 }
 
