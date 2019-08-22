@@ -1,4 +1,4 @@
-unit class Pakku::Dist;
+unit class Pakku::Distribution;
   also does Distribution;
 
 has $.meta-version;
@@ -20,6 +20,8 @@ has $.test-depends;
 has @.resources;
 has %.support;
 has $.builder;
+
+has IO $.source-path is rw;
 
 method meta (--> Hash:D) {
   my %meta;

@@ -1,6 +1,8 @@
 use JSON::Fast;
 use LibCurl::Easy;
 
+use Pakku::Distribution;
+
 unit class Pakku::Ecosystem;
 
 has @.source;
@@ -12,10 +14,42 @@ submethod TWEAK ( ) {
 
 }
 
-method find ( $dist ) {
+method recommend ( :@spec! ) {
+  # should return modules as well
 
-  %!project{$dist.name};
+  my @*cand;
 
+  for @spec -> $spec {
+    
+    given $spec {
+
+      when CompUnit::DependencySpecification {
+
+        my $dist = %!project{$spec.short-name}.first;
+
+        @*cand.push: $dist;
+  
+      }
+
+      when IO::Path {
+
+        my $meta = $spec.add: 'META6.json';
+
+        die 'No META6.json' unless $meta.e;
+
+        my %meta = from-json slurp $meta;
+
+        my $dist = Pakku::Distribution.new: |%meta;
+
+        $dist.source-path = $spec;
+
+        @*cand.push: $dist;
+
+      }
+    }
+  }
+
+  @*cand;
 }
 
 method !update ( ) {
@@ -24,11 +58,10 @@ method !update ( ) {
 
     my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
 
-    for flat $json -> $meta {
-      %!project{ $meta<name> }.push: $meta;
+    for flat $json -> %meta {
+      %!project{ %meta<name> }.push: Pakku::Distribution.new: |%meta;
     }
   }
-
 
 }
 

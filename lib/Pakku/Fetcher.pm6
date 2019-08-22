@@ -8,18 +8,19 @@ unit role Pakku::Fetcher;
 
 method fetch ( :$src!, :$dst = tempdir ) {
 
-  my $uri = Cro::Uri.parse-ref: $src;
+  my $uri = Cro::Uri.parse: $src;
 
   given $uri {
 
-    when .scheme.so and .path.IO.extension ~~ any('git', '') {
+    when .path.IO.extension ~~ any('git', '') {
 
       run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
       
       $dst.IO.dir.first: *.d;
+
     } 
 
-    when .scheme.so {
+    default {
       
       my $download = $dst.IO.add( $uri.path.IO.basename ).Str;
 
@@ -28,13 +29,9 @@ method fetch ( :$src!, :$dst = tempdir ) {
       .extract: destpath => $dst for archive-read $download;
       
       $dst.IO.dir.first: *.d;
-    }
-
-    when not .scheme.so {
-
-     $src.IO; 
 
     }
+
   }
 
 }

@@ -3,8 +3,8 @@ use Hash::Merge::Augment;
 use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
 use Pakku::Ecosystem;
-use Pakku::RecMan;
 use Pakku::Fetcher;
+use Pakku::Distribution;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
   also does Pakku::Fetcher;
@@ -13,7 +13,6 @@ unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 has %!config;
 
 has Pakku::Ecosystem     $!ecosystem;
-has Pakku::RecMan        $!recman;
 has CompUnit::Repository $!repo;
 
 submethod BUILD ( ) {
@@ -30,7 +29,6 @@ submethod BUILD ( ) {
   $!repo = CompUnit::RepositoryRegistry.repository-for-name: 'site';
 
   $!ecosystem = Pakku::Ecosystem.new: :@source;
-  $!recman    = Pakku::RecMan.new:    :$!ecosystem;
 
   given %!config<cmd> {
 
@@ -43,37 +41,36 @@ submethod BUILD ( ) {
 
 }
 
-method search ( :@ident! ) {
+method search ( :@spec! ) {
 
-  $!recman.recommend: :@ident;
+  $!ecosystem.recommend: :@spec;
 
 }
 
-method add ( :@ident! ) {
+method add ( :@spec! ) {
 
-  my @candsrc = $!recman.recommend: :@ident;
+  my @cand = $!ecosystem.recommend: :@spec;
 
-  for @candsrc -> $src {
+  for @cand -> $dist {
 
-    my $distdir = self.fetch: :$src;
+    my $source-path = self.fetch: src => $dist.source-url unless $dist.source-path;
 
-    my %meta = from-json slurp $distdir.add: 'META6.json';
+    $dist.source-path = $source-path if $source-path;
 
-    my $dist = Pakku::Dist.new: |%meta;
 
-    indir( $distdir, { $!repo.install( $dist ) } );
+    indir( $dist.source-path, { $!repo.install( $dist ) } );
 
   }
 
 }
 
-method remove ( :@ident! ) {
+method remove ( :@spec! ) {
 
    # Bug: Only %meta<files> getting deleted
 
-   for @ident -> $ident {
+   for @spec -> $spec {
 
-    my $dist = $!repo.candidates( $ident.name ).head;
+    my $dist = $!repo.candidates( $spec ).head;
 
     $!repo.uninstall: $dist;
 
