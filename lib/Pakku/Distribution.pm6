@@ -23,7 +23,14 @@ has $.builder;
 
 has IO $.source-path is rw;
 
-method meta (--> Hash:D) {
+#method provides ( Str:D :$name --> Bool:D ) {
+#
+#  return True if $name ~~ %!provides;
+#
+#  False;
+#}
+
+method meta ( --> Hash:D ) {
   my %meta;
 
   %meta.push: ( :$!meta-version  );

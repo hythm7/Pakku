@@ -3,6 +3,8 @@
 
 use Cro::Uri;
 
+use Pakku::Specification;
+
 grammar Pakku::Grammar::Cmd {
 
   # TODO: substitute word boundry with suitable token
@@ -45,7 +47,7 @@ grammar Pakku::Grammar::Cmd {
   rule removeopt:sym<deps>   { «<deps>» }
   rule removeopt:sym<from>   { «<from> <path>» }
 
- 
+
   proto rule searchopt { * }
   rule searchopt:sym<deps>   { «<deps>» }
 
@@ -55,13 +57,13 @@ grammar Pakku::Grammar::Cmd {
   proto token addspec { * }
   token addspec:sym<spec> { <spec> }
   token addspec:sym<path> { <path> }
-  
+
 
   token removespecs { <removespec>+ %% \s+ }
 
   proto token removespec { * }
   token removespec:sym<spec> { <spec> }
-  
+
 
   token searchspecs { <searchspec>+ %% \s+ }
   proto token searchsspec { * }
@@ -102,7 +104,7 @@ grammar Pakku::Grammar::Cmd {
   token yolo:sym<y>    { «<sym>» }
   token yolo:sym<✓>    { «<sym>» }
 
-  
+
   token keyval { ':' <key> <value> }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
@@ -130,42 +132,42 @@ class Pakku::Grammar::Cmd::Actions {
   method TOP:sym<add> ( $/ ) {
 
     my %cmd;
-    
+
     %cmd<cmd>        = 'add';
     %cmd<pakku>      = $<pakkuopt>».ast.hash if $<pakkuopt>;
     %cmd<add>        = $<addopt>».ast.hash   if $<addopt>;
     %cmd<add><spec>  = $<addspecs>.ast;
 
     make %cmd;
-    
+
   }
 
 
   method TOP:sym<remove> ( $/ ) {
 
     my %cmd;
-    
+
     %cmd<cmd>           = 'remove';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<remove>        = $<removeopt>».ast.hash if $<removeopt>;
     %cmd<remove><spec>  = $<removespecs>.ast;
 
     make %cmd;
-    
+
   }
-  
+
 
   method TOP:sym<search> ( $/ ) {
 
     my %cmd;
-    
+
     %cmd<cmd>           = 'search';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<search>        = $<searchopt>».ast.hash if $<searchopt>;
     %cmd<search><spec>  = $<searchspecs>.ast;
 
     make %cmd;
-    
+
   }
 
 
@@ -184,7 +186,7 @@ class Pakku::Grammar::Cmd::Actions {
 
 
   method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
-  
+
 
   method addspecs    ( $/ ) { make $<addspec>».ast    }
   method removespecs ( $/ ) { make $<removespec>».ast }
@@ -206,7 +208,7 @@ class Pakku::Grammar::Cmd::Actions {
 
     %id<name> = $<name>.Str;
     %id.push: ( $<keyval>».ast ) if $<keyval>;
-    
+
     my %spec;
 
     %spec<short-name>      = %id<name> if %id<name>;
@@ -215,7 +217,7 @@ class Pakku::Grammar::Cmd::Actions {
     %spec<auth-matcher>    = %id<auth> if %id<auth>;
     %spec<api-matcher>     = %id<api>  if %id<api>;
 
-    make CompUnit::DependencySpecification.new: |%spec;
+    make Pakku::Specification.new: |%spec;
 
   }
 
@@ -234,7 +236,7 @@ class Pakku::Grammar::Cmd::Actions {
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
 
-    
+
   method keyval ( $/ ) { make ( $<key>.Str => $<value>.ast ) }
   method value ( $/ )  { make $<val>.Str }
 

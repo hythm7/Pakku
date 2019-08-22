@@ -51,6 +51,8 @@ method add ( :@spec! ) {
 
   my @cand = $!ecosystem.recommend: :@spec;
 
+  say "No candies!" unless @cand;
+
   for @cand -> $dist {
 
     my $source-path = self.fetch: src => $dist.source-url unless $dist.source-path;

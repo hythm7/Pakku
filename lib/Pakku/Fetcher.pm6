@@ -15,19 +15,19 @@ method fetch ( :$src!, :$dst = tempdir ) {
     when .path.IO.extension ~~ any('git', '') {
 
       run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
-      
+
       $dst.IO.dir.first: *.d;
 
-    } 
+    }
 
     default {
-      
+
       my $download = $dst.IO.add( $uri.path.IO.basename ).Str;
 
       LibCurl::Easy.new( URL => $uri.Str, :$download ).perform;
 
       .extract: destpath => $dst for archive-read $download;
-      
+
       $dst.IO.dir.first: *.d;
 
     }
