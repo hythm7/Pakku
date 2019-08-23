@@ -1,4 +1,5 @@
 < pakku >
+  repo home # home site vendor
   force
   source  https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan.json
 

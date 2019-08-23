@@ -17,7 +17,8 @@ grammar Pakku::Grammar::Cnf {
   rule pakkuopt:sym<yolo>    { <.ws> <yolo>    <.eol> }
   rule pakkuopt:sym<force>   { <.ws> <force>   <.eol> }
   rule pakkuopt:sym<verbose> { <.ws> <verbose> <.eol> }
-  rule pakkuopt:sym<source>  { <.ws> <sym>     <source> <.eol> }
+  rule pakkuopt:sym<repo>    { <.ws> <repo>    <reponame> <.eol> }
+  rule pakkuopt:sym<source>  { <.ws> <sym>     <source>   <.eol> }
 
   proto rule addopt { * }
   rule addopt:sym<deps> { <.ws> <deps> <.eol> }
@@ -42,6 +43,14 @@ grammar Pakku::Grammar::Cnf {
   token test:sym<t>      { «<sym>» }
   token test:sym<notest> { «<sym>» }
   token test:sym<nt>     { «<sym>» }
+
+  proto token repo { * }
+  token repo:sym<repo> { «<sym>» }
+
+  proto token reponame { * }
+  token reponame:sym<home>    { «<sym>» }
+  token reponame:sym<site>    { «<sym>» }
+  token reponame:sym<verndor> { «<sym>» }
 
   proto token yolo { * }
   token yolo:sym<yolo> { «<sym>» }
@@ -88,6 +97,7 @@ class Pakku::Grammar::Cnf::Actions {
   method section:sym<remove> ( $/ ) { make ~$<sym> => $<removeopt>».ast.hash }
   method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast.hash }
 
+  method pakkuopt:sym<repo>    ( $/ ) { make ( repo => $<reponame>.Str )  }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
   method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }

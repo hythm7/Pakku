@@ -16,6 +16,7 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto rule pakkuopt { * }
+  rule pakkuopt:sym<repo>    { «<repo> <reponame>» }
   rule pakkuopt:sym<verbose> { «<verbose>» }
   rule pakkuopt:sym<force>   { «<force>» }
   rule pakkuopt:sym<yolo>    { «<yolo>» }
@@ -35,6 +36,14 @@ grammar Pakku::Grammar::Cmd {
   proto token search { * }
   token search:sym<search> { «<sym>» }
   token search:sym<s>      { «<sym>» }
+
+  proto token repo { * }
+  token repo:sym<repo> { «<sym>» }
+
+  proto token reponame { * }
+  token reponame:sym<home>    { «<sym>» }
+  token reponame:sym<site>    { «<sym>» }
+  token reponame:sym<verndor> { «<sym>» }
 
 
   proto rule addopt { * }
@@ -171,6 +180,7 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
+  method pakkuopt:sym<repo>    ( $/ ) { make ( repo => $<reponame>.Str )  }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
   method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }

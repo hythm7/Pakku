@@ -11,6 +11,8 @@ unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
 
 has %!config;
+has Pakku::Distribution %!installed;
+has Pakku::Distribution @!installed;
 
 has Pakku::Ecosystem     $!ecosystem;
 has CompUnit::Repository $!repo;
@@ -22,11 +24,13 @@ submethod BUILD ( ) {
 
   %!config = $cnf.ast.merge: $cmd.ast;
 
-  my $repo   = %!config<pakku><repo> // "inst#$*HOME/.pakku";
+  my $repo   = %!config<pakku><repo> // "inst#$*HOME/.perl6";
   my @source = flat %!config<pakku><source>;
 
   #$!repo = CompUnit::RepositoryRegistry.repository-for-spec: $repo, name => 'pakku', next-repo => $*REPO;
-  $!repo = CompUnit::RepositoryRegistry.repository-for-name: 'site';
+  $!repo = CompUnit::RepositoryRegistry.repository-for-name: $repo, next-repo => $*REPO;
+
+  # @!installed = $!repo.repo-chain.grep( CompUnit::Repository::Installation ).flatmap( *.installed ).map( -> $d { Pakku::Distribution.new: |$d.meta });
 
   $!ecosystem = Pakku::Ecosystem.new: :@source;
 
@@ -41,12 +45,6 @@ submethod BUILD ( ) {
 
 }
 
-method search ( :@spec! ) {
-
-  $!ecosystem.recommend: :@spec;
-
-}
-
 method add ( :@spec! ) {
 
   my @cand = $!ecosystem.recommend: :@spec;
@@ -55,12 +53,11 @@ method add ( :@spec! ) {
 
   for @cand -> $dist {
 
-    my $source-path = self.fetch: src => $dist.source-url unless $dist.source-path;
+    my $prefix = self.fetch: src => $dist.source-url unless $dist.prefix;
 
-    $dist.source-path = $source-path if $source-path;
+    $dist.prefix = $prefix if $prefix;
 
-
-    indir( $dist.source-path, { $!repo.install( $dist ) } );
+    $!repo.install( $dist );
 
   }
 
@@ -74,12 +71,15 @@ method remove ( :@spec! ) {
 
     my $dist = $!repo.candidates( $spec ).head;
 
-    $!repo.uninstall: $dist;
+    $!repo.uninstall: $dist if so $dist;
 
 
   }
+}
 
+method search ( :@spec! ) {
 
+  $!ecosystem.recommend: :@spec;
 
 }
 

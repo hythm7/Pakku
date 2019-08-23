@@ -22,7 +22,7 @@ has %.support;
 has $.builder;
 
 has Str @.dependencies;
-has IO  $.source-path is rw;
+has IO  $.prefix is rw;
 
 submethod TWEAK ( ) {
 
@@ -59,5 +59,5 @@ method meta ( --> Hash:D ) {
 }
 
 method content ($name-path --> IO::Handle:D) {
-  IO::Handle.new: path => $name-path;
+  IO::Handle.new: path => $!prefix.add: $name-path;
 }

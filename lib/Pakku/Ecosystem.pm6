@@ -42,7 +42,7 @@ method recommend ( :@spec! ) {
 
         my $dist = Pakku::Distribution.new: |%meta;
 
-        $dist.source-path = $spec;
+        $dist.prefix = $spec;
 
         @*cand.push: $dist if $dist;
 
