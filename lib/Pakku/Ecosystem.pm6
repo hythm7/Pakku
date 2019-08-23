@@ -7,8 +7,8 @@ use Pakku::Distribution;
 unit class Pakku::Ecosystem;
 
 has @.source;
-has %!project;
-has @!project;
+has %!distribution;
+has @!distribution;
 
 submethod TWEAK ( ) {
 
@@ -59,10 +59,10 @@ method !search ( Pakku::Specification:D :$spec! --> Pakku::Distribution ) {
 
   my $name = $spec.short-name;
 
-  @cand = flat %!project{$name} if so %!project{$name};
+  @cand = flat %!distribution{$name} if so %!distribution{$name};
 
 
-  @cand = @!project.grep: *.provides: :$name unless @cand;
+  @cand = @!distribution.grep: *.provides: :$name unless @cand;
 
   @cand.grep( * ~~ $spec ).sort( *.version ).tail;
 
@@ -79,8 +79,8 @@ method !update ( ) {
 
       my $dist = Pakku::Distribution.new: |%meta;
 
-      %!project{ $dist.name }.push: $dist;
-      @!project.push: $dist;
+      %!distribution{ $dist.name }.push: $dist;
+      @!distribution.push: $dist;
     }
   }
 

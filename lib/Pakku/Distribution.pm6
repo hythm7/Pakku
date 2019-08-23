@@ -10,18 +10,30 @@ has $.api;
 has $.ver;
 has $.version;
 has $.description;
-has $.depends;
+has @.depends;
 has %.provides;
 has %.files;
 has $.source-url;
 has $.license;
-has $.build-depends;
-has $.test-depends;
+has @.build-depends;
+has @.test-depends;
 has @.resources;
 has %.support;
 has $.builder;
 
-has IO $.source-path is rw;
+has Str @.dependencies;
+has IO  $.source-path is rw;
+
+submethod TWEAK ( ) {
+
+  @!depends       = gather @!depends.deepmap:       *.take;
+  @!build-depends = gather @!build-depends.deepmap: *.take;
+  @!test-depends  = gather @!test-depends.deepmap:  *.take;
+  @!resources     = gather @!resources.deepmap:     *.take;
+
+  @!dependencies  = flat @!depends, @!build-depends, @!test-depends;
+
+}
 
 method meta ( --> Hash:D ) {
   my %meta;
@@ -32,9 +44,9 @@ method meta ( --> Hash:D ) {
   %meta.push: ( :$.ver           );
   %meta.push: ( :$.api           );
   %meta.push: ( :$!description   );
-  %meta.push: ( :$!depends       );
-  %meta.push: ( :$!build-depends );
-  %meta.push: ( :$!test-depends  );
+  %meta.push: ( :@!depends       );
+  %meta.push: ( :@!build-depends );
+  %meta.push: ( :@!test-depends  );
   %meta.push: ( :%!provides      );
   %meta.push: ( :%!files         );
   %meta.push: ( :@!resources     );
