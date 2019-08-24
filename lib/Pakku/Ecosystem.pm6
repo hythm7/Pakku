@@ -47,6 +47,8 @@ method recommend ( :@spec! ) {
         @*cand.push: $dist if $dist;
 
       }
+
+      default { die "I don't understand $spec" }
     }
   }
 

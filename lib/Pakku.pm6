@@ -4,6 +4,7 @@ use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
 use Pakku::Ecosystem;
 use Pakku::Fetcher;
+use Pakku::Specification;
 use Pakku::Distribution;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
@@ -46,6 +47,7 @@ submethod BUILD ( ) {
 }
 
 method add ( :@spec! ) {
+
 
   my @cand = $!ecosystem.recommend: :@spec;
 

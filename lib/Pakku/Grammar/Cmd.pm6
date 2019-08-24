@@ -10,9 +10,9 @@ grammar Pakku::Grammar::Cmd {
   # TODO: substitute word boundry with suitable token
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <addspecs> }
-  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <removespecs> }
-  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <searchspecs> }
+  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <specs> }
+  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <specs> }
+  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <specs> }
 
 
   proto rule pakkuopt { * }
@@ -61,27 +61,6 @@ grammar Pakku::Grammar::Cmd {
   rule searchopt:sym<deps>   { «<deps>» }
 
 
-  token addspecs { <addspec>+ %% \s+ }
-
-  proto token addspec { * }
-  token addspec:sym<spec> { <spec> }
-  token addspec:sym<path> { <path> }
-
-
-  token removespecs { <removespec>+ %% \s+ }
-
-  proto token removespec { * }
-  token removespec:sym<spec> { <spec> }
-
-
-  token searchspecs { <searchspec>+ %% \s+ }
-  proto token searchsspec { * }
-  token searchspec:sym<spec> { <spec> }
-
-
-  token spec { <name> <keyval>* }
-
-
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
   token deps:sym<d>      { «<sym>» }
@@ -114,9 +93,15 @@ grammar Pakku::Grammar::Cmd {
   token yolo:sym<✓>    { «<sym>» }
 
 
-  token keyval { ':' <key> <value> }
+  token specs { <spec>+ % \h }
+
+  proto token spec { * }
+  token spec:sym<spec> { <name> <keyval>* }
+  token spec:sym<path> { <path> }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
+
+  token keyval { ':' <key> <value> }
 
   proto token key { * }
   token key:sym<ver>  { <sym> }
@@ -126,8 +111,6 @@ grammar Pakku::Grammar::Cmd {
 
   #token value { '<' ~ '>'  [<( [[ <!before \>|\\> . ]+]* % ['\\' . ] )>] }
   token value { '<' ~ '>'  $<val>=[ [[ <!before \>|\\> . ]+]* % ['\\' . ] ] }
-  #token value { '<' ~ '>'  \w+ }
-  #token value { '<' ~ '>' <-[\s]>+ }
 
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
@@ -145,7 +128,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>        = 'add';
     %cmd<pakku>      = $<pakkuopt>».ast.hash if $<pakkuopt>;
     %cmd<add>        = $<addopt>».ast.hash   if $<addopt>;
-    %cmd<add><spec>  = $<addspecs>.ast;
+    %cmd<add><spec>  = $<specs>.ast;
 
     make %cmd;
 
@@ -159,7 +142,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>           = 'remove';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<remove>        = $<removeopt>».ast.hash if $<removeopt>;
-    %cmd<remove><spec>  = $<removespecs>.ast;
+    %cmd<remove><spec>  = $<specs>.ast;
 
     make %cmd;
 
@@ -173,7 +156,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>           = 'search';
     %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
     %cmd<search>        = $<searchopt>».ast.hash if $<searchopt>;
-    %cmd<search><spec>  = $<searchspecs>.ast;
+    %cmd<search><spec>  = $<specs>.ast;
 
     make %cmd;
 
@@ -198,41 +181,15 @@ class Pakku::Grammar::Cmd::Actions {
   method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
 
 
-  method addspecs    ( $/ ) { make $<addspec>».ast    }
-  method removespecs ( $/ ) { make $<removespec>».ast }
-  method searchspecs ( $/ ) { make $<searchspec>».ast }
+  method specs ( $/ ) { make $<spec>».ast    }
 
+  method spec:sym<spec> ( $/ ) {
 
-  method  addspec:sym<spec> ( $/ ) { make $<spec>.ast }
-  method  addspec:sym<path> ( $/ ) { make $<path>.IO  }
-
-
-  method  removespec:sym<spec> ( $/ ) { make $<spec>.ast }
-
-
-  method  searchspec:sym<spec> ( $/ ) { make $<spec>.ast }
-
-
-  method spec ( $/ ) {
-    my %id;
-
-    %id<name> = $<name>.Str;
-    %id.push: ( $<keyval>».ast ) if $<keyval>;
-
-    my %spec;
-
-    %spec<short-name>      = %id<name> if %id<name>;
-    %spec<from>            = %id<from> if %id<from>;
-    %spec<version-matcher> = %id<ver>  if %id<ver>;
-    %spec<auth-matcher>    = %id<auth> if %id<auth>;
-    %spec<api-matcher>     = %id<api>  if %id<api>;
-
-    make Pakku::Specification.new: |%spec;
+    make Pakku::Specification.new: spec => $/.Str;
 
   }
 
-
-  method path ( $/ ) { make $/.IO }
+  method spec:sym<path> ( $/ ) { make $/.IO }
 
 
   method deps:sym<deps>   ( $/ )  { make ( :deps  ) }
@@ -245,9 +202,5 @@ class Pakku::Grammar::Cmd::Actions {
   method test:sym<t>      ( $/ )  { make ( :test  ) }
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
-
-
-  method keyval ( $/ ) { make ( $<key>.Str => $<value>.ast ) }
-  method value ( $/ )  { make $<val>.Str }
 
 }
