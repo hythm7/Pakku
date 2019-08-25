@@ -5,7 +5,7 @@ use Pakku::Grammar::Cmd;
 use Pakku::Ecosystem;
 use Pakku::Fetcher;
 use Pakku::Specification;
-use Pakku::Distribution;
+use Pakku::Distribution::Path;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
   also does Pakku::Fetcher;
@@ -55,11 +55,13 @@ method add ( :@spec! ) {
 
   for @cand -> $dist {
 
-    my $prefix = self.fetch: src => $dist.source-url unless $dist.prefix;
+    my $prefix = self.fetch: src => $dist.source-url;
 
-    $dist.prefix = $prefix if $prefix;
+    my $distpath = Pakku::Distribution::Path.new: $prefix;
 
-    $!repo.install( $dist );
+    say $distpath.dependencies;
+
+    $!repo.install( $distpath );
 
   }
 

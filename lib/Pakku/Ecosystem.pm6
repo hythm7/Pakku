@@ -79,7 +79,7 @@ method !update ( ) {
 
     for flat $json -> %meta {
 
-      my $dist = Pakku::Distribution.new: |%meta;
+      my $dist = Pakku::Distribution.new: :%meta;
 
       %!distribution{ $dist.name }.push: $dist;
       @!distribution.push: $dist;
