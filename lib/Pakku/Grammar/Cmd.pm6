@@ -18,7 +18,6 @@ grammar Pakku::Grammar::Cmd {
   proto rule pakkuopt { * }
   rule pakkuopt:sym<repo>    { «<repo> <reponame>» }
   rule pakkuopt:sym<verbose> { «<verbose>» }
-  rule pakkuopt:sym<force>   { «<force>» }
   rule pakkuopt:sym<yolo>    { «<yolo>» }
 
 
@@ -41,20 +40,22 @@ grammar Pakku::Grammar::Cmd {
   token repo:sym<repo> { «<sym>» }
 
   proto token reponame { * }
-  token reponame:sym<home>    { «<sym>» }
-  token reponame:sym<site>    { «<sym>» }
-  token reponame:sym<verndor> { «<sym>» }
+  token reponame:sym<home>   { «<sym>» }
+  token reponame:sym<site>   { «<sym>» }
+  token reponame:sym<vendor> { «<sym>» }
 
 
   proto rule addopt { * }
-  rule addopt:sym<deps> { «<deps>» }
-  rule addopt:sym<test> { «<test>» }
-  rule addopt:sym<into> { «<into> <path>» }
+  rule addopt:sym<deps>  { «<deps>» }
+  rule addopt:sym<test>  { «<test>» }
+  rule addopt:sym<force> { «<force>» }
+  rule addopt:sym<into>  { «<into> <reponame>» }
 
 
   proto rule removeopt { * }
-  rule removeopt:sym<deps>   { «<deps>» }
-  rule removeopt:sym<from>   { «<from> <path>» }
+  rule removeopt:sym<deps> { «<deps>» }
+  rule remove:sym<force>   { «<force>» }
+  rule removeopt:sym<from> { «<from> <reponame>» }
 
 
   proto rule searchopt { * }
@@ -163,19 +164,28 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method pakkuopt:sym<repo>    ( $/ ) { make ( repo => $<reponame>.Str )  }
+  method pakkuopt:sym<repo>    ( $/ ) {
+    my $repo = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    make $<repo> => $repo;
+  }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
-  method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
   method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }
 
 
-  method addopt:sym<deps> ( $/ ) { make $<deps>.ast }
-  method addopt:sym<test> ( $/ ) { make $<test>.ast }
-  method addopt:sym<into> ( $/ ) { make ( into => $<path>.IO )  }
+  method addopt:sym<deps>  ( $/ ) { make $<deps>.ast }
+  method addopt:sym<test>  ( $/ ) { make $<test>.ast }
+  method addopt:sym<force> ( $/ ) { make ( :force )  }
+  method addopt:sym<into>  ( $/ ) {
+    my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    make $<into> => $into;
+  }
 
 
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
-  method removeopt:sym<from> ( $/ ) { make ( from => $<path>.IO )  }
+  method removeopt:sym<from> ( $/ ) {
+    my $from = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    make $<from> => $from;
+  }
 
 
   method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }

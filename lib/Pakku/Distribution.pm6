@@ -24,7 +24,6 @@ has %.support;
 has $.builder;
 
 has Str @.dependencies;
-#has IO  $.prefix is rw;
 
 submethod TWEAK ( ) {
 

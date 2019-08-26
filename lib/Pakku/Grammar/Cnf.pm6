@@ -23,11 +23,11 @@ grammar Pakku::Grammar::Cnf {
   proto rule addopt { * }
   rule addopt:sym<deps> { <.ws> <deps> <.eol> }
   rule addopt:sym<test> { <.ws> <test> <.eol> }
-  rule addopt:sym<into> { <.ws> <into> <path> <.eol> }
+  rule addopt:sym<into> { <.ws> <into> <reponame> <.eol> }
 
   proto rule removeopt { * }
   rule removeopt:sym<deps> { <.ws> <deps> <.eol> }
-  rule removeopt:sym<from> { <.ws> <from> <path> <.eol> }
+  rule removeopt:sym<from> { <.ws> <from> <reponame> <.eol> }
 
   proto rule searchopt { * }
   rule searchopt:sym<deps> { <.ws> <deps> <.eol> }
@@ -97,7 +97,10 @@ class Pakku::Grammar::Cnf::Actions {
   method section:sym<remove> ( $/ ) { make ~$<sym> => $<removeopt>».ast.hash }
   method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast.hash }
 
-  method pakkuopt:sym<repo>    ( $/ ) { make ( repo => $<reponame>.Str )  }
+   method pakkuopt:sym<repo>    ( $/ ) {
+    my $repo = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    make $<repo> => $repo;
+  }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
   method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }
@@ -105,10 +108,17 @@ class Pakku::Grammar::Cnf::Actions {
 
   method addopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method addopt:sym<test> ( $/ ) { make $<test>.ast }
-  method addopt:sym<into> ( $/ ) { make ( into => $<path>.IO )  }
+  method addopt:sym<from> ( $/ ) {
+    my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    make $<into> => $into;
+  }
+
 
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
-  method removeopt:sym<from> ( $/ ) { make ( from => $<path>.IO )  }
+  method removeopt:sym<from> ( $/ ) {
+    my $from = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    make $<from> => $from;
+  }
 
   method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
 

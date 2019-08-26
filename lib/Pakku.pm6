@@ -6,6 +6,7 @@ use Pakku::Ecosystem;
 use Pakku::Fetcher;
 use Pakku::Specification;
 use Pakku::Distribution::Path;
+use Pakku::Distribution::Installed;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
   also does Pakku::Fetcher;
@@ -25,13 +26,17 @@ submethod BUILD ( ) {
 
   %!config = $cnf.ast.merge: $cmd.ast;
 
-  my $repo   = %!config<pakku><repo> // "inst#$*HOME/.perl6";
+  $!repo   = %!config<pakku><repo> // $*REPO;
   my @source = flat %!config<pakku><source>;
 
-  #$!repo = CompUnit::RepositoryRegistry.repository-for-spec: $repo, name => 'pakku', next-repo => $*REPO;
-  $!repo = CompUnit::RepositoryRegistry.repository-for-name: $repo, next-repo => $*REPO;
+  $!repo.repo-chain
+     ==> grep( CompUnit::Repository::Installation )
+     ==> map( *.installed )
+     ==> flat()
+     ==> map( -> $dist { Pakku::Distribution::Installed.new: meta => $dist.meta })
+     ==> @!installed;
 
-  # @!installed = $!repo.repo-chain.grep( CompUnit::Repository::Installation ).flatmap( *.installed ).map( -> $d { Pakku::Distribution.new: |$d.meta });
+     #say @!installed[7].resources;
 
   $!ecosystem = Pakku::Ecosystem.new: :@source;
 
@@ -46,8 +51,9 @@ submethod BUILD ( ) {
 
 }
 
-method add ( :@spec! ) {
+method add ( :@spec!, :$into, :$deps, :$force = False ) {
 
+  my $repo = $into // $!repo; 
 
   my @cand = $!ecosystem.recommend: :@spec;
 
@@ -59,23 +65,23 @@ method add ( :@spec! ) {
 
     my $distpath = Pakku::Distribution::Path.new: $prefix;
 
-    say $distpath.dependencies;
-
-    $!repo.install( $distpath );
+    $repo.install( $distpath, :$force );
 
   }
 
 }
 
-method remove ( :@spec! ) {
+method remove ( :@spec!, :$from, :$deps ) {
 
-   # Bug: Only %meta<files> getting deleted
+  # Bug: Only %meta<files> getting deleted
 
-   for @spec -> $spec {
+  my $repo = $from // $!repo; 
+
+  for @spec -> $spec {
 
     my $dist = $!repo.candidates( $spec ).head;
 
-    $!repo.uninstall: $dist if so $dist;
+    say $repo.uninstall: $dist if so $dist;
 
 
   }
