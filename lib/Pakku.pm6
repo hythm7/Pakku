@@ -33,10 +33,11 @@ submethod BUILD ( ) {
      ==> grep( CompUnit::Repository::Installation )
      ==> map( *.installed )
      ==> flat()
-     ==> map( -> $dist { Pakku::Distribution::Installed.new: meta => $dist.meta })
+     ==> map( -> $dist {
+         Pakku::Distribution::Installed.new: meta => $dist.meta, prefix => $dist.prefix
+       })
      ==> @!installed;
 
-     #say @!installed[7].resources;
 
   $!ecosystem = Pakku::Ecosystem.new: :@source;
 
@@ -53,9 +54,9 @@ submethod BUILD ( ) {
 
 method add ( :@spec!, :$into, :$deps, :$force = False ) {
 
-  my $repo = $into // $!repo; 
+  my $repo = $into // $!repo;
 
-  my @cand = $!ecosystem.recommend: :@spec;
+  my @cand = flat $!ecosystem.recommend: :@spec;
 
   say "No candies!" unless @cand;
 
@@ -65,7 +66,7 @@ method add ( :@spec!, :$into, :$deps, :$force = False ) {
 
     my $distpath = Pakku::Distribution::Path.new: $prefix;
 
-    $repo.install( $distpath, :$force );
+    say $repo.install( $distpath, :$force );
 
   }
 
@@ -75,14 +76,13 @@ method remove ( :@spec!, :$from, :$deps ) {
 
   # Bug: Only %meta<files> getting deleted
 
-  my $repo = $from // $!repo; 
+  my $repo = $from // $!repo;
 
   for @spec -> $spec {
 
-    my $dist = $!repo.candidates( $spec ).head;
+    my $dist = $repo.candidates( $spec ).head;
 
     say $repo.uninstall: $dist if so $dist;
-
 
   }
 }

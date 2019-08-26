@@ -1,5 +1,6 @@
+use Pakku::Specification;
+;
 unit class Pakku::Distribution;
-#also does Distribution;
 
 has $.meta;
 
@@ -23,7 +24,7 @@ has @.resources;
 has %.support;
 has $.builder;
 
-has Str @.dependencies;
+has Pakku::Specification @.dependencies;
 
 submethod TWEAK ( ) {
 
@@ -54,6 +55,10 @@ submethod TWEAK ( ) {
   @!test-depends  = gather @!test-depends.deepmap:  *.take;
   @!resources     = gather @!resources.deepmap:     *.take;
 
-  @!dependencies  = flat @!depends, @!build-depends, @!test-depends;
+  for flat @!depends, @!build-depends, @!test-depends -> $spec {
+
+    @!dependencies.push: Pakku::Specification.new: :$spec;
+
+  }
 
 }

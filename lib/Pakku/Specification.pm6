@@ -1,5 +1,3 @@
-use Pakku::Distribution;
-
 unit class Pakku::Specification;
   also is CompUnit::DependencySpecification;
 

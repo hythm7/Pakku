@@ -16,46 +16,39 @@ submethod TWEAK ( ) {
 
 }
 
-method recommend ( :@spec! ) {
+method recommend ( :@spec!, :$deps = True ) {
 
-  my @*cand;
 
-  for @spec -> $spec {
+  @spec.map( -> $spec {
 
-    given $spec {
+    my $dist = self!find: :$spec;
 
-      when Pakku::Specification {
+    $deps ?? self.get-deps: :$dist !! $dist;
 
-        my $dist = self!search: :$spec;
+  });
 
-        @*cand.push: $dist if $dist;
-
-      }
-
-      when IO::Path {
-
-        my $meta = $spec.add: 'META6.json';
-
-        die 'No META6.json' unless $meta.e;
-
-        my %meta = from-json slurp $meta;
-
-        my $dist = Pakku::Distribution.new: |%meta;
-
-        $dist.prefix = $spec;
-
-        @*cand.push: $dist if $dist;
-
-      }
-
-      default { die "I don't understand $spec" }
-    }
-  }
-
-  @*cand;
 }
 
-method !search ( Pakku::Specification:D :$spec! --> Pakku::Distribution ) {
+
+method get-deps ( Pakku::Distribution :$dist ) {
+
+  my @dist;
+
+  my @dep = $dist.dependencies.map( -> $spec { self!find: :$spec or die "Can't find dep" });
+
+  for @dep -> $dist {
+
+    @dist.append: self.get-deps( :$dist );
+
+  }
+
+  @dist.append: $dist;
+
+  return @dist;
+
+}
+
+method !find ( Pakku::Specification:D :$spec! --> Pakku::Distribution ) {
 
   my @cand;
 
