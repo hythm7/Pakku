@@ -4,6 +4,10 @@ unit class Pakku::Distribution;
 
 has $.meta;
 
+# This long list of attributes were copied
+# from `Zef` The perl6 module manager
+# because I'm lazy to write them all
+#
 has $.meta-version;
 has $.name;
 has $.auth;
