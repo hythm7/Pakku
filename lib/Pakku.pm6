@@ -27,7 +27,8 @@ submethod BUILD ( ) {
   %!config = $cnf.ast.merge: $cmd.ast;
 
   $!repo   = %!config<pakku><repo> // $*REPO;
-  my @source = flat %!config<pakku><source>;
+
+  my @source = flat %!config<source>;
 
   $!repo.repo-chain
      ==> grep( CompUnit::Repository::Installation )

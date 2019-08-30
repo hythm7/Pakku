@@ -11,14 +11,14 @@ grammar Pakku::Grammar::Cnf {
   rule section:sym<pakku>  { <lt> <sym> <gt> <.nl> <pakkuopt>+  }
   rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>+    }
   rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>+ }
-  rule section:sym<search> { <lt> <sym> <gt> <.nl> <searchopt>+    }
+  rule section:sym<search> { <lt> <sym> <gt> <.nl> <searchopt>+ }
+  rule section:sym<source> { <lt> <sym> <gt> <.nl> <sourceopt>+ }
 
   proto rule pakkuopt { * }
   rule pakkuopt:sym<yolo>    { <.ws> <yolo>    <.eol> }
   rule pakkuopt:sym<force>   { <.ws> <force>   <.eol> }
   rule pakkuopt:sym<verbose> { <.ws> <verbose> <.eol> }
   rule pakkuopt:sym<repo>    { <.ws> <repo>    <reponame> <.eol> }
-  rule pakkuopt:sym<source>  { <.ws> <sym>     <source>   <.eol> }
 
   proto rule addopt { * }
   rule addopt:sym<deps> { <.ws> <deps> <.eol> }
@@ -31,6 +31,9 @@ grammar Pakku::Grammar::Cnf {
 
   proto rule searchopt { * }
   rule searchopt:sym<deps> { <.ws> <deps> <.eol> }
+
+  proto rule sourceopt { * }
+  rule sourceopt:sym<source>  { <.ws> <source> <.eol> }
 
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
@@ -71,7 +74,7 @@ grammar Pakku::Grammar::Cnf {
   token from:sym<from> { «<sym>» }
 
 
-  token source { $<url>=<-[\n]>+ }
+  token source { <-[\n]>+ }
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
   token eol { [ [ <[#;]> \N* ]? \n ]+ }
@@ -96,6 +99,7 @@ class Pakku::Grammar::Cnf::Actions {
   method section:sym<add>    ( $/ ) { make ~$<sym> => $<addopt>».ast.hash }
   method section:sym<remove> ( $/ ) { make ~$<sym> => $<removeopt>».ast.hash }
   method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast.hash }
+  method section:sym<source> ( $/ ) { make ~$<sym> => $<sourceopt>».ast }
 
    method pakkuopt:sym<repo>    ( $/ ) {
     my $repo = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
@@ -104,7 +108,6 @@ class Pakku::Grammar::Cnf::Actions {
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
   method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }
-  method pakkuopt:sym<source>  ( $/ ) { make ( $<sym>.Str => $<source>.ast )  }
 
   method addopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method addopt:sym<test> ( $/ ) { make $<test>.ast }
@@ -122,6 +125,8 @@ class Pakku::Grammar::Cnf::Actions {
 
   method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
 
+  method sourceopt:sym<source> ( $/ ) { make $<source>.ast }
+
   method deps:sym<deps>   ( $/ )  { make ( :deps  ) }
   method deps:sym<d>      ( $/ )  { make ( :deps  ) }
   method deps:sym<nodeps> ( $/ )  { make ( :!deps ) }
@@ -132,5 +137,5 @@ class Pakku::Grammar::Cnf::Actions {
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
 
-  method source     ( $/ )  { make $<url>.Str }
+  method source     ( $/ )  { make $/.Str }
 }

@@ -1,6 +1,5 @@
 < pakku >
   repo home # home site vendor
-  source  https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan.json
 
 < add >
   deps
@@ -10,3 +9,6 @@
 
 < search >
   deps
+
+< source >
+  https://raw.githubusercontent.com/ugexe/Perl6-ecosystems/master/cpan.json

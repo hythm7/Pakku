@@ -105,13 +105,13 @@ grammar Pakku::Grammar::Cmd {
   token keyval { ':' <key> <value> }
 
   proto token key { * }
-  token key:sym<ver>  { <sym> }
-  token key:sym<auth> { <sym> }
-  token key:sym<api>  { <sym> }
-  token key:sym<from> { <sym> }
+  token key:sym<ver>     { <sym> }
+  token key:sym<version> { <sym> }
+  token key:sym<auth>    { <sym> }
+  token key:sym<api>     { <sym> }
+  token key:sym<from>    { <sym> }
 
-  #token value { '<' ~ '>'  [<( [[ <!before \>|\\> . ]+]* % ['\\' . ] )>] }
-  token value { '<' ~ '>'  $<val>=[ [[ <!before \>|\\> . ]+]* % ['\\' . ] ] }
+  token value { '<' $<val>=<-[<>]>+ '>' | '(' $<val>=<-[()]>+ ')' }
 
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 

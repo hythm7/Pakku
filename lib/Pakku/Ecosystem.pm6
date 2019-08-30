@@ -7,11 +7,13 @@ use Pakku::Distribution;
 unit class Pakku::Ecosystem;
 
 has @.source;
+has @!ignored;
 has %!distribution;
 has @!distribution;
 
 submethod TWEAK ( ) {
 
+  @!ignored = < Test NativeCall nqp lib >;
   self!update;
 
 }
@@ -34,7 +36,13 @@ method get-deps ( Pakku::Distribution :$dist ) {
 
   my @dist;
 
-  my @dep = $dist.dependencies.map( -> $spec { self!find: :$spec or die "Can't find dep" });
+  my @dep = $dist.dependencies.map( -> $spec {
+
+    next if $spec.name ~~ any @!ignored;
+
+    self!find: :$spec or die "Can't find dep $spec"
+
+  });
 
   for @dep -> $dist {
 
@@ -56,7 +64,6 @@ method !find ( Pakku::Specification:D :$spec! --> Pakku::Distribution ) {
 
   @cand = flat %!distribution{$name} if so %!distribution{$name};
 
-
   @cand = @!distribution.grep: *.provides: :$name unless @cand;
 
   @cand.grep( * ~~ $spec ).sort( *.version ).tail;
@@ -67,8 +74,8 @@ method !update ( ) {
 
   for @!source -> $source {
 
-    #my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
-    my $json = from-json slurp %?RESOURCES<cpan.json>;
+    my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
+    #my $json = from-json slurp %?RESOURCES<cpan.json>;
 
     for flat $json -> %meta {
 
@@ -78,6 +85,5 @@ method !update ( ) {
       @!distribution.push: $dist;
     }
   }
-
 }
 
