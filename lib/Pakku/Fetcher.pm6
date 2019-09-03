@@ -3,7 +3,7 @@ use File::Temp;
 use LibCurl::Easy;
 use Libarchive::Simple;
 
-unit role Pakku::Fetcher;
+unit class Pakku::Fetcher;
 
 
 method fetch ( :$src!, :$dst = tempdir ) {
@@ -14,7 +14,10 @@ method fetch ( :$src!, :$dst = tempdir ) {
 
     when .path.IO.extension ~~ any('git', '') {
 
-      run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
+      #run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
+      #
+      my $url = S/git/https/ with $src;
+      run 'git', 'clone', $url, cwd => $dst, :!out, :!err;
 
       $dst.IO.dir.first: *.d;
 

@@ -47,6 +47,7 @@ grammar Pakku::Grammar::Cmd {
 
   proto rule addopt { * }
   rule addopt:sym<deps>  { «<deps>» }
+  rule addopt:sym<build> { «<build>» }
   rule addopt:sym<test>  { «<test>» }
   rule addopt:sym<force> { «<force>» }
   rule addopt:sym<into>  { «<into> <reponame>» }
@@ -67,6 +68,12 @@ grammar Pakku::Grammar::Cmd {
   token deps:sym<d>      { «<sym>» }
   token deps:sym<nodeps> { «<sym>» }
   token deps:sym<nd>     { «<sym>» }
+
+  proto token build { * }
+  token build:sym<build>   { «<sym>» }
+  token build:sym<b>       { «<sym>» }
+  token build:sym<nobuild> { «<sym>» }
+  token build:sym<nb>      { «<sym>» }
 
   proto token test { * }
   token test:sym<test>   { «<sym>» }
@@ -173,6 +180,7 @@ class Pakku::Grammar::Cmd::Actions {
 
 
   method addopt:sym<deps>  ( $/ ) { make $<deps>.ast }
+  method addopt:sym<build> ( $/ ) { make $<build>.ast }
   method addopt:sym<test>  ( $/ ) { make $<test>.ast }
   method addopt:sym<force> ( $/ ) { make ( :force )  }
   method addopt:sym<into>  ( $/ ) {
@@ -207,6 +215,11 @@ class Pakku::Grammar::Cmd::Actions {
   method deps:sym<nodeps> ( $/ )  { make ( :!deps ) }
   method deps:sym<nd>     ( $/ )  { make ( :!deps ) }
 
+
+  method build:sym<build>   ( $/ )  { make ( :build  ) }
+  method build:sym<b>       ( $/ )  { make ( :build  ) }
+  method build:sym<nobuild> ( $/ )  { make ( :!build ) }
+  method build:sym<nb>      ( $/ )  { make ( :!build ) }
 
   method test:sym<test>   ( $/ )  { make ( :test  ) }
   method test:sym<t>      ( $/ )  { make ( :test  ) }

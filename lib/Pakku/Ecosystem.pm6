@@ -1,4 +1,4 @@
-#use JSON::Fast;
+use JSON::Fast;
 use LibCurl::HTTP :subs;
 
 use Pakku::Specification;
@@ -75,9 +75,9 @@ method !update ( ) {
   for @!source -> $source {
 
     #my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
-    #my $json = from-json slurp %?RESOURCES<cpan.json>;
-    #
-    my $json =  jget $source;
+    my $json = from-json slurp %?RESOURCES<ecosystem.json>;
+
+   # my $json =  jget $source;
 
 
     for flat $json -> %meta {

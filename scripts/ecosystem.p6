@@ -7,15 +7,15 @@ use JSON::Fast;
 
 my $ecosystem = 'ecosystem.json';
 
-my $p6c-meta = 'https://raw.githubusercontent.com/perl6/ecosystem/master/META.list';
-
-for LibCurl::Easy.new( URL => $p6c-meta ).perform.content.lines -> $URL {
-
-  my $meta = LibCurl::Easy.new( :$URL ).perform.content;
-  $ecosystem.IO.spurt: "$meta,\n", :append;
-
-}
-
+#my $p6c-meta = 'https://raw.githubusercontent.com/perl6/ecosystem/master/META.list';
+#
+#for LibCurl::Easy.new( URL => $p6c-meta ).perform.content.lines -> $URL {
+#
+#  my $meta = LibCurl::Easy.new( :$URL ).perform.content;
+#  $ecosystem.IO.spurt: "$meta,\n", :append;
+#
+#}
+#
 
 my @cmd = <
     rsync

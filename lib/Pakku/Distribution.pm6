@@ -1,5 +1,6 @@
 use Pakku::Specification;
-;
+use Distribution::Builder::MakeFromJSON;
+
 unit class Pakku::Distribution;
 
 has $.meta;
@@ -50,10 +51,17 @@ submethod TWEAK ( ) {
   %!support       = $!meta<support>       if $!meta<support>;
   $!builder       = $!meta<builder>       if $!meta<builder>;
 
-  @!resources     = flat $!meta<resources>     if $!meta<resources>;
-  @!test-depends  = flat $!meta<test-depends>  if $!meta<test-depends>;
-  @!build-depends = flat $!meta<build-depends> if $!meta<build-depends>;
-  # @!depends       = flat $!meta<depends>       if $!meta<depends>; 
+  @!resources     = flat $!meta<resources> if $!meta<resources>;
+
+  @!depends       = flat $!meta<depends>.grep:       Str if $!meta<depends>;
+  @!test-depends  = flat $!meta<test-depends>.grep:  Str if $!meta<test-depends>;
+  @!build-depends = flat $!meta<build-depends>.grep: Str if $!meta<build-depends>;
+
+  given $!meta<builder> {
+
+  $!builder = Distribution::Builder::MakeFromJSON when 'MakeFromJSON';
+
+  }
 
   for flat @!depends, @!build-depends, @!test-depends -> $spec {
 
