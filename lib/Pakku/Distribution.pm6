@@ -49,15 +49,11 @@ submethod TWEAK ( ) {
   $!license       = $!meta<license>       if $!meta<license>;
   %!support       = $!meta<support>       if $!meta<support>;
   $!builder       = $!meta<builder>       if $!meta<builder>;
-  @!depends       = $!meta<depends>       if $!meta<depends>;
-  @!build-depends = $!meta<build-depends> if $!meta<build-depends>;
-  @!test-depends  = $!meta<test-depends>  if $!meta<test-depends>;
-  @!resources     = $!meta<resources>     if $!meta<resources>;
 
-  @!depends       = gather @!depends.deepmap:       *.take;
-  @!build-depends = gather @!build-depends.deepmap: *.take;
-  @!test-depends  = gather @!test-depends.deepmap:  *.take;
-  @!resources     = gather @!resources.deepmap:     *.take;
+  @!resources     = flat $!meta<resources>     if $!meta<resources>;
+  @!test-depends  = flat $!meta<test-depends>  if $!meta<test-depends>;
+  @!build-depends = flat $!meta<build-depends> if $!meta<build-depends>;
+  # @!depends       = flat $!meta<depends>       if $!meta<depends>; 
 
   for flat @!depends, @!build-depends, @!test-depends -> $spec {
 
