@@ -13,7 +13,7 @@ use Pakku::Distribution::Installed;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
-has %!config;
+has %!cnf;
 
 has Pakku::Log           $!log;
 has Pakku::Distribution  %!installed;
@@ -29,16 +29,17 @@ submethod BUILD ( ) {
   my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions );
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
 
-  %!config = $cnf.ast.merge: $cmd.ast;
+  %!cnf = $cnf.ast.merge: $cmd.ast;
 
-  $!log     = Pakku::Log.new;
+  $!log = Pakku::Log.new: |%!cnf<pakku>;
+
   $!fetcher = Pakku::Fetcher;
   $!builder = Pakku::Builder;
   $!tester  = Pakku::Tester;
 
-  $!repo   = %!config<pakku><repo> // $*REPO;
+  $!repo   = %!cnf<pakku><repo> // $*REPO;
 
-  my @source = flat %!config<source>;
+  my @source = flat %!cnf<source>;
 
   $!repo.repo-chain
      ==> grep( CompUnit::Repository::Installation )
@@ -54,11 +55,11 @@ submethod BUILD ( ) {
 
   $!ecosystem = Pakku::Ecosystem.new: :@source;
 
-  given %!config<cmd> {
+  given %!cnf<cmd> {
 
-    self.add:    |%!config<add>    when 'add';
-    self.remove: |%!config<remove> when 'remove';
-    self.search: |%!config<search> when 'search';
+    self.add:    |%!cnf<add>    when 'add';
+    self.remove: |%!cnf<remove> when 'remove';
+    self.search: |%!cnf<search> when 'search';
   }
 
 }

@@ -17,7 +17,7 @@ grammar Pakku::Grammar::Cmd {
 
   proto rule pakkuopt { * }
   rule pakkuopt:sym<repo>    { «<repo> <reponame>» }
-  rule pakkuopt:sym<verbose> { «<verbose>» }
+  rule pakkuopt:sym<verbose> { «<verbose> <level>» }
   rule pakkuopt:sym<yolo>    { «<yolo>» }
 
 
@@ -89,7 +89,30 @@ grammar Pakku::Grammar::Cmd {
 
   proto token verbose { * }
   token verbose:sym<verbose> { «<sym>» }
-  token verbose:sym<v>    { «<sym>» }
+  token verbose:sym<v>       { «<sym>» }
+
+  proto token level { * }
+  token level:sym<TRACE> { «<sym>» }
+  token level:sym<DEBUG> { «<sym>» }
+  token level:sym<INFO>  { «<sym>» }
+  token level:sym<WARN>  { «<sym>» }
+  token level:sym<ERROR> { «<sym>» }
+  token level:sym<FATAL> { «<sym>» }
+  token level:sym<trace> { «<sym>» }
+  token level:sym<debug> { «<sym>» }
+  token level:sym<info>  { «<sym>» }
+  token level:sym<warn>  { «<sym>» }
+  token level:sym<error> { «<sym>» }
+  token level:sym<fatal> { «<sym>» }
+  token level:sym<42>    { «<sym>» }
+  token level:sym<T>     { «<sym>» }
+  token level:sym<D>     { «<sym>» }
+  token level:sym<I>     { «<sym>» }
+  token level:sym<W>     { «<sym>» }
+  token level:sym<E>     { «<sym>» }
+  token level:sym<F>     { «<sym>» }
+  token level:sym<✓>     { «<sym>» }
+  token level:sym<✗>     { «<sym>» }
 
   proto token force { * }
   token force:sym<force> { «<sym>» }
@@ -176,23 +199,25 @@ class Pakku::Grammar::Cmd::Actions {
     make $<repo> => $repo;
   }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
-  method pakkuopt:sym<verbose> ( $/ ) { make ( :verbose )  }
+
+  method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.ast ) }
 
 
   method addopt:sym<deps>  ( $/ ) { make $<deps>.ast }
   method addopt:sym<build> ( $/ ) { make $<build>.ast }
   method addopt:sym<test>  ( $/ ) { make $<test>.ast }
   method addopt:sym<force> ( $/ ) { make ( :force )  }
+
   method addopt:sym<into>  ( $/ ) {
     my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
-    make $<into> => $into;
+    make ( $<into> => $into );
   }
 
 
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method removeopt:sym<from> ( $/ ) {
     my $from = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
-    make $<from> => $from;
+    make ( $<from> => $from );
   }
 
 
@@ -225,5 +250,27 @@ class Pakku::Grammar::Cmd::Actions {
   method test:sym<t>      ( $/ )  { make ( :test  ) }
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
+
+  method level:sym<TRACE> ( $/ ) { make 1 }
+  method level:sym<DEBUG> ( $/ ) { make 2 }
+  method level:sym<INFO>  ( $/ ) { make 3 }
+  method level:sym<WARN>  ( $/ ) { make 4 }
+  method level:sym<ERROR> ( $/ ) { make 5 }
+  method level:sym<FATAL> ( $/ ) { make 6 }
+  method level:sym<trace> ( $/ ) { make 1 }
+  method level:sym<debug> ( $/ ) { make 2 }
+  method level:sym<info>  ( $/ ) { make 3 }
+  method level:sym<warn>  ( $/ ) { make 4 }
+  method level:sym<error> ( $/ ) { make 5 }
+  method level:sym<fatal> ( $/ ) { make 6 }
+  method level:sym<42>    ( $/ ) { make 1 }
+  method level:sym<T>     ( $/ ) { make 1 }
+  method level:sym<D>     ( $/ ) { make 2 }
+  method level:sym<I>     ( $/ ) { make 3 }
+  method level:sym<W>     ( $/ ) { make 4 }
+  method level:sym<E>     ( $/ ) { make 5 }
+  method level:sym<F>     ( $/ ) { make 6 }
+  method level:sym<✓>     ( $/ ) { make 3 }
+  method level:sym<✗>     ( $/ ) { make 5 }
 
 }
