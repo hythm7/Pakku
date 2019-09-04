@@ -1,11 +1,17 @@
 use Concurrent::File::Find;
+use Log::Async;
+
 use Pakku::Distribution;
 
 unit class Pakku::Tester;
 
 method test ( Pakku::Distribution:D :$dist ) {
 
-  my @test = find $dist.prefix.add( 't' ).Str, :extension<t>;
+  my $test-dir = $dist.prefix.add( 't' );
+
+  return unless $test-dir.d;
+
+  my @test = find $test-dir.Str, :extension<t>;
 
   my @exitcode = @test.map( -> $test {
 
@@ -21,10 +27,11 @@ method test ( Pakku::Distribution:D :$dist ) {
 
     }
 
-    $exitcode;
+    #$exitcode;
+    1;
 
   });
 
-  fail "Test failed for {$dist.name}" if  any @exitcode;
+  error "Test failed for {$dist.name}" if  any @exitcode;
 
 }

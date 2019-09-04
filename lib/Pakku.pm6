@@ -1,5 +1,6 @@
 use JSON::Fast;
 use Hash::Merge::Augment;
+use Pakku::Log;
 use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
 use Pakku::Ecosystem;
@@ -14,6 +15,7 @@ unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
 has %!config;
 
+has Pakku::Log           $!log;
 has Pakku::Distribution  %!installed;
 has Pakku::Distribution  @!installed;
 has Pakku::Fetcher       $!fetcher;
@@ -29,6 +31,7 @@ submethod BUILD ( ) {
 
   %!config = $cnf.ast.merge: $cmd.ast;
 
+  $!log     = Pakku::Log.new;
   $!fetcher = Pakku::Fetcher;
   $!builder = Pakku::Builder;
   $!tester  = Pakku::Tester;
@@ -66,7 +69,8 @@ method add ( :@spec!, :$into, :$deps, :$build = True, :$test = True, :$force = F
 
   @spec .= grep( -> $spec { not self.installed: :$spec } );
 
-  say "It's all good man" unless @spec;
+  $!log.info: "Saul Goodman!" unless @spec;
+
   return unless @spec;
 
   my @cand = flat $!ecosystem.recommend: :@spec;
