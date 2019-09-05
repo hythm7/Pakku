@@ -2,6 +2,8 @@ use Pakku::Distribution::Path;
 
 unit class Pakku::Builder;
 
+has $.log;
+
 method build ( Pakku::Distribution::Path:D :$dist ) {
 
   given $dist.builder {

@@ -1,3 +1,4 @@
+use X::Pakku;
 use Log::Async;
 use Terminal::ANSIColor;
 
@@ -6,7 +7,7 @@ unit class Pakku::Log;
 has Loglevels  $.verbose;
 has Bool       $.pretty;
 
-submethod BUILD ( Int:D :$verbose = 3, Bool:D :$!pretty = True ) {
+submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty! ) {
 
   my Int $color;
   my %level-sym   = level-sym;
@@ -29,22 +30,29 @@ submethod BUILD ( Int:D :$verbose = 3, Bool:D :$!pretty = True ) {
 
   }
 
-  logger.send-to: $*ERR, :level( * >= ERROR ),     :$formatter;
+  #  logger.send-to: $*ERR, :level( * >= ERROR ),     :$formatter;
   logger.send-to: $*OUT, :level( * >= $!verbose ), :$formatter;
 
 }
 
-method info ( Str:D $msg ) {
 
-  info $msg;
+method trace ( Str:D $msg ) { trace $msg }
+method debug ( Str:D $msg ) { debug $msg }
+method info  ( Str:D $msg ) { info  $msg }
+method warn  ( Str:D $msg ) { warn  $msg }
+method error ( Str:D $msg ) { error $msg }
 
+method fatal ( Str:D $msg ) {
+
+  fatal $msg;
+
+  sleep 0.4;
+
+  X::Pakku.new.throw;
 }
 
-method error ( Str:D $msg ) {
 
-  error $msg;
-
-}
+method instance ( ) { logger.instance }
 
 sub level-sym (  ) {
 

@@ -1,9 +1,11 @@
 use Concurrent::File::Find;
-use Log::Async;
 
 use Pakku::Distribution;
 
 unit class Pakku::Tester;
+
+has $.log;
+
 
 method test ( Pakku::Distribution:D :$dist ) {
 
@@ -21,17 +23,16 @@ method test ( Pakku::Distribution:D :$dist ) {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $test;
 
-      whenever $proc.stdout.lines { ; }
-      whenever $proc.stderr.lines { ; }
+      whenever $proc.stdout.lines { $!log.debug: $^out }
+      whenever $proc.stderr.lines { $!log.debug: $^err }
       whenever $proc.start( cwd => $dist.prefix ) { $exitcode = .exitcode }
 
     }
 
-    #$exitcode;
-    1;
+    $exitcode;
 
   });
 
-  error "Test failed for {$dist.name}" if  any @exitcode;
+  $!log.error: "Test failed for {$dist.name}" if  any @exitcode;
 
 }

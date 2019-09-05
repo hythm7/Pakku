@@ -5,8 +5,11 @@ use Libarchive::Simple;
 
 unit class Pakku::Fetcher;
 
+has $.log;
 
 method fetch ( :$src!, :$dst = tempdir ) {
+
+  $!log.debug: "Fetching $src to $dst";
 
   my $uri = Cro::Uri.parse: $src;
 

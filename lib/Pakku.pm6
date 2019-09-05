@@ -26,45 +26,19 @@ has CompUnit::Repository $!repo;
 
 submethod BUILD ( ) {
 
-  my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions );
-  my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
-
-  %!cnf = $cnf.ast.merge: $cmd.ast;
-
-  $!log = Pakku::Log.new: |%!cnf<pakku>;
-
-  $!fetcher = Pakku::Fetcher;
-  $!builder = Pakku::Builder;
-  $!tester  = Pakku::Tester;
-
-  $!repo   = %!cnf<pakku><repo> // $*REPO;
-
-  my @source = flat %!cnf<source>;
-
-  $!repo.repo-chain
-     ==> grep( CompUnit::Repository::Installation )
-     ==> map( *.installed )
-     ==> flat()
-     ==> map( -> $dist {
-         Pakku::Distribution::Installed.new: meta => $dist.meta, prefix => $dist.prefix
-       })
-     ==> @!installed;
-
-     %!installed = @!installed.map( -> $dist { $dist.name => $dist } );
-
-
-  $!ecosystem = Pakku::Ecosystem.new: :@source;
-
-  given %!cnf<cmd> {
-
-    self.add:    |%!cnf<add>    when 'add';
-    self.remove: |%!cnf<remove> when 'remove';
-    self.search: |%!cnf<search> when 'search';
-  }
-
+  self!init;
 }
 
-method add ( :@spec!, :$into, :$deps, :$build = True, :$test = True, :$force = False ) {
+method add (
+
+  :@spec!,
+  :$into,
+  Bool:D :$deps  = True,
+  Bool:D :$build = True,
+  Bool:D :$test  = True,
+  Bool:D :$force = False,
+
+) {
 
   my $repo = $into // $!repo;
 
@@ -74,9 +48,10 @@ method add ( :@spec!, :$into, :$deps, :$build = True, :$test = True, :$force = F
 
   return unless @spec;
 
-  my @cand = flat $!ecosystem.recommend: :@spec;
+  my @cand = flat $!ecosystem.recommend: :@spec, :$deps;
 
-  say "No candies!" unless @cand;
+  $!log.error: "No candies!" unless @cand;
+
   return unless @cand;
 
   @cand .= grep( -> $dist { not self.installed: :$dist } );
@@ -144,5 +119,47 @@ multi submethod installed ( Pakku::Distribution:D :$dist! --> Bool ) {
   #return True if @!installed.grep: *.provides: name => $dist.name;
 
   return False;
+
+}
+
+submethod !init ( ) {
+
+  my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions );
+  my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
+
+  %!cnf = $cnf.ast.merge: $cmd.ast;
+
+  my @source  = %!cnf<source>.flat;
+  my $verbose = %!cnf<pakku><verbose> // 3;
+  my $pretty  = %!cnf<pakku><pretty>  // True;
+  my $repo    = %!cnf<pakku><repo>    // $*REPO;
+
+  $!log     = Pakku::Log.new:     :$verbose, :$pretty;
+  $!fetcher = Pakku::Fetcher.new: :$!log;
+  $!builder = Pakku::Builder.new: :$!log;
+  $!tester  = Pakku::Tester.new:  :$!log;
+
+
+  $!repo = $repo;
+  $!repo.repo-chain
+     ==> grep( CompUnit::Repository::Installation )
+     ==> map( *.installed )
+     ==> flat()
+     ==> map( -> $dist {
+         Pakku::Distribution::Installed.new: meta => $dist.meta, prefix => $dist.prefix
+       })
+     ==> @!installed;
+
+     %!installed = @!installed.map( -> $dist { $dist.name => $dist } );
+
+
+  $!ecosystem = Pakku::Ecosystem.new: :$!log, :@source;
+
+  given %!cnf<cmd> {
+
+    self.add:    |%!cnf<add>    when 'add';
+    self.remove: |%!cnf<remove> when 'remove';
+    self.search: |%!cnf<search> when 'search';
+  }
 
 }

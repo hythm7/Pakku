@@ -1,11 +1,13 @@
 use JSON::Fast;
 use LibCurl::HTTP :subs;
 
+use X::Pakku;
 use Pakku::Specification;
 use Pakku::Distribution;
 
 unit class Pakku::Ecosystem;
 
+has $.log;
 has @.source;
 has @!ignored;
 has %!distribution;
@@ -18,12 +20,13 @@ submethod TWEAK ( ) {
 
 }
 
-method recommend ( :@spec!, :$deps = True ) {
+method recommend ( :@spec!, :$deps! ) {
 
 
   @spec.map( -> $spec {
 
     my $dist = self!find: :$spec;
+
 
     $deps ?? self.get-deps: :$dist !! $dist;
 
@@ -40,7 +43,10 @@ method get-deps ( Pakku::Distribution :$dist ) {
 
     next if $spec.name ~~ any @!ignored;
 
-    self!find: :$spec or die "Can't find dep $spec"
+    my $candy = self!find: :$spec;
+
+
+    $candy;
 
   });
 
@@ -56,7 +62,7 @@ method get-deps ( Pakku::Distribution :$dist ) {
 
 }
 
-method !find ( Pakku::Specification:D :$spec! --> Pakku::Distribution ) {
+method !find ( Pakku::Specification:D :$spec! ) {
 
   my @cand;
 
@@ -66,7 +72,13 @@ method !find ( Pakku::Specification:D :$spec! --> Pakku::Distribution ) {
 
   @cand = @!distribution.grep: *.provides: :$name unless @cand;
 
-  @cand.grep( * ~~ $spec ).sort( *.version ).tail;
+  my $candy = @cand.grep( * ~~ $spec ).sort( *.version ).tail;
+
+  $!log.fatal: "No candis for $spec" unless $candy;
+
+  CATCH { default { exit 1 } }
+
+  $candy;
 
 }
 
