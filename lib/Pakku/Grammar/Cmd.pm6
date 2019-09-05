@@ -18,6 +18,7 @@ grammar Pakku::Grammar::Cmd {
   proto rule pakkuopt { * }
   rule pakkuopt:sym<repo>    { «<repo> <reponame>» }
   rule pakkuopt:sym<verbose> { «<verbose> <level>» }
+  rule pakkuopt:sym<pretty>  { «<pretty>» }
   rule pakkuopt:sym<yolo>    { «<yolo>» }
 
 
@@ -62,7 +63,6 @@ grammar Pakku::Grammar::Cmd {
   proto rule searchopt { * }
   rule searchopt:sym<deps>   { «<deps>» }
 
-
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
   token deps:sym<d>      { «<sym>» }
@@ -86,6 +86,12 @@ grammar Pakku::Grammar::Cmd {
 
   proto token from { * }
   token from:sym<from> { «<sym>» }
+
+  proto token pretty { * }
+  token pretty:sym<pretty>   { «<sym>» }
+  token pretty:sym<p>        { «<sym>» }
+  token pretty:sym<nopretty> { «<sym>» }
+  token pretty:sym<np>       { «<sym>» }
 
   proto token verbose { * }
   token verbose:sym<verbose> { «<sym>» }
@@ -111,6 +117,12 @@ grammar Pakku::Grammar::Cmd {
   token level:sym<W>     { «<sym>» }
   token level:sym<E>     { «<sym>» }
   token level:sym<F>     { «<sym>» }
+  token level:sym<1>     { «<sym>» }
+  token level:sym<2>     { «<sym>» }
+  token level:sym<3>     { «<sym>» }
+  token level:sym<4>     { «<sym>» }
+  token level:sym<5>     { «<sym>» }
+  token level:sym<6>     { «<sym>» }
   token level:sym<✓>     { «<sym>» }
   token level:sym<✗>     { «<sym>» }
 
@@ -199,6 +211,7 @@ class Pakku::Grammar::Cmd::Actions {
     make $<repo> => $repo;
   }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
+  method pakkuopt:sym<pretty>  ( $/ ) { make ( $<pretty>.ast )  }
 
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.ast ) }
 
@@ -233,6 +246,11 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
   method spec:sym<path> ( $/ ) { make $/.IO }
+
+  method pretty:sym<pretty>   ( $/ )  { make ( :pretty  ) }
+  method pretty:sym<p>        ( $/ )  { make ( :pretty  ) }
+  method pretty:sym<nopretty> ( $/ )  { make ( :!pretty ) }
+  method pretty:sym<np>       ( $/ )  { make ( :!pretty ) }
 
 
   method deps:sym<deps>   ( $/ )  { make ( :deps  ) }
@@ -270,6 +288,12 @@ class Pakku::Grammar::Cmd::Actions {
   method level:sym<W>     ( $/ ) { make 4 }
   method level:sym<E>     ( $/ ) { make 5 }
   method level:sym<F>     ( $/ ) { make 6 }
+  method level:sym<1>     ( $/ ) { make 1 }
+  method level:sym<2>     ( $/ ) { make 2 }
+  method level:sym<3>     ( $/ ) { make 3 }
+  method level:sym<4>     ( $/ ) { make 4 }
+  method level:sym<5>     ( $/ ) { make 5 }
+  method level:sym<6>     ( $/ ) { make 6 }
   method level:sym<✓>     ( $/ ) { make 3 }
   method level:sym<✗>     ( $/ ) { make 5 }
 

@@ -30,7 +30,7 @@ submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty! ) {
 
   }
 
-  #  logger.send-to: $*ERR, :level( * >= ERROR ),     :$formatter;
+  #logger.send-to: $*ERR, :level( * >= ERROR ),     :$formatter;
   logger.send-to: $*OUT, :level( * >= $!verbose ), :$formatter;
 
 }
@@ -46,9 +46,8 @@ method fatal ( Str:D $msg ) {
 
   fatal $msg;
 
-  sleep 0.4;
-
   X::Pakku.new.throw;
+
 }
 
 
@@ -60,9 +59,9 @@ sub level-sym (  ) {
 
     TRACE   => 'T',
     DEBUG   => 'D',
-    INFO    => 'I',
-    WARNING => 'W',
-    ERROR   => 'E',
+    INFO    => '✓',
+    WARNING => '⚠',
+    ERROR   => '✗',
     FATAL   => 'F',
 
   }

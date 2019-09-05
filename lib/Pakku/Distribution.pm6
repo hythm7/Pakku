@@ -70,3 +70,14 @@ submethod TWEAK ( ) {
   }
 
 }
+
+method Str ( Pakku::Distribution:D: --> Str ) {
+
+  my Str $name = "$!name";
+  my Str $ver  = ":ver<{$!ver   // ''}>";
+  my Str $auth = ":auth<{$!auth // ''}>";
+  my Str $api  = ":api<{$!api   // ''}>";
+
+  $name ~ $ver ~ $auth ~ $api;
+
+}

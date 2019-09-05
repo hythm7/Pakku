@@ -27,6 +27,8 @@ has CompUnit::Repository $!repo;
 submethod BUILD ( ) {
 
   self!init;
+
+  CATCH {  exit 1 when X::Pakku }
 }
 
 method add (
@@ -40,41 +42,62 @@ method add (
 
 ) {
 
-  my $repo = $into // $!repo;
 
-  @spec .= grep( -> $spec { not self.installed: :$spec } );
+  @spec .= grep( -> $spec { not self.installed: :$spec } ) unless $force;
 
-  $!log.info: "Saul Goodman!" unless @spec;
 
-  return unless @spec;
+  unless @spec {
+
+    $!log.info: "Saul Goodman!";
+
+    return;
+
+  }
+
 
   my @cand = flat $!ecosystem.recommend: :@spec, :$deps;
 
-  $!log.error: "No candies!" unless @cand;
+  unless @cand {
 
-  return unless @cand;
+    $!log.error: "No candies!";
 
-  @cand .= grep( -> $dist { not self.installed: :$dist } );
+    return;
 
-  for @cand {
+  }
 
-    my $prefix = $!fetcher.fetch: src => .source-url;
+  $!log.debug: "Found: {~@cand}";
 
-    my $dist = Pakku::Distribution::Path.new: $prefix;
+
+  unless $force {
+
+    $!log.debug: "Filtering installed candies: {@cand}";
+
+    @cand .= grep( -> $dist { not self.installed: :$dist } );
+
+    $!log.debug: "Candies to be installed: {@cand}";
+
+  }
+
+  my @dist
+    <== map( -> $path { Pakku::Distribution::Path.new: $path } )
+    <== $!fetcher.fetch( @cand».source-url );
+
+  my $repo = $into // $!repo;
+  $!log.debug: "Installation repo is $repo";
+
+  for @dist -> $dist {
 
     $!builder.build: :$dist if $build;
     $!tester.test:   :$dist if $test;
 
-    say "installing {$dist.name}";
-    $repo.install( $dist, :$force );
+    $!log.debug: "Installing $dist";
+    $repo.install: $dist, :$force;
 
   }
 
 }
 
 method remove ( :@spec!, :$from, :$deps ) {
-
-  # Bug: Only %meta<files> getting deleted
 
   my $repo = $from // $!repo;
 

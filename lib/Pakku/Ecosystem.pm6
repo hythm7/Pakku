@@ -23,10 +23,11 @@ submethod TWEAK ( ) {
 method recommend ( :@spec!, :$deps! ) {
 
 
+  $!log.debug: "Looking for {@spec}";
+
   @spec.map( -> $spec {
 
     my $dist = self!find: :$spec;
-
 
     $deps ?? self.get-deps: :$dist !! $dist;
 
@@ -76,8 +77,6 @@ method !find ( Pakku::Specification:D :$spec! ) {
 
   $!log.fatal: "No candis for $spec" unless $candy;
 
-  CATCH { default { exit 1 } }
-
   $candy;
 
 }
@@ -89,7 +88,7 @@ method !update ( ) {
     #my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
     my $json = from-json slurp %?RESOURCES<ecosystem.json>;
 
-   # my $json =  jget $source;
+    #my $json =  jget $source;
 
 
     for flat $json -> %meta {

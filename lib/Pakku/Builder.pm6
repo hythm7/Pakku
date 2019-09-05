@@ -6,6 +6,8 @@ has $.log;
 
 method build ( Pakku::Distribution::Path:D :$dist ) {
 
+  $!log.debug: "Building $dist";
+
   given $dist.builder {
 
     when Distribution::Builder::MakeFromJSON {
