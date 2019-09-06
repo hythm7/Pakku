@@ -72,7 +72,7 @@ sub level-color (  ) {
 
   {
 
-    TRACE   => '0',
+    TRACE   => '42',
     DEBUG   => '14',
     INFO    => '177',
     WARNING => '220',

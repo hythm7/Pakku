@@ -37,6 +37,6 @@ method test ( Pakku::Distribution:D :$dist ) {
 
   });
 
-  $!log.error: "Test failed for {$dist.name}" if  any @exitcode;
+  $!log.fatal: "Test failed for {$dist.name}" if  any @exitcode;
 
 }

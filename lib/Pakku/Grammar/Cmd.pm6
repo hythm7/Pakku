@@ -19,13 +19,14 @@ grammar Pakku::Grammar::Cmd {
   rule pakkuopt:sym<repo>    { «<repo> <reponame>» }
   rule pakkuopt:sym<verbose> { «<verbose> <level>» }
   rule pakkuopt:sym<pretty>  { «<pretty>» }
+  rule pakkuopt:sym<please>  { «<sym>» }
   rule pakkuopt:sym<yolo>    { «<yolo>» }
 
 
   proto token add { * }
   token add:sym<add> { «<sym>» }
   token add:sym<a>   { «<sym>» }
-  token add:sym<↓>   { <sym> }
+  token add:sym<↓>   {  <sym>  }
 
 
   proto token remove { * }
@@ -212,7 +213,7 @@ class Pakku::Grammar::Cmd::Actions {
   }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<pretty>  ( $/ ) { make ( $<pretty>.ast )  }
-
+  method pakkuopt:sym<please>  ( $/ ) { make ( :please )  }
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.ast ) }
 
 

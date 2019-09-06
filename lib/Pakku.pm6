@@ -55,9 +55,10 @@ method add (
   }
 
 
-  my @cand = flat $!ecosystem.recommend: :@spec, :$deps;
+  my @candies = $!ecosystem.recommend: :@spec, :$deps;
 
-  unless @cand {
+
+  unless @candies {
 
     $!log.error: "No candies!";
 
@@ -65,35 +66,40 @@ method add (
 
   }
 
-  $!log.debug: "Found: {~@cand}";
+
+  $!log.debug: "Found: {@candies}";
+
+  $!log.debug: "Filtering installed candies: {@candies}";
+
+  @candies .= map( *.grep( -> $dist { not self.installed: :$dist } ) );
+
+  $!log.debug: "Candies to be installed: {@candies}";
 
 
-  unless $force {
+  my @dists
+    <== map( -> @path { @path.map( -> $path { Pakku::Distribution::Path.new: $path } ) } )
+    <== map( -> @cand { eager $!fetcher.fetch( @cand».source-url ) } )
+    <== @candies;
 
-    $!log.debug: "Filtering installed candies: {@cand}";
-
-    @cand .= grep( -> $dist { not self.installed: :$dist } );
-
-    $!log.debug: "Candies to be installed: {@cand}";
-
-  }
-
-  my @dist
-    <== map( -> $path { Pakku::Distribution::Path.new: $path } )
-    <== $!fetcher.fetch( @cand».source-url );
 
   my $repo = $into // $!repo;
+
   $!log.debug: "Installation repo is $repo";
 
-  for @dist -> $dist {
 
-    $!builder.build: :$dist if $build;
-    $!tester.test:   :$dist if $test;
+  @dists.map( -> @dist {
 
-    $!log.debug: "Installing $dist";
-    $repo.install: $dist, :$force;
+    for @dist -> $dist {
 
-  }
+      $!builder.build: :$dist if $build;
+      $!tester.test:   :$dist if $test;
+
+      $!log.debug: "Installing $dist";
+      $repo.install: $dist, :$force;
+
+    }
+
+  } );
 
 }
 
