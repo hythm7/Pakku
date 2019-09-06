@@ -69,22 +69,27 @@ method add (
 
   $!log.debug: "Found: {@candies}";
 
-  $!log.debug: "Filtering installed candies: {@candies}";
+  unless $force {
 
-  @candies .= map( *.grep( -> $dist { not self.installed: :$dist } ) );
+    $!log.debug: "Filtering installed candies: {@candies}";
+
+    @candies .= map( *.grep( -> $dist { not self.installed: :$dist } ) );
+
+  }
 
   $!log.debug: "Candies to be installed: {@candies}";
 
 
   my @dists
-    <== map( -> @path { @path.map( -> $path { Pakku::Distribution::Path.new: $path } ) } )
-    <== map( -> @cand { eager $!fetcher.fetch( @cand».source-url ) } )
+    <== map( {       .map( -> $path { Pakku::Distribution::Path.new: $path      } ) } )
+    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                    } ) } )
+    <== map( {       .map( -> $cand { $cand.source-url // $cand.support<source> } ) } )
     <== @candies;
 
 
   my $repo = $into // $!repo;
 
-  $!log.debug: "Installation repo is $repo";
+  $!log.debug: "Installation repo: {$repo.name}";
 
 
   @dists.map( -> @dist {

@@ -7,13 +7,7 @@ unit class Pakku::Fetcher;
 
 has $.log;
 
-multi method fetch ( @src ) {
-
-  @src.map( -> $src { samewith $src } );
-
-}
-
-multi method fetch ( Str $src, :$dst = tempdir ) {
+method fetch ( Str :$src!, :$dst = tempdir ) {
 
   $!log.debug: "Fetching $src to $dst";
 

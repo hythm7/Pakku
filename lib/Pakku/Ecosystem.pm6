@@ -20,7 +20,7 @@ submethod TWEAK ( ) {
 
 }
 
-method recommend ( :@spec!, :$deps! ) {
+method recommend ( :@spec!, :$deps! --> Seq ) {
 
 
   $!log.debug: "Looking for {@spec}";
@@ -29,7 +29,7 @@ method recommend ( :@spec!, :$deps! ) {
 
     my $dist = self!find: :$spec;
 
-    $deps ?? self.get-deps: :$dist !! $dist;
+    $deps ?? self.get-deps: :$dist !! $dist.Seq;
 
   });
 
