@@ -223,14 +223,14 @@ class Pakku::Grammar::Cmd::Actions {
   method addopt:sym<force> ( $/ ) { make ( :force )  }
 
   method addopt:sym<into>  ( $/ ) {
-    my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>;
     make ( $<into> => $into );
   }
 
 
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method removeopt:sym<from> ( $/ ) {
-    my $from = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
+    my $from = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>;
     make ( $<from> => $from );
   }
 

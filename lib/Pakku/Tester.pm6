@@ -15,6 +15,9 @@ method test ( Pakku::Distribution:D :$dist ) {
 
   return unless $test-dir.d;
 
+  my $lib-dir = $dist.prefix.add( 'lib' );
+  my $include = "-I $lib-dir";
+
   my @test = find $test-dir.Str, :extension<t>;
 
   $!log.debug: "Testing $dist" if @test;
@@ -25,7 +28,7 @@ method test ( Pakku::Distribution:D :$dist ) {
 
     react {
 
-      my $proc = Proc::Async.new: $*EXECUTABLE, $test;
+      my $proc = Proc::Async.new: $*EXECUTABLE, $include, $test;
 
       whenever $proc.stdout.lines { $!log.trace: $^out }
       whenever $proc.stderr.lines { $!log.trace: $^err }

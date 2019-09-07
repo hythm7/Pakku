@@ -110,19 +110,66 @@ method add (
 
 method remove ( :@spec!, :$from, :$deps ) {
 
-  my $repo = $from // $!repo;
 
-  for @spec -> $spec {
+  with $from {
 
-    my $dist = $repo.candidates( $spec ).head;
+    my @dist = flat @spec.map( -> $spec { $from.candidates: $spec } );
 
-    # Temp workaround for rakudo issue #3153
-    $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
+    unless @dist {
 
-    $repo.uninstall: $dist if so $dist;
+      $!log.info: "Saul Goodman";
+
+      return;
+
+    }
+
+    @dist.map( -> $dist {
+
+      # Temp workaround for rakudo issue #3153
+      $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
+
+      $!log.debug: "Uninstalling $dist from {$from.name}";
+
+      $!log.debug: "Uninstalling $dist";
+
+      $from.uninstall: $dist;
+
+      $!log.debug: "Uninstalled $dist from {$from.name}";
+
+
+    } );
+  }
+
+  else {
+
+    my @repo = $!repo.repo-chain.grep( CompUnit::Repository::Installation );
+    my @dist = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
+
+    unless @dist {
+
+      $!log.info: "Saul Goodman";
+
+      return;
+
+    }
+
+    @dist.map( -> $dist {
+
+      # Temp workaround for rakudo issue #3153
+      $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
+
+      $!log.debug: "Uninstalling $dist";
+
+      @repo.map( *.uninstall: $dist );
+
+      $!log.debug: "Uninstalled $dist from all repos";
+
+    } );
 
   }
+
 }
+
 
 method search ( :@spec! ) {
 
