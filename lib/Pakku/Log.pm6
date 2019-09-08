@@ -4,6 +4,8 @@ use Terminal::ANSIColor;
 
 unit class Pakku::Log;
 
+has %.cnf;
+
 has Loglevels  $.verbose;
 has Bool       $.pretty;
 

@@ -138,34 +138,25 @@ grammar Pakku::Grammar::Cnf {
 
 class Pakku::Grammar::Cnf::Actions {
 
-  method TOP ( $/ ) { make $<sections>.ast }
+  has %!cnf;
 
-  method sections ( $/ ) { make $<section>».ast.hash }
+  method TOP ( $/ ) { make %!cnf }
 
-  method section:sym<pakku>  ( $/ ) { make ~$<sym> => $<pakkuopt>».ast.hash }
-  method section:sym<add>    ( $/ ) { make ~$<sym> => $<addopt>».ast.hash }
-  method section:sym<remove> ( $/ ) { make ~$<sym> => $<removeopt>».ast.hash }
-  method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast.hash }
-  method section:sym<source> ( $/ ) { make ~$<sym> => $<sourceopt>».ast }
-  method section:sym<log> ( $/ )    { make ~$<sym> => $<logopt>».ast }
+  method section:sym<pakku>  ( $/ ) { %!cnf{~$<sym>} = $<pakkuopt>».ast.hash }
+  method section:sym<add>    ( $/ ) { %!cnf{~$<sym>} = $<addopt>».ast.hash }
+  method section:sym<remove> ( $/ ) { %!cnf{~$<sym>} = $<removeopt>».ast.hash }
+  method section:sym<search> ( $/ ) { %!cnf{~$<sym>} = $<searchopt>».ast.hash }
+  method section:sym<source> ( $/ ) { %!cnf{~$<sym>}.append: $<sourceopt>».ast }
 
   method logopt:sym<name>    ( $/ ) {
 
-    my %h;
-
-    %h{$<level>.ast}.push: ( $<sym>.Str => $<level-name>.Str );
-
-    make %h;
+    %!cnf<log>{~$<level>}{~$<sym>} = ~$<level-name>;
 
   }
 
   method logopt:sym<color>    ( $/ ) {
 
-    my %h;
-
-    %h{$<level>.ast}.push: ( $<sym>.Str => $<level-color>.Str );
-
-    make %h;
+    %!cnf<log>{~$<level>}{~$<sym>} = ~$<level-color>;
 
   }
 

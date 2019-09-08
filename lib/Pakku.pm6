@@ -55,6 +55,7 @@ method add (
     @spec .= grep( -> $spec {
 
 
+      # TODO: per repo check to allow add into repo
       my @installed = self.installed: :$spec;
 
       $!log.debug: "Found installed [{@installed}] matching spec [$spec]";
@@ -231,7 +232,7 @@ multi submethod installed ( Pakku::Distribution:D :$dist! --> Bool ) {
 
 submethod !init ( ) {
 
-  my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions );
+  my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions.new );
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
 
   %!cnf = $cnf.ast.merge: $cmd.ast;
