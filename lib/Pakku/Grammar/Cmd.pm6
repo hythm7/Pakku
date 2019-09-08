@@ -12,7 +12,7 @@ grammar Pakku::Grammar::Cmd {
   proto rule TOP { * }
   rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <specs> }
   rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <specs> }
-  rule TOP:sym<search> { <pakkuopt>* <search> <searchopt>* <specs> }
+  rule TOP:sym<list>   { <pakkuopt>* <list>   <listopt>*   <specs>? }
 
 
   proto rule pakkuopt { * }
@@ -34,9 +34,9 @@ grammar Pakku::Grammar::Cmd {
   token remove:sym<r>      { «<sym>» }
 
 
-  proto token search { * }
-  token search:sym<search> { «<sym>» }
-  token search:sym<s>      { «<sym>» }
+  proto token list { * }
+  token list:sym<list> { «<sym>» }
+  token list:sym<l>    { «<sym>» }
 
   proto token repo { * }
   token repo:sym<repo> { «<sym>» }
@@ -61,8 +61,9 @@ grammar Pakku::Grammar::Cmd {
   rule removeopt:sym<from> { «<from> <reponame>» }
 
 
-  proto rule searchopt { * }
-  rule searchopt:sym<deps>   { «<deps>» }
+  proto rule listopt { * }
+  rule listopt:sym<remote> { «<remote>» }
+  rule listopt:sym<info>   { «<info>» }
 
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
@@ -87,6 +88,18 @@ grammar Pakku::Grammar::Cmd {
 
   proto token from { * }
   token from:sym<from> { «<sym>» }
+
+  proto token remote { * }
+  token remote:sym<remote>   { «<sym>» }
+  token remote:sym<r>        { «<sym>» }
+  token remote:sym<noremote> { «<sym>» }
+  token remote:sym<nr>       { «<sym>» }
+
+  proto token info { * }
+  token info:sym<info>   { «<sym>» }
+  token info:sym<i>      { «<sym>» }
+  token info:sym<noinfo> { «<sym>» }
+  token info:sym<ni>     { «<sym>» }
 
   proto token pretty { * }
   token pretty:sym<pretty>   { «<sym>» }
@@ -170,8 +183,8 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
 
     %cmd<cmd>        = 'add';
-    %cmd<pakku>      = $<pakkuopt>».ast.hash if $<pakkuopt>;
-    %cmd<add>        = $<addopt>».ast.hash   if $<addopt>;
+    %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
+    %cmd<add>        = $<addopt>».ast.hash   if defined $<addopt>;
     %cmd<add><spec>  = $<specs>.ast;
 
     make %cmd;
@@ -184,8 +197,8 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
 
     %cmd<cmd>           = 'remove';
-    %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
-    %cmd<remove>        = $<removeopt>».ast.hash if $<removeopt>;
+    %cmd<pakku>         = $<pakkuopt>».ast.hash  if defined $<pakkuopt>;
+    %cmd<remove>        = $<removeopt>».ast.hash if defined $<removeopt>;
     %cmd<remove><spec>  = $<specs>.ast;
 
     make %cmd;
@@ -193,14 +206,14 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method TOP:sym<search> ( $/ ) {
+  method TOP:sym<list> ( $/ ) {
 
     my %cmd;
 
-    %cmd<cmd>           = 'search';
-    %cmd<pakku>         = $<pakkuopt>».ast.hash  if $<pakkuopt>;
-    %cmd<search>        = $<searchopt>».ast.hash if $<searchopt>;
-    %cmd<search><spec>  = $<specs>.ast;
+    %cmd<cmd>        = 'list';
+    %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
+    %cmd<list>       = $<listopt>».ast.hash    if defined $<listopt>;
+    %cmd<list><spec> = $<specs>.ast            if defined $<specs>;
 
     make %cmd;
 
@@ -235,7 +248,8 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method searchopt:sym<deps> ( $/ ) { make $<deps>.ast }
+  method listopt:sym<remote> ( $/ ) { make $<remote>.ast }
+  method listopt:sym<info>   ( $/ ) { make $<info>.ast }
 
 
   method specs ( $/ ) { make $<spec>».ast    }
@@ -269,6 +283,16 @@ class Pakku::Grammar::Cmd::Actions {
   method test:sym<t>      ( $/ )  { make ( :test  ) }
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
+
+  method remote:sym<remote>   ( $/ )  { make ( :remote  ) }
+  method remote:sym<r>        ( $/ )  { make ( :remote  ) }
+  method remote:sym<noremote> ( $/ )  { make ( :!remote ) }
+  method remote:sym<nr>       ( $/ )  { make ( :!remote ) }
+
+  method info:sym<info>   ( $/ )  { make ( :info  ) }
+  method info:sym<i>      ( $/ )  { make ( :info  ) }
+  method info:sym<noinfo> ( $/ )  { make ( :!info ) }
+  method info:sym<ni>     ( $/ )  { make ( :!info ) }
 
   method level:sym<TRACE> ( $/ ) { make 1 }
   method level:sym<DEBUG> ( $/ ) { make 2 }

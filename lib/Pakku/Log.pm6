@@ -7,11 +7,18 @@ unit class Pakku::Log;
 has Loglevels  $.verbose;
 has Bool       $.pretty;
 
+has Str $!ofun;
+has Str $!nofun;
+
+
 submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty! ) {
 
   my Int $color;
   my %level-sym   = level-sym;
   my %level-color = level-color;
+
+  $!ofun = $!pretty ?? colored( '-Ofun', %level-color<OFUN> ) !! '-Ofun';
+  $!nofun = $!pretty ?? colored( 'NOfun', %level-color<NOFUN> ) !! 'NOfun';
 
   $!verbose = Loglevels( $verbose );
 
@@ -42,9 +49,16 @@ method info  ( Str:D $msg ) { info  $msg }
 method warn  ( Str:D $msg ) { warn  $msg }
 method error ( Str:D $msg ) { error $msg }
 
+method out ( Str:D $msg ) { put $msg }
+
+method ofun  ( ) { put $!ofun  }
+method nofun ( ) { put $!nofun }
+
 method fatal ( Str:D $msg ) {
 
   fatal $msg;
+
+  sleep .1; # quick nap befor X
 
   X::Pakku.new.throw;
 
@@ -78,6 +92,8 @@ sub level-color (  ) {
     WARNING => '220',
     ERROR   => '9',
     FATAL   => '1',
+    OFUN    => '177',
+    NOFUN   => '9',
 
   }
 

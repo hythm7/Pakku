@@ -13,6 +13,7 @@ grammar Pakku::Grammar::Cnf {
   rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>+ }
   rule section:sym<search> { <lt> <sym> <gt> <.nl> <searchopt>+ }
   rule section:sym<source> { <lt> <sym> <gt> <.nl> <sourceopt>+ }
+  rule section:sym<log>    { <lt> <sym> <gt> <.nl> <logopt>+    }
 
   proto rule pakkuopt { * }
   rule pakkuopt:sym<yolo>    { <.ws> <yolo>    <.eol> }
@@ -34,6 +35,52 @@ grammar Pakku::Grammar::Cnf {
 
   proto rule sourceopt { * }
   rule sourceopt:sym<source>  { <.ws> <source> <.eol> }
+
+  proto rule logopt { * }
+  rule logopt:sym<name>  { <.ws> <level> <sym> <level-name>  <.eol> }
+  rule logopt:sym<color> { <.ws> <level> <sym> <level-color> <.eol> }
+
+  token level-name  { <-[\s]>+ }
+
+  proto token level-color { * } 
+  token level-color:sym<reset>   { «<sym>» }
+  token level-color:sym<default> { «<sym>» }
+  token level-color:sym<black>   { «<sym>» }
+  token level-color:sym<blue>    { «<sym>» }
+  token level-color:sym<green>   { «<sym>» }
+  token level-color:sym<yellow>  { «<sym>» }
+  token level-color:sym<magenta> { «<sym>» }
+  token level-color:sym<red>     { «<sym>» }
+
+  proto token level { * }
+  token level:sym<TRACE> { «<sym>» }
+  token level:sym<DEBUG> { «<sym>» }
+  token level:sym<INFO>  { «<sym>» }
+  token level:sym<WARN>  { «<sym>» }
+  token level:sym<ERROR> { «<sym>» }
+  token level:sym<FATAL> { «<sym>» }
+  token level:sym<trace> { «<sym>» }
+  token level:sym<debug> { «<sym>» }
+  token level:sym<info>  { «<sym>» }
+  token level:sym<warn>  { «<sym>» }
+  token level:sym<error> { «<sym>» }
+  token level:sym<fatal> { «<sym>» }
+  token level:sym<42>    { «<sym>» }
+  token level:sym<T>     { «<sym>» }
+  token level:sym<D>     { «<sym>» }
+  token level:sym<I>     { «<sym>» }
+  token level:sym<W>     { «<sym>» }
+  token level:sym<E>     { «<sym>» }
+  token level:sym<F>     { «<sym>» }
+  token level:sym<1>     { «<sym>» }
+  token level:sym<2>     { «<sym>» }
+  token level:sym<3>     { «<sym>» }
+  token level:sym<4>     { «<sym>» }
+  token level:sym<5>     { «<sym>» }
+  token level:sym<6>     { «<sym>» }
+  token level:sym<✓>     { «<sym>» }
+  token level:sym<✗>     { «<sym>» }
+
 
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
@@ -74,7 +121,7 @@ grammar Pakku::Grammar::Cnf {
   token from:sym<from> { «<sym>» }
 
 
-  token source { <-[\n]>+ }
+  token source { <-[<\n]>+ } # TODO use better token
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
   token eol { [ [ <[#;]> \N* ]? \n ]+ }
@@ -100,10 +147,33 @@ class Pakku::Grammar::Cnf::Actions {
   method section:sym<remove> ( $/ ) { make ~$<sym> => $<removeopt>».ast.hash }
   method section:sym<search> ( $/ ) { make ~$<sym> => $<searchopt>».ast.hash }
   method section:sym<source> ( $/ ) { make ~$<sym> => $<sourceopt>».ast }
+  method section:sym<log> ( $/ )    { make ~$<sym> => $<logopt>».ast }
+
+  method logopt:sym<name>    ( $/ ) {
+
+    my %h;
+
+    %h{$<level>.ast}.push: ( $<sym>.Str => $<level-name>.Str );
+
+    make %h;
+
+  }
+
+  method logopt:sym<color>    ( $/ ) {
+
+    my %h;
+
+    %h{$<level>.ast}.push: ( $<sym>.Str => $<level-color>.Str );
+
+    make %h;
+
+  }
 
    method pakkuopt:sym<repo>    ( $/ ) {
+
     my $repo = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
     make $<repo> => $repo;
+
   }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<force>   ( $/ ) { make ( :force )  }
@@ -112,8 +182,10 @@ class Pakku::Grammar::Cnf::Actions {
   method addopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method addopt:sym<test> ( $/ ) { make $<test>.ast }
   method addopt:sym<from> ( $/ ) {
+
     my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
     make $<into> => $into;
+
   }
 
 
@@ -138,4 +210,33 @@ class Pakku::Grammar::Cnf::Actions {
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
 
   method source     ( $/ )  { make $/.Str }
+
+  method level:sym<TRACE> ( $/ ) { make 1 }
+  method level:sym<DEBUG> ( $/ ) { make 2 }
+  method level:sym<INFO>  ( $/ ) { make 3 }
+  method level:sym<WARN>  ( $/ ) { make 4 }
+  method level:sym<ERROR> ( $/ ) { make 5 }
+  method level:sym<FATAL> ( $/ ) { make 6 }
+  method level:sym<trace> ( $/ ) { make 1 }
+  method level:sym<debug> ( $/ ) { make 2 }
+  method level:sym<info>  ( $/ ) { make 3 }
+  method level:sym<warn>  ( $/ ) { make 4 }
+  method level:sym<error> ( $/ ) { make 5 }
+  method level:sym<fatal> ( $/ ) { make 6 }
+  method level:sym<42>    ( $/ ) { make 1 }
+  method level:sym<T>     ( $/ ) { make 1 }
+  method level:sym<D>     ( $/ ) { make 2 }
+  method level:sym<I>     ( $/ ) { make 3 }
+  method level:sym<W>     ( $/ ) { make 4 }
+  method level:sym<E>     ( $/ ) { make 5 }
+  method level:sym<F>     ( $/ ) { make 6 }
+  method level:sym<1>     ( $/ ) { make 1 }
+  method level:sym<2>     ( $/ ) { make 2 }
+  method level:sym<3>     ( $/ ) { make 3 }
+  method level:sym<4>     ( $/ ) { make 4 }
+  method level:sym<5>     ( $/ ) { make 5 }
+  method level:sym<6>     ( $/ ) { make 6 }
+  method level:sym<✓>     ( $/ ) { make 3 }
+  method level:sym<✗>     ( $/ ) { make 5 }
+
 }

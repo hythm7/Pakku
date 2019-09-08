@@ -26,10 +26,17 @@ has CompUnit::Repository $!repo;
 
 submethod BUILD ( ) {
 
+ CATCH {
+    when X::Pakku {
+
+      $!log.nofun;
+
+    }
+  }
+
   self!init;
 
-  CATCH {  exit 1 when X::Pakku }
-}
+ }
 
 method add (
 
@@ -43,8 +50,20 @@ method add (
 ) {
 
 
-  @spec .= grep( -> $spec { not self.installed: :$spec } ) unless $force;
+  unless $force {
 
+    @spec .= grep( -> $spec {
+
+
+      my @installed = self.installed: :$spec;
+
+      $!log.debug: "Found installed [{@installed}] matching spec [$spec]";
+
+      not @installed;
+
+    } );
+
+  }
 
   unless @spec {
 
@@ -106,6 +125,7 @@ method add (
 
   } );
 
+  $!log.ofun;
 }
 
 method remove ( :@spec!, :$from, :$deps ) {
@@ -168,12 +188,18 @@ method remove ( :@spec!, :$from, :$deps ) {
 
   }
 
+
+  $!log.ofun;
 }
 
 
-method search ( :@spec! ) {
+method list ( :@spec, :$info = False, :$remote = False ) {
 
-  $!ecosystem.recommend: :@spec;
+  $!log.debug: "Looking for installed Distributions";
+
+  $!log.out: "{@!installed.map( *.Str ).join( "\n" )}";
+
+  $!log.info: "-Ofun";
 
 }
 
@@ -240,7 +266,7 @@ submethod !init ( ) {
 
     self.add:    |%!cnf<add>    when 'add';
     self.remove: |%!cnf<remove> when 'remove';
-    self.search: |%!cnf<search> when 'search';
+    self.list:   |%!cnf<list>   when 'list';
   }
 
 }
