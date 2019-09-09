@@ -150,13 +150,13 @@ class Pakku::Grammar::Cnf::Actions {
 
   method logopt:sym<name>    ( $/ ) {
 
-    %!cnf<log>{~$<level>}{~$<sym>} = ~$<level-name>;
+    %!cnf<log>{$<level>.ast}{~$<sym>} = ~$<level-name>;
 
   }
 
   method logopt:sym<color>    ( $/ ) {
 
-    %!cnf<log>{~$<level>}{~$<sym>} = ~$<level-color>;
+    %!cnf<log>{$<level>.ast}{~$<sym>} = ~$<level-color>;
 
   }
 

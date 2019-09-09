@@ -242,7 +242,8 @@ submethod !init ( ) {
   my $pretty  = %!cnf<pakku><pretty>  // True;
   my $repo    = %!cnf<pakku><repo>    // $*REPO;
 
-  $!log     = Pakku::Log.new:     :$verbose, :$pretty;
+  $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
+
   $!fetcher = Pakku::Fetcher.new: :$!log;
   $!builder = Pakku::Builder.new: :$!log;
   $!tester  = Pakku::Tester.new:  :$!log;

@@ -13,17 +13,17 @@
 < source >
   https://ecosystem-api.p6c.org/projects.json
 
-< log >
-  trace name trace
-  debug name debug
-  info  name info
-  warn  name warn
-  error name error
-  fatal name fatal
-
-  trace color reset
-  debug color green
-  info  color blue
-  warn  color yellow
-  error color magenta
-  fatal color red
+#< log >
+#  trace name TRACE:
+#  debug name DEBUG:
+#  info  name INFO:
+#  warn  name WARN:
+#  error name ERROR:
+#  fatal name FATAL:
+#
+#  trace color reset
+#  debug color green
+#  info  color blue
+#  warn  color yellow
+#  error color magenta
+#  fatal color yellow

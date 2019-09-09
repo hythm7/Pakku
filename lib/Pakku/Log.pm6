@@ -13,22 +13,39 @@ has Str $!ofun;
 has Str $!nofun;
 
 
-submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty! ) {
+submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty!, :$cnf ) {
+
+  %!cnf<TRACE><name>    = $cnf<1><name>  // 'T';
+  %!cnf<DEBUG><name>    = $cnf<2><name>  // 'D';
+  %!cnf<INFO><name>     = $cnf<3><name>  // '✓';
+  %!cnf<WARNING><name>  = $cnf<4><name>  // '⚠';
+  %!cnf<ERROR><name>    = $cnf<5><name>  // '✗';
+  %!cnf<FATAL><name>    = $cnf<6><name>  // 'F';
+
+  %!cnf<TRACE><color>   = $cnf<1><color> // '42';
+  %!cnf<DEBUG><color>   = $cnf<2><color> // '14';
+  %!cnf<INFO><color>    = $cnf<3><color> // '177';
+  %!cnf<WARNING><color> = $cnf<4><color> // '220';
+  %!cnf<ERROR><color>   = $cnf<5><color> // '9';
+  %!cnf<FATAL><color>   = $cnf<6><color> // '1';
+
+  %!cnf<OFUN><color>    = '177';
+  %!cnf<NOFUN><color>   = '9';
+
+  #say %cnf;
+
 
   my Int $color;
-  my %level-sym   = level-sym;
-  my %level-color = level-color;
 
-  $!ofun = $!pretty ?? colored( '-Ofun', %level-color<OFUN> ) !! '-Ofun';
-  $!nofun = $!pretty ?? colored( 'NOfun', %level-color<NOFUN> ) !! 'NOfun';
+  $!ofun  = $!pretty ?? colored( '-Ofun', %!cnf<OFUN><color> )  !! '-Ofun';
+  $!nofun = $!pretty ?? colored( 'NOfun', %!cnf<NOFUN><color> ) !! 'NOfun';
 
   $!verbose = Loglevels( $verbose );
 
   my Code $formatter = -> $m, :$fh {
 
-    my $color = %level-color{ $m<level> };
-
-    my $level = %level-sym{ $m<level> };
+    my $color = %!cnf{ $m<level> }<color>;
+    my $level = %!cnf{ $m<level> }<name>;
     my $msg   = $m<msg>;
 
     my $formatted = $!pretty ??
@@ -60,43 +77,9 @@ method fatal ( Str:D $msg ) {
 
   fatal $msg;
 
-  sleep .1; # quick nap befor X
+  # quick nap befor X
+  sleep .1;
 
   X::Pakku.new.throw;
-
-}
-
-
-method instance ( ) { logger.instance }
-
-sub level-sym (  ) {
-
-  {
-
-    TRACE   => 'T',
-    DEBUG   => 'D',
-    INFO    => '✓',
-    WARNING => '⚠',
-    ERROR   => '✗',
-    FATAL   => 'F',
-
-  }
-
-}
-
-sub level-color (  ) {
-
-  {
-
-    TRACE   => '42',
-    DEBUG   => '14',
-    INFO    => '177',
-    WARNING => '220',
-    ERROR   => '9',
-    FATAL   => '1',
-    OFUN    => '177',
-    NOFUN   => '9',
-
-  }
 
 }

@@ -75,7 +75,7 @@ method !find ( Pakku::Specification:D :$spec! ) {
 
   my $candy = @cand.grep( * ~~ $spec ).sort( *.version ).tail;
 
-  $!log.fatal: "No candis for $spec" unless $candy;
+  $!log.fatal: "No candies for $spec" unless $candy;
 
   $candy;
 
