@@ -1,7 +1,7 @@
-use Pakku::Distribution;
+use Pakku::Dist;
 
-unit class Pakku::Distribution::Installed;
-  also is Pakku::Distribution;
+unit class Pakku::Dist::Installed;
+  also is Pakku::Dist;
 
   has $.repo;
 

@@ -1,10 +1,10 @@
-use Pakku::Distribution::Path;
+use Pakku::Dist::Path;
 
 unit class Pakku::Builder;
 
 has $.log;
 
-method build ( Pakku::Distribution::Path:D :$dist ) {
+method build ( Pakku::Dist::Path:D :$dist ) {
 
   $!log.debug: "Building $dist";
 

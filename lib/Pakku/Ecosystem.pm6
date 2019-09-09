@@ -2,16 +2,16 @@ use JSON::Fast;
 use LibCurl::HTTP :subs;
 
 use X::Pakku;
-use Pakku::Specification;
-use Pakku::Distribution;
+use Pakku::Spec;
+use Pakku::Dist;
 
 unit class Pakku::Ecosystem;
 
 has $.log;
 has @.source;
 has @!ignored;
-has %!distribution;
-has @!distribution;
+has %!dist;
+has @!dist;
 
 submethod TWEAK ( ) {
 
@@ -36,7 +36,7 @@ method recommend ( :@spec!, :$deps! --> Seq ) {
 }
 
 
-method get-deps ( Pakku::Distribution :$dist ) {
+method get-deps ( Pakku::Dist:$dist ) {
 
   my @dist;
 
@@ -63,15 +63,15 @@ method get-deps ( Pakku::Distribution :$dist ) {
 
 }
 
-method !find ( Pakku::Specification:D :$spec! ) {
+method !find ( Pakku::Spec:D :$spec! ) {
 
   my @cand;
 
   my $name = $spec.short-name;
 
-  @cand = flat %!distribution{$name} if so %!distribution{$name};
+  @cand = flat %!dist{$name} if so %!dist{$name};
 
-  @cand = @!distribution.grep: *.provides: :$name unless @cand;
+  @cand = @!dist.grep: *.provides: :$name unless @cand;
 
   my $candy = @cand.grep( * ~~ $spec ).sort( *.version ).tail;
 
@@ -93,10 +93,10 @@ method !update ( ) {
 
     for flat $json -> %meta {
 
-      my $dist = Pakku::Distribution.new: :%meta;
+      my $dist = Pakku::Dist.new: :%meta;
 
-      %!distribution{ $dist.name }.push: $dist;
-      @!distribution.push: $dist;
+      %!dist{ $dist.name }.push: $dist;
+      @!dist.push: $dist;
     }
   }
 }

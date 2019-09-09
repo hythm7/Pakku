@@ -1,7 +1,7 @@
-use Pakku::Specification;
+use Pakku::Spec;
 use Distribution::Builder::MakeFromJSON;
 
-unit class Pakku::Distribution;
+unit class Pakku::Dist;
 
 has $.meta;
 
@@ -29,7 +29,7 @@ has @.resources;
 has %.support;
 has $.builder;
 
-has Pakku::Specification @.dependencies;
+has Pakku::Spec @.dependencies;
 
 submethod TWEAK ( ) {
 
@@ -65,13 +65,13 @@ submethod TWEAK ( ) {
 
   for flat @!depends, @!build-depends, @!test-depends -> $spec {
 
-    @!dependencies.push: Pakku::Specification.new: :$spec;
+    @!dependencies.push: Pakku::Spec.new: :$spec;
 
   }
 
 }
 
-method Str ( Pakku::Distribution:D: --> Str ) {
+method Str ( Pakku::Dist:D: --> Str ) {
 
   my Str $name = "$!name";
   my Str $ver  = ":ver<{$!ver   // ''}>";

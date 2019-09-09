@@ -3,7 +3,7 @@
 
 use Cro::Uri;
 
-use Pakku::Specification;
+use Pakku::Spec;
 
 grammar Pakku::Grammar::Cmd {
 
@@ -237,6 +237,7 @@ class Pakku::Grammar::Cmd::Actions {
 
   method addopt:sym<into>  ( $/ ) {
     my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>;
+    $into.next-repo = Nil;
     make ( $<into> => $into );
   }
 
@@ -244,6 +245,7 @@ class Pakku::Grammar::Cmd::Actions {
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
   method removeopt:sym<from> ( $/ ) {
     my $from = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>;
+    $from.next-repo = Nil;
     make ( $<from> => $from );
   }
 
@@ -256,7 +258,7 @@ class Pakku::Grammar::Cmd::Actions {
 
   method spec:sym<spec> ( $/ ) {
 
-    make Pakku::Specification.new: spec => $/.Str;
+    make Pakku::Spec.new: spec => $/.Str;
 
   }
 

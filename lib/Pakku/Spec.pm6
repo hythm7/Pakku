@@ -1,4 +1,4 @@
-unit class Pakku::Specification;
+unit class Pakku::Spec;
   also is CompUnit::DependencySpecification;
 
 
@@ -59,7 +59,7 @@ method new ( Str :$spec ) {
 
   my $m = $grammar.parse( $spec, :$actions );
 
-  die "I don't understand this specification: $spec" unless $m;
+  die "I don't understand this spec: $spec" unless $m;
 
   my %spec = $m.ast;
 
@@ -98,7 +98,7 @@ method api ( ) {
 
 
 # no type checking to avoid circular dependency
-multi method ACCEPTS ( Pakku::Specification:D: $dist --> Bool:D ) {
+multi method ACCEPTS ( Pakku::Spec:D: $dist --> Bool:D ) {
 
   return False unless $.name ~~ any( $dist.name, $dist.provides );
   return False unless Version.new( $dist.version ) ~~ $.version;

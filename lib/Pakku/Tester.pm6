@@ -1,13 +1,13 @@
 use Concurrent::File::Find;
 
-use Pakku::Distribution;
+use Pakku::Dist;
 
 unit class Pakku::Tester;
 
 has $.log;
 
 
-method test ( Pakku::Distribution:D :$dist ) {
+method test ( Pakku::Dist:D :$dist ) {
 
 
 

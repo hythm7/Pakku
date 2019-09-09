@@ -7,22 +7,23 @@ use Pakku::Ecosystem;
 use Pakku::Fetcher;
 use Pakku::Builder;
 use Pakku::Tester;
-use Pakku::Specification;
-use Pakku::Distribution::Path;
-use Pakku::Distribution::Installed;
+use Pakku::Spec;
+use Pakku::Dist::Path;
+use Pakku::Dist::Installed;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
 has %!cnf;
 
 has Pakku::Log           $!log;
-has Pakku::Distribution  %!installed;
-has Pakku::Distribution  @!installed;
+has %!installed;
+has Pakku::Dist          @!installed;
 has Pakku::Fetcher       $!fetcher;
 has Pakku::Builder       $!builder;
 has Pakku::Tester        $!tester;
 has Pakku::Ecosystem     $!ecosystem;
 has CompUnit::Repository $!repo;
+has CompUnit::Repository @!inst-repo;
 
 submethod BUILD ( ) {
 
@@ -41,7 +42,9 @@ submethod BUILD ( ) {
 method add (
 
   :@spec!,
-  :$into,
+
+  CompUnit::Repository :$into = $!repo,
+
   Bool:D :$deps  = True,
   Bool:D :$build = True,
   Bool:D :$test  = True,
@@ -49,14 +52,20 @@ method add (
 
 ) {
 
+    my @repo = $into.repo-chain.grep( CompUnit::Repository::Installation );
+
+
+    #my @dist = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
 
   unless $force {
+
 
     @spec .= grep( -> $spec {
 
 
       # TODO: per repo check to allow add into repo
-      my @installed = self.installed: :$spec;
+      #my @installed = self.installed: :$spec;
+      my @installed = flat @spec.map( -> $spec { self.installed: :$spec, :@repo } );
 
       $!log.debug: "Found installed [{@installed}] matching spec [$spec]";
 
@@ -65,6 +74,7 @@ method add (
     } );
 
   }
+
 
   unless @spec {
 
@@ -93,7 +103,8 @@ method add (
 
     $!log.debug: "Filtering installed candies: {@candies}";
 
-    @candies .= map( *.grep( -> $dist { not self.installed: :$dist } ) );
+    #@candies .= map( *.grep( -> $dist { not self.installed: :$dist } ) );
+    @candies = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
 
   }
 
@@ -101,13 +112,13 @@ method add (
 
 
   my @dists
-    <== map( {       .map( -> $path { Pakku::Distribution::Path.new: $path      } ) } )
+    <== map( {       .map( -> $path { Pakku::Dist::Path.new: $path      } ) } )
     <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                    } ) } )
     <== map( {       .map( -> $cand { $cand.source-url // $cand.support<source> } ) } )
     <== @candies;
 
 
-  my $repo = $into // $!repo;
+  my $repo = @repo.head;
 
   $!log.debug: "Installation repo: {$repo.name}";
 
@@ -129,12 +140,17 @@ method add (
   $!log.ofun;
 }
 
-method remove ( :@spec!, :$from, :$deps ) {
+method remove (
 
+  :@spec!,
+  CompUnit::Repository :$from = $!repo,
+  Bool:D :$deps
 
-  with $from {
+) {
 
-    my @dist = flat @spec.map( -> $spec { $from.candidates: $spec } );
+    my @repo = $from.repo-chain.grep( CompUnit::Repository::Installation );
+
+    my @dist = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
 
     unless @dist {
 
@@ -153,50 +169,30 @@ method remove ( :@spec!, :$from, :$deps ) {
 
       $!log.debug: "Uninstalling $dist";
 
-      $from.uninstall: $dist;
+      @repo.map( *.uninstall: $dist );
 
       $!log.debug: "Uninstalled $dist from {$from.name}";
 
 
     } );
-  }
-
-  else {
-
-    my @repo = $!repo.repo-chain.grep( CompUnit::Repository::Installation );
-    my @dist = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
-
-    unless @dist {
-
-      $!log.info: "Saul Goodman";
-
-      return;
-
-    }
-
-    @dist.map( -> $dist {
-
-      # Temp workaround for rakudo issue #3153
-      $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
-
-      $!log.debug: "Uninstalling $dist";
-
-      @repo.map( *.uninstall: $dist );
-
-      $!log.debug: "Uninstalled $dist from all repos";
-
-    } );
-
-  }
-
-
+    
   $!log.ofun;
 }
 
 
-method list ( :@spec, :$info = False, :$remote = False ) {
+method list (
 
-  $!log.debug: "Looking for installed Distributions";
+  :@spec,
+
+  Bool:D :$info   = False,
+  Bool:D :$local  = False,
+  Bool:D :$remote = False,
+
+  CompUnit::Repository:D  :$repo = $!repo,
+
+) {
+
+  $!log.debug: "Looking for installed Dists";
 
   $!log.out: "{@!installed.map( *.Str ).join( "\n" )}";
 
@@ -205,26 +201,29 @@ method list ( :@spec, :$info = False, :$remote = False ) {
 }
 
 
-multi submethod installed ( Pakku::Specification:D :$spec! ) {
+multi submethod installed ( Pakku::Spec:D :$spec!, :@repo! ) {
 
-  my @cand;
+  my @installed = flat %!installed{ @repo.map( *.name ) }>>.{$spec.name};
 
-  my $name = $spec.short-name;
+  return True if $spec ~~ any @installed;
 
-  return flat %!installed{$name} if so %!installed{$name};
+  @installed.append: %!installed{@repo}.values.grep( -> $inst { $spec.name ~~ $inst.provides } );
 
-  return @!installed.grep( *.provides: :$name).grep( * ~~ $spec).sort( *.version );
+  return True if $spec ~~ any @installed;
+
+  return False;
 
 }
 
-multi submethod installed ( Pakku::Distribution:D :$dist! --> Bool ) {
+multi submethod installed ( Pakku::Dist:D :$dist!, :@repo! --> Bool ) {
 
-  return True if so %!installed{$dist.name};
+  my @installed = flat %!installed{ @repo.map( *.name ) }{$dist.name};
 
+  return True if $dist ~~ any @installed;
 
-  return True if @!installed.grep( -> $inst { $dist.name ~~ $inst.provides } );
+  @installed.append: %!installed{@repo}.values.grep( -> $inst { $dist.name ~~ $inst.provides } );
 
-  #return True if @!installed.grep: *.provides: name => $dist.name;
+  return True if $dist ~~ any @installed;
 
   return False;
 
@@ -250,16 +249,15 @@ submethod !init ( ) {
 
 
   $!repo = $repo;
-  $!repo.repo-chain
-     ==> grep( CompUnit::Repository::Installation )
-     ==> map( *.installed )
-     ==> flat()
-     ==> map( -> $dist {
-         Pakku::Distribution::Installed.new: meta => $dist.meta, prefix => $dist.prefix
-       })
-     ==> @!installed;
 
-     %!installed = @!installed.map( -> $dist { $dist.name => $dist } );
+  @!inst-repo = $!repo.repo-chain.grep( CompUnit::Repository::Installation );
+
+  @!inst-repo.map( -> $repo {
+
+    eager $repo.installed
+      ==> map( -> $dist { Pakku::Dist::Installed.new: meta => $dist.meta, prefix => $dist.prefix })
+      ==> map( -> $dist { %!installed{$repo.name}{$dist.name}.push: $dist } ); 
+  } );
 
 
   $!ecosystem = Pakku::Ecosystem.new: :$!log, :@source;

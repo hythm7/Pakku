@@ -2,9 +2,9 @@
 #
 use lib 'lib';
 
-use Pakku::Distribution::Path;
+use Pakku::Dist::Path;
 
-my $d = Pakku::Distribution::Path.new: '../Grid'.IO;
+my $d = Pakku::Dist::Path.new: '../Grid'.IO;
 
 say $d.license;
 
