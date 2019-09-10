@@ -45,6 +45,7 @@ grammar Pakku::Grammar::Cmd {
   token reponame:sym<home>   { «<sym>» }
   token reponame:sym<site>   { «<sym>» }
   token reponame:sym<vendor> { «<sym>» }
+  token reponame:sym<core>   { «<sym>» }
 
 
   proto rule addopt { * }
@@ -63,7 +64,9 @@ grammar Pakku::Grammar::Cmd {
 
   proto rule listopt { * }
   rule listopt:sym<remote> { «<remote>» }
+  rule listopt:sym<local>  { «<local>» }
   rule listopt:sym<info>   { «<info>» }
+  rule listopt:sym<repo>   { «<repo> <reponame>» }
 
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
@@ -220,38 +223,62 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method pakkuopt:sym<repo>    ( $/ ) {
-    my $repo = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>, next-repo => $*REPO;
-    make $<repo> => $repo;
-  }
+  
+
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<pretty>  ( $/ ) { make ( $<pretty>.ast )  }
   method pakkuopt:sym<please>  ( $/ ) { make ( :please )  }
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.ast ) }
 
+  method pakkuopt:sym<repo>    ( $/ ) {
 
+    my $repo = $<reponame>.ast;
+
+    make ~$<repo> => $repo;
+
+  }
+
+ 
   method addopt:sym<deps>  ( $/ ) { make $<deps>.ast }
   method addopt:sym<build> ( $/ ) { make $<build>.ast }
   method addopt:sym<test>  ( $/ ) { make $<test>.ast }
   method addopt:sym<force> ( $/ ) { make ( :force )  }
 
   method addopt:sym<into>  ( $/ ) {
-    my $into = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>;
+
+    my $into = $<reponame>.ast;
+
     $into.next-repo = Nil;
-    make ( $<into> => $into );
+
+    make ~$<into> => $into;
+
   }
 
 
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
+
   method removeopt:sym<from> ( $/ ) {
-    my $from = CompUnit::RepositoryRegistry.repository-for-name: ~$<reponame>;
+
+    my $from = $<reponame>.ast;
+
     $from.next-repo = Nil;
-    make ( $<from> => $from );
+
+    make ~$<from> => $from;
   }
 
 
   method listopt:sym<remote> ( $/ ) { make $<remote>.ast }
+  method listopt:sym<local>  ( $/ ) { make $< remote>.ast }
   method listopt:sym<info>   ( $/ ) { make $<info>.ast }
+
+  method listopt:sym<repo> ( $/ ) {
+
+    my $repo = $<reponame>.ast;
+
+    $repo.next-repo = Nil;
+
+    make ~$<repo> => $repo;
+  }
 
 
   method specs ( $/ ) { make $<spec>».ast    }
@@ -275,7 +302,6 @@ class Pakku::Grammar::Cmd::Actions {
   method deps:sym<nodeps> ( $/ )  { make ( :!deps ) }
   method deps:sym<nd>     ( $/ )  { make ( :!deps ) }
 
-
   method build:sym<build>   ( $/ )  { make ( :build  ) }
   method build:sym<b>       ( $/ )  { make ( :build  ) }
   method build:sym<nobuild> ( $/ )  { make ( :!build ) }
@@ -291,11 +317,32 @@ class Pakku::Grammar::Cmd::Actions {
   method remote:sym<noremote> ( $/ )  { make ( :!remote ) }
   method remote:sym<nr>       ( $/ )  { make ( :!remote ) }
 
+  method local:sym<local>   ( $/ ) { make ( :local  ) }
+  method local:sym<l>       ( $/ ) { make ( :local  ) }
+  method local:sym<nolocal> ( $/ ) { make ( :!local ) }
+  method local:sym<nl>      ( $/ ) { make ( :!local ) }
+
   method info:sym<info>   ( $/ )  { make ( :info  ) }
   method info:sym<i>      ( $/ )  { make ( :info  ) }
   method info:sym<noinfo> ( $/ )  { make ( :!info ) }
   method info:sym<ni>     ( $/ )  { make ( :!info ) }
 
+  method reponame:sym<home> ( $/ ) {
+    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
+  }
+  
+  method reponame:sym<site> ( $/ ) {
+    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
+  }
+  
+  method reponame:sym<vendor> ( $/ ) {
+    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
+  }
+  
+  method reponame:sym<core> ( $/ ) {
+    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
+  }
+ 
   method level:sym<TRACE> ( $/ ) { make 1 }
   method level:sym<DEBUG> ( $/ ) { make 2 }
   method level:sym<INFO>  ( $/ ) { make 3 }
