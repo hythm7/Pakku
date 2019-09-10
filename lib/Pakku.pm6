@@ -162,17 +162,19 @@ method remove (
 
     }
 
-    @dist.map( -> $dist {
+    @repo.map( -> $repo {
 
-      # Temp workaround for rakudo issue #3153
-      $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
 
-      $!log.debug: "Uninstalling $dist from all repos";
+      for @dist -> $dist {
+#
+        # Temp workaround for rakudo issue #3153
+        $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
 
-      @repo.map( *.uninstall: $dist );
+        $!log.debug: "Uninstalling $dist from {$repo.name}";
 
-      $!log.debug: "Uninstalled $dist from all repos";
+        $repo.uninstall: $dist;
 
+      }
 
     } );
 
@@ -185,8 +187,8 @@ method list (
   :@spec,
 
   Bool:D :$info   = False,
-  Bool:D :$local  = False,
   Bool:D :$remote = False,
+  Bool:D :$local  = !$remote,
 
   CompUnit::Repository:D  :$repo = $!repo,
 
