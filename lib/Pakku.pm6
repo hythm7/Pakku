@@ -54,26 +54,19 @@ method add (
 
     my @repo = $into.repo-chain.grep( CompUnit::Repository::Installation );
 
+    unless $force {
 
-    #my @dist = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
+      @spec .= grep( -> $spec {
 
-  unless $force {
+        my @installed = flat @spec.map( -> $spec { self.installed: :$spec, :@repo } );
 
+        $!log.debug: "Found installed [{@installed}] matching spec [$spec]" if @installed;
 
-    @spec .= grep( -> $spec {
+        not @installed;
 
+      } );
 
-      # TODO: per repo check to allow add into repo
-      #my @installed = self.installed: :$spec;
-      my @installed = flat @spec.map( -> $spec { self.installed: :$spec, :@repo } );
-
-      $!log.debug: "Found installed [{@installed}] matching spec [$spec]" if @installed;
-
-      not @installed;
-
-    } );
-
-  }
+    }
 
 
   unless @spec {
@@ -103,12 +96,9 @@ method add (
 
     $!log.debug: "Filtering installed candies: {@candies}";
 
-    @candies .= map( *.grep( -> $dist { not self.installed: :$dist, :@repo } ) );
-    #@candies = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
+    @candies .= map( *.grep( -> $dist { not self.installed: :@repo, :$dist } ) );
 
   }
-
-  # say @candies;
 
   $!log.debug: "Candies to be installed: {@candies}";
 
@@ -203,33 +193,51 @@ method list (
 }
 
 
-multi submethod installed ( Pakku::Spec:D :$spec!, :@repo! ) {
+multi submethod installed ( :@repo!, Pakku::Spec:D :$spec! ) {
 
-  my @inst = gather %!installed{ @repo.map( *.name ) }.map( *.{ $spec.name } )
-    ==> grep ( *.defined )
-    ==> deepmap( -> $inst { $inst.take if $inst ~~ $spec });
+  return @repo.map( -> $repo { self.installed: :$repo, :$spec } );
+
+}
+
+multi submethod installed ( :$repo!, Pakku::Spec:D :$spec! ) {
+
+  my @inst = %!installed{ $repo.name }{ $spec.name }.grep( *.defined ).grep( -> $inst { $inst ~~ $spec });
 
   return @inst if @inst;
 
-  @inst = gather %!installed{ @repo.map( *.name ) }.map( *.values )
-    ==> deepmap( -> $inst { $inst.take if $spec.name ~~ $inst.provides });
+  @inst = %!installed{ $repo.name }.grep( *.defined ).map( *.value.values ).flat.grep( -> $inst {
+
+    $spec.name ~~ $inst.provides;
+
+  } );
 
   return @inst;
 
 }
 
-multi submethod installed ( Pakku::Dist:D :$dist!, :@repo! --> Bool ) {
+multi submethod installed ( :@repo!, Pakku::Dist:D :$dist! ) {
 
-my @inst = gather %!installed{ @repo.map( *.name ) }.map( *.{ $dist.name } )
-    ==> grep ( *.defined )
-    ==> deepmap( -> $inst { $inst.take if $inst.Str ~~ $dist.Str });
+  return so any @repo.map( -> $repo { self.installed: :$repo, :$dist } );
 
-  return so @inst if @inst;
+}
 
-@inst = gather %!installed{ @repo.map( *.name ) }.map( *.values )
-    ==> deepmap( -> $inst { $inst.take if $dist.name ~~ $inst.provides });
+multi submethod installed ( :$repo!, Pakku::Dist:D :$dist! --> Bool ) {
 
-  return so @inst;
+  my $inst = %!installed{ $repo.name }{ $dist.name }.grep( *.defined ).first( -> $inst {
+    $inst.name ~~ $dist.name
+  } );
+
+   return True if $inst;
+
+  $inst = %!installed{$repo.name}.grep( *.defined ).map( *.value.values ).flat.first( -> $inst {
+
+    $inst.name ~~ $dist.provides;
+
+  } );
+
+  return True if $inst;
+
+  return False;
 
 }
 

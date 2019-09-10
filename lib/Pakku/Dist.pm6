@@ -74,7 +74,7 @@ submethod TWEAK ( ) {
 method Str ( Pakku::Dist:D: --> Str ) {
 
   my Str $name = "$!name";
-  my Str $ver  = ":ver<{$!ver   // ''}>";
+  my Str $ver  = ":ver<{$!ver   // $!version // ''}>";
   my Str $auth = ":auth<{$!auth // ''}>";
   my Str $api  = ":api<{$!api   // ''}>";
 

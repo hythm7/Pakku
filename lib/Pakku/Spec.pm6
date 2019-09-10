@@ -19,7 +19,7 @@ grammar SpecGrammar {
   token key:sym<api>     { <sym> }
   token key:sym<from>    { <sym> }
 
-  token value { '<' $<val>=<-[<>]>+ '>' | '(' $<val>=<-[()]>+ ')' }
+  token value { '<' $<val>=<-[<>]>* '>' | '(' $<val>=<-[()]>* ')' }
 
 }
 
@@ -59,7 +59,7 @@ method new ( Str :$spec ) {
 
   my $m = $grammar.parse( $spec, :$actions );
 
-  die "I don't understand this spec: $spec" unless $m;
+  die "I don't understand this spec: [$spec]" unless $m;
 
   my %spec = $m.ast;
 
