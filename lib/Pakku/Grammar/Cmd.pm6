@@ -268,8 +268,8 @@ class Pakku::Grammar::Cmd::Actions {
 
 
   method listopt:sym<remote> ( $/ ) { make $<remote>.ast }
-  method listopt:sym<local>  ( $/ ) { make $< remote>.ast }
-  method listopt:sym<info>   ( $/ ) { make $<info>.ast }
+  method listopt:sym<local>  ( $/ ) { make $<remote>.ast }
+  method listopt:sym<info>   ( $/ ) { make $<info>.ast   }
 
   method listopt:sym<repo> ( $/ ) {
 
