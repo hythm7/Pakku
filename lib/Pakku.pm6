@@ -201,15 +201,17 @@ multi submethod installed ( :@repo!, Pakku::Spec:D :$spec! ) {
 
 multi submethod installed ( :$repo!, Pakku::Spec:D :$spec! ) {
 
-  my @inst = %!installed{ $repo.name }{ $spec.name }.grep( *.defined ).grep( -> $inst { $inst ~~ $spec });
+  my @inst
+    <== grep( -> $inst { $inst ~~ $spec })
+    <== grep( *.defined )
+    <== gather %!installed{ $repo.name }{ $spec.name }.deepmap: *.take;
 
   return @inst if @inst;
 
-  @inst = %!installed{ $repo.name }.grep( *.defined ).map( *.value.values ).flat.grep( -> $inst {
-
-    $spec.name ~~ $inst.provides;
-
-  } );
+  @inst 
+    <== grep( -> $inst { $spec.name ~~ $inst.provides } )
+    <== grep( *.defined )
+    <== gather %!installed{ $repo.name }.deepmap: *.take;
 
   return @inst;
 
@@ -217,27 +219,9 @@ multi submethod installed ( :$repo!, Pakku::Spec:D :$spec! ) {
 
 multi submethod installed ( :@repo!, Pakku::Dist:D :$dist! ) {
 
-  return so any @repo.map( -> $repo { self.installed: :$repo, :$dist } );
+  my $spec = Pakku::Spec.new: spec => $dist.Str;
 
-}
-
-multi submethod installed ( :$repo!, Pakku::Dist:D :$dist! --> Bool ) {
-
-  my $inst = %!installed{ $repo.name }{ $dist.name }.grep( *.defined ).first( -> $inst {
-    $inst.name ~~ $dist.name
-  } );
-
-   return True if $inst;
-
-  $inst = %!installed{$repo.name}.grep( *.defined ).map( *.value.values ).flat.first( -> $inst {
-
-    $inst.name ~~ $dist.provides;
-
-  } );
-
-  return True if $inst;
-
-  return False;
+  return so any self.installed: :@repo, :$spec;
 
 }
 
