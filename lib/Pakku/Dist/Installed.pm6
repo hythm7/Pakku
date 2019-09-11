@@ -7,8 +7,8 @@ unit class Pakku::Dist::Installed;
 
 
 # Needed to implement Distribution role
-# required .uninstall
-# Stoledn from Rakudo's InstalledDistribution
+# Required by .uninstall
+#Stolen from Rakudo's InstalledDistribution
 method content($address) {
   my $entry = $.meta<provides>.values.first: { $_{$address}:exists };
   my $file = $entry
