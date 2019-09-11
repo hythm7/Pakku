@@ -58,7 +58,7 @@ method add (
 
       @spec .= grep( -> $spec {
 
-        my @installed = flat @spec.map( -> $spec { self.installed: :$spec, :@repo } );
+        my @installed = self.installed: :$spec, :@repo;
 
         $!log.debug: "Found installed [{@installed}] matching spec [$spec]" if @installed;
 
@@ -195,7 +195,7 @@ method list (
 
 multi submethod installed ( :@repo!, Pakku::Spec:D :$spec! ) {
 
-  return @repo.map( -> $repo { self.installed: :$repo, :$spec } );
+  return @repo.map( -> $repo { self.installed: :$repo, :$spec } ).grep( *.so );
 
 }
 
