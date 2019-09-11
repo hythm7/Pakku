@@ -23,7 +23,7 @@ method build ( Pakku::Dist::Path:D :$dist ) {
       if $build.f {
 
         require $build;
-        ::('Build').new.build($dist.prefix);
+        ::('Build').new.build($dist.prefix.Str);
 
       }
 

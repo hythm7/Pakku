@@ -81,6 +81,13 @@ method !find ( Pakku::Spec:D :$spec! ) {
 
 }
 
+method list-dist ( ) {
+  #TODO: list per source
+
+  @!dist;
+
+}
+
 method !update ( ) {
 
   for @!source -> $source {

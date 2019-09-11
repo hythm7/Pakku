@@ -19,7 +19,7 @@ method fetch ( Str :$src!, :$dst = tempdir ) {
 
       #run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
       #
-      my $url = S/git/https/ with $src;
+      my $url = S/^git/https/ with $src;
       run 'git', 'clone', $url, cwd => $dst, :!out, :!err;
 
       $dst.IO.dir.first: *.d;

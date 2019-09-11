@@ -106,7 +106,7 @@ method add (
   my @dists
     <== map( {       .map( -> $path { Pakku::Dist::Path.new: $path      } ) } )
     <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                    } ) } )
-    <== map( {       .map( -> $cand { $cand.source-url // $cand.support<source> } ) } )
+    <== map( {       .map( -> $cand { $cand.source-url || $cand.support<source> } ) } )
     <== @candies;
 
 
@@ -184,19 +184,46 @@ method list (
 
   :@spec,
 
-  Bool:D :$info   = False,
-  Bool:D :$remote = False,
-  Bool:D :$local  = !$remote,
+  Bool:D :$details = False,
+  Bool:D :$remote  = False,
+  Bool:D :$local   = !$remote,
 
   CompUnit::Repository:D  :$repo = $!repo,
 
 ) {
 
-  $!log.debug: "Looking for installed Dists";
+  my @repo = $repo.repo-chain.grep( CompUnit::Repository::Installation );
 
-  $!log.out: "{@!installed.map( *.Str ).join( "\n" )}";
+  my @dist;
 
-  $!log.info: "-Ofun";
+  given @spec {
+
+    when so @spec {
+
+      @dist.append: @spec.map( -> $spec { self.installed: :@repo, :$spec } ).flat;
+
+    }
+
+    when $local {
+      @dist
+        <== grep( *.defined )
+        <== gather %!installed{ @repo.map( *.name ) }.deepmap: *.take;
+
+  }
+
+    when $remote {
+
+      @dist.append: $!ecosystem.list-dist;
+
+    }
+
+  }
+
+  $!log.debug: "Looking for dists";
+
+  $!log.out: @dist.map( *.gist: :$details ).join( "\n" );
+
+  $!log.ofun;
 
 }
 
@@ -204,6 +231,14 @@ method list (
 multi submethod installed ( :@repo!, Pakku::Spec:D :$spec! ) {
 
   return @repo.map( -> $repo { self.installed: :$repo, :$spec } ).grep( *.so );
+
+}
+
+multi submethod installed ( :@repo!, Pakku::Dist:D :$dist! ) {
+
+  my $spec = Pakku::Spec.new: spec => $dist.Str;
+
+  return so any self.installed: :@repo, :$spec;
 
 }
 
@@ -216,20 +251,12 @@ multi submethod installed ( :$repo!, Pakku::Spec:D :$spec! ) {
 
   return @inst if @inst;
 
-  @inst 
+  @inst
     <== grep( -> $inst { $spec.name ~~ $inst.provides } )
     <== grep( *.defined )
     <== gather %!installed{ $repo.name }.deepmap: *.take;
 
   return @inst;
-
-}
-
-multi submethod installed ( :@repo!, Pakku::Dist:D :$dist! ) {
-
-  my $spec = Pakku::Spec.new: spec => $dist.Str;
-
-  return so any self.installed: :@repo, :$spec;
 
 }
 

@@ -34,22 +34,21 @@ has Pakku::Spec @.dependencies;
 submethod TWEAK ( ) {
 
 
-  $!meta-version  = $!meta<meta-version>  if $!meta<meta-version>;
-  $!name          = $!meta<name>          if $!meta<name>;
-  $!source-url    = $!meta<source-url>    if $!meta<source-url>;
-  $!auth          = $!meta<auth>          if $!meta<auth>;
-  $!author        = $!meta<author>        if $!meta<author>;
-  $!authority     = $!meta<authority>     if $!meta<authority>;
-  $!api           = $!meta<api>           if $!meta<api>;
-  $!ver           = $!meta<ver>           if $!meta<ver>;
-  $!version       = $!meta<version>       if $!meta<version>;
-  $!description   = $!meta<description>   if $!meta<description>;
-  %!provides      = $!meta<provides>      if $!meta<provides>;
-  %!files         = $!meta<files>         if $!meta<files>;
-  $!source-url    = $!meta<source-url>    if $!meta<source-url>;
-  $!license       = $!meta<license>       if $!meta<license>;
-  %!support       = $!meta<support>       if $!meta<support>;
-  $!builder       = $!meta<builder>       if $!meta<builder>;
+  $!meta-version  = $!meta<meta-version> // '';
+  $!name          = $!meta<name>         // '';
+  $!version       = $!meta<version>      // '';
+  $!auth          = $!meta<auth>         // '';
+  $!api           = $!meta<api>          // '';
+  $!author        = $!meta<author>       // '';
+  $!authority     = $!meta<authority>    // '';
+  $!description   = $!meta<description>  // '';
+  $!source-url    = $!meta<source-url>   // '';
+  $!license       = $!meta<license>      // '';
+  $!builder       = $!meta<builder>      // '';
+  $!ver           = $!meta<ver>          // $!meta<version>;
+  %!provides      = $!meta<provides>     if $!meta<provides>;
+  %!files         = $!meta<files>        if $!meta<files>;
+  %!support       = $!meta<support>      if $!meta<support>;
 
   @!resources     = flat $!meta<resources> if $!meta<resources>;
 
@@ -71,13 +70,29 @@ submethod TWEAK ( ) {
 
 }
 
-method Str ( Pakku::Dist:D: --> Str ) {
+multi method gist ( Pakku::Dist:D: :$details where *.not --> Str:D ) {
 
-  my Str $name = "$!name";
-  my Str $ver  = ":ver<{$!ver   // $!version // ''}>";
-  my Str $auth = ":auth<{$!auth // ''}>";
-  my Str $api  = ":api<{$!api   // ''}>";
+  ~self;
 
-  $name ~ $ver ~ $auth ~ $api;
+}
+
+multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
+
+  qq:to /END/
+
+  name → $!name
+  ver  → $!ver
+  auth → $!auth
+  api  → $!api
+  desc → $!description
+  deps ↴
+  { ("↳ " ~ @!dependencies.join( "\n↳ ")).indent( 5 ) }
+  END
+
+}
+
+method Str ( Pakku::Dist:D: --> Str:D ) {
+
+  $!name ~ ":ver<$!ver>:auth<$!auth>:api<$!api>"
 
 }

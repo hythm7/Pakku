@@ -63,10 +63,10 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto rule listopt { * }
-  rule listopt:sym<remote> { «<remote>» }
-  rule listopt:sym<local>  { «<local>» }
-  rule listopt:sym<info>   { «<info>» }
-  rule listopt:sym<repo>   { «<repo> <reponame>» }
+  rule listopt:sym<remote>  { «<remote>» }
+  rule listopt:sym<local>   { «<local>» }
+  rule listopt:sym<details> { «<details>» }
+  rule listopt:sym<repo>    { «<repo> <reponame>» }
 
   proto token deps { * }
   token deps:sym<deps>   { «<sym>» }
@@ -98,11 +98,17 @@ grammar Pakku::Grammar::Cmd {
   token remote:sym<noremote> { «<sym>» }
   token remote:sym<nr>       { «<sym>» }
 
-  proto token info { * }
-  token info:sym<info>   { «<sym>» }
-  token info:sym<i>      { «<sym>» }
-  token info:sym<noinfo> { «<sym>» }
-  token info:sym<ni>     { «<sym>» }
+  proto token local { * }
+  token local:sym<local>   { «<sym>» }
+  token local:sym<l>       { «<sym>» }
+  token local:sym<nolocal> { «<sym>» }
+  token local:sym<nl>      { «<sym>» }
+
+  proto token details { * }
+  token details:sym<details>   { «<sym>» }
+  token details:sym<d>         { «<sym>» }
+  token details:sym<nodetails> { «<sym>» }
+  token details:sym<nd>        { «<sym>» }
 
   proto token pretty { * }
   token pretty:sym<pretty>   { «<sym>» }
@@ -215,15 +221,15 @@ class Pakku::Grammar::Cmd::Actions {
 
     %cmd<cmd>        = 'list';
     %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
-    %cmd<list>       = $<listopt>».ast.hash    if defined $<listopt>;
-    %cmd<list><spec> = $<specs>.ast            if defined $<specs>;
+    %cmd<list>       = $<listopt>».ast.hash  if defined $<listopt>;
+    %cmd<list><spec> = $<specs>.ast          if defined $<specs>;
 
     make %cmd;
 
   }
 
 
-  
+
 
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<pretty>  ( $/ ) { make ( $<pretty>.ast )  }
@@ -238,7 +244,7 @@ class Pakku::Grammar::Cmd::Actions {
 
   }
 
- 
+
   method addopt:sym<deps>  ( $/ ) { make $<deps>.ast }
   method addopt:sym<build> ( $/ ) { make $<build>.ast }
   method addopt:sym<test>  ( $/ ) { make $<test>.ast }
@@ -267,9 +273,9 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method listopt:sym<remote> ( $/ ) { make $<remote>.ast }
-  method listopt:sym<local>  ( $/ ) { make $<remote>.ast }
-  method listopt:sym<info>   ( $/ ) { make $<info>.ast   }
+  method listopt:sym<remote>  ( $/ ) { make $<remote>.ast }
+  method listopt:sym<local>   ( $/ ) { make $<local>.ast  }
+  method listopt:sym<details> ( $/ ) { make $<details>.ast   }
 
   method listopt:sym<repo> ( $/ ) {
 
@@ -322,27 +328,27 @@ class Pakku::Grammar::Cmd::Actions {
   method local:sym<nolocal> ( $/ ) { make ( :!local ) }
   method local:sym<nl>      ( $/ ) { make ( :!local ) }
 
-  method info:sym<info>   ( $/ )  { make ( :info  ) }
-  method info:sym<i>      ( $/ )  { make ( :info  ) }
-  method info:sym<noinfo> ( $/ )  { make ( :!info ) }
-  method info:sym<ni>     ( $/ )  { make ( :!info ) }
+  method details:sym<details>   ( $/ ) { make ( :details  ) }
+  method details:sym<d>         ( $/ ) { make ( :details  ) }
+  method details:sym<nodetails> ( $/ ) { make ( :!details ) }
+  method details:sym<nd>        ( $/ ) { make ( :!details ) }
 
   method reponame:sym<home> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
-  
+
   method reponame:sym<site> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
-  
+
   method reponame:sym<vendor> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
-  
+
   method reponame:sym<core> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
- 
+
   method level:sym<TRACE> ( $/ ) { make 1 }
   method level:sym<DEBUG> ( $/ ) { make 2 }
   method level:sym<INFO>  ( $/ ) { make 3 }

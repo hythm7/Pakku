@@ -68,7 +68,7 @@ method info  ( Str:D $msg ) { info  $msg }
 method warn  ( Str:D $msg ) { warn  $msg }
 method error ( Str:D $msg ) { error $msg }
 
-method out ( Str:D $msg ) { put $msg }
+method out ( Str:D $msg ) { put $msg if $msg }
 
 method ofun  ( ) { put $!ofun  }
 method nofun ( ) { put $!nofun }
