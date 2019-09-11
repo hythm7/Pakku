@@ -142,31 +142,39 @@ method remove (
 
     my @repo = $from.repo-chain.grep( CompUnit::Repository::Installation );
 
-    my @dist = flat @spec.map( -> $spec { @repo.map( *.candidates: $spec ) } );
 
-    unless @dist {
+  my @dist = flat @spec.map( -> $spec {
 
-      $!log.info: "Saul Goodman";
+    my @installed = flat self.installed: :$spec, :@repo;
 
-      return;
+    $!log.debug: "Found no installed dists matching [$spec]" unless @installed;
+
+    @installed;
+
+  } );
+
+  unless @dist {
+
+    $!log.info: "Saul Goodman";
+
+    return;
+
+  }
+
+  @repo.map( -> $repo {
+
+    for @dist -> $dist {
+#
+      # Temp workaround for rakudo issue #3153
+      $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
+
+      $!log.debug: "Uninstalling $dist from {$repo.name}";
+
+      $repo.uninstall: $dist;
 
     }
 
-    @repo.map( -> $repo {
-
-
-      for @dist -> $dist {
-#
-        # Temp workaround for rakudo issue #3153
-        $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
-
-        $!log.debug: "Uninstalling $dist from {$repo.name}";
-
-        $repo.uninstall: $dist;
-
-      }
-
-    } );
+  } );
 
   $!log.ofun;
 }
@@ -251,7 +259,7 @@ submethod !init ( ) {
   @!inst-repo.map( -> $repo {
 
     eager $repo.installed
-      ==> map( -> $dist { Pakku::Dist::Installed.new: meta => $dist.meta, prefix => $dist.prefix })
+      ==> map( -> $dist { Pakku::Dist::Installed.new: meta => $dist.meta })
       ==> map( -> $dist { %!installed{$repo.name}{$dist.name}.push: $dist } );
   } );
 
