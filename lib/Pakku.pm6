@@ -194,18 +194,34 @@ method list (
 
   my @repo = $repo.repo-chain.grep( CompUnit::Repository::Installation );
 
-  my @dist;
+  $!log.debug: "Looking for dists";
+
+  my @dists;
 
   given @spec {
 
     when so @spec {
 
-      @dist.append: @spec.map( -> $spec { self.installed: :@repo, :$spec } ).flat;
+      @spec.map( -> $spec {
+
+        my @dist = flat self.installed: :@repo, :$spec;
+        
+        unless @dist {
+
+          $!log.debug: "No dists matching $spec" unless @dist;
+
+          return;
+
+        }
+
+        @dists.append: @dist;
+
+      } );
 
     }
 
     when $local {
-      @dist
+      @dists
         <== grep( *.defined )
         <== gather %!installed{ @repo.map( *.name ) }.deepmap: *.take;
 
@@ -213,15 +229,14 @@ method list (
 
     when $remote {
 
-      @dist.append: $!ecosystem.list-dist;
+      @dists.append: $!ecosystem.list-dist;
 
     }
 
   }
 
-  $!log.debug: "Looking for dists";
 
-  $!log.out: @dist.map( *.gist: :$details ).join( "\n" );
+  $!log.out: @dists.map( *.gist: :$details ).join( "\n" );
 
   $!log.ofun;
 
