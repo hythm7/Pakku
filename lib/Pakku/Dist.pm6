@@ -91,24 +91,25 @@ multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
     "deps ↴" ~ ("\n↳" ~ @!dependencies.join( "\n↳ ")).indent( 5 ) if @!dependencies
   }
   {
-    "prov" ~ ("\n↳" ~
+    {
+      "prov\n" ~
+        "{
+          %!provides.kv.map( -> $mod, $path {
+            "↳ $mod\n" ~
+              "{
+                $path.kv.map( -> $path, $info {
+                  "↳ $path\n" ~
+                    "{
+                      $info.kv.map( -> $k, $v {
+                        "↳ $k → $v \n"
+                      } )
+                    }".indent( $ += 2 )
+                })
+              }".indent( $ += 2 )
+          })
+        }"
+    } if %!provides
 
-     %!provides.kv.map( -> $mod, $path {
-
-       {
-         $mod ~ ("\n↳" ~
-           $path.kv.map( -> $path, $info {
-             $path ~
-               ("\n↳" ~
-                 $info.kv.map( -> $k, $v {
-                   "$k → $v"
-                 } ).join( "\n ↳").indent( ++$ )
-               ).join( "\n↳").indent( ++$ )
-             } ).join( "\n↳" ).indent( ++$ )
-           ).join( "\n↳" ).indent( ++$ )
-         }
-     } ).join( "\n↳").indent( ++$ )
-   ) if %!provides
   }
   END
 
