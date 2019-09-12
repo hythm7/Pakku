@@ -78,7 +78,7 @@ multi method gist ( Pakku::Dist:D: :$details where *.not --> Str:D ) {
 
 multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
 
-  # Ah ya 7osty elsoda yaba yana yamma
+  # Ah ya 7osty elsoda yaba yana yama
 
   qq:to /END/
 
@@ -87,13 +87,29 @@ multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
   auth → $!auth
   api  → $!api
   desc → $!description
-  {"deps ↴" ~ ("\n↳" ~ @!dependencies.join( "\n↳ ")).indent( 5 ) if @!dependencies }
-  {"prov" ~ ("\n↳" ~
+  {
+    "deps ↴" ~ ("\n↳" ~ @!dependencies.join( "\n↳ ")).indent( 5 ) if @!dependencies
+  }
+  {
+    "prov" ~ ("\n↳" ~
+
      %!provides.kv.map( -> $mod, $path {
 
-       {$mod ~ $path.kv.map( -> $path, $info { $path ~ ("\n↳" ~ $info.kv.map( -> $k, $v { "$k → $v" } ).join( "\n ↳").indent( ++$ ) ).join( "\n↳").indent( ++$ ) } ).join( "\n↳" ).indent( ++$ )  }
-
-     } ).join( "\n↳").indent( ++$ ) ) if %!provides }
+       {
+         $mod ~ ("\n↳" ~
+           $path.kv.map( -> $path, $info {
+             $path ~
+               ("\n↳" ~
+                 $info.kv.map( -> $k, $v {
+                   "$k → $v"
+                 } ).join( "\n ↳").indent( ++$ )
+               ).join( "\n↳").indent( ++$ )
+             } ).join( "\n↳" ).indent( ++$ )
+           ).join( "\n↳" ).indent( ++$ )
+         }
+     } ).join( "\n↳").indent( ++$ )
+   ) if %!provides
+  }
   END
 
 }
