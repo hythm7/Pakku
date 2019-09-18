@@ -101,12 +101,12 @@ multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
                   "↳ $path\n" ~
                     "{
                       $info.kv.map( -> $k, $v {
-                        "↳ $k → $v \n"
-                      } )
-                    }".indent( $ += 2 )
-                })
-              }".indent( $ += 2 )
-          })
+                        "↳ $k → $v" with $v
+                      } ).join("\n").indent( $ += 2 )
+                    }"
+                }).join( "\n" ).indent( $ += 2 )
+              }"
+          }).join( "\n" ).indent( $ += 5 )
         }"
     } if %!provides
 
