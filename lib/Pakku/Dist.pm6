@@ -88,28 +88,26 @@ multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
   api  → $!api
   desc → $!description
   {
-    "deps ↴" ~ ("\n↳" ~ @!dependencies.join( "\n↳ ")).indent( 5 ) if @!dependencies
+    "deps\n" ~
+      @!dependencies.map( -> $dep {
+        "↳ $dep"
+      } ).join("\n").indent( $ += 5 ) if @!dependencies
   }
   {
-    {
-      "prov\n" ~
-        "{
-          %!provides.kv.map( -> $mod, $path {
-            "↳ $mod\n" ~
-              "{
-                $path.kv.map( -> $path, $info {
-                  "↳ $path\n" ~
-                    "{
-                      $info.kv.map( -> $k, $v {
-                        "↳ $k → $v" with $v
-                      } ).join("\n").indent( $ += 2 )
-                    }"
-                }).join( "\n" ).indent( $ += 2 )
-              }"
-          }).join( "\n" ).indent( $ += 5 )
-        }"
-    } if %!provides
-
+    "prov\n" ~
+        %!provides.kv.map( -> $mod, $path {
+          "↳ $mod\n" ~
+            "{
+              $path.kv.map( -> $path, $info {
+                "↳ $path\n" ~
+                  "{
+                    $info.kv.map( -> $k, $v {
+                      "↳ $k → $v" with $v
+                    } ).join("\n").indent( $ += 2 )
+                  }"
+              }).join( "\n" ).indent( $ += 2 )
+            }"
+        }).join( "\n" ).indent( $ += 5 ) if %!provides
   }
   END
 
