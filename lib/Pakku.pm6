@@ -236,7 +236,7 @@ method list (
   }
 
 
-  $!log.out: @dists.map( *.gist: :$details ).join( "\n" );
+  $!log.out: @dists.map( *.gist: :$details ).Str;
 
   $!log.ofun;
 
