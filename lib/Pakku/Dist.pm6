@@ -77,17 +77,17 @@ multi method gist ( Pakku::Dist:D: :$details where *.not --> Str:D ) {
 multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
 
   (
-    (             self.Str      ),
-    ( gist-name   $!name        ),
-    ( gist-ver    $!ver.Str     ),
-    ( gist-auth   $!auth        ),
-    ( gist-api    $!api         ),
-    ( gist-desc   $!description ),
-    ( gist-deps   @!deps        ),
-    ( gist-prov   %!provides    ),
-    ( gist-bldr   $!builder     ),
-    ( gist-surl   $!source-url  ),
-    ( '┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄'),
+    (           self          ),
+    ( gist-name $!name        ),
+    ( gist-ver  $!ver         ),
+    ( gist-auth $!auth        ),
+    ( gist-api  $!api         ),
+    ( gist-desc $!description ),
+    ( gist-bldr $!builder     ),
+    ( gist-surl $!source-url  ),
+    ( gist-deps @!deps        ),
+    ( gist-prov %!provides    ),
+    ( '┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄' ),
   ).join( "\n" );
 }
 
@@ -97,13 +97,14 @@ method Str ( Pakku::Dist:D: --> Str:D ) {
 
 }
 
-sub gist-name ( Str:D $name --> Str:D ) { "name → $name" .indent: 2 }
-sub gist-ver  ( Str:D $ver  --> Str:D ) { "ver  → $ver"  .indent: 2 }
-sub gist-auth ( Str:D $auth --> Str:D ) { "auth → $auth" .indent: 2 }
-sub gist-desc ( Str:D $desc --> Str:D ) { "desc → $desc" .indent: 2 }
-sub gist-api  ( Str:D $api  --> Str:D ) { "api  → $api"  .indent: 2 }
-sub gist-surl ( Str:D $surl --> Str:D ) { "surl → $surl" .indent: 2 }
-sub gist-bldr ( Str:D $bldr --> Str:D ) { "bldr → $bldr" .indent: 2 }
+sub gist-name ( $name --> Str:D ) { "name → $name" .indent: 2 }
+sub gist-ver  ( $ver  --> Str:D ) { "ver  → $ver"  .indent: 2 }
+sub gist-auth ( $auth --> Str:D ) { "auth → $auth" .indent: 2 }
+sub gist-desc ( $desc --> Str:D ) { "desc → $desc" .indent: 2 }
+sub gist-api  ( $api  --> Str:D ) { "api  → $api"  .indent: 2 }
+sub gist-surl ( $surl --> Str:D ) { "surl → $surl" .indent: 2 }
+
+sub gist-bldr ( $bldr --> Str:D ) { "bldr → { $bldr // $bldr.^name }" .indent: 2 }
 
 sub gist-deps ( Pakku::Spec:D @deps --> Str:D ) {
 
@@ -127,17 +128,14 @@ sub gist-prov ( %prov --> Str:D ) {
   ( %prov
     ?? "$label \n" ~
         %prov.kv.map( -> $mod, $path {
-          "↳ $mod\n" ~
-            "{
-              $path.kv.map( -> $path, $info {
-                "↳ $path\n" ~
-                  "{
-                    $info.kv.map( -> $k, $v {
+          $path ~~ Hash
+            ?? "↳ $mod → { $path.keys }\n" ~
+                  $path.kv.map( -> $path, $info {
+                     $info.kv.map( -> $k, $v {
                       "↳ $k → { $v // '' }"
-                    } ).join("\n").indent( 2 )
-                  }"
-              }).join( "\n" ).indent( 2 )
-            }"
+                     } ).join("\n").indent( 2 )
+                  })
+            !! "↳ $mod";
         }).join( "\n" ).indent( 5 )
     !! "$label →";
   ).indent: 2;
