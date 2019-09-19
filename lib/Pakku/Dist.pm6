@@ -87,7 +87,7 @@ multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
     ( gist-surl $!source-url  ),
     ( gist-deps @!deps        ),
     ( gist-prov %!provides    ),
-    ( '┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄' ),
+    (           ''            ),
   ).join( "\n" );
 }
 
@@ -120,8 +120,6 @@ sub gist-deps ( Pakku::Spec:D @deps --> Str:D ) {
 }
 
 sub gist-prov ( %prov --> Str:D ) {
-
-  # Ah ya 7osty elsoda yaba yana yama
 
   my $label = 'prov';
 

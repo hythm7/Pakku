@@ -1,7 +1,6 @@
 use JSON::Fast;
 use LibCurl::HTTP :subs;
 
-use X::Pakku;
 use Pakku::Spec;
 use Pakku::Dist;
 
@@ -81,7 +80,7 @@ method !find ( Pakku::Spec:D :$spec! ) {
 
 }
 
-method list-dist ( ) {
+method list-dists ( ) {
   #TODO: list per source
 
   @!dist;

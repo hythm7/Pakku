@@ -196,50 +196,41 @@ method list (
 
   $!log.debug: "Looking for dists";
 
-  my @dists;
+  my @dist;
 
-  given @spec {
+  if $local {
 
-    when so @spec {
-
-      @spec.map( -> $spec {
-
-        my @dist = flat self.installed: :@repo, :$spec;
-
-        unless @dist {
-
-          $!log.debug: "No dists matching $spec" unless @dist;
-
-          return;
-
-        }
-
-        @dists.append: @dist;
-
-      } );
-
-    }
-
-    when $local {
-      @dists
-        <== grep( *.defined )
-        <== gather %!installed{ @repo.map( *.name ) }.deepmap: *.take;
+    @spec
+      ?? @dist.append: @spec.map( -> $spec { flat self.installed: :@repo, :$spec } ).flat
+      !! (
+           @dist
+             <== grep( *.defined )
+             <== gather %!installed{ @repo.map( *.name ) }.deepmap: *.take
+         )
+      ;
 
   }
 
-    when $remote {
+  else {
 
-      @dists.append: $!ecosystem.list-dist;
-
-    }
+    @spec
+      ?? @dist.append: $!ecosystem.recommend( :@spec, :!deps ).flat
+      !! @dist.append: $!ecosystem.list-dists;
 
   }
 
-
-  $!log.out: @dists.map( *.gist: :$details ).join( "\n" );
+  $!log.out: @dist.map( *.gist: :$details ).join( "\n" );
 
   $!log.ofun;
 
+  CATCH {
+
+    default {
+      $!log.info: .message;
+    }
+
+
+  }
 }
 
 
