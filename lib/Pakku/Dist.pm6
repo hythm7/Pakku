@@ -20,7 +20,6 @@ has $.version;
 has $.description;
 has @.depends;
 has %.provides;
-has %.files;
 has $.source-url;
 has $.license;
 has @.build-depends;
@@ -29,7 +28,7 @@ has @.resources;
 has %.support;
 has $.builder;
 
-has Pakku::Spec @.dependencies;
+has Pakku::Spec @.deps;
 
 submethod TWEAK ( ) {
 
@@ -47,7 +46,6 @@ submethod TWEAK ( ) {
   $!builder       = $!meta<builder>      // '';
   $!ver           = $!meta<ver>          // $!meta<version>;
   %!provides      = $!meta<provides>     if $!meta<provides>;
-  %!files         = $!meta<files>        if $!meta<files>;
   %!support       = $!meta<support>      if $!meta<support>;
 
   @!resources     = flat $!meta<resources> if $!meta<resources>;
@@ -64,7 +62,7 @@ submethod TWEAK ( ) {
 
   for flat @!depends, @!build-depends, @!test-depends -> $spec {
 
-    @!dependencies.push: Pakku::Spec.new: :$spec;
+    @!deps.push: Pakku::Spec.new: :$spec;
 
   }
 
@@ -78,43 +76,64 @@ multi method gist ( Pakku::Dist:D: :$details where *.not --> Str:D ) {
 
 multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
 
-  # Ah ya 7osty elsoda yaba yana yama
-
-  qq:to /END/
-
-  name → $!name
-  ver  → $!ver
-  auth → $!auth
-  api  → $!api
-  desc → $!description
-  {
-    "deps\n" ~
-      @!dependencies.map( -> $dep {
-        "↳ $dep"
-      } ).join("\n").indent( $ += 5 ) if @!dependencies
-  }
-  {
-    "prov\n" ~
-        %!provides.kv.map( -> $mod, $path {
-          "↳ $mod\n" ~
-            "{
-              $path.kv.map( -> $path, $info {
-                "↳ $path\n" ~
-                  "{
-                    $info.kv.map( -> $k, $v {
-                      "↳ $k → $v" with $v
-                    } ).join("\n").indent( $ += 2 )
-                  }"
-              }).join( "\n" ).indent( $ += 2 )
-            }"
-        }).join( "\n" ).indent( $ += 5 ) if %!provides
-  }
-  END
-
+  (
+    ( gist-name   $!name        ),
+    ( gist-ver   ~$!ver         ),
+    ( gist-auth   $!auth        ),
+    ( gist-api    $!api         ),
+    ( gist-desc   $!description ),
+    ( gist-deps   @!deps        ),
+    ( gist-prov   %!provides    ),
+    ( gist-bldr   $!builder     ),
+    ( gist-surl   $!source-url  ),
+  ).join( "\n" );
 }
 
 method Str ( Pakku::Dist:D: --> Str:D ) {
 
   $!name ~ ":ver<$!ver>:auth<$!auth>:api<$!api>"
 
+}
+
+sub gist-name ( Str:D $name --> Str:D ) { "name → $name" }
+sub gist-ver  ( Str:D $ver  --> Str:D ) { "ver  → $ver"  }
+sub gist-auth ( Str:D $auth --> Str:D ) { "auth → $auth" }
+sub gist-desc ( Str:D $desc --> Str:D ) { "desc → $desc" }
+sub gist-api  ( Str:D $api  --> Str:D ) { "api  → $api"  }
+sub gist-surl ( Str:D $surl --> Str:D ) { "surl → $surl" }
+sub gist-bldr ( Str:D $bldr --> Str:D ) { "bldr → $bldr" }
+
+sub gist-deps ( Pakku::Spec:D @deps --> Str:D ) {
+
+  my $label = 'deps';
+
+  @deps
+    ?? "$label\n" ~
+        @deps.map( -> $dep {
+          "↳ $dep"
+        } ).join("\n").indent( $ += 5 )
+    !! "$label →";
+}
+
+sub gist-prov ( %prov --> Str:D ) {
+
+  # Ah ya 7osty elsoda yaba yana yama
+  my $label = 'prov';
+
+  %prov
+    ?? "$label \n" ~
+        %prov.kv.map( -> $mod, $path {
+          "↳ $mod\n" ~
+            "{
+              $path.kv.map( -> $path, $info {
+                "↳ $path\n" ~
+                  "{
+                    $info.kv.map( -> $k, $v {
+                      "↳ $k → { $v // '' }"
+                    } ).join("\n").indent( $ += 2 )
+                  }"
+              }).join( "\n" ).indent( $ += 2 )
+            }"
+        }).join( "\n" ).indent( $ += 5 )
+    !! "$label →";
 }

@@ -40,7 +40,7 @@ method get-deps ( Pakku::Dist:$dist ) {
 
   my @dist;
 
-  my @dep = $dist.dependencies.map( -> $spec {
+  my @dep = $dist.deps.map( -> $spec {
 
     next if $spec.name ~~ any @!ignored;
 
