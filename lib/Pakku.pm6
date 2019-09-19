@@ -205,7 +205,7 @@ method list (
       @spec.map( -> $spec {
 
         my @dist = flat self.installed: :@repo, :$spec;
-        
+
         unless @dist {
 
           $!log.debug: "No dists matching $spec" unless @dist;
@@ -236,7 +236,7 @@ method list (
   }
 
 
-  $!log.out: @dists.map( *.gist: :$details ).Str;
+  $!log.out: @dists.map( *.gist: :$details ).join( "\n" );
 
   $!log.ofun;
 
