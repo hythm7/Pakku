@@ -176,7 +176,7 @@ grammar Pakku::Grammar::Cmd {
   token key:sym<api>     { <sym> }
   token key:sym<from>    { <sym> }
 
-  token value { '<' $<val>=<-[<>]>+ '>' | '(' $<val>=<-[()]>+ ')' }
+  token value { '<' $<val>=<-[<>]>* '>' | '(' $<val>=<-[()]>* ')' }
 
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 

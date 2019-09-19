@@ -115,6 +115,7 @@ method add (
   $!log.debug: "Installation repo: {$repo.name}";
 
 
+  sleep 7;
   @dists.map( -> @dist {
 
     for @dist -> $dist {
@@ -254,13 +255,6 @@ multi submethod installed ( :$repo!, Pakku::Spec:D :$spec! ) {
     <== grep( -> $inst { $inst ~~ $spec })
     <== grep( *.defined )
     <== gather %!installed{ $repo.name }{ $spec.name }.deepmap: *.take;
-
-  return @inst if @inst;
-
-  @inst
-    <== grep( -> $inst { $spec.name ~~ $inst.provides } )
-    <== grep( *.defined )
-    <== gather %!installed{ $repo.name }.deepmap: *.take;
 
   return @inst;
 

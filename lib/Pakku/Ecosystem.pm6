@@ -30,7 +30,7 @@ method recommend ( :@spec!, :$deps! --> Seq ) {
 
     $deps ?? self.get-deps: :$dist !! $dist.Seq;
 
-  });
+  }).map( *.unique: :with( &[===] ) );
 
 }
 
@@ -70,9 +70,9 @@ method !find ( Pakku::Spec:D :$spec! ) {
 
   @cand = flat %!dist{$name} if so %!dist{$name};
 
-  @cand = @!dist.grep: *.provides: :$name unless @cand;
+  @cand = @!dist.grep( -> $dist { $name ~~ $dist.provides } ) unless @cand;
 
-  my $candy = @cand.grep( * ~~ $spec ).sort( *.version ).tail;
+  my $candy = @cand.grep( * ~~ $spec ).sort( { Version.new: .version } ).tail;
 
   $!log.fatal: "No candies for $spec" unless $candy;
 
