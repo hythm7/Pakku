@@ -115,7 +115,6 @@ method add (
   $!log.debug: "Installation repo: {$repo.name}";
 
 
-  sleep 7;
   @dists.map( -> @dist {
 
     for @dist -> $dist {
