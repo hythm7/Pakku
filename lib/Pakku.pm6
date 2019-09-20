@@ -121,7 +121,7 @@ method add (
 
   } );
 
-  $!log.ofun;
+  Ofun;
 
   CATCH {
 
@@ -131,7 +131,7 @@ method add (
 
       sleep .1;
 
-      $!log.nofun;
+      Nofun;
 
     }
   }
@@ -182,7 +182,7 @@ method remove (
 
   } );
 
-  $!log.ofun;
+  Ofun;
 }
 
 
@@ -225,9 +225,9 @@ method list (
 
   }
 
-  $!log.out: @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
+  note @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
 
-  $!log.ofun;
+  Ofun;
 
   CATCH {
 

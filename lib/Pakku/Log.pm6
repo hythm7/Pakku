@@ -45,14 +45,16 @@ class Pakku::Log {
       my $level = %!cnf{ $m<level> }<name>;
       my $msg   = $m<msg>;
 
-      my $formatted = $!pretty ??
-        colored( "$level ", "bold $color" ) ~ colored( "$msg ", "$color" )  !!
-        "$level $msg";
+      my $formatted =
+        $!pretty
+          ?? colored( "$level ", "bold $color" ) ~ colored( "$msg ", "$color" )
+          !! "$level $msg";
 
       $fh.say: $formatted;
 
     }
 
+    #logger.send-to: $*OUT, :level( PAKKU ), :$formatter;
     logger.send-to: $*OUT, :level( * >= $!verbose ), :$formatter;
 
   }
@@ -71,4 +73,7 @@ sub prefix:<✓> ( Str:D $msg ) is export { info    $msg }
 sub prefix:<⚠> ( Str:D $msg ) is export { warning $msg }
 sub prefix:<✗> ( Str:D $msg ) is export { error   $msg }
 sub prefix:<☠> ( Str:D $msg ) is export { fatal   $msg }
+
+sub Ofun  ( )  is export { logger.log( :msg('-Ofun') :level(Loglevels(3))  :frame(callframe(1))) }
+sub Nofun ( )  is export { logger.log( :msg('Nofun') :level(Loglevels(3))  :frame(callframe(1))) }
 
