@@ -43,10 +43,7 @@ method get-deps ( Pakku::Dist:$dist ) {
 
     next if $spec.name ~~ any @!ignored;
 
-    my $candy = self!find: :$spec;
-
-
-    $candy;
+    self!find: :$spec;
 
   });
 
