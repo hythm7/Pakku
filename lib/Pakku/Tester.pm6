@@ -1,14 +1,13 @@
 use Concurrent::File::Find;
 
+use Pakku::Log;
 use Pakku::Dist;
 
 unit class Pakku::Tester;
 
-has $.log;
 
 
 method test ( Pakku::Dist:D :$dist ) {
-
 
 
   my $test-dir = $dist.prefix.add( 't' );
@@ -20,7 +19,7 @@ method test ( Pakku::Dist:D :$dist ) {
 
   my @test = find $test-dir.Str, :extension<t>;
 
-  $!log.debug: "Testing $dist" if @test;
+  D "Testing $dist" if @test;
 
   my @exitcode = @test.map( -> $test {
 
@@ -30,8 +29,8 @@ method test ( Pakku::Dist:D :$dist ) {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $include, $test;
 
-      whenever $proc.stdout.lines { $!log.trace: $^out }
-      whenever $proc.stderr.lines { $!log.trace: $^err }
+      whenever $proc.stdout.lines { T $^out }
+      whenever $proc.stderr.lines { T $^err }
       whenever $proc.start( cwd => $dist.prefix ) { $exitcode = .exitcode }
 
     }
@@ -40,6 +39,6 @@ method test ( Pakku::Dist:D :$dist ) {
 
   });
 
-  $!log.fatal: "Test failed for {$dist.name}" if  any @exitcode;
+  ☠ "Test failed for {$dist.name}" if  any @exitcode;
 
 }

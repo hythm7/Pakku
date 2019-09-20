@@ -27,14 +27,6 @@ has CompUnit::Repository @!inst-repo;
 
 submethod BUILD ( ) {
 
- CATCH {
-    when X::Pakku {
-
-      $!log.nofun;
-
-    }
-  }
-
   self!init;
 
  }
@@ -60,7 +52,7 @@ method add (
 
         my @installed = self.installed: :$spec, :@repo;
 
-        $!log.debug: "Found installed [{@installed}] matching spec [$spec]" if @installed;
+        D "Found installed [{@installed}] matching spec [$spec]" if @installed;
 
         not @installed;
 
@@ -71,7 +63,7 @@ method add (
 
   unless @spec {
 
-    $!log.info: "Saul Goodman!";
+    ✓ "Saul Goodman!";
 
     return;
 
@@ -83,24 +75,24 @@ method add (
 
   unless @candies {
 
-    $!log.error: "No candies!";
+    ✗ "No candies!";
 
     return;
 
   }
 
 
-  $!log.debug: "Found: {@candies}";
+  D "Found: {@candies}";
 
   unless $force {
 
-    $!log.debug: "Filtering installed candies: {@candies}";
+    D "Filtering installed candies: {@candies}";
 
     @candies .= map( *.grep( -> $dist { not self.installed: :@repo, :$dist } ) );
 
   }
 
-  $!log.debug: "Candies to be installed: {@candies}";
+  D "Candies to be installed: {@candies}";
 
 
   my @dists
@@ -112,7 +104,7 @@ method add (
 
   my $repo = @repo.head;
 
-  $!log.debug: "Installation repo: {$repo.name}";
+  D "Installation repo: {$repo.name}";
 
 
   @dists.map( -> @dist {
@@ -122,7 +114,7 @@ method add (
       $!builder.build: :$dist if $build;
       $!tester.test:   :$dist if $test;
 
-      $!log.debug: "Installing $dist";
+      D "Installing $dist";
       $repo.install: $dist, :$force;
 
     }
@@ -130,6 +122,20 @@ method add (
   } );
 
   $!log.ofun;
+
+  CATCH {
+
+    when X::Pakku::NoCandy {
+
+      ☠ .message;
+
+      sleep .1;
+
+      $!log.nofun;
+
+    }
+  }
+
 }
 
 method remove (
@@ -147,7 +153,7 @@ method remove (
 
     my @installed = flat self.installed: :$spec, :@repo;
 
-    $!log.debug: "Found no installed dists matching [$spec]" unless @installed;
+    D "Found no installed dists matching [$spec]" unless @installed;
 
     @installed;
 
@@ -155,7 +161,7 @@ method remove (
 
   unless @dist {
 
-    $!log.info: "Saul Goodman";
+    ✓ "Saul Goodman";
 
     return;
 
@@ -164,11 +170,11 @@ method remove (
   @repo.map( -> $repo {
 
     for @dist -> $dist {
-#
+
       # Temp workaround for rakudo issue #3153
       $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
 
-      $!log.debug: "Uninstalling $dist from {$repo.name}";
+      D "Uninstalling $dist from {$repo.name}";
 
       $repo.uninstall: $dist;
 
@@ -194,7 +200,7 @@ method list (
 
   my @repo = $repo.repo-chain.grep( CompUnit::Repository::Installation );
 
-  $!log.debug: "Looking for dists";
+  D "Looking for dists";
 
   my @dist;
 
@@ -219,14 +225,18 @@ method list (
 
   }
 
-  $!log.out: @dist.map( *.gist: :$details ).join( "\n" );
+  $!log.out: @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
 
   $!log.ofun;
 
   CATCH {
 
-    default {
-      $!log.info: .message;
+    when X::Pakku::NoCandy {
+
+      D .message;
+
+      .resume
+
     }
 
 
@@ -273,9 +283,9 @@ submethod !init ( ) {
 
   $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
 
-  $!fetcher = Pakku::Fetcher.new: :$!log;
-  $!builder = Pakku::Builder.new: :$!log;
-  $!tester  = Pakku::Tester.new:  :$!log;
+  $!fetcher = Pakku::Fetcher;
+  $!builder = Pakku::Builder;
+  $!tester  = Pakku::Tester;
 
 
   $!repo = $repo;

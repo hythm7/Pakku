@@ -1,12 +1,13 @@
 use JSON::Fast;
 use LibCurl::HTTP :subs;
 
+use Pakku::Log;
+use X::Pakku;
 use Pakku::Spec;
 use Pakku::Dist;
 
 unit class Pakku::Ecosystem;
 
-has $.log;
 has @.source;
 has @!ignored;
 has %!dist;
@@ -22,7 +23,7 @@ submethod TWEAK ( ) {
 method recommend ( :@spec!, :$deps! --> Seq ) {
 
 
-  $!log.debug: "Looking for {@spec}";
+  D "Looking for {@spec}";
 
   @spec.map( -> $spec {
 
@@ -71,7 +72,7 @@ method !find ( Pakku::Spec:D :$spec! ) {
 
   my $candy = @cand.grep( * ~~ $spec ).sort( { Version.new: .version } ).tail;
 
-  $!log.fatal: "No candies for $spec" unless $candy;
+  die X::Pakku::NoCandy.new( :$spec ) unless $candy;
 
   $candy;
 

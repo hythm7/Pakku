@@ -3,13 +3,13 @@ use File::Temp;
 use LibCurl::Easy;
 use Libarchive::Simple;
 
-unit class Pakku::Fetcher;
+use Pakku::Log;
 
-has $.log;
+unit class Pakku::Fetcher;
 
 method fetch ( Str :$src!, :$dst = tempdir ) {
 
-  $!log.debug: "Fetching $src to $dst";
+  D "Fetching $src to $dst";
 
   my $uri = Cro::Uri.parse: $src;
 

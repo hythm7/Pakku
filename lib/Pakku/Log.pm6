@@ -1,13 +1,6 @@
 use Log::Async;
 use Terminal::ANSIColor;
 
-class X::Pakku {
-  also is Exception;
-
-  has $.message;
-
-}
-
 class Pakku::Log {
 
   has %.cnf;
@@ -38,8 +31,6 @@ class Pakku::Log {
     %!cnf<OFUN><color>    = '177';
     %!cnf<NOFUN><color>   = '9';
 
-    #say %cnf;
-
 
     my Int $color;
 
@@ -62,33 +53,22 @@ class Pakku::Log {
 
     }
 
-    #logger.send-to: $*ERR, :level( * >= ERROR ),     :$formatter;
     logger.send-to: $*OUT, :level( * >= $!verbose ), :$formatter;
 
   }
-
-
-  method trace ( Str:D $msg ) { trace $msg }
-  method debug ( Str:D $msg ) { debug $msg }
-  method info  ( Str:D $msg ) { info  $msg }
-  method warn  ( Str:D $msg ) { warn  $msg }
-  method error ( Str:D $msg ) { error $msg }
 
   method out ( Str:D $msg ) { put $msg if $msg }
 
   method ofun  ( ) { put $!ofun  }
   method nofun ( ) { put $!nofun }
 
-  method fatal ( Str:D $msg ) {
-
-    fatal $msg;
-
-    # quick nap befor X
-    sleep .1;
-
-    X::Pakku.new( message => $msg ).throw;
-
-  }
 }
 
+
+sub prefix:<T> ( Str:D $msg ) is export { trace   $msg }
+sub prefix:<D> ( Str:D $msg ) is export { debug   $msg }
+sub prefix:<✓> ( Str:D $msg ) is export { info    $msg }
+sub prefix:<⚠> ( Str:D $msg ) is export { warning $msg }
+sub prefix:<✗> ( Str:D $msg ) is export { error   $msg }
+sub prefix:<☠> ( Str:D $msg ) is export { fatal   $msg }
 
