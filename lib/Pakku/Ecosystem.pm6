@@ -1,8 +1,8 @@
 use JSON::Fast;
 use LibCurl::HTTP :subs;
 
-use Pakku::Log;
 use X::Pakku;
+use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Dist;
 
@@ -23,26 +23,40 @@ submethod TWEAK ( ) {
 method recommend ( :@spec!, :$deps! --> Seq ) {
 
 
-  D "Looking for {@spec}";
+  D "Eco: Processing specs [{@spec}]";
 
   @spec.map( -> $spec {
 
     my $dist = self!find: :$spec;
 
-    $deps ?? self.get-deps: :$dist !! $dist.Seq;
+    $deps ?? self!get-deps: :$dist !! $dist.Seq;
 
   }).map( *.unique: :with( &[===] ) );
 
 }
 
 
-method get-deps ( Pakku::Dist:$dist ) {
+submethod !get-deps ( Pakku::Dist:D :$dist! ) {
+
+  D "Eco: Looking for deps of dist [$dist]";
 
   my @dist;
 
-  my @dep = $dist.deps.map( -> $spec {
+  my @dep = $dist.deps;
 
-    next if $spec.name ~~ any @!ignored;
+  D "Eco: Found no deps for [$dist]" unless @dep;
+
+  @dep .= map( -> $spec {
+
+    if $spec.name ~~ any @!ignored {
+
+      D "Eco: Ignoring Core spec [$spec]";
+
+      next;
+    }
+
+
+    D "Eco: Found dep [$spec] for dist [$dist]";
 
     self!find: :$spec;
 
@@ -50,7 +64,7 @@ method get-deps ( Pakku::Dist:$dist ) {
 
   for @dep -> $dist {
 
-    @dist.append: self.get-deps( :$dist );
+    @dist.append: self!get-deps( :$dist );
 
   }
 
@@ -60,7 +74,9 @@ method get-deps ( Pakku::Dist:$dist ) {
 
 }
 
-method !find ( Pakku::Spec:D :$spec! ) {
+submethod !find ( Pakku::Spec:D :$spec! ) {
+
+  D "Eco: Looking for spec [$spec]";
 
   my @cand;
 
@@ -70,9 +86,22 @@ method !find ( Pakku::Spec:D :$spec! ) {
 
   @cand = @!dist.grep( -> $dist { $name ~~ $dist.provides } ) unless @cand;
 
-  my $candy = @cand.grep( * ~~ $spec ).sort( { Version.new: .version } ).tail;
+  @cand .= grep( * ~~ $spec );
 
-  die X::Pakku::NoCandy.new( :$spec ) unless $candy;
+  unless @cand {
+
+    die X::Pakku::Ecosystem::NoCandy.new( :$spec );
+
+    return;
+
+  }
+
+  D "Eco: Found candies [{@cand}] matching [$spec]";
+
+  my $candy = @cand.sort( { Version.new: .version } ).tail;
+
+
+  D "Eco: Recommending candy [$candy] for spec [$spec]";
 
   $candy;
 

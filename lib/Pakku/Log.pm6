@@ -8,9 +8,6 @@ class Pakku::Log {
   has Loglevels  $.verbose;
   has Bool       $.pretty;
 
-  has Str $!ofun;
-  has Str $!nofun;
-
 
   submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty!, :$cnf ) {
 
@@ -28,14 +25,8 @@ class Pakku::Log {
     %!cnf<ERROR><color>   = $cnf<5><color> // '9';
     %!cnf<FATAL><color>   = $cnf<6><color> // '1';
 
-    %!cnf<OFUN><color>    = '177';
-    %!cnf<NOFUN><color>   = '9';
-
 
     my Int $color;
-
-    $!ofun  = $!pretty ?? colored( '-Ofun', %!cnf<OFUN><color> )  !! '-Ofun';
-    $!nofun = $!pretty ?? colored( 'NOfun', %!cnf<NOFUN><color> ) !! 'NOfun';
 
     $!verbose = Loglevels( $verbose );
 
@@ -58,11 +49,6 @@ class Pakku::Log {
     logger.send-to: $*OUT, :level( * >= $!verbose ), :$formatter;
 
   }
-
-  method out ( Str:D $msg ) { put $msg if $msg }
-
-  method ofun  ( ) { put $!ofun  }
-  method nofun ( ) { put $!nofun }
 
 }
 

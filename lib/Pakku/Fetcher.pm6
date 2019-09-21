@@ -9,7 +9,7 @@ unit class Pakku::Fetcher;
 
 method fetch ( Str :$src!, :$dst = tempdir ) {
 
-  D "Fetching $src to $dst";
+  D "Fetch: Fetching $src to $dst";
 
   my $uri = Cro::Uri.parse: $src;
 

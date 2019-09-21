@@ -1,5 +1,7 @@
 use JSON::Fast;
 use Hash::Merge::Augment;
+use Terminal::ANSIColor;
+
 use Pakku::Log;
 use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
@@ -25,6 +27,10 @@ has Pakku::Ecosystem     $!ecosystem;
 has CompUnit::Repository $!repo;
 has CompUnit::Repository @!inst-repo;
 
+has Str $!ofun;
+has Str $!nofun;
+has Str $!allgood;
+
 submethod BUILD ( ) {
 
   self!init;
@@ -46,15 +52,36 @@ method add (
 
     my @repo = $into.repo-chain.grep( CompUnit::Repository::Installation );
 
+    D "Pakku: Processing specs [{@spec}]";
+
     unless $force {
+
+      D "Pakku: Filtering installed specs [{@spec}]";
 
       @spec .= grep( -> $spec {
 
-        my @installed = self.installed: :$spec, :@repo;
 
-        D "Found installed [{@installed}] matching spec [$spec]" if @installed;
+        D "Pakku: Checking if there are installed dists matching [$spec]";
 
-        not @installed;
+        my @inst = self.installed: :$spec, :@repo;
+
+        if @inst {
+
+          D "Pakku: Found installed dists [{@inst}] matching spec [$spec]";
+
+          D "Pakku: Will not install [$spec] unless forced";
+
+          D "Pakku: Removing spec [$spec] from specs list";
+
+        }
+
+        else {
+
+          D "Pakku: Found no installed dists matching spec [$spec]";
+
+        }
+
+        not @inst;
 
       } );
 
@@ -63,36 +90,52 @@ method add (
 
   unless @spec {
 
-    ✓ "Saul Goodman!";
+    D "Pakku: No specs remaning to install";
+
+    self.allgood;
 
     return;
 
   }
 
+
+  D "Pakku: Asking Eco recommendations for specs [{@spec}]";
 
   my @candies = $!ecosystem.recommend: :@spec, :$deps;
 
 
-  unless @candies {
-
-    ✗ "No candies!";
-
-    return;
-
-  }
-
-
-  D "Found: {@candies}";
-
   unless $force {
 
-    D "Filtering installed candies: {@candies}";
+    D "Pakku: Filtering recommended dists: {@candies}";
 
-    @candies .= map( *.grep( -> $dist { not self.installed: :@repo, :$dist } ) );
+    @candies .= map(
+      *.grep( -> $dist {
+
+        D "Pakku: Checking if dist [$dist] is already installed";
+
+        my Bool:D $inst =  self.installed: :@repo, :$dist;
+
+        if $inst {
+
+          D "Pakku: Removing dist [$dist] from recommended dists";
+          D "Pakku: Will not install dist [$dist] unless forced";
+
+        }
+
+        else {
+
+          D "Pakku: Dist [$dist] is not installed";
+
+        }
+
+        not $inst;
+
+      } )
+    );
 
   }
 
-  D "Candies to be installed: {@candies}";
+  D "Pakku: Candies to be installed: {@candies}";
 
 
   my @dists
@@ -104,7 +147,7 @@ method add (
 
   my $repo = @repo.head;
 
-  D "Installation repo: {$repo.name}";
+  D "Pakku: Installation repo is [{$repo.name}]";
 
 
   @dists.map( -> @dist {
@@ -121,17 +164,15 @@ method add (
 
   } );
 
-  Ofun;
+  self.Ofun;
 
   CATCH {
 
-    when X::Pakku::NoCandy {
+    when X::Pakku::Ecosystem::NoCandy {
 
       ☠ .message;
 
-      sleep .1;
-
-      Nofun;
+      self.Nofun;
 
     }
   }
@@ -161,7 +202,7 @@ method remove (
 
   unless @dist {
 
-    ✓ "Saul Goodman";
+    self.allgood;
 
     return;
 
@@ -182,7 +223,9 @@ method remove (
 
   } );
 
-  Ofun;
+
+
+  self.Ofun;
 }
 
 
@@ -200,7 +243,7 @@ method list (
 
   my @repo = $repo.repo-chain.grep( CompUnit::Repository::Installation );
 
-  D "Looking for dists";
+  D "Pakku: Asking Eco recommendations for specs [{@spec}]";
 
   my @dist;
 
@@ -225,15 +268,17 @@ method list (
 
   }
 
-  note @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
+  put @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
 
-  Ofun;
+  self.Ofun;
 
   CATCH {
 
-    when X::Pakku::NoCandy {
+    when X::Pakku::Ecosystem::NoCandy {
 
       D .message;
+
+      D "Pakku: proceeding anyway";
 
       .resume
 
@@ -269,6 +314,11 @@ multi submethod installed ( :$repo!, Pakku::Spec:D :$spec! ) {
 
 }
 
+# TODO: Instead of nap see if can await for all Log msgs
+submethod Ofun    ( --> Bool:D ) { sleep .1; put $!ofun    };
+submethod Nofun   ( --> Bool:D ) { sleep .1; put $!nofun   };
+submethod allgood ( --> Bool:D ) { sleep .1; put $!allgood };
+
 submethod !init ( ) {
 
   my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions.new );
@@ -282,6 +332,11 @@ submethod !init ( ) {
   my $repo    = %!cnf<pakku><repo>    // $*REPO;
 
   $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
+
+  $!ofun    = $pretty ?? colored( '-Ofun',        'bold 177' ) !! '-Ofun'; 
+  $!nofun   = $pretty ?? colored( 'Nofun',        'bold 9'   ) !! '-Ofun'; 
+  $!allgood = $pretty ?? colored( 'Saul Goodman', 'bold 177' ) !! 'Saul Goodman'; 
+
 
   $!fetcher = Pakku::Fetcher;
   $!builder = Pakku::Builder;
