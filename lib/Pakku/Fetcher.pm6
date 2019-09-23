@@ -26,7 +26,7 @@ method fetch ( Str :$src!, :$dst = tempdir ) {
       my $proc = run 'git', 'clone', $url, cwd => $dst, :out, :err;
 
       T $proc.out.slurp(:close);
-      T $proc.err.slurp(:close);
+      ✗ $proc.err.slurp(:close);
 
       my $dist-path = $dst.IO.dir.first: *.d;
 
