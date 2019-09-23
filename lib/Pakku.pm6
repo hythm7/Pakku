@@ -175,6 +175,14 @@ method add (
       self.Nofun;
 
     }
+
+    when X::LibCurl {
+
+      ☠ .message;
+
+      self.Nofun;
+
+    }
   }
 
 }

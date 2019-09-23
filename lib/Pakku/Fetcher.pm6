@@ -19,10 +19,20 @@ method fetch ( Str :$src!, :$dst = tempdir ) {
 
       #run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
       #
-      my $url = S/^git/https/ with $src;
-      run 'git', 'clone', $url, cwd => $dst, :!out, :!err;
+      D "Fetch: Cloning git repo [$src]";
 
-      $dst.IO.dir.first: *.d;
+      my $url = S/^git/https/ with $src;
+
+      my $proc = run 'git', 'clone', $url, cwd => $dst, :out, :err;
+
+      T $proc.out.slurp(:close);
+      T $proc.err.slurp(:close);
+
+      my $dist-path = $dst.IO.dir.first: *.d;
+
+      D "Fetch: Dist path is [$dist-path]";
+
+      $dist-path;
 
     }
 
@@ -30,11 +40,19 @@ method fetch ( Str :$src!, :$dst = tempdir ) {
 
       my $download = $dst.IO.add( $uri.path.IO.basename ).Str;
 
+      D "Fetch: Downloading url [$src] to [$download]";
+
       LibCurl::Easy.new( URL => $uri.Str, :$download ).perform;
+
+      D "Fetch: Extracting [$download]";
 
       .extract: destpath => $dst for archive-read $download;
 
-      $dst.IO.dir.first: *.d;
+      my $dist-path = $dst.IO.dir.first: *.d;
+
+      D "Fetch: Dist path is [$dist-path]";
+
+      $dist-path;
 
     }
 

@@ -30,7 +30,7 @@ method test ( Pakku::Dist:D :$dist ) {
       my $proc = Proc::Async.new: $*EXECUTABLE, $include, $test;
 
       whenever $proc.stdout.lines { T $^out }
-      whenever $proc.stderr.lines { T $^err }
+      whenever $proc.stderr.lines { ✗ $^err }
       whenever $proc.start( cwd => $dist.prefix ) { $exitcode = .exitcode }
 
     }
