@@ -9,7 +9,7 @@ unit class Pakku::Fetcher;
 
 method fetch ( Str :$src!, :$dst = tempdir ) {
 
-  D "Fetch: Fetching $src to $dst";
+  🐛 "Fetch: Fetching $src to $dst";
 
   my $uri = Cro::Uri.parse: $src;
 
@@ -19,18 +19,18 @@ method fetch ( Str :$src!, :$dst = tempdir ) {
 
       #run 'git', 'clone', $src, cwd => $dst, :!out, :!err;
       #
-      D "Fetch: Cloning git repo [$src]";
+      🐛 "Fetch: Cloning git repo [$src]";
 
       my $url = S/^git/https/ with $src;
 
       my $proc = run 'git', 'clone', $url, cwd => $dst, :out, :err;
 
-      T $proc.out.slurp(:close);
+      👣 $proc.out.slurp(:close);
       ✗ $proc.err.slurp(:close);
 
       my $dist-path = $dst.IO.dir.first: *.d;
 
-      D "Fetch: Dist path is [$dist-path]";
+      🐛 "Fetch: Dist path is [$dist-path]";
 
       $dist-path;
 
@@ -40,17 +40,17 @@ method fetch ( Str :$src!, :$dst = tempdir ) {
 
       my $download = $dst.IO.add( $uri.path.IO.basename ).Str;
 
-      D "Fetch: Downloading url [$src] to [$download]";
+      🐛 "Fetch: Downloading url [$src] to [$download]";
 
       LibCurl::Easy.new( URL => $uri.Str, :$download ).perform;
 
-      D "Fetch: Extracting [$download]";
+      🐛 "Fetch: Extracting [$download]";
 
       .extract: destpath => $dst for archive-read $download;
 
       my $dist-path = $dst.IO.dir.first: *.d;
 
-      D "Fetch: Dist path is [$dist-path]";
+      🐛 "Fetch: Dist path is [$dist-path]";
 
       $dist-path;
 

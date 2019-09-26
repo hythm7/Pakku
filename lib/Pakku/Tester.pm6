@@ -19,7 +19,7 @@ method test ( Pakku::Dist:D :$dist ) {
 
   my @test = find $test-dir.Str, :extension<t>;
 
-  D "Testing $dist" if @test;
+  🐛 "Testing $dist" if @test;
 
   my @exitcode = @test.map( -> $test {
 
@@ -29,7 +29,7 @@ method test ( Pakku::Dist:D :$dist ) {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $include, $test;
 
-      whenever $proc.stdout.lines { T $^out }
+      whenever $proc.stdout.lines { 👣 $^out }
       whenever $proc.stderr.lines { ✗ $^err }
       whenever $proc.start( cwd => $dist.prefix ) { $exitcode = .exitcode }
 

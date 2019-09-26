@@ -6,13 +6,13 @@ unit class Pakku::Builder;
 
 method build ( Pakku::Dist::Path:D :$dist ) {
 
-  D "Build: Processing [$dist]";
+  🐛 "Build: Processing [$dist]";
 
   given $dist.builder {
 
     when Distribution::Builder::MakeFromJSON {
 
-      D "Build: Builder is  [{.^name}]";
+      🐛 "Build: Builder is  [{.^name}]";
       .new( meta => $dist.meta ).build: $dist.prefix;
 
     }
@@ -20,7 +20,7 @@ method build ( Pakku::Dist::Path:D :$dist ) {
     default {
 
 
-      D "Build: Looking for default build file";
+      🐛 "Build: Looking for default build file";
 
       my $build-file =  < Build.rakumod Build.pm6 Build.pm >.first( -> $file { 
 
@@ -30,7 +30,7 @@ method build ( Pakku::Dist::Path:D :$dist ) {
 
         unless $build-file {
 
-          D "Build: [$dist] has no build file";
+          🐛 "Build: [$dist] has no build file";
 
           return True;
 
@@ -39,7 +39,7 @@ method build ( Pakku::Dist::Path:D :$dist ) {
 
         my $build = $dist.prefix.add: $build-file;
 
-        D "Build: Building [$dist] with build file [$build]";
+        🐛 "Build: Building [$dist] with build file [$build]";
 
         indir $dist.prefix, {
           require $build;

@@ -11,12 +11,12 @@ class Pakku::Log {
 
   submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty!, :$cnf ) {
 
-    %!cnf<TRACE><name>    = $cnf<1><name>  // 'T';
-    %!cnf<DEBUG><name>    = $cnf<2><name>  // 'D';
-    %!cnf<INFO><name>     = $cnf<3><name>  // '✓';
+    %!cnf<TRACE><name>    = $cnf<1><name>  // '👣';
+    %!cnf<DEBUG><name>    = $cnf<2><name>  // '🐛';
+    %!cnf<INFO><name>     = $cnf<3><name>  // '🦋';
     %!cnf<WARNING><name>  = $cnf<4><name>  // '⚠';
     %!cnf<ERROR><name>    = $cnf<5><name>  // '✗';
-    %!cnf<FATAL><name>    = $cnf<6><name>  // 'F';
+    %!cnf<FATAL><name>    = $cnf<6><name>  // '☠';
 
     %!cnf<TRACE><color>   = $cnf<1><color> // '42';
     %!cnf<DEBUG><color>   = $cnf<2><color> // '14';
@@ -53,12 +53,12 @@ class Pakku::Log {
 }
 
 
-sub prefix:<T> ( Str:D $msg ) is export { trace   $msg }
-sub prefix:<D> ( Str:D $msg ) is export { debug   $msg }
-sub prefix:<✓> ( Str:D $msg ) is export { info    $msg }
-sub prefix:<⚠> ( Str:D $msg ) is export { warning $msg }
-sub prefix:<✗> ( Str:D $msg ) is export { error   $msg }
-sub prefix:<☠> ( Str:D $msg ) is export { fatal   $msg }
+sub prefix:<👣> ( Str:D $msg ) is export { trace   $msg }
+sub prefix:<🐛> ( Str:D $msg ) is export { debug   $msg }
+sub prefix:<🦋> ( Str:D $msg ) is export { info    $msg }
+sub prefix:<⚠>  ( Str:D $msg ) is export { warning $msg }
+sub prefix:<✗>  ( Str:D $msg ) is export { error   $msg }
+sub prefix:<☠>  ( Str:D $msg ) is export { fatal   $msg }
 
 sub Ofun  ( )  is export { logger.log( :msg('-Ofun') :level(Loglevels(3))  :frame(callframe(1))) }
 sub Nofun ( )  is export { logger.log( :msg('Nofun') :level(Loglevels(3))  :frame(callframe(1))) }

@@ -11,7 +11,7 @@ class X::Pakku::Repo::CannotInstall {
 
   method message ( --> Str:D ) {
 
-    "X:Repo: [$!repo] cannot Install";
+    "Repo: [$!repo] cannot Install";
 
   }
 }
@@ -23,7 +23,7 @@ class X::Pakku::Ecosystem::Update {
 
   method message ( --> Str:D ) {
 
-    "X:Eco: Cannot update source [$!source]";
+    "Eco: Cannot update source [$!source]";
 
   }
 
@@ -36,7 +36,7 @@ class X::Pakku::Ecosystem::NoCandy {
 
   method message ( --> Str:D ) {
 
-    "X:Eco: No candy for spec [$!spec]";
+    "Eco: No candies matching spec [$!spec]";
 
   }
 

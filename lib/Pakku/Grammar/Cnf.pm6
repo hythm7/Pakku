@@ -78,7 +78,7 @@ grammar Pakku::Grammar::Cnf {
   token level:sym<4>     { «<sym>» }
   token level:sym<5>     { «<sym>» }
   token level:sym<6>     { «<sym>» }
-  token level:sym<✓>     { «<sym>» }
+  token level:sym<🦋>     { «<sym>» }
   token level:sym<✗>     { «<sym>» }
 
 
@@ -227,7 +227,7 @@ class Pakku::Grammar::Cnf::Actions {
   method level:sym<4>     ( $/ ) { make 4 }
   method level:sym<5>     ( $/ ) { make 5 }
   method level:sym<6>     ( $/ ) { make 6 }
-  method level:sym<✓>     ( $/ ) { make 3 }
+  method level:sym<🦋>     ( $/ ) { make 3 }
   method level:sym<✗>     ( $/ ) { make 5 }
 
 }

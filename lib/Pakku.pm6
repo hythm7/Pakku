@@ -52,32 +52,32 @@ method add (
 
     my @repo = $into.repo-chain.grep( CompUnit::Repository::Installation );
 
-    D "Pakku: Processing specs [{@spec}]";
+    🐛 "Pakku: Processing specs [{@spec}]";
 
     unless $force {
 
-      D "Pakku: Filtering installed specs [{@spec}]";
+      🐛 "Pakku: Filtering installed specs [{@spec}]";
 
       @spec .= grep( -> $spec {
 
 
-        D "Pakku: Checking if there are installed dists matching [$spec]";
+        🐛 "Pakku: Checking if there are installed dists matching [$spec]";
 
         my @inst = self.installed: :$spec, :@repo;
 
         if @inst {
 
-          D "Pakku: Found installed dists [{@inst}] matching spec [$spec]";
+          🐛 "Pakku: Found installed dists [{@inst}] matching spec [$spec]";
 
-          D "Pakku: Will not install [$spec] unless forced";
+          🐛 "Pakku: Will not install [$spec] unless forced";
 
-          D "Pakku: Removing spec [$spec] from specs list";
+          🐛 "Pakku: Removing spec [$spec] from specs list";
 
         }
 
         else {
 
-          D "Pakku: Found no installed dists matching spec [$spec]";
+          🐛 "Pakku: Found no installed dists matching spec [$spec]";
 
         }
 
@@ -90,7 +90,7 @@ method add (
 
   unless @spec {
 
-    D "Pakku: No specs remaning to install";
+    🐛 "Pakku: No specs remaning to install";
 
     self.allgood;
 
@@ -99,32 +99,32 @@ method add (
   }
 
 
-  D "Pakku: Asking Eco recommendations for specs [{@spec}]";
+  🐛 "Pakku: Asking Eco recommendations for specs [{@spec}]";
 
   my @candies = $!ecosystem.recommend: :@spec, :$deps;
 
 
   unless $force {
 
-    D "Pakku: Filtering recommended dists: {@candies}";
+    🐛 "Pakku: Filtering recommended dists: {@candies}";
 
     @candies .= map(
       *.grep( -> $dist {
 
-        D "Pakku: Checking if dist [$dist] is already installed";
+        🐛 "Pakku: Checking if dist [$dist] is already installed";
 
         my Bool:D $inst =  self.installed: :@repo, :$dist;
 
         if $inst {
 
-          D "Pakku: Removing dist [$dist] from recommended dists";
-          D "Pakku: Will not install dist [$dist] unless forced";
+          🐛 "Pakku: Removing dist [$dist] from recommended dists";
+          🐛 "Pakku: Will not install dist [$dist] unless forced";
 
         }
 
         else {
 
-          D "Pakku: Dist [$dist] is not installed";
+          🐛 "Pakku: Dist [$dist] is not installed";
 
         }
 
@@ -135,7 +135,7 @@ method add (
 
   }
 
-  D "Pakku: Candies to be installed: {@candies}";
+  🦋 "Pakku: Candies to be installed: [{@candies}]";
 
 
   my @dists
@@ -147,9 +147,6 @@ method add (
 
   my $repo = @repo.head;
 
-  D "Pakku: Installation repo is [{$repo.name}]";
-
-
   @dists.map( -> @dist {
 
     for @dist -> $dist {
@@ -157,8 +154,8 @@ method add (
       $!builder.build: :$dist if $build;
       $!tester.test:   :$dist if $test;
 
-      D "Installing $dist";
       $repo.install: $dist, :$force;
+      🦋 "Installed [$dist] to repo [{$repo.name}]";
 
     }
 
@@ -202,7 +199,7 @@ method remove (
 
     my @installed = flat self.installed: :$spec, :@repo;
 
-    D "Found no installed dists matching [$spec]" unless @installed;
+    🐛 "Found no installed dists matching [$spec]" unless @installed;
 
     @installed;
 
@@ -223,9 +220,10 @@ method remove (
       # Temp workaround for rakudo issue #3153
       $dist.meta<api> = '' if $dist.meta<api> ~~ Version.new: 0;
 
-      D "Uninstalling $dist from {$repo.name}";
 
       $repo.uninstall: $dist;
+
+      🦋 "Removed [$dist] from [{$repo.name}]";
 
     }
 
@@ -251,12 +249,13 @@ method list (
 
   my @repo = $repo.repo-chain.grep( CompUnit::Repository::Installation );
 
-  D "Pakku: Asking Eco recommendations for specs [{@spec}]";
+  🐛 "Pakku: Asking Eco recommendations for specs [{@spec}]";
 
   my @dist;
 
   if $local {
 
+    # TODO: ⚠ if no dist
     @spec
       ?? @dist.append: @spec.map( -> $spec { flat self.installed: :@repo, :$spec } ).flat
       !! (
@@ -276,7 +275,9 @@ method list (
 
   }
 
-  put @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
+  my Str $list = @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
+
+  put $list if $list;
 
   self.Ofun;
 
@@ -284,14 +285,13 @@ method list (
 
     when X::Pakku::Ecosystem::NoCandy {
 
-      D .message;
+      ⚠ .message;
 
-      D "Pakku: proceeding anyway";
+      🐛 "Pakku: Proceeding anyway";
 
       .resume
 
     }
-
 
   }
 }

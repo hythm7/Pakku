@@ -23,7 +23,7 @@ submethod TWEAK ( ) {
 method recommend ( :@spec!, :$deps! --> Seq ) {
 
 
-  D "Eco: Processing specs [{@spec}]";
+  🐛 "Eco: Processing specs [{@spec}]";
 
   @spec.map( -> $spec {
 
@@ -38,25 +38,25 @@ method recommend ( :@spec!, :$deps! --> Seq ) {
 
 submethod !get-deps ( Pakku::Dist:D :$dist! ) {
 
-  D "Eco: Looking for deps of dist [$dist]";
+  🐛 "Eco: Looking for deps of dist [$dist]";
 
   my @dist;
 
   my @dep = $dist.deps;
 
-  D "Eco: Found no deps for [$dist]" unless @dep;
+  🐛 "Eco: Found no deps for [$dist]" unless @dep;
 
   @dep .= map( -> $spec {
 
     if $spec.name ~~ any @!ignored {
 
-      D "Eco: Ignoring Core spec [$spec]";
+      🐛 "Eco: Ignoring Core spec [$spec]";
 
       next;
     }
 
 
-    D "Eco: Found dep [$spec] for dist [$dist]";
+    🐛 "Eco: Found dep [$spec] for dist [$dist]";
 
     self!find: :$spec;
 
@@ -76,7 +76,7 @@ submethod !get-deps ( Pakku::Dist:D :$dist! ) {
 
 submethod !find ( Pakku::Spec:D :$spec! ) {
 
-  D "Eco: Looking for spec [$spec]";
+  🐛 "Eco: Looking for spec [$spec]";
 
   my @cand;
 
@@ -96,12 +96,12 @@ submethod !find ( Pakku::Spec:D :$spec! ) {
 
   }
 
-  D "Eco: Found candies [{@cand}] matching [$spec]";
+  🐛 "Eco: Found candies [{@cand}] matching [$spec]";
 
   my $candy = @cand.sort( { Version.new: .version } ).tail;
 
 
-  D "Eco: Recommending candy [$candy] for spec [$spec]";
+  🐛 "Eco: Recommending candy [$candy] for spec [$spec]";
 
   $candy;
 
