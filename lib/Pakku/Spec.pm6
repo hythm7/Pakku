@@ -20,7 +20,7 @@ grammar SpecGrammar {
   token key:sym<from>    { <sym> }
 
   # BUG: fix specs that have '<>' inside value;
-  token value { '<' $<val>=<-[<>]>* '>' | '(' $<val>=<-[()]>* ')' }
+  token value { '<' ~ '>' $<val>=<-[<>]>* | '(' ~ ')' $<val>=<-[()]>* }
 
 }
 

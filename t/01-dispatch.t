@@ -38,6 +38,7 @@ my @tests = (
   [ 'help notcmd',               'help',   'help'                       ],
 );
 
+plan 30;
 
 for @tests -> [ $string, $method, $msg ] {
 
@@ -46,3 +47,5 @@ for @tests -> [ $string, $method, $msg ] {
   my $cmd     = $parser.parse( $string, :$actions ).ast<cmd>;
   ok $cmd ~~ $method, $msg;
 }
+
+done-testing;
