@@ -14,7 +14,7 @@ my \tests = %(
     [ 'Spec:ver<0.0.1>',                          'Spec:ver<0.0.1>'                          ],
     [ 'Spec:ver<0.0.1>:auth<name>',               'Spec:ver<0.0.1>:auth<name>'               ],
     [ 'Spec:ver<0.0.1>:auth<name>:api<>',         'Spec:ver<0.0.1>:auth<name>:api<>'         ],
-    [ 'Spec:ver<0.0.1>:auth<name>:api<*>',        'Spec:ver<0.0.1+>:auth<email>:api<*>'      ],
+    [ 'Spec:ver<0.0.1>:auth<name>:api<*>',        'Spec:ver<0.0.1>:auth<email>:api<*>'      ],
     [ 'Spec:ver<0.0.1>:auth<name>:api<*>',        'Spec:ver<0.0.1>:auth<email>:api<*>'       ],
     #[ 'Spec:ver<0.0.1>:auth<name<email>>:api<*>', 'Spec:ver<0.0.1>:auth<name<email>>:api<*>' ],
   ),
