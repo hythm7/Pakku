@@ -10,10 +10,21 @@ grammar Pakku::Grammar::Cmd {
   # TODO: substitute word boundry with suitable token
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <specs> }
-  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <specs> }
-  rule TOP:sym<list>   { <pakkuopt>* <list>   <listopt>*   <specs>? }
+  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <specs>    }
+  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <specs>    }
+  rule TOP:sym<list>   { <pakkuopt>* <list>   <listopt>*   <specs>?   }
+  rule TOP:sym<help>   {             <help>?  <cmd>?       <anything> }
 
+
+  proto token cmd { * }
+  token cmd:sym<add>    { «<add>» }
+  token cmd:sym<remove> { «<remove>» }
+  token cmd:sym<list>   { «<list>» }
+  token cmd:sym<help>   { «<help>» }
+
+  proto token help { * }
+  token help:sym<help> { «<sym>» }
+  #token help:sym<h>    { «<sym>» }
 
   proto rule pakkuopt { * }
   rule pakkuopt:sym<repo>    { «<repo> <reponame>» }
@@ -58,7 +69,6 @@ grammar Pakku::Grammar::Cmd {
 
   proto rule removeopt { * }
   rule removeopt:sym<deps> { «<deps>» }
-  rule remove:sym<force>   { «<force>» }
   rule removeopt:sym<from> { «<from> <reponame>» }
 
 
@@ -182,6 +192,7 @@ grammar Pakku::Grammar::Cmd {
 
   token lt { '<' }
   token gt { '>' }
+  token anything { .* }
 }
 
 class Pakku::Grammar::Cmd::Actions {
@@ -229,7 +240,16 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
+  method TOP:sym<help> ( $/ ) {
 
+    my %cmd;
+
+    %cmd<cmd>       = 'help';
+    %cmd<help><cmd> = $<cmd> ?? ~$<cmd> !! '';
+
+    make %cmd;
+
+  }
 
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<pretty>  ( $/ ) { make ( $<pretty>.ast )  }

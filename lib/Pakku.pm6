@@ -296,6 +296,19 @@ method list (
   }
 }
 
+method help ( Str:D :$cmd ) {
+
+  given $cmd {
+
+    when 'add'    { put 'help add' }
+    when 'remove' { put 'help remove' }
+    when 'list'   { put 'help list' }
+
+    default { put 'help' }
+
+  }
+
+}
 
 multi submethod installed ( :@repo!, Pakku::Spec:D :$spec! ) {
 
@@ -370,6 +383,7 @@ submethod !init ( ) {
     self.add:    |%!cnf<add>    when 'add';
     self.remove: |%!cnf<remove> when 'remove';
     self.list:   |%!cnf<list>   when 'list';
+    self.help:   |%!cnf<help>   when 'help';
   }
 
 }
