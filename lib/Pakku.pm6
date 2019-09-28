@@ -386,4 +386,18 @@ submethod !init ( ) {
     self.help:   |%!cnf<help>   when 'help';
   }
 
+  CATCH {
+
+    when X::Pakku::Spec::CannotParse {
+
+      ☠ .message;
+
+      self.Nofun;
+
+    }
+
+  }
+
+
+
 }

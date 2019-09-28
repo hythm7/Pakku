@@ -41,3 +41,16 @@ class X::Pakku::Ecosystem::NoCandy {
   }
 
 }
+
+class X::Pakku::Spec::CannotParse {
+  also is X::Pakku;
+
+  has $.spec;
+
+  method message ( --> Str:D ) {
+
+    "Spec: Cannot parse spec [$!spec]";
+
+  }
+
+}

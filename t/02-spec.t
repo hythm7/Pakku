@@ -16,10 +16,12 @@ my \tests = %(
     [ 'Spec:ver<0.0.1>:auth<name>:api<>',         'Spec:ver<0.0.1>:auth<name>:api<>'         ],
     [ 'Spec:ver<0.0.1>:auth<name>:api<*>',        'Spec:ver<0.0.1>:auth<email>:api<*>'      ],
     [ 'Spec:ver<0.0.1>:auth<name>:api<*>',        'Spec:ver<0.0.1>:auth<email>:api<*>'       ],
-    #[ 'Spec:ver<0.0.1>:auth<name<email>>:api<*>', 'Spec:ver<0.0.1>:auth<name<email>>:api<*>' ],
   ),
   nok => (
     [ 'Spec:abc<def>', 'Spec:abc<def>' ],
+  ),
+  todo => (
+    [ 'Spec:ver<0.0.1>:auth<name<email>>:api<*>', 'Spec:ver<0.0.1>:auth<name<email>>:api<*>' ],
   );
 );
 
@@ -35,6 +37,13 @@ for flat tests<ok> -> $spec, $msg {
 for flat tests<nok> -> $spec, $msg {
 
   dies-ok { Pakku::Spec.new( :$spec ) }, $msg;
+
+}
+
+for flat tests<todo> -> $spec, $msg {
+
+  todo $msg;
+  # isa-ok Pakku::Spec.new( :$spec ), Pakku::Spec, $msg;
 
 }
 

@@ -162,6 +162,7 @@ grammar Pakku::Grammar::Cmd {
   proto token force { * }
   token force:sym<force> { «<sym>» }
   token force:sym<f>    { «<sym>» }
+  #token force:sym<✓>    { «<sym>» }
 
   proto token yolo { * }
   token yolo:sym<yolo> { «<sym>» }
