@@ -10,164 +10,168 @@ grammar Pakku::Grammar::Cmd {
   # TODO: substitute word boundry with suitable token
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopt>* <add>    <addopt>*    <specs>    }
-  rule TOP:sym<remove> { <pakkuopt>* <remove> <removeopt>* <specs>    }
-  rule TOP:sym<list>   { <pakkuopt>* <list>   <listopt>*   <specs>?   }
+  rule TOP:sym<add>    { <pakkuopts>  <add> <addopts>  <specs>    }
+  rule TOP:sym<remove> { <pakkuopts> <remove> <removeopst> <specs>    }
+  rule TOP:sym<list>   { <pakkuopts> <list>   <listopts>   <specs>?   }
   rule TOP:sym<help>   {             <help>?  <cmd>?       <anything> }
 
 
+  token pakkuopts  { <pakkuopt>*  % \s }
+  token addopts    { <addopt>*    % \s }
+  token removeopts { <removeopt>* % \s }
+  token listopts   { <listopt>*   % \s }
+
   proto token cmd { * }
-  token cmd:sym<add>    { «<add>» }
-  token cmd:sym<remove> { «<remove>» }
-  token cmd:sym<list>   { «<list>» }
-  token cmd:sym<help>   { «<help>» }
+  token cmd:sym<add>    { <add>    }
+  token cmd:sym<remove> { <remove> }
+  token cmd:sym<list>   { <list>   }
+  token cmd:sym<help>   { <help>   }
 
   proto token help { * }
-  token help:sym<help> { «<sym>» }
+  token help:sym<help> { <sym> }
   #token help:sym<h>    { «<sym>» }
 
-  proto rule pakkuopt { * }
-  rule pakkuopt:sym<repo>    { «<repo> <reponame>» }
-  rule pakkuopt:sym<verbose> { «<verbose> <level>» }
-  rule pakkuopt:sym<pretty>  { «<pretty>» }
-  rule pakkuopt:sym<please>  { «<sym>» }
-  rule pakkuopt:sym<yolo>    { «<yolo>» }
+  proto token pakkuopt { * }
+  rule pakkuopt:sym<repo>    { <!before \s> ~ <!after \s> [ <repo> <reponame> ]}
+  rule pakkuopt:sym<verbose> { <!before \s> ~ <!after \s> [ <verbose> <level> ] }
+  token pakkuopt:sym<pretty>  { <!before \s> ~ <!after \s> <pretty> }
+  token pakkuopt:sym<please>  { <!before \s> ~ <!after \s> <sym> }
+  token pakkuopt:sym<yolo>    { <!before \s> ~ <!after \s> <yolo> }
 
 
   proto token add { * }
-  token add:sym<add> { «<sym>» }
-  token add:sym<a>   { «<sym>» }
-  token add:sym<↓>   {  <sym>  }
+  token add:sym<add> { <sym> }
+  token add:sym<a>   { <sym> }
+  token add:sym<↓>   { <sym> }
 
 
   proto token remove { * }
-  token remove:sym<remove> { «<sym>» }
-  token remove:sym<r>      { «<sym>» }
+  token remove:sym<remove> { <sym> }
+  token remove:sym<r>      { <sym> }
 
 
   proto token list { * }
-  token list:sym<list> { «<sym>» }
-  token list:sym<l>    { «<sym>» }
+  token list:sym<list> { <sym> }
+  token list:sym<l>    { <sym> }
 
   proto token repo { * }
-  token repo:sym<repo> { «<sym>» }
+  token repo:sym<repo> { <sym> }
 
   proto token reponame { * }
-  token reponame:sym<home>   { «<sym>» }
-  token reponame:sym<site>   { «<sym>» }
-  token reponame:sym<vendor> { «<sym>» }
-  token reponame:sym<core>   { «<sym>» }
+  token reponame:sym<home>   { <sym> }
+  token reponame:sym<site>   { <sym> }
+  token reponame:sym<vendor> { <sym> }
+  token reponame:sym<core>   { <sym> }
 
 
-  proto rule addopt { * }
-  rule addopt:sym<deps>  { «<deps>» }
-  rule addopt:sym<build> { «<build>» }
-  rule addopt:sym<test>  { «<test>» }
-  rule addopt:sym<force> { «<force>» }
-  rule addopt:sym<into>  { «<into> <reponame>» }
+  proto token addopt { * }
+  token addopt:sym<deps>  { <!before \s> ~ <!after \s> <deps> }
+  token addopt:sym<build> { <!before \s> ~ <!after \s> <build> }
+  token addopt:sym<test>  { <!before \s> ~ <!after \s> <test> }
+  token addopt:sym<force> { <!before \s> ~ <!after \s> <force> }
+  rule  addopt:sym<into>  { <!before \s> ~ <!after \s> [ <into> <reponame> ] }
 
 
-  proto rule removeopt { * }
-  rule removeopt:sym<deps> { «<deps>» }
-  rule removeopt:sym<from> { «<from> <reponame>» }
+  proto token removeopt { * }
+  token removeopt:sym<deps> { <deps> }
+  rule  removeopt:sym<from> { <!before \s> ~ <!after \s> [ <from> <reponame> ] }
 
 
-  proto rule listopt { * }
-  rule listopt:sym<remote>  { «<remote>» }
-  rule listopt:sym<local>   { «<local>» }
-  rule listopt:sym<details> { «<details>» }
-  rule listopt:sym<repo>    { «<repo> <reponame>» }
+  proto token listopt { * }
+  token listopt:sym<remote>  { <!before \s> ~ <!after \s> <remote> }
+  token listopt:sym<local>   { <!before \s> ~ <!after \s> <local> }
+  token listopt:sym<details> { <!before \s> ~ <!after \s> <details> }
+  rule  listopt:sym<repo>    { <!before \s> ~ <!after \s> [ <repo> <reponame>] }
 
   proto token deps { * }
-  token deps:sym<deps>   { «<sym>» }
-  token deps:sym<d>      { «<sym>» }
-  token deps:sym<nodeps> { «<sym>» }
-  token deps:sym<nd>     { «<sym>» }
+  token deps:sym<deps>   { <sym> }
+  token deps:sym<d>      { <sym> }
+  token deps:sym<nodeps> { <sym> }
+  token deps:sym<nd>     { <sym> }
 
   proto token build { * }
-  token build:sym<build>   { «<sym>» }
-  token build:sym<b>       { «<sym>» }
-  token build:sym<nobuild> { «<sym>» }
-  token build:sym<nb>      { «<sym>» }
+  token build:sym<build>   { <sym> }
+  token build:sym<b>       { <sym> }
+  token build:sym<nobuild> { <sym> }
+  token build:sym<nb>      { <sym> }
 
   proto token test { * }
-  token test:sym<test>   { «<sym>» }
-  token test:sym<t>      { «<sym>» }
-  token test:sym<notest> { «<sym>» }
-  token test:sym<nt>     { «<sym>» }
+  token test:sym<test>   { <sym> }
+  token test:sym<t>      { <sym> }
+  token test:sym<notest> { <sym> }
+  token test:sym<nt>     { <sym> }
 
   proto token into { * }
-  token into:sym<into> { «<sym>» }
+  token into:sym<into> { <sym> }
 
   proto token from { * }
-  token from:sym<from> { «<sym>» }
+  token from:sym<from> { <sym> }
 
   proto token remote { * }
-  token remote:sym<remote>   { «<sym>» }
-  token remote:sym<r>        { «<sym>» }
-  token remote:sym<noremote> { «<sym>» }
-  token remote:sym<nr>       { «<sym>» }
+  token remote:sym<remote>   { <sym> }
+  token remote:sym<r>        { <sym> }
+  token remote:sym<noremote> { <sym> }
+  token remote:sym<nr>       { <sym> }
 
   proto token local { * }
-  token local:sym<local>   { «<sym>» }
-  token local:sym<l>       { «<sym>» }
-  token local:sym<nolocal> { «<sym>» }
-  token local:sym<nl>      { «<sym>» }
+  token local:sym<local>   { <sym> }
+  token local:sym<l>       { <sym> }
+  token local:sym<nolocal> { <sym> }
+  token local:sym<nl>      { <sym> }
 
   proto token details { * }
-  token details:sym<details>   { «<sym>» }
-  token details:sym<d>         { «<sym>» }
-  token details:sym<nodetails> { «<sym>» }
-  token details:sym<nd>        { «<sym>» }
+  token details:sym<details>   { <sym> }
+  token details:sym<d>         { <sym> }
+  token details:sym<nodetails> { <sym> }
+  token details:sym<nd>        { <sym> }
 
   proto token pretty { * }
-  token pretty:sym<pretty>   { «<sym>» }
-  token pretty:sym<p>        { «<sym>» }
-  token pretty:sym<nopretty> { «<sym>» }
-  token pretty:sym<np>       { «<sym>» }
+  token pretty:sym<pretty>   { <sym> }
+  token pretty:sym<p>        { <sym> }
+  token pretty:sym<nopretty> { <sym> }
+  token pretty:sym<np>       { <sym> }
 
   proto token verbose { * }
-  token verbose:sym<verbose> { «<sym>» }
-  token verbose:sym<v>       { «<sym>» }
+  token verbose:sym<verbose> { <sym> }
+  token verbose:sym<v>       { <sym> }
 
   proto token level { * }
-  token level:sym<TRACE> { «<sym>» }
-  token level:sym<DEBUG> { «<sym>» }
-  token level:sym<INFO>  { «<sym>» }
-  token level:sym<WARN>  { «<sym>» }
-  token level:sym<ERROR> { «<sym>» }
-  token level:sym<FATAL> { «<sym>» }
-  token level:sym<trace> { «<sym>» }
-  token level:sym<debug> { «<sym>» }
-  token level:sym<info>  { «<sym>» }
-  token level:sym<warn>  { «<sym>» }
-  token level:sym<error> { «<sym>» }
-  token level:sym<fatal> { «<sym>» }
-  token level:sym<42>    { «<sym>» }
-  token level:sym<T>     { «<sym>» }
-  token level:sym<D>     { «<sym>» }
-  token level:sym<I>     { «<sym>» }
-  token level:sym<W>     { «<sym>» }
-  token level:sym<E>     { «<sym>» }
-  token level:sym<F>     { «<sym>» }
-  token level:sym<1>     { «<sym>» }
-  token level:sym<2>     { «<sym>» }
-  token level:sym<3>     { «<sym>» }
-  token level:sym<4>     { «<sym>» }
-  token level:sym<5>     { «<sym>» }
-  token level:sym<6>     { «<sym>» }
-  token level:sym<🦋>     { «<sym>» }
-  token level:sym<✗>     { «<sym>» }
+  token level:sym<TRACE> { <sym> }
+  token level:sym<DEBUG> { <sym> }
+  token level:sym<INFO>  { <sym> }
+  token level:sym<WARN>  { <sym> }
+  token level:sym<ERROR> { <sym> }
+  token level:sym<FATAL> { <sym> }
+  token level:sym<trace> { <sym> }
+  token level:sym<debug> { <sym> }
+  token level:sym<info>  { <sym> }
+  token level:sym<warn>  { <sym> }
+  token level:sym<error> { <sym> }
+  token level:sym<fatal> { <sym> }
+  token level:sym<42>    { <sym> }
+  token level:sym<T>     { <sym> }
+  token level:sym<D>     { <sym> }
+  token level:sym<I>     { <sym> }
+  token level:sym<W>     { <sym> }
+  token level:sym<E>     { <sym> }
+  token level:sym<F>     { <sym> }
+  token level:sym<1>     { <sym> }
+  token level:sym<2>     { <sym> }
+  token level:sym<3>     { <sym> }
+  token level:sym<4>     { <sym> }
+  token level:sym<5>     { <sym> }
+  token level:sym<6>     { <sym> }
+  token level:sym<🦋>    { <sym> }
+  token level:sym<✗>     { <sym> }
 
   proto token force { * }
-  token force:sym<force> { «<sym>» }
-  token force:sym<f>    { «<sym>» }
-  #token force:sym<✓>    { «<sym>» }
+  token force:sym<force> { <sym> }
+  token force:sym<f>     { <sym> }
+  token force:sym<✓>     { <sym> }
 
   proto token yolo { * }
-  token yolo:sym<yolo> { «<sym>» }
-  token yolo:sym<y>    { «<sym>» }
-  token yolo:sym<🦋>    { «<sym>» }
+  token yolo:sym<yolo> { <sym> }
+  token yolo:sym<y>    { <sym> }
 
 
   token specs { <spec>+ % \h }
@@ -204,8 +208,8 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
 
     %cmd<cmd>        = 'add';
-    %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
-    %cmd<add>        = $<addopt>».ast.hash   if defined $<addopt>;
+    %cmd<pakku>      = $<pakkuopts>.ast.hash if defined $<pakkuopts>;
+    %cmd<add>        = $<addopts>.ast.hash   if defined $<addopts>;
     %cmd<add><spec>  = $<specs>.ast;
 
     make %cmd;
@@ -217,10 +221,10 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
 
-    %cmd<cmd>           = 'remove';
-    %cmd<pakku>         = $<pakkuopt>».ast.hash  if defined $<pakkuopt>;
-    %cmd<remove>        = $<removeopt>».ast.hash if defined $<removeopt>;
-    %cmd<remove><spec>  = $<specs>.ast;
+    %cmd<cmd>          = 'remove';
+    %cmd<pakku>        = $<pakkuopts>.ast.hash  if defined $<pakkuopts>;
+    %cmd<remove>       = $<removeopts>.ast.hash if defined $<removeopts>;
+    %cmd<remove><spec> = $<specs>.ast;
 
     make %cmd;
 
@@ -232,8 +236,8 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
 
     %cmd<cmd>        = 'list';
-    %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
-    %cmd<list>       = $<listopt>».ast.hash  if defined $<listopt>;
+    %cmd<pakku>      = $<pakkuopts>.ast.hash if defined $<pakkuopts>;
+    %cmd<list>       = $<listopt>.ast.hash  if defined $<listopts>;
     %cmd<list><spec> = $<specs>.ast          if defined $<specs>;
 
     make %cmd;
@@ -252,6 +256,8 @@ class Pakku::Grammar::Cmd::Actions {
 
   }
 
+  method pakkuopts  ( $/ ) { make $<pakkuopt>».ast }
+
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<pretty>  ( $/ ) { make ( $<pretty>.ast )  }
   method pakkuopt:sym<please>  ( $/ ) { make ( :please )  }
@@ -265,6 +271,8 @@ class Pakku::Grammar::Cmd::Actions {
 
   }
 
+
+  method addopts  ( $/ ) { make $<addopt>».ast }
 
   method addopt:sym<deps>  ( $/ ) { make $<deps>.ast }
   method addopt:sym<build> ( $/ ) { make $<build>.ast }
@@ -282,6 +290,8 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
+  method removeopts  ( $/ ) { make $<removeopt>».ast }
+
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
 
   method removeopt:sym<from> ( $/ ) {
@@ -293,6 +303,8 @@ class Pakku::Grammar::Cmd::Actions {
     make ~$<from> => $from;
   }
 
+
+  method listopts  ( $/ ) { make $<listopt>».ast }
 
   method listopt:sym<remote>  ( $/ ) { make $<remote>.ast }
   method listopt:sym<local>   ( $/ ) { make $<local>.ast  }
