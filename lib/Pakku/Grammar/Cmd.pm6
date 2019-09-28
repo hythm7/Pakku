@@ -7,42 +7,35 @@ use Pakku::Spec;
 
 grammar Pakku::Grammar::Cmd {
 
-  # TODO: substitute word boundry with suitable token
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopts>  <add> <addopts>  <specs>    }
-  rule TOP:sym<remove> { <pakkuopts> <remove> <removeopst> <specs>    }
-  rule TOP:sym<list>   { <pakkuopts> <list>   <listopts>   <specs>?   }
-  rule TOP:sym<help>   {             <help>?  <cmd>?       <anything> }
+  rule TOP:sym<add>    { <pakkuopt>* % <.space> <add>    <addopt>*    % <.space> <specs>    }
+  rule TOP:sym<remove> { <pakkuopt>* % <.space> <remove> <removeopt>* % <.space> <specs>    }
+  rule TOP:sym<list>   { <pakkuopt>* % <.space> <list>   <listopt>*   % <.space> <specs>?   }
+  rule TOP:sym<help>   { <help>? <cmd>? <anything> }
 
-
-  token pakkuopts  { <pakkuopt>*  % \s }
-  token addopts    { <addopt>*    % \s }
-  token removeopts { <removeopt>* % \s }
-  token listopts   { <listopt>*   % \s }
 
   proto token cmd { * }
-  token cmd:sym<add>    { <add>    }
-  token cmd:sym<remove> { <remove> }
-  token cmd:sym<list>   { <list>   }
-  token cmd:sym<help>   { <help>   }
+  token cmd:sym<add>    { <!before <.space>> ~ <!after <.space>> <add> }
+  token cmd:sym<remove> { <!before <.space>> ~ <!after <.space>> <remove> }
+  token cmd:sym<list>   { <!before <.space>> ~ <!after <.space>> <list> }
+  token cmd:sym<help>   { <!before <.space>> ~ <!after <.space>> <help> }
 
-  proto token help { * }
-  token help:sym<help> { <sym> }
-  #token help:sym<h>    { «<sym>» }
+
+  token pakkuopts { <pakkuopt>* % <.space> }
 
   proto token pakkuopt { * }
-  rule pakkuopt:sym<repo>    { <!before \s> ~ <!after \s> [ <repo> <reponame> ]}
-  rule pakkuopt:sym<verbose> { <!before \s> ~ <!after \s> [ <verbose> <level> ] }
-  token pakkuopt:sym<pretty>  { <!before \s> ~ <!after \s> <pretty> }
-  token pakkuopt:sym<please>  { <!before \s> ~ <!after \s> <sym> }
-  token pakkuopt:sym<yolo>    { <!before \s> ~ <!after \s> <yolo> }
+  token pakkuopt:sym<please>  { <sym>    }
+  token pakkuopt:sym<yolo>    { <yolo>   }
+  token pakkuopt:sym<pretty>  { <pretty> }
+  token pakkuopt:sym<repo>    { <repo>    <.space>* <reponame> }
+  token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
 
 
   proto token add { * }
-  token add:sym<add> { <sym> }
   token add:sym<a>   { <sym> }
-  token add:sym<↓>   { <sym> }
+  token add:sym<add> { <sym> }
+  token add:sym<↓>   { <sym>  }
 
 
   proto token remove { * }
@@ -53,6 +46,11 @@ grammar Pakku::Grammar::Cmd {
   proto token list { * }
   token list:sym<list> { <sym> }
   token list:sym<l>    { <sym> }
+
+  proto token help { * }
+  token help:sym<help> { <sym> }
+  #token help:sym<h>    { «<sym>» }
+  
 
   proto token repo { * }
   token repo:sym<repo> { <sym> }
@@ -65,23 +63,23 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token addopt { * }
-  token addopt:sym<deps>  { <!before \s> ~ <!after \s> <deps> }
-  token addopt:sym<build> { <!before \s> ~ <!after \s> <build> }
-  token addopt:sym<test>  { <!before \s> ~ <!after \s> <test> }
-  token addopt:sym<force> { <!before \s> ~ <!after \s> <force> }
-  rule  addopt:sym<into>  { <!before \s> ~ <!after \s> [ <into> <reponame> ] }
+  token addopt:sym<deps>  { <deps> }
+  token addopt:sym<build> { <build> }
+  token addopt:sym<test>  { <test> }
+  token addopt:sym<force> { <force> }
+  token addopt:sym<into>  { <into> <.space>* <reponame> }
 
 
   proto token removeopt { * }
   token removeopt:sym<deps> { <deps> }
-  rule  removeopt:sym<from> { <!before \s> ~ <!after \s> [ <from> <reponame> ] }
+  token removeopt:sym<from> { <from> <.space>* <reponame> }
 
 
   proto token listopt { * }
-  token listopt:sym<remote>  { <!before \s> ~ <!after \s> <remote> }
-  token listopt:sym<local>   { <!before \s> ~ <!after \s> <local> }
-  token listopt:sym<details> { <!before \s> ~ <!after \s> <details> }
-  rule  listopt:sym<repo>    { <!before \s> ~ <!after \s> [ <repo> <reponame>] }
+  token listopt:sym<remote>  { <remote> }
+  token listopt:sym<local>   { <local> }
+  token listopt:sym<details> { <details> }
+  token listopt:sym<repo>    { <repo> <.space>* <reponame> }
 
   proto token deps { * }
   token deps:sym<deps>   { <sym> }
@@ -167,7 +165,6 @@ grammar Pakku::Grammar::Cmd {
   proto token force { * }
   token force:sym<force> { <sym> }
   token force:sym<f>     { <sym> }
-  token force:sym<✓>     { <sym> }
 
   proto token yolo { * }
   token yolo:sym<yolo> { <sym> }
@@ -208,8 +205,8 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
 
     %cmd<cmd>        = 'add';
-    %cmd<pakku>      = $<pakkuopts>.ast.hash if defined $<pakkuopts>;
-    %cmd<add>        = $<addopts>.ast.hash   if defined $<addopts>;
+    %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
+    %cmd<add>        = $<addopt>».ast.hash   if defined $<addopt>;
     %cmd<add><spec>  = $<specs>.ast;
 
     make %cmd;
@@ -221,10 +218,10 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
 
-    %cmd<cmd>          = 'remove';
-    %cmd<pakku>        = $<pakkuopts>.ast.hash  if defined $<pakkuopts>;
-    %cmd<remove>       = $<removeopts>.ast.hash if defined $<removeopts>;
-    %cmd<remove><spec> = $<specs>.ast;
+    %cmd<cmd>           = 'remove';
+    %cmd<pakku>         = $<pakkuopt>».ast.hash  if defined $<pakkuopt>;
+    %cmd<remove>        = $<removeopt>».ast.hash if defined $<removeopt>;
+    %cmd<remove><spec>  = $<specs>.ast;
 
     make %cmd;
 
@@ -236,8 +233,8 @@ class Pakku::Grammar::Cmd::Actions {
     my %cmd;
 
     %cmd<cmd>        = 'list';
-    %cmd<pakku>      = $<pakkuopts>.ast.hash if defined $<pakkuopts>;
-    %cmd<list>       = $<listopt>.ast.hash  if defined $<listopts>;
+    %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
+    %cmd<list>       = $<listopt>».ast.hash  if defined $<listopt>;
     %cmd<list><spec> = $<specs>.ast          if defined $<specs>;
 
     make %cmd;
@@ -249,14 +246,17 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
 
-    %cmd<cmd>       = 'help';
-    %cmd<help><cmd> = $<cmd> ?? ~$<cmd> !! '';
+    %cmd<cmd>  = 'help';
+    %cmd<help><cmd> = $<cmd>.so ?? $<cmd>.ast !! '';
 
     make %cmd;
 
   }
 
-  method pakkuopts  ( $/ ) { make $<pakkuopt>».ast }
+  method cmd:sym<add>    ( $/ ) { make 'add'    }
+  method cmd:sym<list>   ( $/ ) { make 'list'   }
+  method cmd:sym<help>   ( $/ ) { make 'help'   }
+  method cmd:sym<remove> ( $/ ) { make 'remove' }
 
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )  }
   method pakkuopt:sym<pretty>  ( $/ ) { make ( $<pretty>.ast )  }
@@ -271,8 +271,6 @@ class Pakku::Grammar::Cmd::Actions {
 
   }
 
-
-  method addopts  ( $/ ) { make $<addopt>».ast }
 
   method addopt:sym<deps>  ( $/ ) { make $<deps>.ast }
   method addopt:sym<build> ( $/ ) { make $<build>.ast }
@@ -290,8 +288,6 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method removeopts  ( $/ ) { make $<removeopt>».ast }
-
   method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
 
   method removeopt:sym<from> ( $/ ) {
@@ -303,8 +299,6 @@ class Pakku::Grammar::Cmd::Actions {
     make ~$<from> => $from;
   }
 
-
-  method listopts  ( $/ ) { make $<listopt>».ast }
 
   method listopt:sym<remote>  ( $/ ) { make $<remote>.ast }
   method listopt:sym<local>   ( $/ ) { make $<local>.ast  }
