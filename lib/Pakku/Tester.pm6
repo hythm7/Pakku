@@ -9,6 +9,8 @@ unit class Pakku::Tester;
 
 method test ( Pakku::Dist:D :$dist ) {
 
+  # TODO: include tests/*.rakutest
+
 
   my $test-dir = $dist.prefix.add( 't' );
 
