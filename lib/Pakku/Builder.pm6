@@ -20,32 +20,46 @@ method build ( Pakku::Dist::Path:D :$dist ) {
     default {
 
 
-      🐛 "Build: Looking for default build file";
+      🐛 "Build: Looking for build file";
 
-      my $build-file =  < Build.rakumod Build.pm6 Build.pm >.first( -> $file { 
+      my @build-file =  < Build.rakumod Build.pm6 Build.pm >;
 
-        $dist.prefix.add( $file ).f;
+      my $build-file = @build-file.map( -> $f { $dist.prefix.add: $f } ).first( *.f );
 
-        } );
+      unless $build-file {
 
-        unless $build-file {
+        🐛 "Build: No build file for dist [$dist]";
 
-          🐛 "Build: [$dist] has no build file";
+        return;
 
-          return True;
+      }
 
-        }
+      🐛 "Build: Building [$dist] with build file [$build-file]";
 
 
-        my $build = $dist.prefix.add: $build-file;
+        my $dist-dir   = $dist.prefix;
+        my $lib-dir    = $dist-dir.add: 'lib';
+        my $include   = "-I $lib-dir";
+        my $execute   = "-e";
+        my $build-cmd = qq:to/CMD/;
+        require "$build-file";
+        ::( 'Build' ).new.build( "$dist-dir" );
+        CMD
 
-        🐛 "Build: Building [$dist] with build file [$build]";
+        my $proc = run ~$*EXECUTABLE, $include, $execute, $build-cmd, cwd => $dist-dir, :out, :err;
 
-        indir $dist.prefix, {
-          require $build;
-          ::('Build').new.build($dist.prefix.Str);
+         $proc.out.lines.map( 👣 * );
+         $proc.err.lines.map( ✗  * );
+
+        if $proc.exitcode {
+
+          die X::Pakku::Build::Fail.new: :$dist if $proc.exitcode; 
+
         }
     }
 
+
   }
+
+  🐛 "Build: Built [$dist]";
 }

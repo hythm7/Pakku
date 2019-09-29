@@ -1,6 +1,6 @@
 use Pakku::Dist::Path;
 
-unit class Pakku::Dist::Installed;
+unit class Pakku::Dist::Inst;
   also is Pakku::Dist;
   also does Distribution;
 

@@ -11,7 +11,7 @@ use Pakku::Builder;
 use Pakku::Tester;
 use Pakku::Spec;
 use Pakku::Dist::Path;
-use Pakku::Dist::Installed;
+use Pakku::Dist::Inst;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
@@ -174,6 +174,14 @@ method add (
     }
 
     when X::LibCurl {
+
+      ☠ .message;
+
+      self.Nofun;
+
+    }
+
+    when X::Pakku::Build::Fail {
 
       ☠ .message;
 
@@ -371,7 +379,7 @@ submethod !init ( ) {
   @!inst-repo.map( -> $repo {
 
     eager $repo.installed
-      ==> map( -> $dist { Pakku::Dist::Installed.new: meta => $dist.meta })
+      ==> map( -> $dist { Pakku::Dist::Inst.new: meta => $dist.meta })
       ==> map( -> $dist { %!installed{$repo.name}{$dist.name}.push: $dist } );
   } );
 

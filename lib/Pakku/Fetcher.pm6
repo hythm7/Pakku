@@ -7,7 +7,7 @@ use Pakku::Log;
 
 unit class Pakku::Fetcher;
 
-method fetch ( Str :$src!, :$dst = tempdir ) {
+method fetch ( Str :$src!, :$dst = tempdir :!unlink ) {
 
   🐛 "Fetch: Fetching $src to $dst";
 
@@ -25,8 +25,8 @@ method fetch ( Str :$src!, :$dst = tempdir ) {
 
       my $proc = run 'git', 'clone', $url, cwd => $dst, :out, :err;
 
-      👣 $proc.out.slurp(:close);
-      ✗ $proc.err.slurp(:close);
+      $proc.out.lines.map( 👣 * );
+      $proc.err.lines.map( ✗  * );
 
       my $dist-path = $dst.IO.dir.first: *.d;
 

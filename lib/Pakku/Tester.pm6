@@ -12,16 +12,28 @@ method test ( Pakku::Dist:D :$dist ) {
   # TODO: include tests/*.rakutest
 
 
-  my $test-dir = $dist.prefix.add( 't' );
+  my @test-dir  = < tests    t >;
+  my @extension = < rakutest t >;
 
-  return unless $test-dir.d;
+  my @test
+    <== flat()
+    <== map( -> $dir { find ~$dir, :@extension } )
+    <== grep( *.d )
+    <== map( -> $dir { $dist.prefix.add: $dir }  )
+    <== @test-dir;
+
+  unless @test {
+
+    🐛 "Test: No tests for dist [$dist]";
+
+    return;
+
+  }
+
+  🐛 "Testing $dist" if @test;
 
   my $lib-dir = $dist.prefix.add( 'lib' );
   my $include = "-I $lib-dir";
-
-  my @test = find $test-dir.Str, :extension<t>;
-
-  🐛 "Testing $dist" if @test;
 
   my @exitcode = @test.map( -> $test {
 

@@ -54,3 +54,16 @@ class X::Pakku::Spec::CannotParse {
   }
 
 }
+
+class X::Pakku::Build::Fail {
+  also is X::Pakku;
+
+  has $.dist;
+
+  method message ( --> Str:D ) {
+
+    "Build: Failed for dist [$!dist]";
+
+  }
+
+}
