@@ -392,13 +392,13 @@ submethod !init ( ) {
 
       $!ecosystem = Pakku::Ecosystem.new: :$update, :@source;
 
-      self.add:    |%!cnf<add>    when 'add';
+      self.add:    |%!cnf<add>;
 
     }
 
     when 'remove' {
 
-      self.remove: |%!cnf<remove> when 'remove';
+      self.remove: |%!cnf<remove>;
 
     }
 
@@ -406,13 +406,13 @@ submethod !init ( ) {
 
       $!ecosystem = Pakku::Ecosystem.new: :$update, :@source if %!cnf<list><remote>;
 
-      self.list:   |%!cnf<list>   when 'list';
+      self.list:   |%!cnf<list>;
 
     }
 
     when 'help' {
 
-      self.help:   |%!cnf<help>   when 'help';
+      self.help:   |%!cnf<help>;
 
     }
   }

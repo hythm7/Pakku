@@ -48,14 +48,10 @@ method build ( Pakku::Dist::Path:D :$dist ) {
 
         my $proc = run ~$*EXECUTABLE, $include, $execute, $build-cmd, cwd => $dist-dir, :out, :err;
 
-         $proc.out.lines.map( 👣 * );
-         $proc.err.lines.map( ✗  * );
+        $proc.out.lines.map( 👣 * );
+        $proc.err.lines.map( ✗  * );
 
-        if $proc.exitcode {
-
-          die X::Pakku::Build::Fail.new: :$dist if $proc.exitcode; 
-
-        }
+        die X::Pakku::Build::Fail.new: :$dist if $proc.exitcode;
     }
 
 
