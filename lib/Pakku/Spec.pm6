@@ -21,8 +21,10 @@ grammar SpecGrammar {
   token key:sym<api>     { <sym> }
   token key:sym<from>    { <sym> }
 
-  # BUG: fix specs that have '<>' inside value;
-  token value { '<' ~ '>' $<val>=<-[<>]>* | '(' ~ ')' $<val>=<-[()]>* }
+  # Thx to Jo King on SO.
+  proto token value { * }
+  token value:sym<angles> { '<' ~ '>' $<val>=[.*? <~~>?] }
+  token value:sym<parens> { '(' ~ ')' $<val>=[.*? <~~>?] }
 
 
 }
