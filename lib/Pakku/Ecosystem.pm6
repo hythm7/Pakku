@@ -8,15 +8,30 @@ use Pakku::Dist;
 
 unit class Pakku::Ecosystem;
 
+has $!ecosystem;
+has $.update;
 has @.source;
 has @!ignored;
 has %!dist;
-has @!dist;
 
 submethod TWEAK ( ) {
 
   @!ignored = < Test NativeCall nqp lib >;
+
+  $!ecosystem = %?RESOURCES<ecosystem.json>.IO;
   self!update;
+
+  🐛 "Eco: Loading ecosystem file [{@$!ecosystem}]";
+  my @meta = flat from-json slurp $!ecosystem;
+
+  race for @meta -> %meta {
+
+    my $dist = Pakku::Dist.new: :%meta;
+
+    %!dist{ $dist.name }.push: $dist;
+
+  }
+
 
 }
 
@@ -84,7 +99,7 @@ submethod !find ( Pakku::Spec:D :$spec! ) {
 
   @cand = flat %!dist{$name} if so %!dist{$name};
 
-  @cand = @!dist.grep( -> $dist { $name ~~ $dist.provides } ) unless @cand;
+  @cand = %!dist.values.grep( -> $dist { $name ~~ $dist.provides } ) unless @cand;
 
   @cand .= grep( * ~~ $spec );
 
@@ -108,29 +123,37 @@ submethod !find ( Pakku::Spec:D :$spec! ) {
 }
 
 method list-dists ( ) {
-  #TODO: list per source
+  # TODO: list per source
 
-  @!dist;
+  %!dist.values;
 
 }
 
 method !update ( ) {
 
-  for @!source -> $source {
 
-    #my $json = from-json LibCurl::Easy.new( URL => $source ).perform.content;
-    my $json = from-json slurp %?RESOURCES<ecosystem.json>;
+  return if $!update === False;
 
-    #my $json =  jget $source;
+  my $mod-time = $!ecosystem.IO.modified.DateTime.minute - now.DateTime.minute;
 
+  return if $!update === Any and $mod-time < 42;
 
-    for flat $json -> %meta {
+  🐛 "Eco: Updating Ecosystem";
 
-      my $dist = Pakku::Dist.new: :%meta;
+  my @meta;
 
-      %!dist{ $dist.name }.push: $dist;
-      @!dist.push: $dist;
-    }
+  race for @!source -> $source {
+
+    🐛 "Eco: Getting source [$source]";
+    @meta.append: flat jget $source;
+
+  }
+
+  given open $!ecosystem, :w {
+    🐛 "Eco: Writing Ecosystem to file [$!ecosystem]";
+    .say( to-json @meta );
+    .close;
   }
 }
+
 

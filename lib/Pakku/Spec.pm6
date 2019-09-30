@@ -16,10 +16,10 @@ grammar SpecGrammar {
 
   proto token key { * }
   token key:sym<ver>     { <sym> }
-  token key:sym<version> { <sym> }
   token key:sym<auth>    { <sym> }
   token key:sym<api>     { <sym> }
   token key:sym<from>    { <sym> }
+  token key:sym<version> { <sym> }
 
   # Thx to Jo King on SO.
   proto token value { * }
@@ -42,10 +42,10 @@ class SpecActions {
     my %spec;
 
     %spec<short-name>      = %id<name> if %id<name>;
-    %spec<from>            = %id<from> if %id<from>;
-    %spec<version-matcher> = %id<ver>  if %id<ver>;
     %spec<auth-matcher>    = %id<auth> if %id<auth>;
     %spec<api-matcher>     = %id<api>  if %id<api>;
+    %spec<from>            = %id<from> if %id<from>;
+    %spec<version-matcher> = %id<ver>  // %id<version> if %id<ver> // %id<version>;
 
     make %spec;
 

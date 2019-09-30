@@ -155,7 +155,7 @@ method add (
       $!tester.test:   :$dist if $test;
 
       $repo.install: $dist, :$force;
-      🦋 "Installed [$dist] to repo [{$repo.name}]";
+      🦋 "Pakku:Installed [$dist] to repo [{$repo.name}]";
 
     }
 
@@ -356,15 +356,16 @@ submethod !init ( ) {
   %!cnf = $cnf.ast.merge: $cmd.ast;
 
   my @source  = %!cnf<source>.flat;
+  my $update  = %!cnf<pakku><update>;
   my $verbose = %!cnf<pakku><verbose> // 3;
   my $pretty  = %!cnf<pakku><pretty>  // True;
   my $repo    = %!cnf<pakku><repo>    // $*REPO;
 
   $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
 
-  $!ofun    = $pretty ?? colored( '-Ofun',        'bold 177' ) !! '-Ofun'; 
-  $!nofun   = $pretty ?? colored( 'Nofun',        'bold 9'   ) !! '-Ofun'; 
-  $!allgood = $pretty ?? colored( 'Saul Goodman', 'bold 177' ) !! 'Saul Goodman'; 
+  $!ofun    = $pretty ?? colored( '-Ofun',        'bold 177' ) !! '-Ofun';
+  $!nofun   = $pretty ?? colored( 'Nofun',        'bold 9'   ) !! '-Ofun';
+  $!allgood = $pretty ?? colored( 'Saul Goodman', 'bold 177' ) !! 'Saul Goodman';
 
 
   $!fetcher = Pakku::Fetcher;
@@ -384,14 +385,36 @@ submethod !init ( ) {
   } );
 
 
-  $!ecosystem = Pakku::Ecosystem.new: :$!log, :@source;
 
   given %!cnf<cmd> {
 
-    self.add:    |%!cnf<add>    when 'add';
-    self.remove: |%!cnf<remove> when 'remove';
-    self.list:   |%!cnf<list>   when 'list';
-    self.help:   |%!cnf<help>   when 'help';
+    when 'add' {
+
+      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source;
+
+      self.add:    |%!cnf<add>    when 'add';
+
+    }
+
+    when 'remove' {
+
+      self.remove: |%!cnf<remove> when 'remove';
+
+    }
+
+    when 'list' {
+
+      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source if %!cnf<list><remote>;
+
+      self.list:   |%!cnf<list>   when 'list';
+
+    }
+
+    when 'help' {
+
+      self.help:   |%!cnf<help>   when 'help';
+
+    }
   }
 
   CATCH {
