@@ -53,7 +53,8 @@ class SpecActions {
 
   method keyval ( $/ ) { make ( $<key>.Str => $<value>.ast ) }
 
-  method value ( $/ )  { make $<val>.Str }
+  method value:sym<angles> ( $/ )  { make $<val>.Str }
+  method value:sym<parens> ( $/ )  { make $<val>.Str }
 
 }
 
