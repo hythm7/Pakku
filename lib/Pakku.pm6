@@ -196,7 +196,6 @@ method remove (
 
   :@what!,
   CompUnit::Repository :$from = $!repo,
-  Bool:D :$deps
 
 ) {
 

@@ -14,6 +14,7 @@ has $.update;
 has @.source;
 has @!ignored;
 has %!dist;
+has @!dist;
 
 submethod TWEAK ( ) {
 
@@ -30,6 +31,7 @@ submethod TWEAK ( ) {
     my $dist = Pakku::Dist.new: :%meta;
 
     %!dist{ $dist.name }.push: $dist;
+    @!dist.append: $dist;
 
   }
 
@@ -100,7 +102,7 @@ multi submethod find ( Pakku::Spec:D $spec ) {
 
   @cand = flat %!dist{$name} if so %!dist{$name};
 
-  @cand = %!dist.values.grep( -> $dist { $name ~~ $dist.provides } ) unless @cand;
+  @cand = @!dist.grep( -> $dist { $name ~~ $dist.provides } ) unless @cand;
 
   @cand .= grep( * ~~ $spec );
 
@@ -132,7 +134,7 @@ multi submethod find ( IO::Path:D $path ) {
 method list-dists ( ) {
   # TODO: list per source
 
-  %!dist.values;
+  @!dist;
 
 }
 

@@ -1,14 +1,14 @@
 < pakku >
-  repo home # home site vendor
-
+  verbose 3
 < add >
   deps
+  test
 
 < remove >
-  deps
+  from home
 
-< search >
-  deps
+< list >
+  local
 
 < source >
   https://ecosystem-api.p6c.org/projects.json

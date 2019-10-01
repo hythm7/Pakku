@@ -23,21 +23,26 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token add { * }
-  token add:sym<a>   { <sym> }
   token add:sym<add> { <sym> }
+  token add:sym<a>   { <sym> }
   token add:sym<↓>   { <sym>  }
 
   proto token remove { * }
   token remove:sym<remove> { <sym> }
   token remove:sym<r>      { <sym> }
+  token remove:sym<↑>      { <sym> }
 
   proto token list { * }
   token list:sym<list> { <sym> }
   token list:sym<l>    { <sym> }
+  token list:sym<↪>    { <sym> }
 
   proto token help { * }
   token help:sym<help> { <sym> }
   token help:sym<h>    { <sym> }
+  token help:sym<ℍ>    { <sym> }
+  token help:sym<?>    { <sym> }
+  token help:sym<❓>    { <sym> }
 
 
   proto token pakkuopt { * }
@@ -56,13 +61,13 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token removeopt { * }
-  token removeopt:sym<deps> { <deps> }
+  # token removeopt:sym<deps> { <deps> }
   token removeopt:sym<from> { <from> <.space>* <reponame> }
 
 
   proto token listopt { * }
-  token listopt:sym<remote>  { <remote> }
   token listopt:sym<local>   { <local> }
+  token listopt:sym<remote>  { <remote> }
   token listopt:sym<details> { <details> }
   token listopt:sym<repo>    { <repo> <.space>* <reponame> }
 
@@ -70,12 +75,17 @@ grammar Pakku::Grammar::Cmd {
   proto token update { * }
   token update:sym<update>   { <sym> }
   token update:sym<u>        { <sym> }
+  token update:sym<⟳>        { <sym> }
+  token update:sym<⌃>        { <sym> }
   token update:sym<noupdate> { <sym> }
   token update:sym<nu>       { <sym> }
 
   proto token pretty { * }
   token pretty:sym<pretty>   { <sym> }
   token pretty:sym<p>        { <sym> }
+  token pretty:sym<ℙ>        { <sym> }
+  token pretty:sym<℘>        { <sym> }
+  token pretty:sym<𝛒>        { <sym> }
   token pretty:sym<nopretty> { <sym> }
   token pretty:sym<np>       { <sym> }
 
@@ -85,11 +95,15 @@ grammar Pakku::Grammar::Cmd {
   proto token verbose { * }
   token verbose:sym<verbose> { <sym> }
   token verbose:sym<v>       { <sym> }
+  token verbose:sym<𝕧>       { <sym> }
+  token verbose:sym<👀>       { <sym> }
+  token verbose:sym<👓>       { <sym> }
 
 
   proto token deps { * }
   token deps:sym<deps>   { <sym> }
   token deps:sym<d>      { <sym> }
+  token deps:sym<🔗>      { <sym> }
   token deps:sym<nodeps> { <sym> }
   token deps:sym<nd>     { <sym> }
 
@@ -108,6 +122,9 @@ grammar Pakku::Grammar::Cmd {
   proto token force { * }
   token force:sym<force>   { <sym> }
   token force:sym<f>       { <sym> }
+  token force:sym<𝙁>       { <sym> }
+  token force:sym<🔨>       { <sym> }
+  token force:sym<➟>       { <sym> }
   token force:sym<noforce> { <sym> }
   token force:sym<nf>      { <sym> }
 
@@ -120,6 +137,7 @@ grammar Pakku::Grammar::Cmd {
   proto token remote { * }
   token remote:sym<remote>   { <sym> }
   token remote:sym<r>        { <sym> }
+  token remote:sym<🌎>        { <sym> }
   token remote:sym<noremote> { <sym> }
   token remote:sym<nr>       { <sym> }
 
@@ -293,7 +311,7 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
+  # method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
 
   method removeopt:sym<from> ( $/ ) {
 
@@ -334,17 +352,23 @@ class Pakku::Grammar::Cmd::Actions {
 
   method update:sym<update>   ( $/ )  { make ( :update  ) }
   method update:sym<u>        ( $/ )  { make ( :update  ) }
+  method update:sym<⟳>        ( $/ )  { make ( :update  ) }
+  method update:sym<⌃>        ( $/ )  { make ( :update  ) }
   method update:sym<noupdate> ( $/ )  { make ( :!update ) }
   method update:sym<nu>       ( $/ )  { make ( :!update ) }
 
   method pretty:sym<pretty>   ( $/ )  { make ( :pretty  ) }
   method pretty:sym<p>        ( $/ )  { make ( :pretty  ) }
+  method pretty:sym<ℙ>        ( $/ )  { make ( :pretty  ) }
+  method pretty:sym<𝛒>        ( $/ )  { make ( :pretty  ) }
+  method pretty:sym<℘>        ( $/ )  { make ( :pretty  ) }
   method pretty:sym<nopretty> ( $/ )  { make ( :!pretty ) }
   method pretty:sym<np>       ( $/ )  { make ( :!pretty ) }
 
 
   method deps:sym<deps>   ( $/ )  { make ( :deps  ) }
   method deps:sym<d>      ( $/ )  { make ( :deps  ) }
+  method deps:sym<🔗>      ( $/ )  { make ( :deps  ) }
   method deps:sym<nodeps> ( $/ )  { make ( :!deps ) }
   method deps:sym<nd>     ( $/ )  { make ( :!deps ) }
 
@@ -360,11 +384,15 @@ class Pakku::Grammar::Cmd::Actions {
 
   method force:sym<force>   ( $/ )  { make ( :force  ) }
   method force:sym<f>       ( $/ )  { make ( :force  ) }
+  method force:sym<𝙁>       ( $/ )  { make ( :force  ) }
+  method force:sym<🔨>       ( $/ )  { make ( :force  ) }
+  method force:sym<➟>       ( $/ )  { make ( :force  ) }
   method force:sym<noforce> ( $/ )  { make ( :!force ) }
   method force:sym<nf>      ( $/ )  { make ( :!force ) }
 
   method remote:sym<remote>   ( $/ )  { make ( :remote  ) }
   method remote:sym<r>        ( $/ )  { make ( :remote  ) }
+  method remote:sym<🌎>        ( $/ )  { make ( :remote  ) }
   method remote:sym<noremote> ( $/ )  { make ( :!remote ) }
   method remote:sym<nr>       ( $/ )  { make ( :!remote ) }
 
