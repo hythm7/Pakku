@@ -3,17 +3,17 @@
 
 grammar Pakku::Grammar::Cnf {
 
-  token TOP { <sections> }
+  token TOP { [ <.ws> | <.nl> ] <sections> }
 
-  token sections { <.ws> <section>* }
+  token sections { <section>* }
 
   proto rule section { * }
-  rule section:sym<pakku>  { <lt> <sym> <gt> <.nl> <pakkuopt>+  }
-  rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>+    }
-  rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>+ }
-  rule section:sym<list>   { <lt> <sym> <gt> <.nl> <listopt>+ }
-  rule section:sym<source> { <lt> <sym> <gt> <.nl> <sourceopt>+ }
-  rule section:sym<log>    { <lt> <sym> <gt> <.nl> <logopt>+    }
+  rule section:sym<pakku>  { <lt> <sym> <gt> <.nl> <pakkuopt>*  }
+  rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>*    }
+  rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>* }
+  rule section:sym<list>   { <lt> <sym> <gt> <.nl> <listopt>* }
+  rule section:sym<source> { <lt> <sym> <gt> <.nl> <sourceopt>* }
+  rule section:sym<log>    { <lt> <sym> <gt> <.nl> <logopt>*    }
 
   proto rule pakkuopt { * }
   rule pakkuopt:sym<update>  { <update>             <.eol> }
@@ -43,7 +43,7 @@ grammar Pakku::Grammar::Cnf {
   proto rule sourceopt { * }
   rule sourceopt:sym<source>  { <.ws> <source> <.eol> }
 
-   proto token update { * }
+  proto token update { * }
   token update:sym<update>   { <sym> }
   token update:sym<u>        { <sym> }
   token update:sym<noupdate> { <sym> }
@@ -166,7 +166,7 @@ grammar Pakku::Grammar::Cnf {
   token source { <-[<\n]>+ } # TODO use better token
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
-  token eol { [ [ <[#;]> \N* ]? \n ]+ }
+  token eol { [ \h* [ <[#]> \N* ]? \n ]+ }
 
   token nl { [ <comment>? \h* \n ]+ }
 

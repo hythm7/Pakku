@@ -1,0 +1,41 @@
+### pakku Config
+
+<pakku>
+  # update           # update ecosystem
+  # pretty           # colors
+  # repo site        # default repo <home site vendor core>
+  # verbose info     # < 1 2 3 4 5 6 >
+  # dont             # dont do the operation (dry run)
+
+<add>
+  # deps       # add deps as well < deps nodeps >
+  # build      # build            < build nobuild >
+  # test       # test             < test notest >
+  # force      # force install    < force noforce >
+  # into  home # add to specific repo
+
+< remove >
+  # from home  # remove from specific repo
+
+< list >
+  # local   # local  dists
+  # remote  # remote dists
+  # details # list   details
+
+< log >
+  # trace name T:
+  # debug name D:
+  # info  name I:
+  # warn  name W:
+  # error name E:
+  # fatal name F:
+
+  # trace color reset
+  # debug color green
+  # info  color blue
+  # warn  color yellow
+  # error color magenta
+  # fatal color yellow
+
+<source>
+  https://ecosystem-api.p6c.org/projects.json

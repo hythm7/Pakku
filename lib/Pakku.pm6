@@ -365,14 +365,19 @@ submethod allgood ( --> Bool:D ) { sleep .1; put $!allgood };
 
 submethod !init ( ) {
 
-  my $cnf = Pakku::Grammar::Cnf.parsefile( 'cnf/cnf', actions => Pakku::Grammar::Cnf::Actions.new );
+  my $default-cnf = %?RESOURCES<pakku.cnf>.IO;
+  my $user-cnf    = $*HOME.add: <.pakku/pakku.cnf>;
+
+  my $pakku-cnf = $user-cnf.e ?? $user-cnf !! $default-cnf;
+
+  my $cnf = Pakku::Grammar::Cnf.parsefile( $pakku-cnf, actions => Pakku::Grammar::Cnf::Actions.new );
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
 
   %!cnf = $cnf.ast.merge: $cmd.ast;
 
   my @source  = %!cnf<source>.flat;
   my $update  = %!cnf<pakku><update>;
-  my $verbose = %!cnf<pakku><verbose> // 3;
+  my $verbose = %!cnf<pakku><verbose> // 4;
   my $pretty  = %!cnf<pakku><pretty>  // True;
   my $repo    = %!cnf<pakku><repo>    // $*REPO;
 
