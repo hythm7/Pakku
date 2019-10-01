@@ -19,6 +19,7 @@ grammar Pakku::Grammar::Cnf {
   rule pakkuopt:sym<update>  { <update>             <.eol> }
   rule pakkuopt:sym<pretty>  { <pretty>             <.eol> }
   rule pakkuopt:sym<please>  { <sym>                <.eol> }
+  rule pakkuopt:sym<dont>    { <sym>                <.eol> }
   rule pakkuopt:sym<repo>    { <repo>    <reponame> <.eol> }
   rule pakkuopt:sym<verbose> { <verbose> <level>    <.eol> }
 
@@ -203,6 +204,7 @@ class Pakku::Grammar::Cnf::Actions {
   method pakkuopt:sym<update>  ( $/ ) { make $<update>.ast }
   method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.ast }
   method pakkuopt:sym<please>  ( $/ ) { make ( :please )   }
+  method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )     }
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.ast ) }
 
   method pakkuopt:sym<repo>    ( $/ ) {

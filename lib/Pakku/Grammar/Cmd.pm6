@@ -49,6 +49,7 @@ grammar Pakku::Grammar::Cmd {
   token pakkuopt:sym<update>  { <update>   }
   token pakkuopt:sym<pretty>  { <pretty> }
   token pakkuopt:sym<please>  { <sym>    }
+  token pakkuopt:sym<dont>    { <sym>    }
   token pakkuopt:sym<repo>    { <repo>    <.space>* <reponame> }
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
 
@@ -284,6 +285,7 @@ class Pakku::Grammar::Cmd::Actions {
   method pakkuopt:sym<update>  ( $/ ) { make $<update>.ast }
   method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.ast }
   method pakkuopt:sym<please>  ( $/ ) { make ( :please )   }
+  method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )   }
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.ast ) }
 
   method pakkuopt:sym<repo>    ( $/ ) {

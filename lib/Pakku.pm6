@@ -27,6 +27,8 @@ has Pakku::Ecosystem     $!ecosystem;
 has CompUnit::Repository $!repo;
 has CompUnit::Repository @!inst-repo;
 
+has Bool $!dont;
+
 has Str $!ofun;
 has Str $!nofun;
 has Str $!allgood;
@@ -154,8 +156,10 @@ method add (
       $!builder.build: :$dist if $build;
       $!tester.test:   :$dist if $test;
 
-      $repo.install: $dist, :$force;
-      🦋 "Pakku:Installed [$dist] to repo [{$repo.name}]";
+      unless $!dont {
+        $repo.install: $dist, :$force;
+        🦋 "Pakku: Installed [$dist] to repo [{$repo.name}]";
+      }
 
     }
 
@@ -371,6 +375,8 @@ submethod !init ( ) {
   my $verbose = %!cnf<pakku><verbose> // 3;
   my $pretty  = %!cnf<pakku><pretty>  // True;
   my $repo    = %!cnf<pakku><repo>    // $*REPO;
+
+  $!dont  = %!cnf<pakku><dont> // False;
 
   $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
 
