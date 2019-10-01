@@ -39,7 +39,7 @@ submethod BUILD ( ) {
 
 method add (
 
-  :@spec!,
+  :@what!,
 
   CompUnit::Repository :$into = $!repo,
 
@@ -52,32 +52,32 @@ method add (
 
     my @repo = $into.repo-chain.grep( CompUnit::Repository::Installation );
 
-    🐛 "Pakku: Processing specs [{@spec}]";
+    🐛 "Pakku: Processing [{@what}]";
 
     unless $force {
 
-      🐛 "Pakku: Filtering installed specs [{@spec}]";
+      🐛 "Pakku: Filtering installed [{@what}]";
 
-      @spec .= grep( -> $spec {
+      @what .= grep( -> $what {
 
 
-        🐛 "Pakku: Checking if there are installed dists matching [$spec]";
+        🐛 "Pakku: Checking if there are installed dists matching [$what]";
 
-        my @inst = self.installed: :$spec, :@repo;
+        my @inst = self.installed: $what, :@repo;
 
         if @inst {
 
-          🐛 "Pakku: Found installed dists [{@inst}] matching spec [$spec]";
+          🐛 "Pakku: Found installed dists [{@inst}] matching [$what]";
 
-          🐛 "Pakku: Will not install [$spec] unless forced";
+          🐛 "Pakku: Will not install [$what] unless forced";
 
-          🐛 "Pakku: Removing spec [$spec] from specs list";
+          🐛 "Pakku: Removing spec [$what] from list";
 
         }
 
         else {
 
-          🐛 "Pakku: Found no installed dists matching spec [$spec]";
+          🐛 "Pakku: Found no installed dists matching [$what]";
 
         }
 
@@ -88,9 +88,9 @@ method add (
     }
 
 
-  unless @spec {
+  unless @what {
 
-    🐛 "Pakku: No specs remaning to install";
+    🐛 "Pakku: Nothing remaning to install";
 
     self.allgood;
 
@@ -99,9 +99,9 @@ method add (
   }
 
 
-  🐛 "Pakku: Asking Eco recommendations for specs [{@spec}]";
+  🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@spec, :$deps;
+  my @candies = $!ecosystem.recommend: :@what, :$deps;
 
 
   unless $force {
@@ -113,7 +113,7 @@ method add (
 
         🐛 "Pakku: Checking if dist [$dist] is already installed";
 
-        my Bool:D $inst =  self.installed: :@repo, :$dist;
+        my Bool:D $inst =  so any self.installed: $dist, :@repo;
 
         if $inst {
 
@@ -141,7 +141,7 @@ method add (
   my @dists
     <== map( {       .map( -> $path { Pakku::Dist::Path.new: $path      } ) } )
     <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                    } ) } )
-    <== map( {       .map( -> $cand { $cand.source-url || $cand.support<source> } ) } )
+    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
     <== @candies;
 
 
@@ -194,7 +194,7 @@ method add (
 
 method remove (
 
-  :@spec!,
+  :@what!,
   CompUnit::Repository :$from = $!repo,
   Bool:D :$deps
 
@@ -203,13 +203,13 @@ method remove (
     my @repo = $from.repo-chain.grep( CompUnit::Repository::Installation );
 
 
-  my @dist = flat @spec.map( -> $spec {
+  my @dist = flat @what.map( -> $what {
 
-    my @installed = flat self.installed: :$spec, :@repo;
+    my @inst = flat self.installed: $what, :@repo;
 
-    🐛 "Found no installed dists matching [$spec]" unless @installed;
+    🐛 "Found no installed dists matching [$what]" unless @inst;
 
-    @installed;
+    @inst;
 
   } );
 
@@ -238,14 +238,13 @@ method remove (
   } );
 
 
-
   self.Ofun;
 }
 
 
 method list (
 
-  :@spec,
+  :@what,
 
   Bool:D :$details = False,
   Bool:D :$remote  = False,
@@ -257,15 +256,14 @@ method list (
 
   my @repo = $repo.repo-chain.grep( CompUnit::Repository::Installation );
 
-  🐛 "Pakku: Asking Eco recommendations for specs [{@spec}]";
 
   my @dist;
 
   if $local {
 
     # TODO: ⚠ if no dist
-    @spec
-      ?? @dist.append: @spec.map( -> $spec { flat self.installed: :@repo, :$spec } ).flat
+    @what
+      ?? @dist.append: @what.map( -> $what { flat self.installed: $what, :@repo } ).flat
       !! (
            @dist
              <== grep( *.defined )
@@ -277,8 +275,8 @@ method list (
 
   else {
 
-    @spec
-      ?? @dist.append: $!ecosystem.recommend( :@spec, :!deps ).flat
+    @what
+      ?? @dist.append: $!ecosystem.recommend( :@what, :!deps ).flat
       !! @dist.append: $!ecosystem.list-dists;
 
   }
@@ -318,30 +316,44 @@ method help ( Str:D :$cmd ) {
 
 }
 
-multi submethod installed ( :@repo!, Pakku::Spec:D :$spec! ) {
+# TODO: samewith
+multi submethod installed ( Pakku::Spec:D $spec, :@repo! ) {
 
-  return @repo.map( -> $repo { self.installed: :$repo, :$spec } ).grep( *.so );
+  return @repo.map( -> $repo { self.installed: :$repo, $spec } ).grep( *.so );
 
 }
 
-multi submethod installed ( :@repo!, Pakku::Dist:D :$dist! ) {
+
+multi submethod installed ( IO::Path:D $path, :@repo!) {
+
+  my $dist = Pakku::Dist::Path.new: $path;
 
   my $spec = Pakku::Spec.new: spec => $dist.Str;
 
-  return so any self.installed: :@repo, :$spec;
+  nextwith: :@repo, $spec;
 
 }
 
-multi submethod installed ( :$repo!, Pakku::Spec:D :$spec! ) {
+multi submethod installed ( Pakku::Dist:D $dist, :@repo! ) {
+
+  my $spec = Pakku::Spec.new: spec => $dist.Str;
+
+  nextwith: :@repo, $spec;
+
+}
+
+multi submethod installed ( Pakku::Spec:D $spec, :$repo! ) {
 
   my @inst
     <== grep( -> $inst { $inst ~~ $spec })
     <== grep( *.defined )
     <== gather %!installed{ $repo.name }{ $spec.name }.deepmap: *.take;
 
-  return @inst;
+  @inst;
 
 }
+
+
 
 # TODO: Instead of nap see if can await for all Log msgs
 submethod Ofun    ( --> Bool:D ) { sleep .1; put $!ofun    };

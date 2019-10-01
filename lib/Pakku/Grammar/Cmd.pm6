@@ -9,9 +9,9 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopt>* % <.space> <add>    <addopt>*    % <.space> <specs>    }
-  rule TOP:sym<remove> { <pakkuopt>* % <.space> <remove> <removeopt>* % <.space> <specs>    }
-  rule TOP:sym<list>   { <pakkuopt>* % <.space> <list>   <listopt>*   % <.space> <specs>?   }
+  rule TOP:sym<add>    { <pakkuopt>* % <.space> <add>    <addopt>*    % <.space> <whats>    }
+  rule TOP:sym<remove> { <pakkuopt>* % <.space> <remove> <removeopt>* % <.space> <whats>    }
+  rule TOP:sym<list>   { <pakkuopt>* % <.space> <list>   <listopt>*   % <.space> <whats>?   }
   rule TOP:sym<help>   { <help>? <cmd>? <anything> }
 
 
@@ -172,11 +172,14 @@ grammar Pakku::Grammar::Cmd {
   token level:sym<✗>     { <sym> }
 
 
-  token specs { <spec>+ % \h }
+  token whats { <what>+ % \h }
 
-  proto token spec { * }
-  token spec:sym<spec> { <name> <keyval>* }
-  token spec:sym<path> { <path> }
+  proto token what { * }
+  token what:sym<spec> { <spec> }
+  token what:sym<path> { <path> }
+
+  token spec { <name> <keyval>* }
+  token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
 
@@ -193,7 +196,6 @@ grammar Pakku::Grammar::Cmd {
   token value:sym<angles> { '<' ~ '>' $<val>=[.*? <~~>?] }
   token value:sym<parens> { '(' ~ ')' $<val>=[.*? <~~>?] }
 
-  token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
   token lt { '<' }
   token gt { '>' }
@@ -207,10 +209,10 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
 
-    %cmd<cmd>        = 'add';
-    %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
-    %cmd<add>        = $<addopt>».ast.hash   if defined $<addopt>;
-    %cmd<add><spec>  = $<specs>.ast;
+    %cmd<cmd>       = 'add';
+    %cmd<pakku>     = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
+    %cmd<add>       = $<addopt>».ast.hash   if defined $<addopt>;
+    %cmd<add><what> = $<whats>.ast;
 
     make %cmd;
 
@@ -221,10 +223,10 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
 
-    %cmd<cmd>           = 'remove';
-    %cmd<pakku>         = $<pakkuopt>».ast.hash  if defined $<pakkuopt>;
-    %cmd<remove>        = $<removeopt>».ast.hash if defined $<removeopt>;
-    %cmd<remove><spec>  = $<specs>.ast;
+    %cmd<cmd>          = 'remove';
+    %cmd<pakku>        = $<pakkuopt>».ast.hash  if defined $<pakkuopt>;
+    %cmd<remove>       = $<removeopt>».ast.hash if defined $<removeopt>;
+    %cmd<remove><what> = $<whats>.ast;
 
     make %cmd;
 
@@ -238,7 +240,7 @@ class Pakku::Grammar::Cmd::Actions {
     %cmd<cmd>        = 'list';
     %cmd<pakku>      = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
     %cmd<list>       = $<listopt>».ast.hash  if defined $<listopt>;
-    %cmd<list><spec> = $<specs>.ast          if defined $<specs>;
+    %cmd<list><what> = $<whats>.ast          if defined $<whats>;
 
     make %cmd;
 
@@ -317,15 +319,18 @@ class Pakku::Grammar::Cmd::Actions {
   }
 
 
-  method specs ( $/ ) { make $<spec>».ast }
+  method whats ( $/ ) { make $<what>».ast }
 
-  method spec:sym<spec> ( $/ ) {
+  method what:sym<spec> ( $/ ) { make $<spec>.ast }
+  method what:sym<path> ( $/ ) { make $<path>.ast }
+
+  method spec ( $/ ) {
 
     make Pakku::Spec.new: spec => $/.Str;
 
   }
 
-  method spec:sym<path> ( $/ ) { make $/.IO }
+  method path ( $/ ) { make $/.IO }
 
   method update:sym<update>   ( $/ )  { make ( :update  ) }
   method update:sym<u>        ( $/ )  { make ( :update  ) }

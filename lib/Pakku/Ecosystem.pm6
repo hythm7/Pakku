@@ -5,6 +5,7 @@ use X::Pakku;
 use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Dist;
+use Pakku::Dist::Path;
 
 unit class Pakku::Ecosystem;
 
@@ -35,14 +36,14 @@ submethod TWEAK ( ) {
 
 }
 
-method recommend ( :@spec!, :$deps! --> Seq ) {
+method recommend ( :@what!, :$deps! --> Seq ) {
 
 
-  🐛 "Eco: Processing specs [{@spec}]";
+  🐛 "Eco: Processing [{@what}]";
 
-  @spec.map( -> $spec {
+  @what.map( -> $what {
 
-    my $dist = self!find: :$spec;
+    my $dist = self.find: $what;
 
     $deps ?? self!get-deps: :$dist !! $dist.Seq;
 
@@ -73,7 +74,7 @@ submethod !get-deps ( Pakku::Dist:D :$dist! ) {
 
     🐛 "Eco: Found dep [$spec] for dist [$dist]";
 
-    self!find: :$spec;
+    self.find: $spec;
 
   });
 
@@ -89,7 +90,7 @@ submethod !get-deps ( Pakku::Dist:D :$dist! ) {
 
 }
 
-submethod !find ( Pakku::Spec:D :$spec! ) {
+multi submethod find ( Pakku::Spec:D $spec ) {
 
   🐛 "Eco: Looking for spec [$spec]";
 
@@ -119,6 +120,12 @@ submethod !find ( Pakku::Spec:D :$spec! ) {
   🐛 "Eco: Recommending candy [$candy] for spec [$spec]";
 
   $candy;
+
+}
+
+multi submethod find ( IO::Path:D $path ) {
+
+  Pakku::Dist::Path.new: $path;
 
 }
 
