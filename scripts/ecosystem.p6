@@ -5,17 +5,9 @@ use Concurrent::File::Find;
 use LibCurl::HTTP :subs;
 use JSON::Fast;
 
-my $ecosystem = 'ecosystem.json';
+my @meta;
+my $p6c-projects = 'https://ecosystem-api.p6c.org/projects.json';
 
-#my $p6c-meta = 'https://raw.githubusercontent.com/perl6/ecosystem/master/META.list';
-#
-#for LibCurl::Easy.new( URL => $p6c-meta ).perform.content.lines -> $URL {
-#
-#  my $meta = LibCurl::Easy.new( :$URL ).perform.content;
-#  $ecosystem.IO.spurt: "$meta,\n", :append;
-#
-#}
-#
 
 my @cmd = <
     rsync
@@ -28,14 +20,23 @@ my @cmd = <
     cpan
   >;
 
-  run @cmd, :!out, :!err;
+run @cmd, :!out, :!err;
+
+
+@meta.append: flat jget $p6c-projects;
 
 for find 'cpan', :extension<meta> -> $meta {
 
-  next if $meta ~~ / DOOM /; #JSON::Fast not able to parse
+  next if $meta ~~ / DOOM /;
 
-  $ecosystem.IO.spurt: "{$meta.IO.slurp},\n", :append;
+  @meta.append: from-json slurp $meta;
 
 }
 
-#say @meta;
+my $ecosystem = 'ecosystem.json';
+
+given open $ecosystem, :w {
+  .say( to-json @meta );
+  .close;
+}
+

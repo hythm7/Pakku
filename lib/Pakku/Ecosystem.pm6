@@ -27,14 +27,16 @@ submethod TWEAK ( ) {
   🐛 "Eco: Loading ecosystem file [{@$!ecosystem}]";
   my @meta = flat from-json slurp $!ecosystem;
 
-  race for @meta -> %meta {
+  for @meta -> %meta {
 
     my $dist = Pakku::Dist.new: :%meta;
 
     %!dist{ $dist.name }.push: $dist;
-    @!dist.append: $dist;
+    @!dist.push: $dist;
 
   }
+
+  say @!dist.grep( not * );
 
 
 }
