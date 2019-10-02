@@ -36,9 +36,6 @@ submethod TWEAK ( ) {
 
   }
 
-  say @!dist.grep( not * );
-
-
 }
 
 method recommend ( :@what!, :$deps! --> Seq ) {
