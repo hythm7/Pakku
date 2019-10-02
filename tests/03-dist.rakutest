@@ -1,0 +1,62 @@
+#!/usr/bin/env perl6
+#
+use JSON::Fast;
+
+use lib 'lib';
+
+use Pakku::Dist;
+
+my $dist-meta = q:to/END/;
+  {
+  "auth" : "cpan:SKAJI",
+  "authors" : [
+    "Shoichi Kaji"
+  ],
+  "build-depends" : [ ],
+  "depends": {
+    "runtime": {
+      "requires": [
+        "Sereal:auth<cpan:*>:ver(1..*)",
+        "curl:from<bin>",
+        "JSON::Fast"
+      ],
+      "recommends": [
+        "JSON::Pretty"
+      ]
+    },
+    "build": {
+      "requires": [
+        "System::Info"
+      ]
+    },
+    "test": {
+      "requires": [
+        "File::Temp"
+      ]
+    }
+  },
+  "description" : "perl6 port of HTTP::Tinyish",
+  "license" : "Artistic-2.0",
+  "name" : "HTTP::Tinyish",
+  "perl" : "6.c",
+  "provides" : {
+    "HTTP::Tinyish" : "lib/HTTP/Tinyish.pm6",
+    "HTTP::Tinyish::Base" : "lib/HTTP/Tinyish/Base.pm6",
+    "HTTP::Tinyish::Curl" : "lib/HTTP/Tinyish/Curl.pm6",
+    "HTTP::Tinyish::FileTempFactory" : "lib/HTTP/Tinyish/FileTempFactory.pm6"
+  },
+  "resources" : [ ],
+  "source-url" : "git://github.com/skaji/perl6-HTTP-Tinyish.git",
+  "tags" : [
+    "CPAN5"
+  ],
+  "test-depends" : [ ],
+  "version" : "0.1.4"
+}
+END
+
+
+my $meta = from-json $dist-meta;
+my $dist = Pakku::Dist.new: :$meta;
+
+say $dist.deps;
