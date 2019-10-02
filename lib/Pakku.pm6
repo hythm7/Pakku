@@ -333,7 +333,7 @@ multi submethod installed ( IO::Path:D $path, :@repo!) {
 
   my $spec = Pakku::Spec.new: spec => $dist.Str;
 
-  nextwith: :@repo, $spec;
+  self.installed: $spec, :@repo;
 
 }
 
@@ -341,7 +341,7 @@ multi submethod installed ( Pakku::Dist:D $dist, :@repo! ) {
 
   my $spec = Pakku::Spec.new: spec => $dist.Str;
 
-  nextwith: :@repo, $spec;
+  self.installed: $spec, :@repo;
 
 }
 
