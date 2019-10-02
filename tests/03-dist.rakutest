@@ -5,6 +5,7 @@ use JSON::Fast;
 use lib 'lib';
 
 use Pakku::Dist;
+use Pakku::Spec;
 
 my $dist-meta = q:to/END/;
   {
@@ -12,12 +13,32 @@ my $dist-meta = q:to/END/;
   "authors" : [
     "Shoichi Kaji"
   ],
-  "build-depends" : [ ],
+  "build-depends" : [ "Build1", "Build2" ],
+  "test-depends": {
+    "runtime": [
+      {
+        "name": "svm:from<native>",
+        "hints": {
+          "source": {
+            "builder": "Distribution::Builder::MakeFromJSON",
+            "build": {
+              "src-dir": "src",
+              "makefile-variables": {
+                "VERSION": "3.22",
+                "svm": {"resource": "libraries/svm"}
+              }
+            }
+          }
+        }
+      }
+    ]
+  },
   "depends": {
     "runtime": {
       "requires": [
         "Sereal:auth<cpan:*>:ver(1..*)",
         "curl:from<bin>",
+        [ "Archive::Compress", "Archive::Zlib" ],
         "JSON::Fast"
       ],
       "recommends": [
@@ -59,4 +80,4 @@ END
 my $meta = from-json $dist-meta;
 my $dist = Pakku::Dist.new: :$meta;
 
-say $dist.deps;
+#say $dist.depends;
