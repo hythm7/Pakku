@@ -1,28 +1,28 @@
 ### pakku Config
 
-<pakku>
+# <pakku>
   # update           # update ecosystem
   # pretty           # colors
   # repo site        # default repo <home site vendor core>
   # verbose info     # < 1 2 3 4 5 6 >
   # dont             # dont do the operation (dry run)
 
-<add>
+# <add>
   # deps       # add deps as well < deps nodeps >
   # build      # build            < build nobuild >
   # test       # test             < test notest >
   # force      # force install    < force noforce >
   # into  home # add to specific repo
 
-< remove >
+# < remove >
   # from home  # remove from specific repo
 
-< list >
+# < list >
   # local   # local  dists
   # remote  # remote dists
   # details # list   details
 
-< log >
+# < log >
   # trace name T:
   # debug name D:
   # info  name I:

@@ -370,10 +370,13 @@ submethod !init ( ) {
 
   my $pakku-cnf = $user-cnf.e ?? $user-cnf !! $default-cnf;
 
+
   my $cnf = Pakku::Grammar::Cnf.parsefile( $pakku-cnf, actions => Pakku::Grammar::Cnf::Actions.new );
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
 
   %!cnf = $cnf.ast.merge: $cmd.ast;
+
+  say %!cnf;
 
   my @source  = %!cnf<source>.flat;
   my $update  = %!cnf<pakku><update>;

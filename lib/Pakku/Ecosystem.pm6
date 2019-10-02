@@ -21,6 +21,7 @@ submethod TWEAK ( ) {
   @!ignored = < Test NativeCall nqp lib >;
 
   $!ecosystem = %?RESOURCES<ecosystem.json>.IO;
+
   self!update;
 
   🐛 "Eco: Loading ecosystem file [{@$!ecosystem}]";
@@ -132,7 +133,6 @@ multi submethod find ( IO::Path:D $path ) {
 }
 
 method list-dists ( ) {
-  # TODO: list per source
 
   @!dist;
 
@@ -141,11 +141,13 @@ method list-dists ( ) {
 method !update ( ) {
 
 
+  #$!update = True unless $!ecosystem.e;
+
   return if $!update === False;
 
-  my $mod-time = $!ecosystem.IO.modified.DateTime.minute - now.DateTime.minute;
+  #my $mod-time = $!ecosystem.IO.modified.DateTime.minute - now.DateTime.minute;
 
-  return if $!update === Any and $mod-time < 42;
+  #return if $!update === Any and $mod-time < 42;
 
   🐛 "Eco: Updating Ecosystem";
 

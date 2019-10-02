@@ -12,7 +12,10 @@
   "provides" : {
     "Pakku" : "lib/Pakku.pm6"
   },
-  "resources" : [ ],
+  "resources" : [
+    "ecosystem.json",
+    "pakku.conf"
+  ],
   "source-url" : "",
   "tags" : [ ],
   "test-depends" : [ ],
