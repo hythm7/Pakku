@@ -376,8 +376,6 @@ submethod !init ( ) {
 
   %!cnf = $cnf.ast.merge: $cmd.ast;
 
-  say %!cnf;
-
   my @source  = %!cnf<source>.flat;
   my $update  = %!cnf<pakku><update>;
   my $verbose = %!cnf<pakku><verbose> // 4;

@@ -129,7 +129,6 @@ role Pakku::Grammar::Common {
   token level:sym<warn>  { <sym> }
   token level:sym<error> { <sym> }
   token level:sym<fatal> { <sym> }
-  token level:sym<42>    { <sym> }
   token level:sym<T>     { <sym> }
   token level:sym<D>     { <sym> }
   token level:sym<I>     { <sym> }
@@ -142,6 +141,7 @@ role Pakku::Grammar::Common {
   token level:sym<4>     { <sym> }
   token level:sym<5>     { <sym> }
   token level:sym<6>     { <sym> }
+  token level:sym<42>    { <sym> }
   token level:sym<🦋>     { <sym> }
   token level:sym<✗>     { <sym> }
 
@@ -293,7 +293,6 @@ role Pakku::Grammar::Common::Actions {
   method level:sym<warn>  ( $/ ) { make 4 }
   method level:sym<error> ( $/ ) { make 5 }
   method level:sym<fatal> ( $/ ) { make 6 }
-  method level:sym<42>    ( $/ ) { make 1 }
   method level:sym<T>     ( $/ ) { make 1 }
   method level:sym<D>     ( $/ ) { make 2 }
   method level:sym<I>     ( $/ ) { make 3 }
@@ -306,6 +305,7 @@ role Pakku::Grammar::Common::Actions {
   method level:sym<4>     ( $/ ) { make 4 }
   method level:sym<5>     ( $/ ) { make 5 }
   method level:sym<6>     ( $/ ) { make 6 }
+  method level:sym<42>    ( $/ ) { make 1 }
   method level:sym<🦋>     ( $/ ) { make 3 }
   method level:sym<✗>     ( $/ ) { make 5 }
 

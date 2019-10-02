@@ -140,14 +140,11 @@ method list-dists ( ) {
 
 method !update ( ) {
 
-
-  #$!update = True unless $!ecosystem.e;
-
   return if $!update === False;
 
-  #my $mod-time = $!ecosystem.IO.modified.DateTime.minute - now.DateTime.minute;
+  my $mod-time = $!ecosystem.IO.modified.DateTime.minute - now.DateTime.minute;
 
-  #return if $!update === Any and $mod-time < 42;
+  return if $!update === Any and $mod-time < 42;
 
   🐛 "Eco: Updating Ecosystem";
 
