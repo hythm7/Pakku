@@ -9,30 +9,8 @@ use Pakku::Spec;
 
 my $dist-meta = q:to/END/;
   {
-  "auth" : "cpan:SKAJI",
-  "authors" : [
-    "Shoichi Kaji"
-  ],
-  "build-depends" : [ "Build1", "Build2" ],
-  "test-depends": {
-    "runtime": [
-      {
-        "name": "svm:from<native>",
-        "hints": {
-          "source": {
-            "builder": "Distribution::Builder::MakeFromJSON",
-            "build": {
-              "src-dir": "src",
-              "makefile-variables": {
-                "VERSION": "3.22",
-                "svm": {"resource": "libraries/svm"}
-              }
-            }
-          }
-        }
-      }
-    ]
-  },
+  "build-depends" : [ "build0", [ "Build1", "Build2" ] ],
+  "test-depends": [ ],
   "depends": {
     "runtime": {
       "requires": [
@@ -55,24 +33,7 @@ my $dist-meta = q:to/END/;
         "File::Temp"
       ]
     }
-  },
-  "description" : "perl6 port of HTTP::Tinyish",
-  "license" : "Artistic-2.0",
-  "name" : "HTTP::Tinyish",
-  "perl" : "6.c",
-  "provides" : {
-    "HTTP::Tinyish" : "lib/HTTP/Tinyish.pm6",
-    "HTTP::Tinyish::Base" : "lib/HTTP/Tinyish/Base.pm6",
-    "HTTP::Tinyish::Curl" : "lib/HTTP/Tinyish/Curl.pm6",
-    "HTTP::Tinyish::FileTempFactory" : "lib/HTTP/Tinyish/FileTempFactory.pm6"
-  },
-  "resources" : [ ],
-  "source-url" : "git://github.com/skaji/perl6-HTTP-Tinyish.git",
-  "tags" : [
-    "CPAN5"
-  ],
-  "test-depends" : [ ],
-  "version" : "0.1.4"
+  }
 }
 END
 

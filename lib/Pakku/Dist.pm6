@@ -18,12 +18,12 @@ has $.api;
 has $.ver;
 has $.version;
 has $.description;
-has @.depends;
 has %.provides;
 has $.source-url;
 has $.license;
 has @.build-depends;
 has @.test-depends;
+has %.depends;
 has @.resources;
 has %.support;
 has $.builder;
@@ -50,21 +50,34 @@ submethod TWEAK ( ) {
 
   @!resources     = flat $!meta<resources> if $!meta<resources>;
 
-  @!depends       = flat $!meta<depends>.grep:       Str if $!meta<depends>;
-  @!test-depends  = flat $!meta<test-depends>.grep:  Str if $!meta<test-depends>;
-  @!build-depends = flat $!meta<build-depends>.grep: Str if $!meta<build-depends>;
+  %!depends =
+    $!meta<depends> ~~ Array
+      ??  runtime => %( require => $!meta<depends> )
+      !!  none($!meta<depends><runtime test build>:exists)
+            ?? runtime => none($!meta<depends><requires recommends>:exists)
+              ?? requires => $!meta<depends>
+              !! $!meta<depends>
+            !! $!meta<depends>.map({
+                none(.value<requires runtime>:exists) ?? ( .key => %(requires => .value) ) !! .self;
+               });
 
-  given $!meta<builder> {
+  %!depends<build><requires>.append: flat $!meta<build-depends> if $!meta<build-depends>;
+  %!depends<test><requires>.append: flat $!meta<test-depends>  if $!meta<test-depends>;
 
-  $!builder = Distribution::Builder::MakeFromJSON when 'MakeFromJSON';
+  .say for %!depends;
+  #$!depends = runtime => $!meta<depends> unless $!meta<depends>.key
 
-  }
+  #  given $!meta<builder> {
+  #
+  #  $!builder = Distribution::Builder::MakeFromJSON when 'MakeFromJSON';
+  #
+  #  }
 
-  for flat @!depends, @!build-depends, @!test-depends -> $spec {
-
-    @!deps.push: Pakku::Spec.new: :$spec;
-
-  }
+  #  for flat @!depends, @!build-depends, @!test-depends -> $spec {
+  #
+  #    @!deps.push: Pakku::Spec.new: :$spec;
+  #
+  #  }
 
 }
 
