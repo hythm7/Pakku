@@ -3,7 +3,7 @@ use LibCurl::HTTP :subs;
 
 use X::Pakku;
 use Pakku::Log;
-use Pakku::Spec;
+use Pakku::DepSpec;
 use Pakku::Dist;
 use Pakku::Dist::Path;
 
@@ -24,7 +24,7 @@ submethod TWEAK ( ) {
 
   self!update;
 
-  🐛 "Eco: Loading ecosystem file [{@$!ecosystem}]";
+  🐛 "Eco: Loading ecosystem file [{$!ecosystem}]";
   my @meta = flat from-json slurp $!ecosystem;
 
   for @meta -> %meta {
@@ -64,19 +64,19 @@ submethod !get-deps ( Pakku::Dist:D :$dist! ) {
 
   🐛 "Eco: Found no deps for [$dist]" unless @dep;
 
-  @dep .= map( -> $spec {
+  @dep .= map( -> $depspec {
 
-    if $spec.name ~~ any @!ignored {
+    if $depspec.name ~~ any @!ignored {
 
-      🐛 "Eco: Ignoring Core spec [$spec]";
+      🐛 "Eco: Ignoring Core spec [$depspec]";
 
       next;
     }
 
 
-    🐛 "Eco: Found dep [$spec] for dist [$dist]";
+    🐛 "Eco: Found dep [$depspec] for dist [$dist]";
 
-    self.find: $spec;
+    self.find: $depspec;
 
   });
 
@@ -92,34 +92,34 @@ submethod !get-deps ( Pakku::Dist:D :$dist! ) {
 
 }
 
-multi submethod find ( Pakku::Spec:D $spec ) {
+multi submethod find ( Pakku::DepSpec::Perl6:D $depspec ) {
 
-  🐛 "Eco: Looking for spec [$spec]";
+  🐛 "Eco: Looking for spec [$depspec]";
 
   my @cand;
 
-  my $name = $spec.short-name;
+  my $name = $depspec.short-name;
 
   @cand = flat %!dist{$name} if so %!dist{$name};
 
   @cand = @!dist.grep( -> $dist { $name ~~ $dist.provides } ) unless @cand;
 
-  @cand .= grep( * ~~ $spec );
+  @cand .= grep( * ~~ $depspec );
 
   unless @cand {
 
-    die X::Pakku::Ecosystem::NoCandy.new( :$spec );
+    die X::Pakku::Ecosystem::NoCandy.new( :$depspec );
 
     return;
 
   }
 
-  🐛 "Eco: Found candies [{@cand}] matching [$spec]";
+  🐛 "Eco: Found candies [{@cand}] matching [$depspec]";
 
   my $candy = @cand.sort( { Version.new: .version } ).tail;
 
 
-  🐛 "Eco: Recommending candy [$candy] for spec [$spec]";
+  🐛 "Eco: Recommending candy [$candy] for spec [$depspec]";
 
   $candy;
 

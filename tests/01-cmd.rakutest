@@ -2,48 +2,48 @@
 #
 use Test;
 use lib 'lib';
-use Pakku::Spec;
+use Pakku::DepSpec;
 use Pakku::Grammar::Cmd;
 
 my @tests = (
   "" =>
     ${:cmd("help"), :help(${:cmd("")})},
-  "add Spec" =>
-    ${:add(${:what($["Spec"])}), :cmd("add")},
+  "add DepSpec" =>
+    ${:add(${:what($["DepSpec"])}), :cmd("add")},
   "add deps" =>
     ${:add(${:what($["deps"])}), :cmd("add")},
-  "add deps Spec" =>
-    ${:add(${:deps, :what($["Spec"])}), :cmd("add")},
-  "add build Spec" =>
-    ${:add(${:build, :what($["Spec"])}), :cmd("add")},
-  "add test Spec" =>
-    ${:add(${:what($["Spec"]), :test}), :cmd("add")},
-  "add force Spec" =>
-    ${:add(${:force, :what($["Spec"])}), :cmd("add")},
-  "add nodeps Spec" =>
-    ${:add(${:!deps, :what($["Spec"])}), :cmd("add")},
-  "add nobuild Spec" =>
-    ${:add(${:!build, :what($["Spec"])}), :cmd("add")},
-  "add notest Spec" =>
-    ${:add(${:what($["Spec"]), :!test}), :cmd("add")},
-  "add Spec1 Spec2" =>
-    ${:add(${:what($["Spec1", "Spec2"])}), :cmd("add")},
-  "add noforce Spec" =>
-    ${:add(${:!force, :what($["Spec"])}), :cmd("add")},
-  "add depsforce Spec" =>
-    ${:add(${:what($["depsforce", "Spec"])}), :cmd("add")},
-  "add deps force Spec" =>
-    ${:add(${:deps, :force, :what($["Spec"])}), :cmd("add")},
-  "add into notrepo Spec" =>
-    ${:add(${:what($["into", "notrepo", "Spec"])}), :cmd("add")},
-  "v3 add force Spec" =>
-    ${:add(${:force, :what($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
-  "v 3 add deps Spec" =>
-    ${:add(${:deps, :what($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
-  "pretty v3 add force Spec" =>
-    ${:add(${:force, :what($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose(3)})},
-  "remove Spec1 Spec2" =>
-    ${:cmd("remove"), :remove(${:what($["Spec1", "Spec2"])})},
+  "add deps DepSpec" =>
+    ${:add(${:deps, :what($["DepSpec"])}), :cmd("add")},
+  "add build DepSpec" =>
+    ${:add(${:build, :what($["DepSpec"])}), :cmd("add")},
+  "add test DepSpec" =>
+    ${:add(${:what($["DepSpec"]), :test}), :cmd("add")},
+  "add force DepSpec" =>
+    ${:add(${:force, :what($["DepSpec"])}), :cmd("add")},
+  "add nodeps DepSpec" =>
+    ${:add(${:!deps, :what($["DepSpec"])}), :cmd("add")},
+  "add nobuild DepSpec" =>
+    ${:add(${:!build, :what($["DepSpec"])}), :cmd("add")},
+  "add notest DepSpec" =>
+    ${:add(${:what($["DepSpec"]), :!test}), :cmd("add")},
+  "add DepSpec1 DepSpec2" =>
+    ${:add(${:what($["DepSpec1", "DepSpec2"])}), :cmd("add")},
+  "add noforce DepSpec" =>
+    ${:add(${:!force, :what($["DepSpec"])}), :cmd("add")},
+  "add depsforce DepSpec" =>
+    ${:add(${:what($["depsforce", "DepSpec"])}), :cmd("add")},
+  "add deps force DepSpec" =>
+    ${:add(${:deps, :force, :what($["DepSpec"])}), :cmd("add")},
+  "add into notrepo DepSpec" =>
+    ${:add(${:what($["into", "notrepo", "DepSpec"])}), :cmd("add")},
+  "v3 add force DepSpec" =>
+    ${:add(${:force, :what($["DepSpec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+  "v 3 add deps DepSpec" =>
+    ${:add(${:deps, :what($["DepSpec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+  "pretty v3 add force DepSpec" =>
+    ${:add(${:force, :what($["DepSpec"])}), :cmd("add"), :pakku(${:pretty, :verbose(3)})},
+  "remove DepSpec1 DepSpec2" =>
+    ${:cmd("remove"), :remove(${:what($["DepSpec1", "DepSpec2"])})},
   "l" =>
     ${:cmd("list")},
   "list" =>
@@ -52,18 +52,18 @@ my @tests = (
     ${:cmd("list"), :list(${:local})},
   "list remote" =>
     ${:cmd("list"), :list(${:remote})},
-  "list local Spec" =>
-    ${:cmd("list"), :list(${:local, :what($["Spec"])})},
-  "list remote Spec1 Spec2" =>
-    ${:cmd("list"), :list(${:remote, :what($["Spec1", "Spec2"])})},
+  "list local DepSpec" =>
+    ${:cmd("list"), :list(${:local, :what($["DepSpec"])})},
+  "list remote DepSpec1 DepSpec2" =>
+    ${:cmd("list"), :list(${:remote, :what($["DepSpec1", "DepSpec2"])})},
   "list local details" =>
     ${:cmd("list"), :list(${:details, :local})},
-  "list remote details Spec" =>
-    ${:cmd("list"), :list(${:details, :remote, :what($["Spec"])})},
-  "list remote details Spec" =>
-    ${:cmd("list"), :list(${:details, :remote, :what($["Spec"])})},
-  "list Spec" =>
-    ${:cmd("list"), :list(${:what($["Spec"])})},
+  "list remote details DepSpec" =>
+    ${:cmd("list"), :list(${:details, :remote, :what($["DepSpec"])})},
+  "list remote details DepSpec" =>
+    ${:cmd("list"), :list(${:details, :remote, :what($["DepSpec"])})},
+  "list DepSpec" =>
+    ${:cmd("list"), :list(${:what($["DepSpec"])})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
   "help" =>
@@ -94,7 +94,7 @@ for @tests {
   $got<pakku>:delete unless $got<pakku>;
   $got<list>:delete  unless $got<list>;
 
-  $got .= deepmap( -> $_ { $_ ~~ Pakku::Spec ?? .short-name !! $_ } );
+  $got .= deepmap( -> $_ { $_ ~~ Pakku::DepSpec::Perl6 ?? .short-name !! $_ } );
 
   is-deeply  $got, $expected, $cmd;
 }

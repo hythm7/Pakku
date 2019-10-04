@@ -3,7 +3,7 @@ use Pakku::Grammar::Common;
 
 use Cro::Uri;
 
-use Pakku::Spec;
+use Pakku::DepSpec;
 
 grammar Pakku::Grammar::Cmd {
   also does Pakku::Grammar::Common;
@@ -143,7 +143,7 @@ class Pakku::Grammar::Cmd::Actions {
 
   method spec ( $/ ) {
 
-    make Pakku::Spec.new: spec => $/.Str;
+    make Pakku::DepSpec.new: $/.Str;
 
   }
 }

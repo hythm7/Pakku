@@ -1,4 +1,4 @@
-use Pakku::Spec;
+use Pakku::DepSpec;
 use Distribution::Builder::MakeFromJSON;
 
 unit class Pakku::Dist;
@@ -27,28 +27,40 @@ has %.depends;
 has @.resources;
 has %.support;
 has $.builder;
+has %!emulates;
+has %!superseded-by;
+has %!excludes;
 
-has Pakku::Spec @.deps;
+has @.deps;
 
 submethod TWEAK ( ) {
 
 
-  $!meta-version  = $!meta<meta-version> // '';
-  $!name          = $!meta<name>         // '';
-  $!version       = $!meta<version>      // '';
-  $!auth          = $!meta<auth>         // '';
-  $!api           = $!meta<api>          // '';
-  $!author        = $!meta<author>       // '';
-  $!authority     = $!meta<authority>    // '';
-  $!description   = $!meta<description>  // '';
-  $!source-url    = $!meta<source-url>   // '';
-  $!license       = $!meta<license>      // '';
-  $!builder       = $!meta<builder>      // '';
-  $!ver           = $!meta<ver>          // $!meta<version>;
-  %!provides      = $!meta<provides>     if $!meta<provides>;
-  %!support       = $!meta<support>      if $!meta<support>;
+  $!meta-version  = $!meta<meta-version>  // '';
+  $!name          = $!meta<name>          // '';
+  $!version       = $!meta<version>       // '';
+  $!auth          = $!meta<auth>          // '';
+  $!api           = $!meta<api>           // '';
+  $!author        = $!meta<author>        // '';
+  $!authority     = $!meta<authority>     // '';
+  $!description   = $!meta<description>   // '';
+  $!source-url    = $!meta<source-url>    // '';
+  $!license       = $!meta<license>       // '';
+  $!builder       = $!meta<builder>       // '';
+  $!ver           = $!meta<ver>           // $!meta<version>;
+  %!provides      = $!meta<provides>      if $!meta<provides>;
+  %!support       = $!meta<support>       if $!meta<support>;
+  %!emulates      = $!meta<emulates>      if $!meta<emulates>;
+  %!superseded-by = $!meta<superseded-by> if $!meta<superseded-by>;
+  %!excludes      = $!meta<excludes>      if $!meta<excludes>;
 
   @!resources     = flat $!meta<resources> if $!meta<resources>;
+
+ given $!meta<builder> {
+
+    $!builder = Distribution::Builder::MakeFromJSON when 'MakeFromJSON';
+
+  }
 
   %!depends =
     $!meta<depends> ~~ Array
@@ -64,19 +76,17 @@ submethod TWEAK ( ) {
   %!depends<build><requires>.append: flat $!meta<build-depends> if $!meta<build-depends>;
   %!depends<test><requires>.append:  flat $!meta<test-depends>  if $!meta<test-depends>;
 
-  #$!depends = runtime => $!meta<depends> unless $!meta<depends>.key
+  %!depends = %!depends.kv.map( -> $k, $v {
+    $k => $v.kv.map( -> $k, $v {
+      $k => $v.map( -> $depspec {
+        $depspec ~~ Array
+          ?? $depspec.map( -> $depspec { Pakku::DepSpec.new: $depspec } ).Array
+          !! Pakku::DepSpec.new: $depspec;
+      }).Array
+    }).hash
+  });
 
-  #  given $!meta<builder> {
-  #
-  #  $!builder = Distribution::Builder::MakeFromJSON when 'MakeFromJSON';
-  #
-  #  }
-
-  #  for flat @!depends, @!build-depends, @!test-depends -> $spec {
-  #
-  #    @!deps.push: Pakku::Spec.new: :$spec;
-  #
-  #  }
+  @!deps = %!depends.deepmap( *.self );
 
 }
 
@@ -118,7 +128,7 @@ sub gist-surl ( $surl --> Str:D ) { "surl → $surl" .indent: 2 }
 
 sub gist-bldr ( $bldr --> Str:D ) { "bldr → { $bldr // $bldr.^name }" .indent: 2 }
 
-sub gist-deps ( Pakku::Spec:D @deps --> Str:D ) {
+sub gist-deps ( Pakku::DepSpec:D @deps --> Str:D ) {
 
   my $label = 'deps';
 

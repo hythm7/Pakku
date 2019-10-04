@@ -32,24 +32,24 @@ class X::Pakku::Ecosystem::Update {
 class X::Pakku::Ecosystem::NoCandy {
   also is X::Pakku;
 
-  has $.spec;
+  has $.depspec;
 
   method message ( --> Str:D ) {
 
-    "Eco: No candies matching spec [$!spec]";
+    "Eco: No candies matching spec [$!depspec]";
 
   }
 
 }
 
-class X::Pakku::Spec::CannotParse {
+class X::Pakku::DepSpec::CannotParse {
   also is X::Pakku;
 
-  has $.spec;
+  has $.depspec;
 
   method message ( --> Str:D ) {
 
-    "Spec: Cannot parse spec [$!spec]";
+    "DepSpec: Cannot parse spec [$!depspec]";
 
   }
 

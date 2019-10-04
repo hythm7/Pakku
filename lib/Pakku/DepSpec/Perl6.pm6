@@ -1,7 +1,8 @@
-unit class Pakku::Spec::Perl6;
+unit class Pakku::DepSpec::Perl6;
   also is CompUnit::DependencySpecification;
 
-  has $.name;
+
+has $.name;
 
 method version ( ) {
 
@@ -28,7 +29,7 @@ method api ( ) {
 
 
 # no type checking to avoid circular dependency
-multi method ACCEPTS ( Pakku::Spec::Perl6:D: $dist --> Bool:D ) {
+multi method ACCEPTS ( Pakku::DepSpec::Perl6:D: $dist --> Bool:D ) {
 
   return False unless $.name ~~ any( $dist.name, $dist.provides );
   return False unless Version.new( $dist.version ) ~~ $.version;

@@ -3,7 +3,7 @@
 use Test;
 
 use lib 'lib';
-use Pakku::Spec;
+use Pakku::DepSpec;
 
 my \tests = %(
   ok => (
@@ -26,15 +26,15 @@ my \tests = %(
 #plan 42;
 
 
-for flat tests<ok> -> $spec, $msg {
+for flat tests<ok> -> $depspec, $msg {
 
-  isa-ok Pakku::Spec.new( :$spec ), Pakku::Spec, $msg;
+  isa-ok Pakku::DepSpec.new( $depspec ), Pakku::DepSpec::Perl6, $msg;
 
 }
 
-for flat tests<nok> -> $spec, $msg {
+for flat tests<nok> -> $depspec, $msg {
 
-  dies-ok { Pakku::Spec.new( :$spec ) }, $msg;
+  dies-ok { Pakku::DepSpec.new( $depspec ) }, $msg;
 
 }
 

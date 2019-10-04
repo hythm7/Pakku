@@ -1,5 +1,6 @@
-unit class Pakku::Spec::Perl5;
+unit class Pakku::DepSpec::Native;
   also is CompUnit::DependencySpecification;
 
   has $.name;
+  has %.hints;
 

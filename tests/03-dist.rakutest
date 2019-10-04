@@ -6,18 +6,38 @@ use JSON::Fast;
 use lib 'lib';
 
 use Pakku::Dist;
-use Pakku::Spec;
 
 my $dist-meta = q:to/END/;
   {
-  "build-depends" : [ "build0", [ "Build1", "Build2" ] ],
+  "build-depends" : [ ],
   "depends": {
     "runtime": {
       "requires": [
         "Sereal:auth<cpan:*>:ver(1..*)",
         "curl:from<bin>",
         [ "Archive::Compress", "Archive::Zlib" ],
-        { "name": "koko", "hints": "dodo" },
+        {
+          "from" : "bin",
+          "name" : {
+            "by-distro.name" : {
+              "macosx" : "python2.7-config",
+              "debian" : "python2.7-config",
+              "" : "python2-config"
+            }
+          }
+        },
+        {
+          "name": "archive:from<native>",
+          "hints": {
+            "by-kernel.name": {
+              "win32": {
+                "url": "http://www.p6c.org/~jnthn/libarchive/libarchive.dll",
+                "checksum": {"sha-256": "E6836E32802555593AEDAFE1CC00752CBDA"},
+                "target": "resources/libraries/"
+              }
+            }
+          }
+        },
         "JSON::Fast"
       ],
       "recommends": [
@@ -38,14 +58,13 @@ my $dist-meta = q:to/END/;
 }
 END
 
-my %expected = %(:build(${:requires($["System::Info", "build0", ["Build1", "Build2"]])}), :runtime(${:recommends($["JSON::Pretty"]), :requires($["Sereal:auth<cpan:*>:ver(1..*)", "curl:from<bin>", ["Archive::Compress", "Archive::Zlib"], "JSON::Fast"])}), :test(${:requires($["File::Temp"])}));
+my %expected = %({:build(${:requires($["System::Info"])}), :runtime(${:recommends($["JSON::Pretty"]), :requires($["Sereal:ver<1..*>:auth<cpan:*>", "curl", ["Archive::Compress", "Archive::Zlib"], "archive", "JSON::Fast"])}), :test(${:requires($["File::Temp"])})});
 
 my $meta = from-json $dist-meta;
-my %got  = Pakku::Dist.new( :$meta ).depends;
+my $dist  = Pakku::Dist.new: :$meta;
 
-say %got.perl;
+my %got =  $dist.depends.deepmap( *.Str );
 
-#say %got;
 #is-deeply %got, %expected;
 
-#say $dist.depends;
+say $dist.depends<runtime><requires>[3];

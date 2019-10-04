@@ -9,7 +9,7 @@ use Pakku::Ecosystem;
 use Pakku::Fetcher;
 use Pakku::Builder;
 use Pakku::Tester;
-use Pakku::Spec;
+use Pakku::DepSpec;
 use Pakku::Dist::Path;
 use Pakku::Dist::Inst;
 
@@ -319,10 +319,9 @@ method help ( Str:D :$cmd ) {
 
 }
 
-# TODO: samewith
-multi submethod installed ( Pakku::Spec:D $spec, :@repo! ) {
+multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :@repo! ) {
 
-  return @repo.map( -> $repo { self.installed: :$repo, $spec } ).grep( *.so );
+  return @repo.map( -> $repo { self.installed: :$repo, $depspec } ).grep( *.so );
 
 }
 
@@ -331,26 +330,26 @@ multi submethod installed ( IO::Path:D $path, :@repo!) {
 
   my $dist = Pakku::Dist::Path.new: $path;
 
-  my $spec = Pakku::Spec.new: spec => $dist.Str;
+  my $depspec = Pakku::DepSpec.new: $dist.Str;
 
-  self.installed: $spec, :@repo;
+  self.installed: $depspec, :@repo;
 
 }
 
 multi submethod installed ( Pakku::Dist:D $dist, :@repo! ) {
 
-  my $spec = Pakku::Spec.new: spec => $dist.Str;
+  my $depspec = Pakku::DepSpec.new: $dist.Str;
 
-  self.installed: $spec, :@repo;
+  self.installed: $depspec, :@repo;
 
 }
 
-multi submethod installed ( Pakku::Spec:D $spec, :$repo! ) {
+multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
 
   my @inst
-    <== grep( -> $inst { $inst ~~ $spec })
+    <== grep( -> $inst { $inst ~~ $depspec })
     <== grep( *.defined )
-    <== gather %!installed{ $repo.name }{ $spec.name }.deepmap: *.take;
+    <== gather %!installed{ $repo.name }{ $depspec.name }.deepmap: *.take;
 
   @inst;
 
@@ -442,7 +441,7 @@ submethod !init ( ) {
 
   CATCH {
 
-    when X::Pakku::Spec::CannotParse {
+    when X::Pakku::DepSpec::CannotParse {
 
       ☠ .message;
 
