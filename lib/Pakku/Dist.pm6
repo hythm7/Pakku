@@ -62,9 +62,8 @@ submethod TWEAK ( ) {
                });
 
   %!depends<build><requires>.append: flat $!meta<build-depends> if $!meta<build-depends>;
-  %!depends<test><requires>.append: flat $!meta<test-depends>  if $!meta<test-depends>;
+  %!depends<test><requires>.append:  flat $!meta<test-depends>  if $!meta<test-depends>;
 
-  .say for %!depends;
   #$!depends = runtime => $!meta<depends> unless $!meta<depends>.key
 
   #  given $!meta<builder> {

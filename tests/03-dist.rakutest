@@ -1,5 +1,6 @@
 #!/usr/bin/env perl6
 #
+use Test;
 use JSON::Fast;
 
 use lib 'lib';
@@ -10,13 +11,13 @@ use Pakku::Spec;
 my $dist-meta = q:to/END/;
   {
   "build-depends" : [ "build0", [ "Build1", "Build2" ] ],
-  "test-depends": [ ],
   "depends": {
     "runtime": {
       "requires": [
         "Sereal:auth<cpan:*>:ver(1..*)",
         "curl:from<bin>",
         [ "Archive::Compress", "Archive::Zlib" ],
+        { "name": "koko", "hints": "dodo" },
         "JSON::Fast"
       ],
       "recommends": [
@@ -37,8 +38,14 @@ my $dist-meta = q:to/END/;
 }
 END
 
+my %expected = %(:build(${:requires($["System::Info", "build0", ["Build1", "Build2"]])}), :runtime(${:recommends($["JSON::Pretty"]), :requires($["Sereal:auth<cpan:*>:ver(1..*)", "curl:from<bin>", ["Archive::Compress", "Archive::Zlib"], "JSON::Fast"])}), :test(${:requires($["File::Temp"])}));
 
 my $meta = from-json $dist-meta;
-my $dist = Pakku::Dist.new: :$meta;
+my %got  = Pakku::Dist.new( :$meta ).depends;
+
+say %got.perl;
+
+#say %got;
+#is-deeply %got, %expected;
 
 #say $dist.depends;
