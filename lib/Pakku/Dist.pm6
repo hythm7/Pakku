@@ -15,8 +15,7 @@ has $.auth;
 has $.author;
 has $.authority;
 has $.api;
-has $.ver;
-has $.version;
+has Version $.ver;
 has $.description;
 has %.provides;
 has $.source-url;
@@ -38,7 +37,6 @@ submethod TWEAK ( ) {
 
   $!meta-version  = $!meta<meta-version>  // '';
   $!name          = $!meta<name>          // '';
-  $!version       = $!meta<version>       // '';
   $!auth          = $!meta<auth>          // '';
   $!api           = $!meta<api>           // '';
   $!author        = $!meta<author>        // '';
@@ -71,7 +69,7 @@ submethod TWEAK ( ) {
               !! $!meta<depends>
             !! $!meta<depends>.map({
                 none(.value<requires runtime>:exists) ?? ( .key => %(requires => .value) ) !! .self;
-               });
+               }) if $!meta<depends>;
 
   %!depends<build><requires>.append: flat $!meta<build-depends> if $!meta<build-depends>;
   %!depends<test><requires>.append:  flat $!meta<test-depends>  if $!meta<test-depends>;

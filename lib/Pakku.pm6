@@ -349,7 +349,7 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
   my @inst
     <== grep( -> $inst { $inst ~~ $depspec })
     <== grep( *.defined )
-    <== gather %!installed{ $repo.name }{ $depspec.name }.deepmap: *.take;
+    <== gather %!installed{ $repo.name }{ $depspec.short-name }.deepmap: *.take;
 
   @inst;
 

@@ -12,9 +12,9 @@ unit class Pakku::DepSpec;
 
 grammar SpecGrammar {
 
-  token TOP { <depspec> }
+  token TOP { <spec> }
 
-  token depspec { <name> <keyval>* }
+  token spec { <name> <keyval>* }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
 
@@ -37,23 +37,23 @@ grammar SpecGrammar {
 
 class SpecActions {
 
-  method TOP ( $/ ) { make $<depspec>.ast }
+  method TOP ( $/ ) { make $<spec>.ast }
 
-  method depspec ( $/ ) {
+  method spec ( $/ ) {
     my %id;
 
     %id<name> = $<name>.Str;
     %id.push: ( $<keyval>».ast ) if $<keyval>;
 
-    my %depspec;
+    my %spec;
 
-    %depspec<short-name>      = %id<name> if %id<name>;
-    %depspec<auth-matcher>    = %id<auth> if %id<auth>;
-    %depspec<api-matcher>     = %id<api>  if %id<api>;
-    %depspec<from>            = %id<from> // 'Perl6';
-    %depspec<version-matcher> = %id<ver>  // %id<version> if %id<ver> // %id<version>;
+    %spec<short-name>      = %id<name> if %id<name>;
+    %spec<auth-matcher>    = %id<auth> if %id<auth>;
+    %spec<api-matcher>     = %id<api>  if %id<api>;
+    %spec<from>            = %id<from> // 'Perl6';
+    %spec<version-matcher> = Version.new( %id<ver>  // %id<version> ) if %id<ver> // %id<version>;
 
-    make %depspec;
+    make %spec;
 
   }
 
@@ -65,60 +65,60 @@ class SpecActions {
 }
 
 
-multi method new ( %depspec ) {
+multi method new ( %spec ) {
 
-  return self.depspec: %depspec if %depspec<from>;
+  return self.depspec: %spec if %spec<from>;
 
-  my %parsed = self.parse: %depspec<name> if %depspec<name> ~~ Str;
+  my %parsed = self.parse: %spec<name> if %spec<name> ~~ Str;
 
-  self.depspec: %( %depspec, %parsed );
-
-}
-
-
-multi method new ( Str $depspec ) {
-
-  my %depspec = self.parse: $depspec;
-
-  self.depspec: %depspec;
+  self.depspec: %( %spec, %parsed );
 
 }
 
-method parse ( Str $depspec --> Hash ) {
+
+multi method new ( Str $spec ) {
+
+  my %spec = self.parse: $spec;
+
+  self.depspec: %spec;
+
+}
+
+method parse ( Str $spec --> Hash ) {
 
   my $grammar = SpecGrammar;
   my $actions = SpecActions;
 
-  my $m = $grammar.parse( $depspec, :$actions );
+  my $m = $grammar.parse( $spec, :$actions );
 
-  die X::Pakku::DepSpec::CannotParse.new( depspec => $depspec ) unless $m;
+  die X::Pakku::DepSpec::CannotParse.new( :$spec ) unless $m;
 
   $m.ast;
 
 }
 
-method depspec ( %depspec ) {
+method depspec ( %spec ) {
 
-  given %depspec<from> {
+  given %spec<from> {
 
     when 'Perl6' {
-      Pakku::DepSpec::Perl6.new: |%depspec;
+      Pakku::DepSpec::Perl6.new: %spec;
     }
 
     when 'Perl5' {
-      Pakku::DepSpec::Perl5.new: |%depspec;
+      Pakku::DepSpec::Perl5.new: %spec;
     }
 
     when 'bin' {
-      Pakku::DepSpec::Bin.new: |%depspec;
+      Pakku::DepSpec::Bin.new: %spec;
     }
 
     when 'native' {
-      Pakku::DepSpec::Native.new: |%depspec;
+      Pakku::DepSpec::Native.new: %spec;
     }
 
     when 'java' {
-      Pakku::DepSpec::Java.new: |%depspec;
+      Pakku::DepSpec::Java.new: %spec;
     }
 
   }
