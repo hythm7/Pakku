@@ -48,10 +48,10 @@ class SpecActions {
     my %spec;
 
     %spec<short-name>      = %id<name> if %id<name>;
+    %spec<version-matcher> = Version.new( %id<ver>  // %id<version> ) if %id<ver> // %id<version>;
     %spec<auth-matcher>    = %id<auth> if %id<auth>;
     %spec<api-matcher>     = %id<api>  if %id<api>;
     %spec<from>            = %id<from> // 'Perl6';
-    %spec<version-matcher> = Version.new( %id<ver>  // %id<version> ) if %id<ver> // %id<version>;
 
     make %spec;
 

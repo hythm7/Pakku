@@ -58,13 +58,12 @@ my $dist-meta = q:to/END/;
 }
 END
 
-my %expected = %({:build(${:requires($["System::Info"])}), :runtime(${:recommends($["JSON::Pretty"]), :requires($["Sereal:ver<1..*>:auth<cpan:*>", "curl", ["Archive::Compress", "Archive::Zlib"], "archive", "JSON::Fast"])}), :test(${:requires($["File::Temp"])})});
+my %expected = %(${:build(${:requires($["System::Info"])}), :runtime(${:recommends($["JSON::Pretty"]), :requires($["Sereal:ver<1.*>:auth<cpan:*>", "curl", ["Archive::Compress", "Archive::Zlib"], "python2-config", "archive", "JSON::Fast"])}), :test(${:requires($["File::Temp"])})});
 
 my $meta = from-json $dist-meta;
 my $dist  = Pakku::Dist.new: :$meta;
 
 my %got =  $dist.depends.deepmap( *.Str );
 
-#is-deeply %got, %expected;
+is-deeply %got, %expected;
 
-say $dist.depends<runtime><requires>[3];

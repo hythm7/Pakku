@@ -15,7 +15,7 @@ has $.auth;
 has $.author;
 has $.authority;
 has $.api;
-has Version $.ver;
+has $.ver;
 has $.description;
 has %.provides;
 has $.source-url;
@@ -34,7 +34,6 @@ has @.deps;
 
 submethod TWEAK ( ) {
 
-
   $!meta-version  = $!meta<meta-version>  // '';
   $!name          = $!meta<name>          // '';
   $!auth          = $!meta<auth>          // '';
@@ -45,7 +44,7 @@ submethod TWEAK ( ) {
   $!source-url    = $!meta<source-url>    // '';
   $!license       = $!meta<license>       // '';
   $!builder       = $!meta<builder>       // '';
-  $!ver           = $!meta<ver>           // $!meta<version>;
+  $!ver           = Version.new( $!meta<ver> // $!meta<version> ) if $!meta<ver> // $!meta<version>;
   %!provides      = $!meta<provides>      if $!meta<provides>;
   %!support       = $!meta<support>       if $!meta<support>;
   %!emulates      = $!meta<emulates>      if $!meta<emulates>;
@@ -84,7 +83,7 @@ submethod TWEAK ( ) {
     }).hash
   });
 
-  @!deps = %!depends.deepmap( *.self );
+  @!deps = gather %!depends.deepmap: *.take ;
 
 }
 

@@ -66,7 +66,7 @@ submethod !get-deps ( Pakku::Dist:D :$dist! ) {
 
   @dep .= map( -> $depspec {
 
-    if $depspec.name ~~ any @!ignored {
+    if $depspec.short-name ~~ any @!ignored {
 
       🐛 "Eco: Ignoring Core spec [$depspec]";
 
@@ -116,7 +116,7 @@ multi submethod find ( Pakku::DepSpec::Perl6:D $depspec ) {
 
   🐛 "Eco: Found candies [{@cand}] matching [$depspec]";
 
-  my $candy = @cand.sort( { Version.new: .version } ).tail;
+  my $candy = @cand.sort( { Version.new: .ver } ).tail;
 
 
   🐛 "Eco: Recommending candy [$candy] for spec [$depspec]";

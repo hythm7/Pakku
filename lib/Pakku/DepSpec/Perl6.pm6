@@ -11,11 +11,10 @@ unit class Pakku::DepSpec::Perl6;
 # no type checking to avoid circular dependency
 multi method ACCEPTS ( Pakku::DepSpec::Perl6:D: $dist --> Bool:D ) {
 
-
   return False unless $.short-name ~~ any( $dist.name, $dist.provides );
-  return False unless $dist.ver ~~ $.version-matcher;
-  #return False unless $dist.auth ~~ $.auth-matcher;
-  # return False unless $dist.api  ~~ $.api-matcher;
+  return False unless $dist.ver    ~~ $.version-matcher;
+  return False unless $dist.auth   ~~ $.auth-matcher;
+  return False unless $dist.api    ~~ $.api-matcher;
 
   True;
 

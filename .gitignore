@@ -2,6 +2,7 @@
 /src/*.o
 /src/Makefile
 /.panda-work
+/resources/pakku.conf
 /resources/ecosystem.json
 /resources/*.so
 /resources/*.dylib
