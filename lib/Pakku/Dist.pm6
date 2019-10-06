@@ -30,8 +30,6 @@ has %!emulates;
 has %!superseded-by;
 has %!excludes;
 
-has @.deps;
-
 submethod TWEAK ( ) {
 
   $!meta-version  = $!meta<meta-version>  // '';
@@ -61,7 +59,7 @@ submethod TWEAK ( ) {
 
   %!depends =
     $!meta<depends> ~~ Array
-      ??  runtime => %( require => $!meta<depends> )
+      ??  runtime => %( requires => $!meta<depends> )
       !!  none($!meta<depends><runtime test build>:exists)
             ?? runtime => none($!meta<depends><requires recommends>:exists)
               ?? requires => $!meta<depends>
@@ -83,7 +81,44 @@ submethod TWEAK ( ) {
     }).hash
   });
 
-  @!deps = gather %!depends.deepmap: *.take ;
+
+}
+
+method deps (
+
+  Pakku::Dist:D:
+
+  Bool:D :$runtime    = True,
+  Bool:D :$test       = True,
+  Bool:D :$build      = True,
+  Bool:D :$requires   = True,
+  Bool:D :$recommends = True,
+
+) {
+
+  my @deps = flat gather {
+
+    if $build {
+
+      %!depends<build><requires>   .grep( *.defined ).map( *.take ) if $requires;
+      %!depends<build><recommends> .grep( *.defined ).map( *.take ) if $recommends;
+
+    }
+
+    if $test {
+
+      %!depends<test><requires>   .grep( *.defined ).map( *.take ) if $requires;
+      %!depends<test><recommends> .grep( *.defined ).map( *.take ) if $recommends;
+
+    }
+
+    if $runtime {
+
+      %!depends<runtime><requires>   .grep( *.defined ).map( *.take ) if $requires;
+      %!depends<runtime><recommends> .grep( *.defined ).map( *.take ) if $recommends;
+
+    }
+  }
 
 }
 
@@ -104,7 +139,7 @@ multi method gist ( Pakku::Dist:D: :$details where *.so --> Str:D ) {
     ( gist-desc $!description ),
     ( gist-bldr $!builder     ),
     ( gist-surl $!source-url  ),
-    ( gist-deps @!deps        ),
+    ( gist-deps self.deps     ),
     ( gist-prov %!provides    ),
     (           ''            ),
   ).join( "\n" );

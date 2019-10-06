@@ -6,6 +6,7 @@ use Pakku::Log;
 use Pakku::DepSpec;
 use Pakku::Dist;
 use Pakku::Dist::Path;
+use Pakku::Dist::Bin;
 
 unit class Pakku::Ecosystem;
 
@@ -122,6 +123,12 @@ multi submethod find ( Pakku::DepSpec::Perl6:D $depspec ) {
   🐛 "Eco: Recommending candy [$candy] for spec [$depspec]";
 
   $candy;
+
+}
+
+multi submethod find ( Pakku::DepSpec::Bin:D $spec ) {
+
+  Pakku::Dist::Bin.new: name => $spec.short-name;
 
 }
 
