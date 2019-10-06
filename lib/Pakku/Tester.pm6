@@ -1,13 +1,13 @@
 use Concurrent::File::Find;
 
 use Pakku::Log;
-use Pakku::Dist;
+use Pakku::Dist::Perl6;
 
 unit class Pakku::Tester;
 
 
 
-method test ( Pakku::Dist:D :$dist ) {
+method test ( Pakku::Dist::Perl6:D :$dist ) {
 
   # TODO: include tests/*.rakutest
 

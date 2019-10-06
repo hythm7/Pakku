@@ -10,8 +10,8 @@ use Pakku::Fetcher;
 use Pakku::Builder;
 use Pakku::Tester;
 use Pakku::DepSpec;
-use Pakku::Dist::Path;
-use Pakku::Dist::Inst;
+use Pakku::Dist::Perl6::Path;
+use Pakku::Dist::Perl6::Inst;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
@@ -19,7 +19,7 @@ has %!cnf;
 
 has Pakku::Log           $!log;
 has %!installed;
-has Pakku::Dist          @!installed;
+has Pakku::Dist::Perl6   @!installed;
 has Pakku::Fetcher       $!fetcher;
 has Pakku::Builder       $!builder;
 has Pakku::Tester        $!tester;
@@ -141,7 +141,7 @@ method add (
 
 
   my @dists
-    <== map( {       .map( -> $path { Pakku::Dist::Path.new: $path      } ) } )
+    <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
     <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                    } ) } )
     <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
     <== @candies;
@@ -186,6 +186,13 @@ method add (
     }
 
     when X::Pakku::Build::Fail {
+
+      ☠ .message;
+
+      self.Nofun;
+
+    }
+    when X::Pakku::Dist::Bin::NotFound {
 
       ☠ .message;
 
@@ -319,6 +326,8 @@ method help ( Str:D :$cmd ) {
 
 }
 
+# TODO: use @!repo instead
+
 multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :@repo! ) {
 
   return @repo.map( -> $repo { self.installed: :$repo, $depspec } ).grep( *.so );
@@ -328,7 +337,7 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :@repo! ) {
 
 multi submethod installed ( IO::Path:D $path, :@repo!) {
 
-  my $dist = Pakku::Dist::Path.new: $path;
+  my $dist = Pakku::Dist::Perl6::Path.new: $path;
 
   my $depspec = Pakku::DepSpec.new: $dist.Str;
 
@@ -336,11 +345,23 @@ multi submethod installed ( IO::Path:D $path, :@repo!) {
 
 }
 
-multi submethod installed ( Pakku::Dist:D $dist, :@repo! ) {
+multi submethod installed ( Pakku::Dist::Perl6:D $dist, :@repo! ) {
 
   my $depspec = Pakku::DepSpec.new: $dist.Str;
 
   self.installed: $depspec, :@repo;
+
+}
+
+multi submethod installed ( Pakku::Dist::Bin:D $dist, :@repo! ) {
+
+  my $name = $dist.name;
+
+  my $path = qqx{ which $name };
+
+  die X::Pakku::Dist::Bin::NotFound.new: name => $dist.name unless $path;
+
+  True;
 
 }
 
@@ -402,7 +423,7 @@ submethod !init ( ) {
   @!inst-repo.map( -> $repo {
 
     eager $repo.installed
-      ==> map( -> $dist { Pakku::Dist::Inst.new: meta => $dist.meta })
+      ==> map( -> $dist { Pakku::Dist::Perl6::Inst.new: meta => $dist.meta })
       ==> map( -> $dist { %!installed{$repo.name}{$dist.name}.push: $dist } );
   } );
 

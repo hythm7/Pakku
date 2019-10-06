@@ -67,3 +67,15 @@ class X::Pakku::Build::Fail {
   }
 
 }
+
+class X::Pakku::Dist::Bin::NotFound {
+  also is X::Pakku;
+
+  has $.name;
+
+  method message ( --> Str:D ) {
+
+    "Bin: Not found  [$!name]";
+
+  }
+}

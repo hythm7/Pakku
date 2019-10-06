@@ -5,7 +5,7 @@ use X::Pakku;
 use Pakku::Log;
 use Pakku::DepSpec;
 use Pakku::Dist;
-use Pakku::Dist::Path;
+use Pakku::Dist::Perl6::Path;
 use Pakku::Dist::Bin;
 
 unit class Pakku::Ecosystem;
@@ -30,7 +30,7 @@ submethod TWEAK ( ) {
 
   for @meta -> %meta {
 
-    my $dist = Pakku::Dist.new: :%meta;
+    my $dist = Pakku::Dist::Perl6.new: :%meta;
 
     %!dist{ $dist.name }.push: $dist;
     @!dist.push: $dist;
@@ -134,7 +134,7 @@ multi submethod find ( Pakku::DepSpec::Bin:D $spec ) {
 
 multi submethod find ( IO::Path:D $path ) {
 
-  Pakku::Dist::Path.new: $path;
+  Pakku::Dist::Perl6::Path.new: $path;
 
 }
 

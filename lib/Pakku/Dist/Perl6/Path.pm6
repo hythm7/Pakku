@@ -1,9 +1,9 @@
-use Pakku::Dist;
+use Pakku::Dist::Perl6;
 
 # BUG: handle dists having META6.info instead of META6.JSON
 
-unit class Pakku::Dist::Path;
-  also is Pakku::Dist;
+unit class Pakku::Dist::Perl6::Path;
+  also is Pakku::Dist::Perl6;
   also is Distribution::Path;
 
 method new ( $path ) {

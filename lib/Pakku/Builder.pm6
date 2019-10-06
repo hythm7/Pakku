@@ -1,10 +1,10 @@
 use Pakku::Log;
-use Pakku::Dist::Path;
+use Pakku::Dist::Perl6::Path;
 
 unit class Pakku::Builder;
 
 
-method build ( Pakku::Dist::Path:D :$dist ) {
+method build ( Pakku::Dist::Perl6::Path:D :$dist ) {
 
   🐛 "Build: Processing [$dist]";
 

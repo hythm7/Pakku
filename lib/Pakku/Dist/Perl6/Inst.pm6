@@ -1,7 +1,7 @@
-use Pakku::Dist::Path;
+use Pakku::Dist::Perl6::Path;
 
-unit class Pakku::Dist::Inst;
-  also is Pakku::Dist;
+unit class Pakku::Dist::Perl6::Inst;
+  also is Pakku::Dist::Perl6;
   also does Distribution;
 
 
