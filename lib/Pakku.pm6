@@ -420,6 +420,8 @@ method help ( Str:D :$cmd ) {
 
 }
 
+
+# TODO: Rewrite these methods
 # TODO: use @!repo instead
 
 multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :@repo! ) {
@@ -427,7 +429,6 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :@repo! ) {
   return @repo.map( -> $repo { self.installed: :$repo, $depspec } ).grep( *.so );
 
 }
-
 
 multi submethod installed ( IO::Path:D $path, :@repo!) {
 

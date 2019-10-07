@@ -1,5 +1,3 @@
-use Cro::Uri;
-
 use Pakku::DepSpec;
 
 role Pakku::Grammar::Common {
@@ -187,11 +185,9 @@ role Pakku::Grammar::Common {
 
   proto token what { * }
   token what:sym<spec> { <spec> }
-  token what:sym<uri>  { <uri> }
   token what:sym<path> { <path> }
 
   token spec { <name> <keyval>* }
-  token uri  { <-[ \h ]>+ <?{ try Cro::Uri.parse: $/ }> }
   token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
@@ -377,7 +373,6 @@ role Pakku::Grammar::Common::Actions {
   method whats ( $/ ) { make $<what>».ast }
 
   method what:sym<spec> ( $/ ) { make $<spec>.ast }
-  method what:sym<uri>  ( $/ ) { make $<uri>.ast }
   method what:sym<path> ( $/ ) { make $<path>.ast }
 
   method spec ( $/ ) {
@@ -386,7 +381,6 @@ role Pakku::Grammar::Common::Actions {
 
   }
 
-  method uri  ( $/ ) { make Cro::Uri.parse: $/ }
   method path ( $/ ) { make $/.IO }
 
 }

@@ -65,4 +65,3 @@ multi method fetch ( IO::Path :$src! ) {
   $src;
 
 }
-
