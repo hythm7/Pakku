@@ -33,12 +33,6 @@ has Str $!ofun;
 has Str $!nofun;
 has Str $!allgood;
 
-submethod BUILD ( ) {
-
-  self!init;
-
- }
-
 method add (
 
   :@what!,
@@ -142,7 +136,7 @@ method add (
 
   my @dists
     <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
-    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                    } ) } )
+    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
     <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
     <== @candies;
 
@@ -192,6 +186,15 @@ method add (
       self.Nofun;
 
     }
+
+    when X::Pakku::Test::Fail {
+
+      ☠ .message;
+
+      self.Nofun;
+
+    }
+
     when X::Pakku::Dist::Bin::NotFound {
 
       ☠ .message;
@@ -202,6 +205,97 @@ method add (
   }
 
 }
+
+method build ( :@what! ) {
+
+  🐛 "Pakku: Asking Eco recommendations for [{@what}]";
+
+  my @candies = $!ecosystem.recommend: :@what, :!deps;
+
+  my @dists
+    <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
+    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
+    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
+    <== @candies;
+
+
+  @dists.map( -> @dist {
+
+    for @dist -> $dist {
+
+      unless $!dont {
+        $!builder.build: :$dist;
+        🦋 "Build: [$dist] built";
+      }
+
+    }
+
+  } );
+
+  self.Ofun;
+
+}
+
+method test ( :@what! ) {
+
+  🐛 "Pakku: Asking Eco recommendations for [{@what}]";
+
+  my @candies = $!ecosystem.recommend: :@what, :!deps;
+
+  my @dists
+    <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
+    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
+    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
+    <== @candies;
+
+
+  @dists.map( -> @dist {
+
+    for @dist -> $dist {
+
+      unless $!dont {
+        $!tester.test: :$dist;
+        🦋 "Test: [$dist] success";
+      }
+
+    }
+
+  } );
+
+  self.Ofun;
+
+}
+
+method check ( :@what! ) {
+  # TODO: custom destination
+
+  🐛 "Pakku: Asking Eco recommendations for [{@what}]";
+
+  my @candies = $!ecosystem.recommend: :@what, :!deps;
+
+  my @path
+    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
+    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
+    <== @candies;
+
+
+  @path.map( -> @path {
+
+    for @path -> $path {
+
+      unless $!dont {
+        qqx{ cp -rp $path $*CWD };
+        🦋 "Check: [{$path.basename}] success";
+      }
+
+    }
+
+  } );
+
+  self.Ofun;
+
+}
+
 
 method remove (
 
@@ -383,7 +477,7 @@ submethod Ofun    ( --> Bool:D ) { sleep .1; put $!ofun    };
 submethod Nofun   ( --> Bool:D ) { sleep .1; put $!nofun   };
 submethod allgood ( --> Bool:D ) { sleep .1; put $!allgood };
 
-submethod !init ( ) {
+submethod BUILD ( ) {
 
   my $default-cnf = %?RESOURCES<pakku.cnf>.IO;
   my $user-cnf    = $*HOME.add: <.pakku/pakku.cnf>;
@@ -439,9 +533,34 @@ submethod !init ( ) {
 
     }
 
+    when 'build' {
+
+      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source;
+
+      self.build:    |%!cnf<build>;
+
+    }
+
+    when 'test' {
+
+      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source;
+
+      self.test:    |%!cnf<test>;
+
+    }
+
+
     when 'remove' {
 
       self.remove: |%!cnf<remove>;
+
+    }
+
+    when 'check' {
+
+      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source;
+
+      self.check: |%!cnf<check>;
 
     }
 

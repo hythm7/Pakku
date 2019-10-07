@@ -11,6 +11,8 @@ grammar Pakku::Grammar::Cnf {
   proto rule section { * }
   rule section:sym<pakku>  { <lt> <sym> <gt> <.nl> <pakkuopt>*  %% <.eol> }
   rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>*    %% <.eol> }
+  rule section:sym<build>  { <lt> <sym> <gt> <.nl> <buildopt>*  %% <.eol> }
+  rule section:sym<test>   { <lt> <sym> <gt> <.nl> <testopt>*   %% <.eol> }
   rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>* %% <.eol> }
   rule section:sym<list>   { <lt> <sym> <gt> <.nl> <listopt>*   %% <.eol> }
   rule section:sym<source> { <lt> <sym> <gt> <.nl> <sourceopt>* %% <.eol> }

@@ -1,4 +1,36 @@
+use Cro::Uri;
+
+use Pakku::DepSpec;
+
 role Pakku::Grammar::Common {
+
+  proto token add { * }
+  token add:sym<add> { <sym> }
+  token add:sym<a>   { <sym> }
+  token add:sym<↓>   { <sym>  }
+
+  proto token remove { * }
+  token remove:sym<remove> { <sym> }
+  token remove:sym<r>      { <sym> }
+  token remove:sym<↑>      { <sym> }
+
+  proto token check { * }
+  token check:sym<check> { <sym> }
+  token check:sym<c>     { <sym> }
+
+
+  proto token list { * }
+  token list:sym<list> { <sym> }
+  token list:sym<l>    { <sym> }
+  token list:sym<↪>    { <sym> }
+
+  proto token help { * }
+  token help:sym<help> { <sym> }
+  token help:sym<h>    { <sym> }
+  token help:sym<ℍ>    { <sym> }
+  token help:sym<?>    { <sym> }
+  token help:sym<❓>    { <sym> }
+
 
   proto token pakkuopt { * }
   token pakkuopt:sym<update>  { <update>   }
@@ -15,6 +47,11 @@ role Pakku::Grammar::Common {
   token addopt:sym<force> { <force> }
   token addopt:sym<into>  { <into> <.space>* <reponame> }
 
+  proto token buildopt { * }
+
+  proto token testopt { * }
+
+  proto token checkopt { * }
 
   proto token removeopt { * }
   # token removeopt:sym<deps> { <deps> }
@@ -145,6 +182,35 @@ role Pakku::Grammar::Common {
   token level:sym<🦋>     { <sym> }
   token level:sym<✗>     { <sym> }
 
+
+  token whats { <what>+ % \h }
+
+  proto token what { * }
+  token what:sym<spec> { <spec> }
+  token what:sym<uri>  { <uri> }
+  token what:sym<path> { <path> }
+
+  token spec { <name> <keyval>* }
+  token uri  { <-[ \h ]>+ <?{ try Cro::Uri.parse: $/ }> }
+  token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
+
+  token name { [<-[./:<>()\h]>+]+ % '::' }
+
+  token keyval { ':' <key> <value> }
+
+  proto token key { * }
+  token key:sym<ver>     { <sym> }
+  token key:sym<auth>    { <sym> }
+  token key:sym<api>     { <sym> }
+  token key:sym<from>    { <sym> }
+  token key:sym<version> { <sym> }
+
+  proto token value { * }
+  token value:sym<angles> { '<' ~ '>' $<val>=[.*? <~~>?] }
+  token value:sym<parens> { '(' ~ ')' $<val>=[.*? <~~>?] }
+
+  token anything { .* }
+
   token lt  { '<' }
   token gt  { '>' }
 }
@@ -207,7 +273,6 @@ role Pakku::Grammar::Common::Actions {
     make ~$<repo> => $repo;
   }
 
-  method path ( $/ ) { make $/.IO }
 
   method update:sym<update>   ( $/ )  { make ( :update  ) }
   method update:sym<u>        ( $/ )  { make ( :update  ) }
@@ -308,5 +373,20 @@ role Pakku::Grammar::Common::Actions {
   method level:sym<42>    ( $/ ) { make 1 }
   method level:sym<🦋>     ( $/ ) { make 3 }
   method level:sym<✗>     ( $/ ) { make 5 }
+
+  method whats ( $/ ) { make $<what>».ast }
+
+  method what:sym<spec> ( $/ ) { make $<spec>.ast }
+  method what:sym<uri>  ( $/ ) { make $<uri>.ast }
+  method what:sym<path> ( $/ ) { make $<path>.ast }
+
+  method spec ( $/ ) {
+
+    make Pakku::DepSpec.new: $/.Str;
+
+  }
+
+  method uri  ( $/ ) { make Cro::Uri.parse: $/ }
+  method path ( $/ ) { make $/.IO }
 
 }

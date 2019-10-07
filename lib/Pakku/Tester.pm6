@@ -53,6 +53,6 @@ method test ( Pakku::Dist::Perl6:D :$dist ) {
 
   });
 
-  ☠ "Test failed for {$dist.name}" if  any @exitcode;
+  die X::Pakku::Test::Fail.new: :$dist if any @exitcode;
 
 }

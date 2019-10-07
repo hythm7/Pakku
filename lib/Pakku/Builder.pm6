@@ -36,10 +36,8 @@ method build ( Pakku::Dist::Perl6::Path:D :$dist ) {
 
       🐛 "Build: Building [$dist] with build file [$build-file]";
 
-
         my $dist-dir   = $dist.prefix;
-        my $lib-dir    = $dist-dir.add: 'lib';
-        my $include   = "-I $lib-dir";
+        my $include   = "-I $dist-dir";
         my $execute   = "-e";
         my $build-cmd = qq:to/CMD/;
         require "$build-file";

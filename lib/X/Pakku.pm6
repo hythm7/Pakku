@@ -68,6 +68,20 @@ class X::Pakku::Build::Fail {
 
 }
 
+class X::Pakku::Test::Fail {
+  also is X::Pakku;
+
+  has $.dist;
+
+
+  method message ( --> Str:D ) {
+
+    "Test: Failed for dist [$!dist]";
+
+  }
+
+}
+
 class X::Pakku::Dist::Bin::NotFound {
   also is X::Pakku;
 
