@@ -10,18 +10,16 @@ my @tests = (
     ${:cmd("help"), :help(${:cmd("")})},
   "add DepSpec" =>
     ${:add(${:what($["DepSpec"])}), :cmd("add")},
-  "add deps" =>
-    ${:add(${:what($["deps"])}), :cmd("add")},
-  "add deps DepSpec" =>
-    ${:add(${:deps, :what($["DepSpec"])}), :cmd("add")},
+  "add nodeps" =>
+    ${:add(${:what($["nodeps"])}), :cmd("add")},
+  "add nodeps DepSpec" =>
+    ${:add(${:deps(${}), :what($["DepSpec"])}), :cmd("add")},
   "add build DepSpec" =>
     ${:add(${:build, :what($["DepSpec"])}), :cmd("add")},
   "add test DepSpec" =>
     ${:add(${:what($["DepSpec"]), :test}), :cmd("add")},
   "add force DepSpec" =>
     ${:add(${:force, :what($["DepSpec"])}), :cmd("add")},
-  "add nodeps DepSpec" =>
-    ${:add(${:!deps, :what($["DepSpec"])}), :cmd("add")},
   "add nobuild DepSpec" =>
     ${:add(${:!build, :what($["DepSpec"])}), :cmd("add")},
   "add notest DepSpec" =>
@@ -32,14 +30,14 @@ my @tests = (
     ${:add(${:!force, :what($["DepSpec"])}), :cmd("add")},
   "add depsforce DepSpec" =>
     ${:add(${:what($["depsforce", "DepSpec"])}), :cmd("add")},
-  "add deps force DepSpec" =>
-    ${:add(${:deps, :force, :what($["DepSpec"])}), :cmd("add")},
+  "add nodeps force DepSpec" =>
+    ${:add(${:deps(${}), :force, :what($["DepSpec"])}), :cmd("add")},
   "add into notrepo DepSpec" =>
     ${:add(${:what($["into", "notrepo", "DepSpec"])}), :cmd("add")},
   "v3 add force DepSpec" =>
     ${:add(${:force, :what($["DepSpec"])}), :cmd("add"), :pakku(${:verbose(3)})},
-  "v 3 add deps DepSpec" =>
-    ${:add(${:deps, :what($["DepSpec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+  "v 3 add nodeps DepSpec" =>
+    ${:add(${:deps(${}), :what($["DepSpec"])}), :cmd("add"), :pakku(${:verbose(3)})},
   "pretty v3 add force DepSpec" =>
     ${:add(${:force, :what($["DepSpec"])}), :cmd("add"), :pakku(${:pretty, :verbose(3)})},
   "remove DepSpec1 DepSpec2" =>

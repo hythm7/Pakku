@@ -39,7 +39,7 @@ method add (
 
   CompUnit::Repository :$into = $!repo,
 
-  Bool:D :$deps  = True,
+  :%deps = %( :requires, :recommends ),
   Bool:D :$build = True,
   Bool:D :$test  = True,
   Bool:D :$force = False,
@@ -97,7 +97,7 @@ method add (
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :$deps;
+  my @candies = $!ecosystem.recommend: :@what, :%deps;
 
 
   unless $force {
@@ -210,7 +210,7 @@ method build ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :!deps;
+  my @candies = $!ecosystem.recommend: :@what;
 
   my @dists
     <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
@@ -240,7 +240,7 @@ method test ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :!deps;
+  my @candies = $!ecosystem.recommend: :@what;
 
   my @dists
     <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
@@ -271,7 +271,7 @@ method check ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :!deps;
+  my @candies = $!ecosystem.recommend: :@what;
 
   my @path
     <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
@@ -591,7 +591,5 @@ submethod BUILD ( ) {
     }
 
   }
-
-
 
 }

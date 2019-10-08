@@ -17,30 +17,7 @@ has @!ignored;
 has %!dist;
 has @!dist;
 
-submethod TWEAK ( ) {
-
-  @!ignored = < Test NativeCall nqp lib >;
-
-  $!ecosystem = %?RESOURCES<ecosystem.json>.IO;
-
-  self!update;
-
-  🐛 "Eco: Loading ecosystem file [{$!ecosystem}]";
-  my @meta = flat from-json slurp $!ecosystem;
-
-  for @meta -> %meta {
-
-    my $dist = Pakku::Dist::Perl6.new: :%meta;
-
-    %!dist{ $dist.name }.push: $dist;
-    @!dist.push: $dist;
-
-  }
-
-}
-
-method recommend ( :@what!, :$deps! --> Seq ) {
-
+method recommend ( :@what!, :%deps --> Seq ) {
 
   🐛 "Eco: Processing [{@what}]";
 
@@ -48,20 +25,28 @@ method recommend ( :@what!, :$deps! --> Seq ) {
 
     my $dist = self.find: $what;
 
-    $deps ?? self!get-deps: :$dist !! $dist.Seq;
+    %deps ?? self!get-deps: :$dist, |%deps !! $dist.Seq;
 
   }).map( *.unique: :with( &[===] ) );
 
 }
 
 
-submethod !get-deps ( Pakku::Dist:D :$dist! ) {
+submethod !get-deps (
+
+  Pakku::Dist:D :$dist!,
+  Bool:D        :$requires     = True,
+  Bool:D        :$recommends   = True,
+  Bool:D        :$runtime      = True,
+  Bool:D        :$test         = True,
+  Bool:D        :$build        = True,
+) {
 
   🐛 "Eco: Looking for deps of dist [$dist]";
 
   my @dist;
 
-  my @dep = $dist.deps;
+  my @dep = $dist.deps: :$runtime, :$test, :$build, :$requires, :$recommends;
 
   🐛 "Eco: Found no deps for [$dist]" unless @dep;
 
@@ -168,6 +153,28 @@ method !update ( ) {
     .say( to-json @meta );
     .close;
   }
+}
+
+submethod TWEAK ( ) {
+
+  @!ignored = < Test NativeCall nqp lib >;
+
+  $!ecosystem = %?RESOURCES<ecosystem.json>.IO;
+
+  self!update;
+
+  🐛 "Eco: Loading ecosystem file [{$!ecosystem}]";
+  my @meta = flat from-json slurp $!ecosystem;
+
+  for @meta -> %meta {
+
+    my $dist = Pakku::Dist::Perl6.new: :%meta;
+
+    %!dist{ $dist.name }.push: $dist;
+    @!dist.push: $dist;
+
+  }
+
 }
 
 

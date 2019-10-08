@@ -39,11 +39,13 @@ role Pakku::Grammar::Common {
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
 
   proto token addopt { * }
-  token addopt:sym<deps>  { <deps>  }
-  token addopt:sym<build> { <build> }
-  token addopt:sym<test>  { <test>  }
-  token addopt:sym<force> { <force> }
-  token addopt:sym<into>  { <into> <.space>* <reponame> }
+  token addopt:sym<deps-req> { <deps> <.space>* <require>   }
+  token addopt:sym<deps-rec> { <deps> <.space>* <recommend> }
+  token addopt:sym<nodeps>   { <nodeps>                     }
+  token addopt:sym<build>    { <build> }
+  token addopt:sym<test>     { <test>  }
+  token addopt:sym<force>    { <force> }
+  token addopt:sym<into>     { <into> <.space>* <reponame> }
 
   proto token buildopt { * }
 
@@ -87,16 +89,26 @@ role Pakku::Grammar::Common {
   token verbose:sym<verbose> { <sym> }
   token verbose:sym<v>       { <sym> }
   token verbose:sym<𝕧>       { <sym> }
-  token verbose:sym<👀>       { <sym> }
-  token verbose:sym<👓>       { <sym> }
+  token verbose:sym<👀>      { <sym> }
+  token verbose:sym<👓>      { <sym> }
 
 
   proto token deps { * }
   token deps:sym<deps>   { <sym> }
   token deps:sym<d>      { <sym> }
-  token deps:sym<🔗>      { <sym> }
-  token deps:sym<nodeps> { <sym> }
-  token deps:sym<nd>     { <sym> }
+  token deps:sym<🔗>     { <sym> }
+
+  proto token nodeps { * }
+  token nodeps:sym<nodeps> { <sym> }
+  token nodeps:sym<nd>     { <sym> }
+
+  proto token require { * }
+  token require:sym<require> { <sym> }
+  token require:sym<req>     { <sym> }
+
+  proto token recommend { * }
+  token recommend:sym<recommend> { <sym> }
+  token recommend:sym<rec>       { <sym> }
 
   proto token build { * }
   token build:sym<build>   { <sym> }
@@ -128,7 +140,7 @@ role Pakku::Grammar::Common {
   proto token remote { * }
   token remote:sym<remote>   { <sym> }
   token remote:sym<r>        { <sym> }
-  token remote:sym<🌎>        { <sym> }
+  token remote:sym<🌎>       { <sym> }
   token remote:sym<noremote> { <sym> }
   token remote:sym<nr>       { <sym> }
 
@@ -177,7 +189,7 @@ role Pakku::Grammar::Common {
   token level:sym<5>     { <sym> }
   token level:sym<6>     { <sym> }
   token level:sym<42>    { <sym> }
-  token level:sym<🦋>     { <sym> }
+  token level:sym<🦋>    { <sym> }
   token level:sym<✗>     { <sym> }
 
 
@@ -228,10 +240,12 @@ role Pakku::Grammar::Common::Actions {
   }
 
 
-  method addopt:sym<deps>  ( $/ ) { make $<deps>.ast  }
-  method addopt:sym<build> ( $/ ) { make $<build>.ast }
-  method addopt:sym<test>  ( $/ ) { make $<test>.ast  }
-  method addopt:sym<force> ( $/ ) { make $<force>.ast }
+  method addopt:sym<deps-req> ( $/ ) { make ( deps => %( :requires, :!recommends )  ) }
+  method addopt:sym<deps-rec> ( $/ ) { make ( deps => %( :requires, :recommends ) ) }
+  method addopt:sym<nodeps>  ( $/ )  { make ( deps => %( )  ) }
+  method addopt:sym<build>    ( $/ ) { make $<build>.ast }
+  method addopt:sym<test>     ( $/ ) { make $<test>.ast  }
+  method addopt:sym<force>    ( $/ ) { make $<force>.ast }
 
   method addopt:sym<into>  ( $/ ) {
 
@@ -284,13 +298,6 @@ role Pakku::Grammar::Common::Actions {
   method pretty:sym<℘>        ( $/ )  { make ( :pretty  ) }
   method pretty:sym<nopretty> ( $/ )  { make ( :!pretty ) }
   method pretty:sym<np>       ( $/ )  { make ( :!pretty ) }
-
-
-  method deps:sym<deps>   ( $/ )  { make ( :deps  ) }
-  method deps:sym<d>      ( $/ )  { make ( :deps  ) }
-  method deps:sym<🔗>      ( $/ )  { make ( :deps  ) }
-  method deps:sym<nodeps> ( $/ )  { make ( :!deps ) }
-  method deps:sym<nd>     ( $/ )  { make ( :!deps ) }
 
   method build:sym<build>   ( $/ )  { make ( :build  ) }
   method build:sym<b>       ( $/ )  { make ( :build  ) }
