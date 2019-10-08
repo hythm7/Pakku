@@ -32,6 +32,116 @@ has %!emulates;
 has %!superseded-by;
 has %!excludes;
 
+
+method Str ( Pakku::Dist::Perl6:D: --> Str:D ) {
+
+  $!name ~ ":ver<$!ver>:auth<$!auth>:api<$!api>"
+
+}
+
+method deps (
+
+  Pakku::Dist::Perl6:D:
+
+  Bool:D :$runtime    = True,
+  Bool:D :$test       = True,
+  Bool:D :$build      = True,
+  Bool:D :$requires   = True,
+  Bool:D :$recommends = True,
+
+) {
+
+  my @deps = flat gather {
+
+    if $build {
+
+      %!depends<build><requires>   .grep( *.defined ).map( *.take ) if $requires;
+      %!depends<build><recommends> .grep( *.defined ).map( *.take ) if $recommends;
+
+    }
+
+    if $test {
+
+      %!depends<test><requires>   .grep( *.defined ).map( *.take ) if $requires;
+      %!depends<test><recommends> .grep( *.defined ).map( *.take ) if $recommends;
+
+    }
+
+    if $runtime {
+
+      %!depends<runtime><requires>   .grep( *.defined ).map( *.take ) if $requires;
+      %!depends<runtime><recommends> .grep( *.defined ).map( *.take ) if $recommends;
+
+    }
+  }
+
+}
+
+multi method gist ( Pakku::Dist::Perl6:D: :$details where not *.so --> Str:D ) {
+
+  ~self;
+
+}
+
+multi method gist ( Pakku::Dist::Perl6:D: :$details where *.so --> Str:D ) {
+
+  (
+    (           self          ),
+    ( gist-name $!name        ),
+    ( gist-ver  $!ver         ),
+    ( gist-auth $!auth        ),
+    ( gist-api  $!api         ),
+    ( gist-desc $!description ),
+    ( gist-bldr $!builder     ),
+    ( gist-surl $!source-url  ),
+    ( gist-deps self.deps     ),
+    ( gist-prov %!provides    ),
+    (           ''            ),
+  ).join( "\n" );
+}
+
+sub gist-name ( $name ) { "name → $name" .indent( 2 ) if $name }
+sub gist-ver  ( $ver  ) { "ver  → $ver"  .indent( 2 ) if $ver  }
+sub gist-auth ( $auth ) { "auth → $auth" .indent( 2 ) if $auth }
+sub gist-api  ( $api  ) { "api  → $api"  .indent( 2 ) if $api  }
+sub gist-desc ( $desc ) { "desc → $desc" .indent( 2 ) if $desc }
+sub gist-surl ( $surl ) { "surl → $surl" .indent( 2 ) if $surl  }
+
+sub gist-bldr ( $bldr ) { "bldr → { $bldr // $bldr.^name }" .indent( 2 ) if $bldr }
+
+sub gist-deps ( @deps ) {
+
+  my $label = 'deps';
+
+  ( @deps
+    ?? "$label\n" ~
+        @deps.map( -> $dep {
+          "↳ $dep"
+        } ).join("\n").indent( 5 )
+    !! "$label →";
+  ).indent( 2 ) if @deps;
+}
+
+sub gist-prov ( %prov --> Str:D ) {
+
+  my $label = 'prov';
+
+  ( %prov
+    ?? "$label \n" ~
+        %prov.kv.map( -> $mod, $path {
+          $path ~~ Hash
+            ?? "↳ $mod → { $path.keys }\n" ~
+                  $path.kv.map( -> $path, $info {
+                     $info.kv.map( -> $k, $v {
+                      "↳ $k → { $v // '' }"
+                     } ).join("\n").indent( 2 )
+                  })
+            !! "↳ $mod";
+        }).join( "\n" ).indent( 5 )
+    !! "$label →";
+  ).indent( 2 ) if %prov;
+}
+
 submethod TWEAK ( ) {
 
   $!meta-version  = $!meta<meta-version>  // '';
@@ -86,111 +196,4 @@ submethod TWEAK ( ) {
 
 }
 
-method deps (
 
-  Pakku::Dist::Perl6:D:
-
-  Bool:D :$runtime    = True,
-  Bool:D :$test       = True,
-  Bool:D :$build      = True,
-  Bool:D :$requires   = True,
-  Bool:D :$recommends = True,
-
-) {
-
-  my @deps = flat gather {
-
-    if $build {
-
-      %!depends<build><requires>   .grep( *.defined ).map( *.take ) if $requires;
-      %!depends<build><recommends> .grep( *.defined ).map( *.take ) if $recommends;
-
-    }
-
-    if $test {
-
-      %!depends<test><requires>   .grep( *.defined ).map( *.take ) if $requires;
-      %!depends<test><recommends> .grep( *.defined ).map( *.take ) if $recommends;
-
-    }
-
-    if $runtime {
-
-      %!depends<runtime><requires>   .grep( *.defined ).map( *.take ) if $requires;
-      %!depends<runtime><recommends> .grep( *.defined ).map( *.take ) if $recommends;
-
-    }
-  }
-
-}
-
-multi method gist ( Pakku::Dist::Perl6:D: :$details where *.not --> Str:D ) {
-
-  ~self;
-
-}
-
-multi method gist ( Pakku::Dist::Perl6:D: :$details where *.so --> Str:D ) {
-
-  (
-    (           self          ),
-    ( gist-name $!name        ),
-    ( gist-ver  $!ver         ),
-    ( gist-auth $!auth        ),
-    ( gist-api  $!api         ),
-    ( gist-desc $!description ),
-    ( gist-bldr $!builder     ),
-    ( gist-surl $!source-url  ),
-    ( gist-deps self.deps     ),
-    ( gist-prov %!provides    ),
-    (           ''            ),
-  ).join( "\n" );
-}
-
-method Str ( Pakku::Dist::Perl6:D: --> Str:D ) {
-
-  $!name ~ ":ver<$!ver>:auth<$!auth>:api<$!api>"
-
-}
-
-sub gist-name ( $name --> Str:D ) { "name → $name" .indent: 2 }
-sub gist-ver  ( $ver  --> Str:D ) { "ver  → $ver"  .indent: 2 }
-sub gist-auth ( $auth --> Str:D ) { "auth → $auth" .indent: 2 }
-sub gist-desc ( $desc --> Str:D ) { "desc → $desc" .indent: 2 }
-sub gist-api  ( $api  --> Str:D ) { "api  → $api"  .indent: 2 }
-sub gist-surl ( $surl --> Str:D ) { "surl → $surl" .indent: 2 }
-
-sub gist-bldr ( $bldr --> Str:D ) { "bldr → { $bldr // $bldr.^name }" .indent: 2 }
-
-sub gist-deps ( Pakku::DepSpec:D @deps --> Str:D ) {
-
-  my $label = 'deps';
-
-  ( @deps
-    ?? "$label\n" ~
-        @deps.map( -> $dep {
-          "↳ $dep"
-        } ).join("\n").indent( 5 )
-    !! "$label →";
-  ).indent: 2;
-}
-
-sub gist-prov ( %prov --> Str:D ) {
-
-  my $label = 'prov';
-
-  ( %prov
-    ?? "$label \n" ~
-        %prov.kv.map( -> $mod, $path {
-          $path ~~ Hash
-            ?? "↳ $mod → { $path.keys }\n" ~
-                  $path.kv.map( -> $path, $info {
-                     $info.kv.map( -> $k, $v {
-                      "↳ $k → { $v // '' }"
-                     } ).join("\n").indent( 2 )
-                  })
-            !! "↳ $mod";
-        }).join( "\n" ).indent( 5 )
-    !! "$label →";
-  ).indent: 2;
-}

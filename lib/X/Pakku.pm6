@@ -93,3 +93,34 @@ class X::Pakku::Dist::Bin::NotFound {
 
   }
 }
+
+class X::Pakku::Parse::Cnf {
+  also is X::Pakku;
+
+  has $.cnf;
+
+
+  method message ( --> Str:D ) {
+
+    "Pakku: Cannot parse conf file [$!cnf]";
+
+  }
+
+}
+
+
+class X::Pakku::Parse::Cmd {
+  also is X::Pakku;
+
+  has $.cmd;
+
+
+  method message ( --> Str:D ) {
+
+    "Pakku: Cannot parse cmd [$!cmd]";
+
+  }
+
+}
+
+

@@ -487,7 +487,12 @@ submethod BUILD ( ) {
 
 
   my $cnf = Pakku::Grammar::Cnf.parsefile( $pakku-cnf, actions => Pakku::Grammar::Cnf::Actions.new );
+
+  die X::Pakku::Parse::Cnf.new( cnf => $pakku-cnf ) unless $cnf;
+
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::Cmd::Actions );
+
+  die X::Pakku::Parse::Cmd.new( cmd => @*ARGS ) unless $cmd;
 
   %!cnf = $cnf.ast.merge: $cmd.ast;
 
@@ -589,6 +594,27 @@ submethod BUILD ( ) {
       self.Nofun;
 
     }
+
+    when X::Pakku::Parse::Cnf {
+
+      Pakku::Log.new: :4verbose, :pretty;
+
+      ☠ .message;
+
+      self.help: :cmd<help>;
+
+    }
+
+    when X::Pakku::Parse::Cmd {
+
+      Pakku::Log.new: :4verbose, :pretty;
+
+      ☠ .message;
+
+      self.help: :cmd<help>;
+
+    }
+
 
   }
 
