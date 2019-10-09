@@ -443,7 +443,6 @@ multi submethod installed ( Pakku::Dist::Perl6:D $dist, :@repo! ) {
 
 multi submethod installed ( Pakku::Dist::Bin:D $dist, :@repo! ) {
 
-  say 'BINNNNNN';
   my $name = $dist.name;
 
   my $path = qqx{ which $name };
