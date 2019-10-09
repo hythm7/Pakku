@@ -133,9 +133,9 @@ method !update ( ) {
 
   return if $!update === False;
 
-  my $mod-time = $!ecosystem.IO.modified.DateTime.minute - now.DateTime.minute;
+  my $mod-time = now - $!ecosystem.IO.modified;
 
-  return if $!update === Any and $mod-time < 42;
+  return if $!update === Any and $mod-time < 2520;
 
   🐛 "Eco: Updating Ecosystem";
 
