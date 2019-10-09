@@ -11,6 +11,9 @@ class Pakku::Log {
 
   submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty!, :$cnf ) {
 
+    Loglevels.^add_enum_value: 'OUT'   => 7;
+    Loglevels.^add_enum_value: 'PAKKU' => 77;
+
     %!cnf<TRACE><name>    = $cnf<1><name>  // '👣';
     %!cnf<DEBUG><name>    = $cnf<2><name>  // '🐛';
     %!cnf<INFO><name>     = $cnf<3><name>  // '🦋';
