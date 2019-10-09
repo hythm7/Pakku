@@ -36,6 +36,5 @@
   # warn  color yellow
   # error color magenta
   # fatal color yellow
-
 <source>
 https://raw.githubusercontent.com/hythm7/raku-ecosystem/master/resources/ecosystem.json

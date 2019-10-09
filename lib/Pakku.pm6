@@ -3,6 +3,7 @@ use Hash::Merge::Augment;
 use Terminal::ANSIColor;
 
 use Pakku::Log;
+use Pakku::Help;
 use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
 use Pakku::Ecosystem;
@@ -14,6 +15,7 @@ use Pakku::Dist::Perl6::Path;
 use Pakku::Dist::Perl6::Inst;
 
 unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
+  also does Pakku::Help;
 
 has %!cnf;
 
@@ -406,20 +408,6 @@ method list (
   }
 }
 
-method help ( Str:D :$cmd ) {
-
-  given $cmd {
-
-    when 'add'    { put 'help add' }
-    when 'remove' { put 'help remove' }
-    when 'list'   { put 'help list' }
-
-    default { put 'help' }
-
-  }
-
-}
-
 
 # TODO: Rewrite these methods
 # TODO: use @!repo instead
@@ -601,8 +589,6 @@ submethod BUILD ( ) {
 
       ☠ .message;
 
-      self.help: :cmd<help>;
-
     }
 
     when X::Pakku::Parse::Cmd {
@@ -610,8 +596,6 @@ submethod BUILD ( ) {
       Pakku::Log.new: :4verbose, :pretty;
 
       ☠ .message;
-
-      self.help: :cmd<help>;
 
     }
 
