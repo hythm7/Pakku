@@ -39,13 +39,15 @@ role Pakku::Grammar::Common {
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
 
   proto token addopt { * }
-  token addopt:sym<deps-req> { <deps> <.space>* <require>   }
-  token addopt:sym<deps-rec> { <deps> <.space>* <recommend> }
-  token addopt:sym<nodeps>   { <nodeps>                     }
-  token addopt:sym<build>    { <build> }
-  token addopt:sym<test>     { <test>  }
-  token addopt:sym<force>    { <force> }
-  token addopt:sym<into>     { <into> <.space>* <reponame> }
+  token addopt:sym<deps-req>  { <deps> <.space>* <require>   }
+  token addopt:sym<deps-rec>  { <deps> <.space>* <recommend> }
+  token addopt:sym<deps-only> { <deps> <.space>* <only>      }
+  token addopt:sym<deps>      { <deps>                       }
+  token addopt:sym<nodeps>    { <nodeps>                     }
+  token addopt:sym<build>     { <build> }
+  token addopt:sym<test>      { <test>  }
+  token addopt:sym<force>     { <force> }
+  token addopt:sym<into>      { <into> <.space>* <reponame> }
 
   proto token buildopt { * }
 
@@ -96,7 +98,7 @@ role Pakku::Grammar::Common {
   proto token deps { * }
   token deps:sym<deps>   { <sym> }
   token deps:sym<d>      { <sym> }
-  token deps:sym<🔗>     { <sym> }
+  token deps:sym<🔗>      { <sym> }
 
   proto token nodeps { * }
   token nodeps:sym<nodeps> { <sym> }
@@ -109,6 +111,10 @@ role Pakku::Grammar::Common {
   proto token recommend { * }
   token recommend:sym<recommend> { <sym> }
   token recommend:sym<rec>       { <sym> }
+
+  proto token only { * }
+  token only:sym<only>   { <sym> }
+  token only:sym<o>      { <sym> }
 
   proto token build { * }
   token build:sym<build>   { <sym> }
@@ -161,7 +167,6 @@ role Pakku::Grammar::Common {
   token reponame:sym<site>   { <sym> }
   token reponame:sym<vendor> { <sym> }
   token reponame:sym<core>   { <sym> }
-
 
   proto token level { * }
   token level:sym<SILENT> { <sym> }
@@ -243,12 +248,14 @@ role Pakku::Grammar::Common::Actions {
   }
 
 
-  method addopt:sym<deps-req> ( $/ ) { make ( deps => %( :requires, :!recommends )  ) }
-  method addopt:sym<deps-rec> ( $/ ) { make ( deps => %( :requires, :recommends ) ) }
-  method addopt:sym<nodeps>  ( $/ )  { make ( deps => %( )  ) }
-  method addopt:sym<build>    ( $/ ) { make $<build>.ast }
-  method addopt:sym<test>     ( $/ ) { make $<test>.ast  }
-  method addopt:sym<force>    ( $/ ) { make $<force>.ast }
+  method addopt:sym<deps-req>  ( $/ ) { make ( :deps<requires>   ) }
+  method addopt:sym<deps-rec>  ( $/ ) { make ( :deps<recommends> ) }
+  method addopt:sym<deps>      ( $/ ) { make ( :deps<recommends> )            }
+  method addopt:sym<deps-only> ( $/ ) { make ( :deps<only> ) }
+  method addopt:sym<nodeps>    ( $/ ) { make ( :!deps )            }
+  method addopt:sym<build>     ( $/ ) { make $<build>.ast }
+  method addopt:sym<test>      ( $/ ) { make $<test>.ast  }
+  method addopt:sym<force>     ( $/ ) { make $<force>.ast }
 
   method addopt:sym<into>  ( $/ ) {
 

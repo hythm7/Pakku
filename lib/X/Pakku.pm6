@@ -82,6 +82,18 @@ class X::Pakku::Test::Fail {
 
 }
 
+class X::Pakku::Dist::Perl6::Path::NoMeta {
+  also is X::Pakku;
+
+  has $.path;
+
+  method message ( --> Str:D ) {
+
+    "Path: No META6.json file in path [$!path]";
+
+  }
+}
+
 class X::Pakku::Dist::Bin::NotFound {
   also is X::Pakku;
 

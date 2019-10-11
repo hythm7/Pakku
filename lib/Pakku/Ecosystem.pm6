@@ -17,15 +17,51 @@ has @!ignored;
 has %!dist;
 has @!dist;
 
-method recommend ( :@what!, :%deps --> Seq ) {
+# TODO: deps only
+method recommend ( :@what!, :$deps --> Seq ) {
 
   🐛 "Eco: Processing [{@what}]";
+
+  my %deps;
+
+  given $deps {
+
+    when 'requires' {
+      %deps.push: ( :requires );
+      %deps.push: ( :!recommends );
+    }
+
+    when 'recommends' {
+      %deps.push: ( :requires );
+      %deps.push: ( :recommends );
+    }
+
+    when 'only' {
+      %deps.push: ( :only );
+    }
+
+  }
+
 
   @what.map( -> $what {
 
     my $dist = self.find: $what;
 
-    %deps ?? self!get-deps: :$dist, |%deps !! $dist.Seq;
+    if %deps {
+
+      my @dist = self!get-deps: :$dist, |%deps;
+
+      @dist.pop if %deps<only>;
+
+      @dist
+
+    }
+
+    else {
+
+      $dist.Seq;
+
+    }
 
   }).map( *.unique: :with( &[===] ) );
 
@@ -35,6 +71,7 @@ method recommend ( :@what!, :%deps --> Seq ) {
 submethod !get-deps (
 
   Pakku::Dist:D :$dist!,
+  Bool:D        :$only         = False,
   Bool:D        :$requires     = True,
   Bool:D        :$recommends   = True,
   Bool:D        :$runtime      = True,

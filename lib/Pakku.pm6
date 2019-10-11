@@ -38,7 +38,7 @@ method add (
 
   CompUnit::Repository :$into = $!repo,
 
-  :%deps = %( :requires, :recommends ),
+         :$deps  = 'recommends',
   Bool:D :$build = True,
   Bool:D :$test  = True,
   Bool:D :$force = False,
@@ -96,7 +96,7 @@ method add (
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :%deps;
+  my @candies = $!ecosystem.recommend: :@what, :$deps;
 
 
   unless $force {
@@ -165,48 +165,6 @@ method add (
 
   ofun;
 
-  CATCH {
-
-    when X::Pakku::Ecosystem::NoCandy {
-
-      ☠ .message;
-
-      nofun;
-
-    }
-
-    when X::LibCurl {
-
-      ☠ .message;
-
-      nofun;
-
-    }
-
-    when X::Pakku::Build::Fail {
-
-      ☠ .message;
-
-      nofun;
-
-    }
-
-    when X::Pakku::Test::Fail {
-
-      ☠ .message;
-
-      nofun;
-
-    }
-
-    when X::Pakku::Dist::Bin::NotFound {
-
-      ☠ .message;
-
-      nofun;
-
-    }
-  }
 
 }
 
@@ -408,9 +366,7 @@ method list (
     when X::Pakku::Ecosystem::NoCandy {
 
       ⚠ .message;
-
       🐛 "Pakku: Proceeding anyway";
-
       .resume
 
     }
@@ -533,17 +489,19 @@ submethod BUILD ( ) {
 
     when 'build' {
 
-      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source;
+      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source
+        if %!cnf<build><what>.first( Pakku::DepSpec::Perl6 );
 
-      self.build:    |%!cnf<build>;
+      self.build: |%!cnf<build>;
 
     }
 
     when 'test' {
 
-      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source;
+      $!ecosystem = Pakku::Ecosystem.new: :$update, :@source
+        if %!cnf<test><what>.first( Pakku::DepSpec::Perl6 );
 
-      self.test:    |%!cnf<test>;
+      self.test: |%!cnf<test>;
 
     }
 
@@ -566,26 +524,18 @@ submethod BUILD ( ) {
 
       $!ecosystem = Pakku::Ecosystem.new: :$update, :@source if %!cnf<list><remote>;
 
-      self.list:   |%!cnf<list>;
+      self.list: |%!cnf<list>;
 
     }
 
     when 'help' {
 
-      🦋 self.help:   |%!cnf<help>;
+      🦋 self.help: |%!cnf<help>;
 
     }
   }
 
   CATCH {
-
-    when X::Pakku::DepSpec::CannotParse {
-
-      ☠ .message;
-
-      nofun;
-
-    }
 
     when X::Pakku::Parse::Cnf {
 
@@ -603,6 +553,15 @@ submethod BUILD ( ) {
 
     }
 
+    when X::Pakku {
+      ☠ .message;
+      nofun;
+    }
+
+    when X::LibCurl {
+      ☠ .message;
+      nofun;
+    }
 
   }
 

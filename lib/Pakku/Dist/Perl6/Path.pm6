@@ -10,6 +10,8 @@ method new ( $path ) {
 
   my $meta-file = @meta-files.map( -> $file { $path.add: $file } ).first( *.f );
 
+  die X::Pakku::Dist::Perl6::Path::NoMeta.new: :$path unless $meta-file;
+
   nextwith $path, :$meta-file;
 
 }
