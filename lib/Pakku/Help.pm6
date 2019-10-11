@@ -2,11 +2,6 @@ use Terminal::ANSIColor;
 
 unit role Pakku::Help;
 
-my %help;
-
-%help<add><opt> = < deps nodeps "deps requires" "deps recommends" "deps only" >;
-
-
 method help ( Str:D :$cmd ) {
 
   given $cmd {
@@ -35,14 +30,43 @@ method help ( Str:D :$cmd ) {
 
 submethod !add ( ) {
 
-  my $cmd = 'add';
+  my %add;
+
+  %add<cmd>     = 'Add';
+  %add<desc>    = 'Add distribution';
+
+  %add<example>.push: 'pakku add MyModule';
+  %add<example>.push: 'pakku add nodeps MyModule';
+  %add<example>.push: 'pakku add notest MyModule';
+  %add<example>.push: 'pakku add force into home MyModule';
+
+  %add<opt>.push: ( 'deps'            => 'add dependencies as well' );
+  %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
+  %add<opt>.push: ( 'deps requires'   => 'add required dependencies' );
+  %add<opt>.push: ( 'deps recommends' => 'add required and recommended dependencies' );
+  %add<opt>.push: ( 'deps only'       => 'add dependencies only' );
+  %add<opt>.push: ( 'build'           => 'build distribution' );
+  %add<opt>.push: ( 'nobuild'         => 'bypass build' );
+  %add<opt>.push: ( 'test'            => 'test distribution' );
+  %add<opt>.push: ( 'notest'          => 'bypass test' );
+  %add<opt>.push: ( 'force'           => 'force add distribution even if it is installed' );
+  %add<opt>.push: ( 'noforce'         => 'no force' );
+  %add<opt>.push: ( 'into <repo>'     => 'add distribution to specified repo <home site vendor core>' );
+
+  my $indent = %add<opt>.map( *.key.chars ).max;
+
   q:s:a:h:f:to/END/
-  &colored( $cmd, 'bold green' ): &colored( 'Adds Raku Distribution', 'yellow' )
+  &colored( %add<cmd>, 'bold magenta' ): &colored( %add<desc>, 'cyan' )
 
-  &colored( 'pakku add MyModule', 'bold 177' )
+  &colored( 'Example:', 'bold yellow' )
+  &colored( %add<example>.join( "\n" ), 'bold italic 177' )
 
-  &colored( ~%help<add><opt>, 'bold cyan' )
-
+  &colored( 'Options:', 'bold yellow' )
+  %add<opt>.map( {
+    &colored( .key, 'bold green' )  ~
+    &colored( ' → ', 'yellow' ).indent( $indent - .key.chars )     ~
+    &colored( .value, 'bold cyan' )
+  } ).join( "\n" )
   END
 
 }

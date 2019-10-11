@@ -185,14 +185,14 @@ sub gist-prov ( %prov --> Str:D ) {
     "$label \n" ~
      %prov.kv.map( -> $mod, $path {
        $path ~~ Hash
-         ?? colored( '↳ ',  'yellow'   ) ~
+         ?? colored( '↳ ',  'yellow'    ) ~
             colored( $mod, 'bold green' ) ~
-            colored( ' → ', 'yellow'   ) ~
+            colored( ' → ', 'yellow'    ) ~
             colored( ~$path.keys, 'bold cyan' ) ~ "\n" ~
                $path.kv.map( -> $path, $info {
                   $info.kv.map( -> $k, $v {
                    colored( '↳ ',  'yellow'       ) ~
-                   colored( $k, 'bold magenta'       ) ~
+                   colored( $k, 'bold magenta'    ) ~
                    colored( ' → ',  'yellow'      ) ~
                    colored( $v // '', 'bold cyan' )
                   } ).join("\n").indent( 2 )
