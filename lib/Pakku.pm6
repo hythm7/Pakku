@@ -384,14 +384,22 @@ method list (
   else {
 
     @what
-      ?? @dist.append: $!ecosystem.recommend( :@what, :!deps ).flat
+      ?? @dist.append: $!ecosystem.recommend( :@what ).flat
       !! @dist.append: $!ecosystem.list-dists;
 
   }
 
-  my Str $list = @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
+  @dist .= grep( *.defined );
 
-  🦋 $list if $list;
+  unless @dist {
+
+    nofun;
+
+  }
+
+  my Str $list = @dist.map( *.gist: :$details ).join( "\n" );
+
+  🦋 $list;
 
   ofun;
 

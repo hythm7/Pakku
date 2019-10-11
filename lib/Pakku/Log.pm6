@@ -139,6 +139,6 @@ sub prefix:<⚠>  ( Str:D $msg ) is export { warning $msg }
 sub prefix:<✗>  ( Str:D $msg ) is export { error   $msg }
 sub prefix:<☠>  ( Str:D $msg ) is export { fatal   $msg }
 
-sub ofun    ( )      is export { info '-Ofun'        }
-sub nofun   ( )      is export { info 'Nofun'        }
-sub allgood ( )      is export { info 'Saul Goodman' }
+sub ofun    ( )      is export { info '-Ofun'       ; exit 0 }
+sub nofun   ( )      is export { info 'Nofun'       ; exit 1 }
+sub allgood ( )      is export { info 'Saul Goodman'; exit 0 }

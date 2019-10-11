@@ -1,3 +1,4 @@
+use Terminal::ANSIColor;
 use Pakku::Dist;
 use Pakku::DepSpec;
 use Distribution::Builder::MakeFromJSON;
@@ -79,67 +80,126 @@ method deps (
 
 multi method gist ( Pakku::Dist::Perl6:D: :$details where not *.so --> Str:D ) {
 
-  ~self;
+  colored( ~self, "bold cyan" );
 
 }
 
 multi method gist ( Pakku::Dist::Perl6:D: :$details where *.so --> Str:D ) {
 
   (
-    (           self          ),
+    (           self.gist     ),
     ( gist-name $!name        ),
     ( gist-ver  $!ver         ),
     ( gist-auth $!auth        ),
     ( gist-api  $!api         ),
     ( gist-desc $!description ),
     ( gist-bldr $!builder     ),
-    ( gist-surl $!source-url  ),
+    ( gist-url  $!source-url  ),
     ( gist-deps self.deps     ),
     ( gist-prov %!provides    ),
     (           ''            ),
   ).join( "\n" );
 }
 
-sub gist-name ( $name ) { "name → $name" .indent( 2 ) if $name }
-sub gist-ver  ( $ver  ) { "ver  → $ver"  .indent( 2 ) if $ver  }
-sub gist-auth ( $auth ) { "auth → $auth" .indent( 2 ) if $auth }
-sub gist-api  ( $api  ) { "api  → $api"  .indent( 2 ) if $api  }
-sub gist-desc ( $desc ) { "desc → $desc" .indent( 2 ) if $desc }
-sub gist-surl ( $surl ) { "surl → $surl" .indent( 2 ) if $surl  }
+sub gist-name ( $name ) {
 
-sub gist-bldr ( $bldr ) { "bldr → { $bldr // $bldr.^name }" .indent( 2 ) if $bldr }
+  colored( 'name', 'bold green' ) ~
+  colored( ' → ',  'yellow'     ) ~
+  colored( ~$name, 'bold cyan'  )
+  if $name
+
+}
+
+sub gist-ver ( $ver ) {
+
+  colored( 'ver',  'bold green' ) ~
+  colored( '  → ', 'yellow'     ) ~
+  colored( ~$ver,  'bold cyan'  )
+  if $ver
+
+}
+
+sub gist-auth ( $auth ) {
+
+  colored( 'auth', 'bold green' ) ~
+  colored( ' → ',  'yellow'     ) ~
+  colored( ~$auth, 'bold cyan'  )
+  if $auth
+
+}
+
+sub gist-api ( $api ) {
+
+  colored( 'api',  'bold green' ) ~
+  colored( '  → ', 'yellow'     ) ~
+  colored( ~$api,  'bold cyan'  )
+  if $api
+
+}
+
+sub gist-desc ( $desc ) {
+
+  colored( 'desc', 'bold green' ) ~
+  colored( ' → ',  'yellow'     ) ~
+  colored( ~$desc, 'bold cyan'  )
+  if $desc
+
+}
+
+sub gist-url ( $url ) {
+
+  colored( 'url',  'bold green' ) ~
+  colored( '  → ', 'yellow'     ) ~
+  colored( ~$url,  'bold cyan'  )
+  if $url
+
+}
+
+sub gist-bldr ( $bldr ) {
+
+  colored( 'url', 'bold green' ) ~
+  colored( ' → ', 'yellow'     ) ~
+  colored( ~( $bldr // $bldr.^name ), 'bold cyan' )
+  if $bldr
+
+}
+
 
 sub gist-deps ( @deps ) {
 
-  my $label = 'deps';
+  my $label = colored( 'deps', 'bold green');
 
-  ( @deps
-    ?? "$label\n" ~
-        @deps.map( -> $dep {
-          "↳ $dep"
-        } ).join("\n").indent( 5 )
-    !! "$label →";
-  ).indent( 2 ) if @deps;
+  (
+     "$label\n" ~
+      @deps.map( -> $dep {
+        colored( '↳ ', 'yellow' ) ~ colored( ~$dep, 'bold cyan' )
+      } ).join("\n").indent( 5 )
+  ) if @deps;
 }
 
 sub gist-prov ( %prov --> Str:D ) {
 
-  my $label = 'prov';
+  my $label = colored( 'prov', 'bold green' );
 
-  ( %prov
-    ?? "$label \n" ~
-        %prov.kv.map( -> $mod, $path {
-          $path ~~ Hash
-            ?? "↳ $mod → { $path.keys }\n" ~
-                  $path.kv.map( -> $path, $info {
-                     $info.kv.map( -> $k, $v {
-                      "↳ $k → { $v // '' }"
-                     } ).join("\n").indent( 2 )
-                  })
-            !! "↳ $mod";
-        }).join( "\n" ).indent( 5 )
-    !! "$label →";
-  ).indent( 2 ) if %prov;
+  (
+    "$label \n" ~
+     %prov.kv.map( -> $mod, $path {
+       $path ~~ Hash
+         ?? colored( '↳ ',  'yellow'   ) ~
+            colored( $mod, 'bold green' ) ~
+            colored( ' → ', 'yellow'   ) ~
+            colored( ~$path.keys, 'bold cyan' ) ~ "\n" ~
+               $path.kv.map( -> $path, $info {
+                  $info.kv.map( -> $k, $v {
+                   colored( '↳ ',  'yellow'       ) ~
+                   colored( $k, 'bold magenta'       ) ~
+                   colored( ' → ',  'yellow'      ) ~
+                   colored( $v // '', 'bold cyan' )
+                  } ).join("\n").indent( 2 )
+               })
+         !! colored( '↳ ', 'yellow' ) ~ colored( $mod, 'bold cyan' );
+     }).join( "\n" ).indent( 5 )
+  ) if %prov;
 }
 
 submethod TWEAK ( ) {
