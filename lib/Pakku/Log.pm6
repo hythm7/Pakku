@@ -5,14 +5,13 @@ class Pakku::Log {
 
   has %.cnf;
 
-  has Loglevels  $.verbose;
-  has Bool       $.pretty;
+  has $.verbose;
+  has Bool $.pretty;
 
 
   submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty!, :$cnf ) {
 
-    Loglevels.^add_enum_value: 'OUT'   => 7;
-    Loglevels.^add_enum_value: 'PAKKU' => 77;
+    # Wish Log::Async supports custom Loglevels to simplify below code
 
     %!cnf<TRACE><name>    = $cnf<1><name>  // '👣';
     %!cnf<DEBUG><name>    = $cnf<2><name>  // '🐛';
@@ -31,9 +30,9 @@ class Pakku::Log {
 
     my Int $color;
 
-    $!verbose = Loglevels( $verbose );
+    $!verbose = $verbose ~~ 0 ?? 0 !! Loglevels( $verbose );
 
-    my Code $formatter = -> $m, :$fh {
+    my Code $level-formatter = -> $m, :$fh {
 
       my $color = %!cnf{ $m<level> }<color>;
       my $level = %!cnf{ $m<level> }<name>;
@@ -48,9 +47,86 @@ class Pakku::Log {
 
     }
 
-    #logger.send-to: $*OUT, :level( PAKKU ), :$formatter;
-    logger.send-to: $*OUT, :level( * >= $!verbose ), :$formatter;
+    my Code $ofun-formatter = -> $m, :$fh {
 
+      my $msg   = $m<msg>;
+      my $color = 'bold 177';
+
+      my $formatted =
+        $!pretty
+          ?? colored( $msg, $color )
+          !! $msg;
+
+      $fh.say: $formatted;
+
+    }
+
+    my Code $nofun-formatter = -> $m, :$fh {
+
+      my $msg   = $m<msg>;
+      my $color = 'bold 9';
+
+      my $formatted =
+        $!pretty
+          ?? colored( $msg, $color )
+          !! $msg;
+
+      $fh.say: $formatted;
+
+    }
+
+    my Code $allgood-formatter = -> $m, :$fh {
+
+      my $msg   = $m<msg>;
+      my $color = 'bold 177';
+
+      my $formatted =
+        $!pretty
+          ?? colored( $msg, $color )
+          !! $msg;
+
+      $fh.say: $formatted;
+
+    }
+
+    my Code $out-formatter = -> $m, :$fh {
+
+      my $msg   = $m<msg>;
+
+      my $formatted =
+        $!pretty
+          ?? $msg
+          !! colorstrip $msg;
+
+      $fh.say: $formatted;
+
+    }
+
+    if $!verbose ~~ 0 {
+
+      logger.untapped-ok = True;
+
+    }
+
+    else {
+
+      logger.send-to: $*OUT, :level( INFO ), :msg( '-Ofun' ),        :formatter( $ofun-formatter);
+      logger.send-to: $*OUT, :level( INFO ), :msg( 'Nofun' ),        :formatter( $nofun-formatter);
+      logger.send-to: $*OUT, :level( INFO ), :msg( 'Saul Goodman' ), :formatter( $allgood-formatter);
+      logger.send-to: $*OUT, :level( INFO ), :msg( * !~~ any( '-Ofun', 'Nofun', 'Saul Goodman', / ^ 'Pakku: ✓' / ) ),        :formatter( $out-formatter);
+
+      # *.starts-with
+      logger.send-to: $*OUT, :level( INFO ), :msg( *.starts-with: 'Pakku: ✓' ), :formatter( $level-formatter ) if $!verbose ≤ INFO ;
+
+
+      logger.send-to: $*OUT, :level( TRACE ), :formatter( $level-formatter ) if $!verbose ≤ TRACE ;
+      logger.send-to: $*OUT, :level( DEBUG ), :formatter( $level-formatter ) if $!verbose ≤ DEBUG ;
+      logger.send-to: $*ERR, :level( WARNING ), :formatter( $level-formatter ) if $!verbose ≤ WARNING;
+      logger.send-to: $*ERR, :level( ERROR ), :formatter( $level-formatter ) if $!verbose ≤ ERROR;
+      logger.send-to: $*ERR, :level( FATAL ), :formatter( $level-formatter ) if $!verbose ≤ FATAL;
+
+
+    }
   }
 
 }
@@ -63,6 +139,6 @@ sub prefix:<⚠>  ( Str:D $msg ) is export { warning $msg }
 sub prefix:<✗>  ( Str:D $msg ) is export { error   $msg }
 sub prefix:<☠>  ( Str:D $msg ) is export { fatal   $msg }
 
-sub Ofun  ( )  is export { logger.log( :msg('-Ofun') :level(Loglevels(3))  :frame(callframe(1))) }
-sub Nofun ( )  is export { logger.log( :msg('Nofun') :level(Loglevels(3))  :frame(callframe(1))) }
-
+sub ofun    ( )      is export { info '-Ofun'        }
+sub nofun   ( )      is export { info 'Nofun'        }
+sub allgood ( )      is export { info 'Saul Goodman' }

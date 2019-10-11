@@ -50,12 +50,15 @@ method help ( Str:D :$cmd ) {
 
 
     default {
-      self!add;
-      self!build;
-      self!test;
-      self!remove;
-      self!check;
-      self!list;
+      (
+        self!add,
+        self!build,
+        self!test,
+        self!remove,
+        self!check,
+        self!list,
+      )
+      .join: "\n";
     }
   }
 

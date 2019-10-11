@@ -31,9 +31,6 @@ has CompUnit::Repository @!inst-repo;
 
 has Bool $!dont;
 
-has Str $!ofun;
-has Str $!nofun;
-has Str $!allgood;
 
 method add (
 
@@ -90,7 +87,7 @@ method add (
 
     🐛 "Pakku: Nothing remaning to install";
 
-    self.allgood;
+    allgood;
 
     return;
 
@@ -138,7 +135,7 @@ method add (
 
   @candies .= map( *.grep( Pakku::Dist::Perl6 ));
 
-  🦋 "Pakku: Candies to be installed: [{@candies}]";
+  🦋 "Pakku: ✓ Candies to be installed: [{@candies}]";
 
 
   my @dists
@@ -159,14 +156,14 @@ method add (
 
       unless $!dont {
         $repo.install: $dist, :$force;
-        🦋 "Pakku: Installed [$dist] to repo [{$repo.name}]";
+        🦋 "Pakku: ✓ Installed [$dist] to repo [{$repo.name}]";
       }
 
     }
 
   } );
 
-  self.Ofun;
+  ofun;
 
   CATCH {
 
@@ -174,7 +171,7 @@ method add (
 
       ☠ .message;
 
-      self.Nofun;
+      nofun;
 
     }
 
@@ -182,7 +179,7 @@ method add (
 
       ☠ .message;
 
-      self.Nofun;
+      nofun;
 
     }
 
@@ -190,7 +187,7 @@ method add (
 
       ☠ .message;
 
-      self.Nofun;
+      nofun;
 
     }
 
@@ -198,7 +195,7 @@ method add (
 
       ☠ .message;
 
-      self.Nofun;
+      nofun;
 
     }
 
@@ -206,7 +203,7 @@ method add (
 
       ☠ .message;
 
-      self.Nofun;
+      nofun;
 
     }
   }
@@ -232,14 +229,14 @@ method build ( :@what! ) {
 
       unless $!dont {
         $!builder.build: :$dist;
-        🦋 "Build: [$dist] built";
+        🦋 "Pakku: ✓  Built [$dist]";
       }
 
     }
 
   } );
 
-  self.Ofun;
+  ofun;
 
 }
 
@@ -262,14 +259,14 @@ method test ( :@what! ) {
 
       unless $!dont {
         $!tester.test: :$dist;
-        🦋 "Test: [$dist] success";
+        🦋 "Pakku: ✓ Test succeeded for [$dist]";
       }
 
     }
 
   } );
 
-  self.Ofun;
+  ofun;
 
 }
 
@@ -292,14 +289,14 @@ method check ( :@what! ) {
 
       unless $!dont {
         qqx{ cp -rp $path $*CWD };
-        🦋 "Check: [{$path.basename}] success";
+        🦋 "Pakku: ✓ [{$path.basename}] success";
       }
 
     }
 
   } );
 
-  self.Ofun;
+  ofun;
 
 }
 
@@ -326,7 +323,7 @@ method remove (
 
   unless @dist {
 
-    self.allgood;
+    allgood;
 
     return;
 
@@ -342,14 +339,14 @@ method remove (
 
       $repo.uninstall: $dist;
 
-      🦋 "Removed [$dist] from [{$repo.name}]";
+      🦋 "Pakku: ✓ Removed [$dist] from [{$repo.name}]";
 
     }
 
   } );
 
 
-  self.Ofun;
+  ofun;
 }
 
 
@@ -394,9 +391,9 @@ method list (
 
   my Str $list = @dist.grep( *.defined ).map( *.gist: :$details ).join( "\n" );
 
-  put $list if $list;
+  🦋 $list if $list;
 
-  self.Ofun;
+  ofun;
 
   CATCH {
 
@@ -467,9 +464,6 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
 
 
 # TODO: Instead of nap see if can await for all Log msgs
-submethod Ofun    ( --> Bool:D ) { sleep .1; put $!ofun    };
-submethod Nofun   ( --> Bool:D ) { sleep .1; put $!nofun   };
-submethod allgood ( --> Bool:D ) { sleep .1; put $!allgood };
 
 submethod BUILD ( ) {
 
@@ -495,13 +489,10 @@ submethod BUILD ( ) {
   my $pretty  = %!cnf<pakku><pretty>  // True;
   my $repo    = %!cnf<pakku><repo>    // $*REPO;
 
+
   $!dont  = %!cnf<pakku><dont> // False;
 
   $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
-
-  $!ofun    = $pretty ?? colored( '-Ofun',        'bold 177' ) !! '-Ofun';
-  $!nofun   = $pretty ?? colored( 'Nofun',        'bold 9'   ) !! '-Ofun';
-  $!allgood = $pretty ?? colored( 'Saul Goodman', 'bold 177' ) !! 'Saul Goodman';
 
 
   $!fetcher = Pakku::Fetcher;
@@ -573,7 +564,7 @@ submethod BUILD ( ) {
 
     when 'help' {
 
-      self.help:   |%!cnf<help>;
+      🦋 self.help:   |%!cnf<help>;
 
     }
   }
@@ -584,7 +575,7 @@ submethod BUILD ( ) {
 
       ☠ .message;
 
-      self.Nofun;
+      nofun;
 
     }
 

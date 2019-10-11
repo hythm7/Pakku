@@ -12,7 +12,7 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<remove> { <pakkuopt>* % <.space> <remove> <removeopt>* % <.space> <whats>    }
   rule TOP:sym<check>  { <pakkuopt>* % <.space> <check>  <checkopt>*  % <.space> <whats>    }
   rule TOP:sym<list>   { <pakkuopt>* % <.space> <list>   <listopt>*   % <.space> <whats>?   }
-  rule TOP:sym<help>   { <help>? <cmd>? <anything> }
+  rule TOP:sym<help>   { <pakkuopt>* <help>? <cmd>? <anything> }
 
 
   proto token cmd { * }
@@ -117,7 +117,8 @@ class Pakku::Grammar::Cmd::Actions {
 
     my %cmd;
 
-    %cmd<cmd>  = 'help';
+    %cmd<cmd>       = 'help';
+    %cmd<pakku>     = $<pakkuopt>».ast.hash if defined $<pakkuopt>;
     %cmd<help><cmd> = $<cmd>.so ?? $<cmd>.ast !! '';
 
     make %cmd;

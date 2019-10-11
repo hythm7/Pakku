@@ -164,33 +164,36 @@ role Pakku::Grammar::Common {
 
 
   proto token level { * }
-  token level:sym<TRACE> { <sym> }
-  token level:sym<DEBUG> { <sym> }
-  token level:sym<INFO>  { <sym> }
-  token level:sym<WARN>  { <sym> }
-  token level:sym<ERROR> { <sym> }
-  token level:sym<FATAL> { <sym> }
-  token level:sym<trace> { <sym> }
-  token level:sym<debug> { <sym> }
-  token level:sym<info>  { <sym> }
-  token level:sym<warn>  { <sym> }
-  token level:sym<error> { <sym> }
-  token level:sym<fatal> { <sym> }
-  token level:sym<T>     { <sym> }
-  token level:sym<D>     { <sym> }
-  token level:sym<I>     { <sym> }
-  token level:sym<W>     { <sym> }
-  token level:sym<E>     { <sym> }
-  token level:sym<F>     { <sym> }
-  token level:sym<1>     { <sym> }
-  token level:sym<2>     { <sym> }
-  token level:sym<3>     { <sym> }
-  token level:sym<4>     { <sym> }
-  token level:sym<5>     { <sym> }
-  token level:sym<6>     { <sym> }
-  token level:sym<42>    { <sym> }
-  token level:sym<🦋>    { <sym> }
-  token level:sym<✗>     { <sym> }
+  token level:sym<SILENT> { <sym> }
+  token level:sym<TRACE>  { <sym> }
+  token level:sym<DEBUG>  { <sym> }
+  token level:sym<INFO>   { <sym> }
+  token level:sym<WARN>   { <sym> }
+  token level:sym<ERROR>  { <sym> }
+  token level:sym<FATAL>  { <sym> }
+  token level:sym<trace>  { <sym> }
+  token level:sym<debug>  { <sym> }
+  token level:sym<info>   { <sym> }
+  token level:sym<warn>   { <sym> }
+  token level:sym<error>  { <sym> }
+  token level:sym<fatal>  { <sym> }
+  token level:sym<S>      { <sym> }
+  token level:sym<T>      { <sym> }
+  token level:sym<D>      { <sym> }
+  token level:sym<I>      { <sym> }
+  token level:sym<W>      { <sym> }
+  token level:sym<E>      { <sym> }
+  token level:sym<F>      { <sym> }
+  token level:sym<0>      { <sym> }
+  token level:sym<1>      { <sym> }
+  token level:sym<2>      { <sym> }
+  token level:sym<3>      { <sym> }
+  token level:sym<4>      { <sym> }
+  token level:sym<5>      { <sym> }
+  token level:sym<6>      { <sym> }
+  token level:sym<42>     { <sym> }
+  token level:sym<🦋>     { <sym> }
+  token level:sym<✗>      { <sym> }
 
 
   token whats { <what>+ % \h }
@@ -349,6 +352,7 @@ role Pakku::Grammar::Common::Actions {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
 
+  method level:sym<SILENT> ( $/ ) { make 0 }
   method level:sym<TRACE> ( $/ ) { make 1 }
   method level:sym<DEBUG> ( $/ ) { make 2 }
   method level:sym<INFO>  ( $/ ) { make 3 }
@@ -361,12 +365,14 @@ role Pakku::Grammar::Common::Actions {
   method level:sym<warn>  ( $/ ) { make 4 }
   method level:sym<error> ( $/ ) { make 5 }
   method level:sym<fatal> ( $/ ) { make 6 }
+  method level:sym<S>     ( $/ ) { make 0 }
   method level:sym<T>     ( $/ ) { make 1 }
   method level:sym<D>     ( $/ ) { make 2 }
   method level:sym<I>     ( $/ ) { make 3 }
   method level:sym<W>     ( $/ ) { make 4 }
   method level:sym<E>     ( $/ ) { make 5 }
   method level:sym<F>     ( $/ ) { make 6 }
+  method level:sym<0>     ( $/ ) { make 0 }
   method level:sym<1>     ( $/ ) { make 1 }
   method level:sym<2>     ( $/ ) { make 2 }
   method level:sym<3>     ( $/ ) { make 3 }
