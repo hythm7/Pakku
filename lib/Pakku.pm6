@@ -414,7 +414,7 @@ multi submethod installed ( Pakku::Dist::Bin:D $dist, :@repo! ) {
 
 }
 
-multi submethod installed ( Pakku::Dist::Bin:D $dist, :@repo! ) {
+multi submethod installed ( Pakku::Dist::Native:D $dist, :@repo! ) {
 
   my $name = $dist.name;
 
