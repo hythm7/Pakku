@@ -206,7 +206,6 @@ submethod TWEAK ( ) {
 
   $!meta-version  = $!meta<meta-version>  // '';
   $!name          = $!meta<name>          // '';
-  $!auth          = $!meta<auth>          // '';
   $!api           = $!meta<api>           // '';
   $!author        = $!meta<author>        // '';
   $!authority     = $!meta<authority>     // '';
@@ -214,6 +213,7 @@ submethod TWEAK ( ) {
   $!source-url    = $!meta<source-url>    // '';
   $!license       = $!meta<license>       // '';
   $!builder       = $!meta<builder>       // '';
+  $!auth          = $!meta<auth> // $!meta<author> // '';
   $!ver           = Version.new( $!meta<ver> // $!meta<version> ) if $!meta<ver> // $!meta<version>;
   %!provides      = $!meta<provides>      if $!meta<provides>;
   %!support       = $!meta<support>       if $!meta<support>;

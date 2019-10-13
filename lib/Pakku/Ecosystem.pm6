@@ -79,6 +79,7 @@ submethod !get-deps (
   Bool:D        :$build        = True,
 ) {
 
+
   🐛 "Eco: Looking for deps of dist [$dist]";
 
   my @dist;
@@ -89,13 +90,11 @@ submethod !get-deps (
 
   @dep .= map( -> $depspec {
 
-    if $depspec.short-name ~~ any @!ignored {
+    next unless $depspec;
 
-      🐛 "Eco: Ignoring Core spec [$depspec]";
+    next if  $depspec ~~ any @dep;
 
-      next;
-    }
-
+    next if $depspec.short-name ~~ any @!ignored;
 
     🐛 "Eco: Found dep [$depspec] for dist [$dist]";
 

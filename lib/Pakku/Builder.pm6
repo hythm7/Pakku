@@ -15,6 +15,15 @@ method build ( Pakku::Dist::Perl6::Path:D :$dist ) {
       🐛 "Build: Builder is  [{.^name}]";
       .new( meta => $dist.meta ).build: $dist.prefix;
 
+      CATCH {
+
+        default {
+
+          die X::Pakku::Build::Fail.new: :$dist;
+
+        }
+      }
+
     }
 
     default {

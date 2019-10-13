@@ -119,6 +119,18 @@ class X::Pakku::Dist::Bin::NotFound {
   }
 }
 
+class X::Pakku::Dist::Native::NotFound {
+  also is X::Pakku;
+
+  has $.name;
+
+  method message ( --> Str:D ) {
+
+    "Native: Not found  [$!name]";
+
+  }
+}
+
 class X::Pakku::Parse::Cnf {
   also is X::Pakku;
 

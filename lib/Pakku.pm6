@@ -414,6 +414,18 @@ multi submethod installed ( Pakku::Dist::Bin:D $dist, :@repo! ) {
 
 }
 
+multi submethod installed ( Pakku::Dist::Bin:D $dist, :@repo! ) {
+
+  my $name = $dist.name;
+
+  my $native = so qqx{ /sbin/ldconfig | grep $name };
+
+  die X::Pakku::Dist::Native::NotFound.new: name => $dist.name unless $native;
+
+  True;
+
+}
+
 multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
 
   my @inst

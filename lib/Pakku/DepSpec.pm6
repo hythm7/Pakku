@@ -16,13 +16,14 @@ grammar SpecGrammar {
 
   token spec { <name> <keyval>* }
 
-  token name { [<-[./:<>()\h]>+]+ % '::' }
+  token name { [<-[/:<>()\h]>+]+ % '::' }
 
   token keyval { ':' <key> <value> }
 
   proto token key { * }
   token key:sym<ver>     { <sym> }
   token key:sym<auth>    { <sym> }
+  token key:sym<author>  { <sym> }
   token key:sym<api>     { <sym> }
   token key:sym<from>    { <sym> }
   token key:sym<version> { <sym> }
@@ -49,7 +50,7 @@ class SpecActions {
 
     %spec<short-name>      = %id<name> if %id<name>;
     %spec<version-matcher> = Version.new( %id<ver>  // %id<version> ) if %id<ver> // %id<version>;
-    %spec<auth-matcher>    = %id<auth> if %id<auth>;
+    %spec<auth-matcher>    = %id<auth> // %id<author> if %id<auth> // %id<author>;
     %spec<api-matcher>     = %id<api>  if %id<api>;
     %spec<from>            = %id<from> // 'Perl6';
 
