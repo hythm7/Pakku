@@ -1,7 +1,7 @@
 NAME
 ====
 
-Pakku - Module Manager
+Pakku - Package Manager
 
 SYNOPSIS
 ========
