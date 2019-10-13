@@ -170,9 +170,9 @@ method !update ( ) {
 
   return if $!update === False;
 
-  my $mod-time = now - $!ecosystem.IO.modified;
+  my $last-update = now - $!ecosystem.IO.modified;
 
-  return if $!update === Any and $mod-time < 2520;
+  return if $!update === Any and $last-update < 2520;
 
   🐛 "Eco: Updating Ecosystem";
 
@@ -202,6 +202,8 @@ submethod TWEAK ( ) {
 
   🐛 "Eco: Loading ecosystem file [{$!ecosystem}]";
   my @meta = flat from-json slurp $!ecosystem;
+
+  die X::Pakku::Ecosystem::NoMeta.new( :$!ecosystem ) unless any @meta;
 
   for @meta -> %meta {
 

@@ -29,6 +29,19 @@ class X::Pakku::Ecosystem::Update {
 
 }
 
+class X::Pakku::Ecosystem::NoMeta {
+  also is X::Pakku;
+
+  has $.ecosystem;
+
+  method message ( --> Str:D ) {
+
+    "Eco: No Meta in [$!ecosystem]";
+
+  }
+
+}
+
 class X::Pakku::Ecosystem::NoCandy {
   also is X::Pakku;
 

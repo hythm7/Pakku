@@ -12,6 +12,7 @@ method help ( Str:D :$cmd ) {
     when 'build'  { self!build  }
     when 'test'   { self!test   }
     when 'check'  { self!check  }
+    when 'help'   { self!help   }
 
 
     default {
@@ -22,6 +23,8 @@ method help ( Str:D :$cmd ) {
         self!build,
         self!test,
         self!check,
+        self!pakku,
+        self!help,
       )
       .join: "\n";
     }
@@ -118,7 +121,7 @@ submethod !test ( ) {
   %test<desc>    = 'Test distribution';
 
   %test<example>.push: 'pakku test MyModule';
-  %test<example>.push: 'pakku build .';
+  %test<example>.push: 'pakku test .';
 
   help %test;
 
@@ -137,6 +140,48 @@ submethod !check ( ) {
 
 }
 
+submethod !help ( ) {
+
+  my %help;
+
+  %help<cmd>     = 'Help';
+  %help<desc>    = 'Print help';
+
+  %help<example>.push: 'pakku';
+  %help<example>.push: 'pakku add';
+  %help<example>.push: 'pakku help';
+  %help<example>.push: 'pakku help list';
+  %help<example>.push: 'pakku help help';
+
+  help %help;
+
+}
+
+submethod !pakku ( ) {
+
+  my %pakku;
+
+  %pakku<cmd>     = 'Pakku';
+  %pakku<desc>    = 'Pakku Options';
+
+  %pakku<example>.push: 'pakku update   add MyModule';
+  %pakku<example>.push: 'pakku noupdate add MyModule';
+  %pakku<example>.push: 'pakku dont     add MyModule';
+  %pakku<example>.push: 'pakku pretty   add MyModule';
+  %pakku<example>.push: 'pakku repo     home   add    MyModule';
+  %pakku<example>.push: 'pakku verbose  trace  add    MyModule';
+  %pakku<example>.push: 'pakku pretty   please remove MyModule';
+
+  %pakku<opt>.push: ( 'update'          => 'update  ecosystem'  );
+  %pakku<opt>.push: ( 'pretty'          => 'colorfull butterfly'  );
+  %pakku<opt>.push: ( 'nopretty'        => 'no color' );
+  %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it!' );
+  %pakku<opt>.push: ( 'repo    <name>'  => 'default repo  <home site vendor core>' );
+  %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent trace debug info warn error fatal>' );
+
+  help %pakku;
+
+}
 sub help ( %cmd --> Str:D ) {
 
   my $cmd     = %cmd<cmd>;
@@ -165,7 +210,7 @@ sub example ( @example ) {
 
   return '' unless any @example;
   "\n" ~
-  colored( "Example:\n", 'bold yellow' ) ~
+  colored( "Examples:\n", 'bold yellow' ) ~
   colored( @example.join( "\n" ), 'bold italic 177' ) ~ "\n";
 
 }
