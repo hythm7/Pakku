@@ -7,6 +7,7 @@ use Pakku::DepSpec;
 use Pakku::Dist;
 use Pakku::Dist::Perl6::Path;
 use Pakku::Dist::Bin;
+use Pakku::Dist::Native;
 
 unit class Pakku::Ecosystem;
 
@@ -82,15 +83,19 @@ submethod !get-deps (
 
   🐛 "Eco: Looking for deps of dist [$dist]";
 
-  my @dist;
+  state @dist;
 
   my @dep = $dist.deps: :$runtime, :$test, :$build, :$requires, :$recommends;
 
   🐛 "Eco: Found no deps for [$dist]" unless @dep;
 
+  .name.say for @dist;
+
   @dep .= map( -> $depspec {
 
     next unless $depspec;
+
+    next if $dist ~~ any @dist;
 
     next if $depspec.short-name ~~ any @!ignored;
 
@@ -100,13 +105,14 @@ submethod !get-deps (
 
   });
 
+  @dist.prepend: $dist;
+
   for @dep -> $dist {
 
-    @dist.append: self!get-deps( :$dist );
+    self!get-deps( :$dist );
 
   }
 
-  @dist.append: $dist;
 
   return @dist;
 
@@ -148,6 +154,12 @@ multi submethod find ( Pakku::DepSpec::Perl6:D $depspec ) {
 multi submethod find ( Pakku::DepSpec::Bin:D $spec ) {
 
   Pakku::Dist::Bin.new: name => $spec.short-name;
+
+}
+
+multi submethod find ( Pakku::DepSpec::Native:D $spec ) {
+
+  Pakku::Dist::Native.new: name => $spec.short-name;
 
 }
 
