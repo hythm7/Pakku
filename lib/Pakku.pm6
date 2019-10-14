@@ -11,6 +11,8 @@ use Pakku::Fetcher;
 use Pakku::Builder;
 use Pakku::Tester;
 use Pakku::DepSpec;
+use Pakku::Dist::Bin;
+use Pakku::Dist::Native;
 use Pakku::Dist::Perl6::Path;
 use Pakku::Dist::Perl6::Inst;
 

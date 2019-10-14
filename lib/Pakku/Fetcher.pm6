@@ -42,7 +42,7 @@ multi method fetch ( Str :$src!, :$dst = tempdir ) {
 
       🐛 "Fetch: Downloading url [$src] to [$download]";
 
-      LibCurl::Easy.new( URL => $uri.Str, :$download ).perform;
+      LibCurl::Easy.new( URL => $uri.Str, :$download, :followlocation ).perform;
 
       🐛 "Fetch: Extracting [$download]";
 
