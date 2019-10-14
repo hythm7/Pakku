@@ -92,8 +92,6 @@ submethod !get-deps (
 
     next unless $depspec;
 
-    next if  $depspec ~~ any @dep;
-
     next if $depspec.short-name ~~ any @!ignored;
 
     🐛 "Eco: Found dep [$depspec] for dist [$dist]";
