@@ -756,11 +756,6 @@ Injector
 API::Discord
 Git::Log
 App::OrgSleep
-Foo::Dependencies::A-on-B
-Foo::Dependencies::B-on-A
-Foo::Dependencies::Self
-Foo::Regressed::Very
-Foo::Regressed
 Blin
 Whateverable
 Router::Right

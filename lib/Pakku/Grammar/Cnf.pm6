@@ -4,19 +4,19 @@ use Pakku::Grammar::Common;
 grammar Pakku::Grammar::Cnf {
   also does Pakku::Grammar::Common;
 
-  token TOP { [ <.ws> | <.nl> ] <sections> }
+  token TOP { <sections> }
 
-  token sections { <section>* }
+  token sections { [ <.ws> | <.nl> ] <section>* }
 
   proto rule section { * }
-  rule section:sym<pakku>  { <lt> <sym> <gt> <.nl> <pakkuopt>*  %% <.eol> }
-  rule section:sym<add>    { <lt> <sym> <gt> <.nl> <addopt>*    %% <.eol> }
-  rule section:sym<build>  { <lt> <sym> <gt> <.nl> <buildopt>*  %% <.eol> }
-  rule section:sym<test>   { <lt> <sym> <gt> <.nl> <testopt>*   %% <.eol> }
-  rule section:sym<remove> { <lt> <sym> <gt> <.nl> <removeopt>* %% <.eol> }
-  rule section:sym<list>   { <lt> <sym> <gt> <.nl> <listopt>*   %% <.eol> }
-  rule section:sym<source> { <lt> <sym> <gt> <.nl> <sourceopt>* %% <.eol> }
-  rule section:sym<log>    { <lt> <sym> <gt> <.nl> <logopt>*    %% <.eol> }
+  rule section:sym<pakku>  { <.ws> <.lt> <sym> <.gt> <.nl> <pakkuopt>*  %% <.eol> }
+  rule section:sym<add>    { <.ws> <.lt> <sym> <.gt> <.nl> <addopt>*    %% <.eol> }
+  rule section:sym<build>  { <.ws> <.lt> <sym> <.gt> <.nl> <buildopt>*  %% <.eol> }
+  rule section:sym<test>   { <.ws> <.lt> <sym> <.gt> <.nl> <testopt>*   %% <.eol> }
+  rule section:sym<remove> { <.ws> <.lt> <sym> <.gt> <.nl> <removeopt>* %% <.eol> }
+  rule section:sym<list>   { <.ws> <.lt> <sym> <.gt> <.nl> <listopt>*   %% <.eol> }
+  rule section:sym<source> { <.ws> <.lt> <sym> <.gt> <.nl> <sourceopt>* %% <.eol> }
+  rule section:sym<log>    { <.ws> <.lt> <sym> <.gt> <.nl> <logopt>*    %% <.eol> }
 
   proto rule sourceopt { * }
   rule sourceopt:sym<source>  { <source>  }

@@ -7,7 +7,7 @@ use Pakku::Log;
 
 unit class Pakku::Fetcher;
 
-multi method fetch ( Str :$src!, :$dst = tempdir ) {
+multi method fetch ( Str :$src!, :$dst = tempdir :!unlink ) {
 
   🐛 "Fetch: Fetching $src to $dst";
 
