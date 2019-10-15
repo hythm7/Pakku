@@ -7,6 +7,7 @@ unit class Pakku::Tester;
 
 
 
+# TODO: Timeout
 method test ( Pakku::Dist::Perl6:D :$dist ) {
 
   # TODO: include tests/*.rakutest

@@ -7,6 +7,7 @@ use Pakku::Log;
 
 unit class Pakku::Fetcher;
 
+# TODO: Timeout
 multi method fetch ( Str :$src!, :$dst = tempdir ) {
 
   🐛 "Fetch: Fetching $src to $dst";

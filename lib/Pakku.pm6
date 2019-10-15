@@ -100,6 +100,7 @@ method add (
 
   my @candies = $!ecosystem.recommend: :@what, :$deps;
 
+  .say for @candies;
 
   unless $force {
 
@@ -146,7 +147,6 @@ method add (
     <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
     <== @candies;
 
-
   my $repo = @repo.head;
 
   @dists.map( -> @dist {
@@ -167,14 +167,13 @@ method add (
 
   ofun;
 
-
 }
 
 method build ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what;
+  my @candies = $!ecosystem.recommend: :@what, :deps<build>;
 
   my @dists
     <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
@@ -204,7 +203,7 @@ method test ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what;
+  my @candies = $!ecosystem.recommend: :@what, :deps<test>;
 
   my @dists
     <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )

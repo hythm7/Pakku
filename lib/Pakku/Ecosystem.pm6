@@ -27,6 +27,21 @@ method recommend ( :@what!, :$deps --> Seq ) {
 
   given $deps {
 
+    when 'runtime' {
+      %deps.push: ( :!build );
+      %deps.push: ( :!test );
+    }
+
+    when 'test' {
+      %deps.push: ( :!runtime );
+      %deps.push: ( :!build );
+    }
+
+    when 'build' {
+      %deps.push: ( :!runtime );
+      %deps.push: ( :!test );
+    }
+
     when 'requires' {
       %deps.push: ( :requires );
       %deps.push: ( :!recommends );
@@ -43,14 +58,13 @@ method recommend ( :@what!, :$deps --> Seq ) {
 
   }
 
-
   @what.map( -> $what {
 
     my $dist = self.find: $what;
 
     if %deps {
 
-      my @*dist = self!get-deps: :$dist, |%deps;
+      my @*dist = self!get-deps: :$dist, :%deps;
 
       @*dist.pop if %deps<only>;
 
@@ -69,22 +83,12 @@ method recommend ( :@what!, :$deps --> Seq ) {
 }
 
 
-submethod !get-deps (
-
-  Pakku::Dist:D :$dist!,
-  Bool:D        :$only         = False,
-  Bool:D        :$requires     = True,
-  Bool:D        :$recommends   = True,
-  Bool:D        :$runtime      = True,
-  Bool:D        :$test         = True,
-  Bool:D        :$build        = True,
-) {
-
+submethod !get-deps ( Pakku::Dist:D :$dist!, :%deps! ) {
 
   🐛 "Eco: Looking for deps of dist [$dist]";
 
 
-  my @dep = $dist.deps: :$runtime, :$test, :$build, :$requires, :$recommends;
+  my @dep = $dist.deps: |%deps;
 
   🐛 "Eco: Found no deps for [$dist]" unless @dep;
 
@@ -104,7 +108,7 @@ submethod !get-deps (
 
   for reverse @dep -> $dist {
 
-    self!get-deps( :$dist ) unless $dist ~~ any @*dist;
+    self!get-deps( :$dist, :%deps ) unless $dist ~~ any @*dist;
 
   }
 

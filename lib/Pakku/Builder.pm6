@@ -4,6 +4,7 @@ use Pakku::Dist::Perl6::Path;
 unit class Pakku::Builder;
 
 
+# TODO: Timeout
 method build ( Pakku::Dist::Perl6::Path:D :$dist ) {
 
   🐛 "Build: Processing [$dist]";
