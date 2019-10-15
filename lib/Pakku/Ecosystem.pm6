@@ -18,7 +18,7 @@ has @!ignored;
 has %!dist;
 has @!dist;
 
-# TODO: deps only
+# TODO: Rewrite the below mess in a cleaner way
 method recommend ( :@what!, :$deps --> Seq ) {
 
   🐛 "Eco: Processing [{@what}]";
@@ -85,17 +85,14 @@ submethod !get-deps (
 
   state @dist;
 
+
   my @dep = $dist.deps: :$runtime, :$test, :$build, :$requires, :$recommends;
 
   🐛 "Eco: Found no deps for [$dist]" unless @dep;
 
-  .name.say for @dist;
-
   @dep .= map( -> $depspec {
 
     next unless $depspec;
-
-    next if $dist ~~ any @dist;
 
     next if $depspec.short-name ~~ any @!ignored;
 
@@ -107,12 +104,11 @@ submethod !get-deps (
 
   @dist.prepend: $dist;
 
-  for @dep -> $dist {
+  for reverse @dep -> $dist {
 
-    self!get-deps( :$dist );
+    self!get-deps( :$dist ) unless $dist ~~ any @dist;
 
   }
-
 
   return @dist;
 
