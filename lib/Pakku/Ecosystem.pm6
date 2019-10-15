@@ -50,11 +50,11 @@ method recommend ( :@what!, :$deps --> Seq ) {
 
     if %deps {
 
-      my @dist = self!get-deps: :$dist, |%deps;
+      my @*dist = self!get-deps: :$dist, |%deps;
 
-      @dist.pop if %deps<only>;
+      @*dist.pop if %deps<only>;
 
-      @dist
+      @*dist
 
     }
 
@@ -83,8 +83,6 @@ submethod !get-deps (
 
   🐛 "Eco: Looking for deps of dist [$dist]";
 
-  state @dist;
-
 
   my @dep = $dist.deps: :$runtime, :$test, :$build, :$requires, :$recommends;
 
@@ -102,15 +100,15 @@ submethod !get-deps (
 
   });
 
-  @dist.prepend: $dist;
+  @*dist.prepend: $dist;
 
   for reverse @dep -> $dist {
 
-    self!get-deps( :$dist ) unless $dist ~~ any @dist;
+    self!get-deps( :$dist ) unless $dist ~~ any @*dist;
 
   }
 
-  return @dist;
+  return @*dist;
 
 }
 
