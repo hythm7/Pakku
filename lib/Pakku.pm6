@@ -452,7 +452,7 @@ submethod BUILD ( ) {
   my $update  = %!cnf<pakku><update>;
   my $verbose = %!cnf<pakku><verbose> // 4;
   my $pretty  = %!cnf<pakku><pretty>  // True;
-  my $repo    = %!cnf<pakku><repo>    // $*REPO.next-repo.next-repo;
+  my $repo    = %!cnf<pakku><repo>    // $*REPO.next-repo;
 
 
   $!dont  = %!cnf<pakku><dont> // False;
