@@ -19,9 +19,9 @@ has %!dist;
 has @!dist;
 
 # TODO: Rewrite the below mess in a cleaner way
-method recommend ( :@what!, :$deps --> Seq ) {
+method recommend ( :$what!, :$deps ) {
 
-  🐛 "Eco: Processing [{@what}]";
+  🐛 "Eco: Processing [$what]";
 
   my %deps;
 
@@ -58,27 +58,24 @@ method recommend ( :@what!, :$deps --> Seq ) {
 
   }
 
-  @what.map( -> $what {
+  my $dist = self.find: $what;
 
-    my $dist = self.find: $what;
+  if %deps {
 
-    if %deps {
+    my %*visited;
+    my @dist = gather self!get-deps: :$dist, :%deps;
 
-      my @*dist = self!get-deps: :$dist, :%deps;
+    @dist.pop if %deps<only>;
 
-      @*dist.pop if %deps<only>;
+    @dist
 
-      @*dist
+  }
 
-    }
+  else {
 
-    else {
+    $dist;
 
-      $dist.Seq;
-
-    }
-
-  }).map( *.unique: :with( &[===] ) );
+  }
 
 }
 
@@ -87,6 +84,7 @@ submethod !get-deps ( Pakku::Dist:D :$dist!, :%deps! ) {
 
   🐛 "Eco: Looking for deps of dist [$dist]";
 
+  %*visited{$dist} = True;
 
   my @dep = $dist.deps: |%deps;
 
@@ -104,15 +102,14 @@ submethod !get-deps ( Pakku::Dist:D :$dist!, :%deps! ) {
 
   });
 
-  @*dist.prepend: $dist;
 
-  for reverse @dep -> $dist {
+  for @dep -> $dist {
 
-    self!get-deps( :$dist, :%deps ) unless $dist ~~ any @*dist;
+    self!get-deps( :$dist, :%deps ) unless %*visited{$dist};
 
   }
 
-  return @*dist;
+  take $dist;
 
 }
 

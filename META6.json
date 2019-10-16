@@ -1,5 +1,5 @@
 {
-  "auth" : "cpan:hythm",
+  "auth" : "github:hythm7",
   "authors" : [
     "Haytham Elganiny"
   ],
@@ -9,15 +9,43 @@
   "license" : "Artistic-2.0",
   "name" : "Pakku",
   "perl" : "6.c",
+  "api"  : "*",
   "provides" : {
-    "Pakku" : "lib/Pakku.pm6"
+    "Pakku"                    : "lib/Pakku.pm6",
+    "Pakku::Log"               : "lib/Pakku/Log.pm6",
+    "Pakku::Help"              : "lib/Pakku/Help.pm6",
+    "Pakku::Tester"            : "lib/Pakku/Tester.pm6",
+    "Pakku::Fetcher"           : "lib/Pakku/Fetcher.pm6",
+    "Pakku::Builder"           : "lib/Pakku/Builder.pm6",
+    "Pakku::Ecosystem"         : "lib/Pakku/Ecosystem.pm6",
+    "Pakku::DepSpec"           : "lib/Pakku/DepSpec.pm6",
+    "Pakku::DepSpec::Bin"      : "lib/Pakku/DepSpec/Bin.pm6",
+    "Pakku::DepSpec::Native"   : "lib/Pakku/DepSpec/Native.pm6",
+    "Pakku::DepSpec::Perl6"    : "lib/Pakku/DepSpec/Perl6.pm6",
+    "Pakku::DepSpec::Perl5"    : "lib/Pakku/DepSpec/Perl5.pm6",
+    "Pakku::DepSpec::Java"     : "lib/Pakku/DepSpec/Java.pm6",
+    "Pakku::Dist"              : "lib/Pakku/Dist.pm6",
+    "Pakku::Dist::Bin"         : "lib/Pakku/Dist/Bin.pm6",
+    "Pakku::Dist::Native"      : "lib/Pakku/Dist/Native.pm6",
+    "Pakku::Dist::Perl6"       : "lib/Pakku/Dist/Perl6.pm6",
+    "Pakku::Dist::Perl6::Path" : "lib/Pakku/Dist/Perl6/Path.pm6",
+    "Pakku::Dist::Perl6::Inst" : "lib/Pakku/Dist/Perl6/Inst.pm6",
+    "Pakku::Grammar::Cmd"      : "lib/Pakku/Grammar/Cmd.pm6",
+    "Pakku::Grammar::Cnf"      : "lib/Pakku/Grammar/Cnf.pm6",
+    "Pakku::Grammar::Common"   : "lib/Pakku/Grammar/Common.pm6",
+    "X::Pakku"                 : "lib/X/Pakku.pm6"
   },
   "resources" : [
     "ecosystem.json",
-    "pakku.conf"
+    "pakku.cnf"
   ],
-  "source-url" : "",
-  "tags" : [ ],
+  "source-url" : "https://github.com/hythm7/Pakku.git",
+  "tags" : [
+    "module",
+    "install",
+    "distribution",
+    "raku"
+    ],
   "test-depends" : [ ],
-  "version" : "0.0.1"
+  "version" : "larva.0"
 }

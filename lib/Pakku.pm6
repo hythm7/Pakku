@@ -98,16 +98,15 @@ method add (
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :$deps;
+  my @candies = flat @what.map( -> $what { $!ecosystem.recommend: :$what, :$deps } );
 
-  .say for @candies;
+  @candies .= unique: :with( &[===] );
 
   unless $force {
 
     🐛 "Pakku: Filtering recommended dists: {@candies}";
 
-    @candies .= map(
-      *.grep( -> $dist {
+    @candies .= grep( -> $dist {
 
         🐛 "Pakku: Checking if dist [$dist] is already installed";
 
@@ -129,38 +128,33 @@ method add (
         not $inst;
 
       } )
-    );
 
   }
 
 
   🐛 "Pakku: Filtering non Perl6 distributions";
 
-  @candies .= map( *.grep( Pakku::Dist::Perl6 ));
+  @candies .= grep( Pakku::Dist::Perl6 );
 
   🦋 "Pakku: ✓ Candies to be installed: [{@candies}]";
 
 
-  my @dists
-    <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
-    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
-    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
+  my @dist
+    <== map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } )
+    <== map( -> $src  { $!fetcher.fetch: :$src                   } )
+    <== map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } )
     <== @candies;
 
   my $repo = @repo.head;
 
-  @dists.map( -> @dist {
+  @dist.map( -> $dist {
 
-    for @dist -> $dist {
+    $!builder.build: :$dist if $build;
+    $!tester.test:   :$dist if $test;
 
-      $!builder.build: :$dist if $build;
-      $!tester.test:   :$dist if $test;
-
-      unless $!dont {
-        $repo.install: $dist, :$force;
-        🦋 "Pakku: ✓ Installed [$dist] to repo [{$repo.name}]";
-      }
-
+    unless $!dont {
+      $repo.install: $dist, :$force;
+      🦋 "Pakku: ✓ Installed [$dist] to repo [{$repo.name}]";
     }
 
   } );
@@ -173,24 +167,22 @@ method build ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :deps<build>;
+  my @candies = flat @what.map( -> $what { $!ecosystem.recommend: :$what } );
 
-  my @dists
-    <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
-    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
-    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
+  @candies .= unique( :with( &[===] ) ).grep( Pakku::Dist::Perl6 );
+
+  my @dist
+    <== map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } )
+    <== map( -> $src  { $!fetcher.fetch: :$src                   } )
+    <== map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } )
     <== @candies;
 
 
-  @dists.map( -> @dist {
+  @dist.map( -> $dist {
 
-    for @dist -> $dist {
-
-      unless $!dont {
-        $!builder.build: :$dist;
-        🦋 "Pakku: ✓  Built [$dist]";
-      }
-
+    unless $!dont {
+      $!builder.build: :$dist;
+      🦋 "Pakku: ✓  Built [$dist]";
     }
 
   } );
@@ -203,24 +195,22 @@ method test ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what, :deps<test>;
+  my @candies = flat @what.map( -> $what { $!ecosystem.recommend: :$what } );
 
-  my @dists
-    <== map( {       .map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } ) } )
-    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
-    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
+  @candies .= unique( :with( &[===] ) ).grep( Pakku::Dist::Perl6 );
+
+  my @dist
+    <== map( -> $path { Pakku::Dist::Perl6::Path.new: $path      } )
+    <== map( -> $src  { $!fetcher.fetch: :$src                   } )
+    <== map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } )
     <== @candies;
 
 
-  @dists.map( -> @dist {
+  @dist.map( -> $dist {
 
-    for @dist -> $dist {
-
-      unless $!dont {
-        $!tester.test: :$dist;
-        🦋 "Pakku: ✓ Test succeeded for [$dist]";
-      }
-
+    unless $!dont {
+      $!tester.test: :$dist;
+      🦋 "Pakku: ✓ Test succeeded for [$dist]";
     }
 
   } );
@@ -234,23 +224,21 @@ method check ( :@what! ) {
 
   🐛 "Pakku: Asking Eco recommendations for [{@what}]";
 
-  my @candies = $!ecosystem.recommend: :@what;
+  my @candies = flat @what.map( -> $what { $!ecosystem.recommend: :$what } );
+
+  @candies .= unique( :with( &[===] ) ).grep( Pakku::Dist::Perl6 );
 
   my @path
-    <== map( { eager .map( -> $src  { $!fetcher.fetch: :$src                   } ) } )
-    <== map( {       .map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } ) } )
+    <== map( -> $src  { $!fetcher.fetch: :$src                   } )
+    <== map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } )
     <== @candies;
 
 
-  @path.map( -> @path {
+  @path.map( -> $path {
 
-    for @path -> $path {
-
-      unless $!dont {
-        qqx{ cp -rp $path $*CWD };
-        🦋 "Pakku: ✓ [{$path.basename}] success";
-      }
-
+    unless $!dont {
+      qqx{ cp -rp $path $*CWD };
+      🦋 "Pakku: ✓ [{$path.basename}] success";
     }
 
   } );
@@ -267,18 +255,18 @@ method remove (
 
 ) {
 
+
     my @repo = $from.repo-chain.grep( CompUnit::Repository::Installation );
 
+    my @dist = flat @what.map( -> $what {
 
-  my @dist = flat @what.map( -> $what {
+      my @inst = flat self.installed: $what, :@repo;
 
-    my @inst = flat self.installed: $what, :@repo;
+      🐛 "Found no installed dists matching [$what]" unless @inst;
 
-    🐛 "Found no installed dists matching [$what]" unless @inst;
+      @inst;
 
-    @inst;
-
-  } );
+    } );
 
   unless @dist {
 
@@ -330,7 +318,7 @@ method list (
 
     # TODO: ⚠ if no dist
     @what
-      ?? @dist.append: @what.map( -> $what { flat self.installed: $what, :@repo } ).flat
+      ?? @dist.append: @what.map( -> $what { flat self.installed: $what, :@repo } ).unique: :with( &[===] )
       !! (
            @dist
              <== grep( *.defined )
@@ -343,7 +331,7 @@ method list (
   else {
 
     @what
-      ?? @dist.append: $!ecosystem.recommend( :@what ).flat
+      ?? @dist.append: @what.map( -> $what { $!ecosystem.recommend: :$what } ).unique: :with( &[===] )
       !! @dist.append: $!ecosystem.list-dists;
 
   }
@@ -440,12 +428,12 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
 
 
 
-# TODO: Instead of nap see if can await for all Log msgs
+# TODO: Instead of napping see if can await for all Log msgs
 
 submethod BUILD ( ) {
 
   my $default-cnf = %?RESOURCES<pakku.cnf>.IO;
-  my $user-cnf    = $*HOME.add: <.pakku/pakku.cnf>;
+  my $user-cnf    = $*HOME.add: '.pakku/pakku.cnf';
 
   my $pakku-cnf = $user-cnf.e ?? $user-cnf !! $default-cnf;
 
@@ -464,18 +452,12 @@ submethod BUILD ( ) {
   my $update  = %!cnf<pakku><update>;
   my $verbose = %!cnf<pakku><verbose> // 4;
   my $pretty  = %!cnf<pakku><pretty>  // True;
-  my $repo    = %!cnf<pakku><repo>    // $*REPO;
+  my $repo    = %!cnf<pakku><repo>    // $*REPO.next-repo.next-repo;
 
 
   $!dont  = %!cnf<pakku><dont> // False;
 
   $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
-
-
-  $!fetcher = Pakku::Fetcher;
-  $!builder = Pakku::Builder;
-  $!tester  = Pakku::Tester;
-
 
   $!repo = $repo;
 
