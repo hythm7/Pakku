@@ -250,7 +250,7 @@ role Pakku::Grammar::Common::Actions {
 
   method addopt:sym<deps-req>  ( $/ ) { make ( :deps<requires>   ) }
   method addopt:sym<deps-rec>  ( $/ ) { make ( :deps<recommends> ) }
-  method addopt:sym<deps>      ( $/ ) { make ( :deps<recommends> )            }
+  method addopt:sym<deps>      ( $/ ) { make ( :deps<recommends> ) }
   method addopt:sym<deps-only> ( $/ ) { make ( :deps<only> ) }
   method addopt:sym<nodeps>    ( $/ ) { make ( :!deps )            }
   method addopt:sym<build>     ( $/ ) { make $<build>.ast }
@@ -261,7 +261,9 @@ role Pakku::Grammar::Common::Actions {
 
     my $into = $<reponame>.ast;
 
-    $into.next-repo = Nil;
+    my $core = CompUnit::RepositoryRegistry.repository-for-name: 'core';
+
+    $into.next-repo = $core;
 
     make ~$<into> => $into;
 

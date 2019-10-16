@@ -11,3 +11,10 @@ method deps ( ) {
   Empty;
 
 }
+
+method gist ( Pakku::Dist::Bin:D: --> Str:D ) {
+
+  $.name;
+
+}
+
