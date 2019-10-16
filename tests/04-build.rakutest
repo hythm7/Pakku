@@ -1,0 +1,8 @@
+use Test;
+
+my $dist-dir   = $?FILE.IO.parent(2);
+my $build-file = $dist-dir.add: 'Build.rakumod';
+
+require $build-file;
+
+::( 'Build' ).new;
