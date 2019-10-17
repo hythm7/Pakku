@@ -46,10 +46,10 @@ sub MAIN ( IO( ) :$dest = $*HOME.add: '.pakku' ) {
 
   }
 
-   my $proc = run ~$*EXECUTABLE, "-I$pakku-repo,$pakku-src", $pakku-src.add( 'bin/pakku' ), 'add', $pakku-src, :out, :err;
+   my $proc = run ~$*EXECUTABLE, "-I{$pakku-repo.path-spec}", "-I$pakku-src", $pakku-src.add( 'bin/pakku' ), 'v1', 'add', $pakku-src, :out, :err;
 
-  $proc.out.lines.Str.say;
-  $proc.err.lines.Str.say;
+   #$proc.out.lines.Str.say;
+   #$proc.err.lines.Str.say;
 
  
   #use File::Directory::Tree;
