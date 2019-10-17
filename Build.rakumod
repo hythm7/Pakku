@@ -1,7 +1,5 @@
 unit class Build;
 
-has $.dist-path;
-
 method build ( IO( ) $dist-path --> True ) {
 
   my $ecosystem-src = 'https://raw.githubusercontent.com/hythm7/raku-ecosystem/master/resources/ecosystem.json';

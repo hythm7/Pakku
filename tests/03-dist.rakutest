@@ -1,10 +1,8 @@
 #!/usr/bin/env perl6
 #
+
 use Test;
 use JSON::Fast;
-
-use lib 'lib';
-
 use Pakku::Dist::Perl6;
 
 my $dist-meta = q:to/END/;

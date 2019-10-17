@@ -1,9 +1,4 @@
 use v6.c;
 use Test;
-
-use lib 'lib';
 use Pakku;
-
-pass "replace me";
-
 done-testing;

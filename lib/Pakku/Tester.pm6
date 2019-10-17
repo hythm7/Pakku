@@ -5,13 +5,8 @@ use Pakku::Dist::Perl6;
 
 unit class Pakku::Tester;
 
-
-
 # TODO: Timeout
 method test ( Pakku::Dist::Perl6:D :$dist ) {
-
-  # TODO: include tests/*.rakutest
-
 
   my @test-dir  = < tests    t >;
   my @extension = < rakutest t >;
@@ -46,7 +41,7 @@ method test ( Pakku::Dist::Perl6:D :$dist ) {
 
       whenever $proc.stdout.lines { 👣 $^out }
       whenever $proc.stderr.lines { ✗ $^err }
-      whenever $proc.start( cwd => $dist.prefix ) { $exitcode = .exitcode }
+      whenever $proc.start( :%*ENV, cwd => $dist.prefix ) { $exitcode = .exitcode }
 
     }
 

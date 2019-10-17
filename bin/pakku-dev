@@ -1,8 +1,0 @@
-#!/usr/bin/env perl6
-
-use lib "inst#$*HOME/.pakku/.repo/";
-use lib 'lib';
-
-use Pakku;
-
-Pakku.new;
