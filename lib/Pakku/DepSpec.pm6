@@ -40,6 +40,7 @@ class SpecActions {
 
   method TOP ( $/ ) { make $<spec>.ast }
 
+  # TODO: verify regext matchers
   method spec ( $/ ) {
     my %id;
 
