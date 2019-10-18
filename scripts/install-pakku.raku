@@ -59,10 +59,13 @@ sub MAIN ( IO( ) :$dest = $*HOME.add: '.pakku' ) {
      my $src-path = $dep-dir.add: .key;
      my $src-url  = .value;
 
-     my $proc = run 'git', 'clone', $src-url, $src-path, :out, :err;
+     say "Installing Pakku dependency [{$src-path.basename}]";
 
-     $proc.out.slurp( :close ).say;
-     $proc.err.slurp( :close ).say;
+     # TODO: Replace git with curl
+     my $proc = run 'git', 'clone', $src-url, $src-path, :out, :err unless $src-path.d;
+
+     $proc.out.slurp( :close ).say with $proc;
+     $proc.err.slurp( :close ).say with $proc;
 
      $pakku-repo.install: :force, Distribution::Path.new: $src-path;
 

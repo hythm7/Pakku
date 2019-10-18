@@ -318,7 +318,7 @@ method list (
 
     # TODO: ⚠ if no dist
     @what
-      ?? @dist.append: @what.map( -> $what { flat self.installed: $what, :@repo } ).unique: :with( &[===] )
+      ?? @dist.append: flat @what.map( -> $what { flat self.installed: $what, :@repo } ).unique: :with( &[===] )
       !! (
            @dist
              <== grep( *.defined )
