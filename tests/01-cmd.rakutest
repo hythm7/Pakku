@@ -31,8 +31,6 @@ my @tests = (
     ${:add(${:what($["depsforce", "DepSpec"])}), :cmd("add")},
   "add nodeps force DepSpec" =>
     ${:add(${:!deps, :force, :what($["DepSpec"])}), :cmd("add")},
-  "add into notrepo DepSpec" =>
-    ${:add(${:what($["into", "notrepo", "DepSpec"])}), :cmd("add")},
   "v3 add force DepSpec" =>
     ${:add(${:force, :what($["DepSpec"])}), :cmd("add"), :pakku(${:verbose(3)})},
   "v 3 add nodeps DepSpec" =>

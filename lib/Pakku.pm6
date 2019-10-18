@@ -153,6 +153,7 @@ method add (
     $!tester.test:   :$dist if $test;
 
     unless $!dont {
+      🐛 "Pakku: Installing [$dist]";
       $repo.install: $dist, :$force;
       🦋 "Pakku: ✓ Installed [$dist] to repo [{$repo.name}]";
     }

@@ -46,8 +46,9 @@ method build ( Pakku::Dist::Perl6::Path:D :$dist ) {
 
       🐛 "Build: Building [$dist] with build file [$build-file]";
 
-        my $dist-dir   = $dist.prefix;
-        my $include   = "-I $dist-dir";
+        my $dist-dir  = $dist.prefix;
+        my $lib-dir   = $dist-dir.add: 'lib';
+        my $include   = "-I $lib-dir";
         my $execute   = "-e";
         my $build-cmd = qq:to/CMD/;
         require "$build-file";
@@ -55,7 +56,6 @@ method build ( Pakku::Dist::Perl6::Path:D :$dist ) {
         CMD
 
         my $proc = run ~$*EXECUTABLE, $include, $execute, $build-cmd, cwd => $dist-dir, :out, :err;
-
         $proc.out.lines.map( 👣 * );
         $proc.err.lines.map( ✗  * );
 
