@@ -35,7 +35,7 @@ role Pakku::Grammar::Common {
   token pakkuopt:sym<pretty>  { <pretty> }
   token pakkuopt:sym<please>  { <sym>    }
   token pakkuopt:sym<dont>    { <sym>    }
-  token pakkuopt:sym<repo>    { <repo>    <.space>* <reponame> }
+  token pakkuopt:sym<repo>    { <repo>    <.space>* <curepo> }
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
 
   proto token addopt { * }
@@ -47,7 +47,7 @@ role Pakku::Grammar::Common {
   token addopt:sym<build>     { <build> }
   token addopt:sym<test>      { <test>  }
   token addopt:sym<force>     { <force> }
-  token addopt:sym<into>      { <into> <.space>* <reponame> }
+  token addopt:sym<into>      { <into> <.space>* <compunit-repo> }
 
   proto token buildopt { * }
 
@@ -57,14 +57,14 @@ role Pakku::Grammar::Common {
 
   proto token removeopt { * }
   # token removeopt:sym<deps> { <deps> }
-  token removeopt:sym<from> { <from> <.space>* <reponame> }
+  token removeopt:sym<from> { <from> <.space>* <compunit-repo> }
 
 
   proto token listopt { * }
   token listopt:sym<local>   { <local> }
   token listopt:sym<remote>  { <remote> }
   token listopt:sym<details> { <details> }
-  token listopt:sym<repo>    { <repo> <.space>* <reponame> }
+  token listopt:sym<repo>    { <repo> <.space>* <compunit-repo> }
 
 
   proto token update { * }
@@ -162,11 +162,17 @@ role Pakku::Grammar::Common {
   token details:sym<nodetails> { <sym> }
   token details:sym<nd>        { <sym> }
 
-  proto token reponame { * }
-  token reponame:sym<home>   { <sym> }
-  token reponame:sym<site>   { <sym> }
-  token reponame:sym<vendor> { <sym> }
-  token reponame:sym<core>   { <sym> }
+  proto token compunit-repo { * }
+  token compunit-repo:sym<repo-name>   { <repo-name> }
+  token compunit-repo:sym<repo-inst>   { <repo-inst> }
+
+  proto token repo-name { * }
+  token repo-name:sym<home>   { <sym> }
+  token repo-name:sym<site>   { <sym> }
+  token repo-name:sym<vendor> { <sym> }
+  token repo-name:sym<core>   { <sym> }
+
+  token repo-inst   { <path> }
 
   proto token level { * }
   token level:sym<SILENT> { <sym> }
@@ -241,7 +247,7 @@ role Pakku::Grammar::Common::Actions {
 
   method pakkuopt:sym<repo>    ( $/ ) {
 
-    my $repo = $<reponame>.ast;
+    my $repo = $<compunit-repo>.ast;
 
     make ~$<repo> => $repo;
 
@@ -259,7 +265,7 @@ role Pakku::Grammar::Common::Actions {
 
   method addopt:sym<into>  ( $/ ) {
 
-    my $into = $<reponame>.ast;
+    my $into = $<compunit-repo>.ast;
 
     my $core = CompUnit::RepositoryRegistry.repository-for-name: 'core';
 
@@ -274,7 +280,7 @@ role Pakku::Grammar::Common::Actions {
 
   method removeopt:sym<from> ( $/ ) {
 
-    my $from = $<reponame>.ast;
+    my $from = $<compunit-repo>.ast;
 
     $from.next-repo = Nil;
 
@@ -288,7 +294,7 @@ role Pakku::Grammar::Common::Actions {
 
   method listopt:sym<repo> ( $/ ) {
 
-    my $repo = $<reponame>.ast;
+    my $repo = $<compunit-repo>.ast;
 
     $repo.next-repo = Nil;
 
@@ -345,20 +351,32 @@ role Pakku::Grammar::Common::Actions {
   method details:sym<nodetails> ( $/ ) { make ( :!details ) }
   method details:sym<nd>        ( $/ ) { make ( :!details ) }
 
-  method reponame:sym<home> ( $/ ) {
+  method compunit-repo:sym<repo-name> ( $/ ) {
+    make $<repo-name>.ast;
+  }
+
+  method compunit-repo:sym<repo-inst> ( $/ ) {
+    make $<repo-inst>.ast;
+  }
+
+  method repo-name:sym<home> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
 
-  method reponame:sym<site> ( $/ ) {
+  method repo-name:sym<site> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
 
-  method reponame:sym<vendor> ( $/ ) {
+  method repo-name:sym<vendor> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
   }
 
-  method reponame:sym<core> ( $/ ) {
+  method repo-name:sym<core> ( $/ ) {
     make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
+  }
+
+  method repo-inst ( $/ ) {
+    make CompUnit::Repository::Installation.new: prefix => $<path>.Str
   }
 
   method level:sym<SILENT> ( $/ ) { make 0 }
