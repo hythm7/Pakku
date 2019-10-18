@@ -28,8 +28,9 @@ method test ( Pakku::Dist::Perl6:D :$dist ) {
 
   🐛 "Testing $dist" if @test;
 
-  my $lib-dir = $dist.prefix.add( 'lib' );
-  my $include = "-I $lib-dir";
+  my $dist-dir = $dist.prefix;
+  my $lib-dir  = $dist-dir.add: 'lib';
+  my $include  = "-I $lib-dir";
 
   my @exitcode = @test.map( -> $test {
 
@@ -37,11 +38,11 @@ method test ( Pakku::Dist::Perl6:D :$dist ) {
 
     react {
 
-      my $proc = Proc::Async.new: $*EXECUTABLE, $include, $test;
+      my $proc = Proc::Async.new: $*EXECUTABLE, $include, $test.IO.relative: $dist-dir;
 
       whenever $proc.stdout.lines { 👣 $^out }
       whenever $proc.stderr.lines { ✗ $^err }
-      whenever $proc.start( :%*ENV, cwd => $dist.prefix ) { $exitcode = .exitcode }
+      whenever $proc.start( cwd => $dist-dir, :%*ENV ) { $exitcode = .exitcode }
 
     }
 

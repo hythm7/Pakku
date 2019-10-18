@@ -3,7 +3,6 @@
 # <pakku>
   # update           # update ecosystem
   # pretty           # colors
-  # repo site        # default repo <home site vendor core>
   # verbose info     # < 1 2 3 4 5 6 >
   # dont             # dont do the operation (dry run)
 
@@ -12,7 +11,7 @@
   # build      # build            < build nobuild >
   # test       # test             < test notest >
   # force      # force install    < force noforce >
-  # into  home # add to specific repo
+  # into  home # install into specific repo <home site vendor core /custom/repo/path>
 
 # < remove >
   # from home  # remove from specific repo

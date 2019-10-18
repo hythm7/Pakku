@@ -21,24 +21,22 @@ unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
 has %!cnf;
 
-has Pakku::Log           $!log;
-has %!installed;
-has Pakku::Dist::Perl6   @!installed;
-has Pakku::Fetcher       $!fetcher;
-has Pakku::Builder       $!builder;
-has Pakku::Tester        $!tester;
-has Pakku::Ecosystem     $!ecosystem;
-has CompUnit::Repository $!repo;
-has CompUnit::Repository @!inst-repo;
+has Pakku::Log        $!log;
+has Pakku::Fetcher    $!fetcher;
+has Pakku::Builder    $!builder;
+has Pakku::Tester     $!tester;
+has Pakku::Ecosystem  $!ecosystem;
+has Bool              $!dont;
 
-has Bool $!dont;
+has %!installed;
 
 
 method add (
 
   :@what!,
 
-  CompUnit::Repository :$into = $!repo,
+  # TODO: Check if $*REPO.next ~~ Nil, and handle all repos individually
+  CompUnit::Repository :$into = @*repo.next-repo,
 
          :$deps  = 'recommends',
   Bool:D :$build = True,
@@ -252,7 +250,7 @@ method check ( :@what! ) {
 method remove (
 
   :@what!,
-  CompUnit::Repository :$from = $!repo,
+  CompUnit::Repository :$from = $*REPO.next-repo,
 
 ) {
 
@@ -306,7 +304,7 @@ method list (
   Bool:D :$remote  = False,
   Bool:D :$local   = !$remote,
 
-  CompUnit::Repository:D  :$repo = $!repo,
+  CompUnit::Repository:D  :$repo = $*REPO.next-repo,
 
 ) {
 
@@ -366,7 +364,6 @@ method list (
 
 
 # TODO: Rewrite these methods
-# TODO: use @!repo instead
 
 multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :@repo! ) {
 
@@ -453,24 +450,19 @@ submethod BUILD ( ) {
   my $update  = %!cnf<pakku><update>;
   my $verbose = %!cnf<pakku><verbose> // 4;
   my $pretty  = %!cnf<pakku><pretty>  // True;
-  my $repo    = %!cnf<pakku><repo>    // $*REPO.next-repo;
 
-  $!dont  = %!cnf<pakku><dont> // False;
+  $!dont = %!cnf<pakku><dont> // False;
 
-  $!log     = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
-
-  $!repo = $repo;
-
-  @!inst-repo = $!repo.repo-chain.grep( CompUnit::Repository::Installation );
-
-  @!inst-repo.map( -> $repo {
-
-    eager $repo.installed
-      ==> map( -> $dist { Pakku::Dist::Perl6::Inst.new: meta => $dist.meta })
-      ==> map( -> $dist { %!installed{$repo.name}{$dist.name}.push: $dist } );
-  } );
+  $!log  = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
 
 
+  $*REPO.next-repo.repo-chain
+    ==> grep( CompUnit::Repository::Installation )
+    ==> map( -> $repo {
+          eager $repo.installed
+            ==> map( -> $dist { Pakku::Dist::Perl6::Inst.new: meta => $dist.meta } )
+            ==> map( -> $dist { %!installed{$repo.name}{$dist.name}.push: $dist  } );
+        });
 
   given %!cnf<cmd> {
 

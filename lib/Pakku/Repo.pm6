@@ -1,2 +1,2 @@
-unit class Pakku::Repo;
+unit role Pakku::Repo;
 

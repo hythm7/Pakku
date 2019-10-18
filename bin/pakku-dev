@@ -1,8 +1,8 @@
 #!/usr/bin/env perl6
 
 # use Pakku's dependencies repo
-use lib 'inst#/home/hythm/.pakku/.repo';
 use lib 'lib';
+use lib 'inst#/home/hythm/.pakku/.repo';
 
 use Pakku;
 

@@ -35,7 +35,7 @@ role Pakku::Grammar::Common {
   token pakkuopt:sym<pretty>  { <pretty> }
   token pakkuopt:sym<please>  { <sym>    }
   token pakkuopt:sym<dont>    { <sym>    }
-  token pakkuopt:sym<repo>    { <repo>    <.space>* <curepo> }
+  #token pakkuopt:sym<repo>    { <repo>    <.space>* <compunit-repo> }
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
 
   proto token addopt { * }
@@ -245,15 +245,6 @@ role Pakku::Grammar::Common::Actions {
   method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )   }
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.ast ) }
 
-  method pakkuopt:sym<repo>    ( $/ ) {
-
-    my $repo = $<compunit-repo>.ast;
-
-    make ~$<repo> => $repo;
-
-  }
-
-
   method addopt:sym<deps-req>  ( $/ ) { make ( :deps<requires>   ) }
   method addopt:sym<deps-rec>  ( $/ ) { make ( :deps<recommends> ) }
   method addopt:sym<deps>      ( $/ ) { make ( :deps<recommends> ) }
@@ -352,31 +343,19 @@ role Pakku::Grammar::Common::Actions {
   method details:sym<nd>        ( $/ ) { make ( :!details ) }
 
   method compunit-repo:sym<repo-name> ( $/ ) {
-    make $<repo-name>.ast;
+    make CompUnit::RepositoryRegistry.repository-for-name: $<repo-name>.Str
   }
 
   method compunit-repo:sym<repo-inst> ( $/ ) {
-    make $<repo-inst>.ast;
-  }
 
-  method repo-name:sym<home> ( $/ ) {
-    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
-  }
+    my $prefix = $<repo-inst>.IO;
 
-  method repo-name:sym<site> ( $/ ) {
-    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
-  }
+    my $repo = CompUnit::Repository::Installation.new: :$prefix;
 
-  method repo-name:sym<vendor> ( $/ ) {
-    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
-  }
+    CompUnit::RepositoryRegistry.register-name( $prefix.basename, $repo );
 
-  method repo-name:sym<core> ( $/ ) {
-    make CompUnit::RepositoryRegistry.repository-for-name: $<sym>.Str
-  }
+    make $repo;
 
-  method repo-inst ( $/ ) {
-    make CompUnit::Repository::Installation.new: prefix => $<path>.Str
   }
 
   method level:sym<SILENT> ( $/ ) { make 0 }
