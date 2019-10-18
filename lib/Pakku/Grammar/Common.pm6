@@ -352,7 +352,7 @@ role Pakku::Grammar::Common::Actions {
 
     my $repo = CompUnit::Repository::Installation.new: :$prefix;
 
-    CompUnit::RepositoryRegistry.register-name( $prefix.basename, $repo );
+    CompUnit::RepositoryRegistry.register-name(  $prefix.basename, $repo );
 
     make $repo;
 

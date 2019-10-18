@@ -54,22 +54,22 @@ sub MAIN ( IO( ) :$dest = $*HOME.add: '.pakku' ) {
 
   CompUnit::RepositoryRegistry.use-repository: $pakku-repo;
 
-  for @dep {
+  #for @dep {
 
-     my $src-path = $dep-dir.add: .key;
-     my $src-url  = .value;
+  #   my $src-path = $dep-dir.add: .key;
+  #   my $src-url  = .value;
 
-     say "Installing Pakku dependency [{$src-path.basename}]";
+  #   say "Installing Pakku dependency [{$src-path.basename}]";
 
-     # TODO: Replace git with curl
-     my $proc = run 'git', 'clone', $src-url, $src-path, :out, :err unless $src-path.d;
+  #   # TODO: Replace git with curl
+  #   my $proc = run 'git', 'clone', $src-url, $src-path, :out, :err unless $src-path.d;
 
-     $proc.out.slurp( :close ).say with $proc;
-     $proc.err.slurp( :close ).say with $proc;
+  #   $proc.out.slurp( :close ).say with $proc;
+  #   $proc.err.slurp( :close ).say with $proc;
 
-     $pakku-repo.install: :force, Distribution::Path.new: $src-path;
+  #   $pakku-repo.install: :force, Distribution::Path.new: $src-path;
 
-  }
+  #}
 
 
   say "Installing Pakku...";

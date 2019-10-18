@@ -6,7 +6,7 @@ use Pakku::Dist::Perl6;
 unit class Pakku::Tester;
 
 # TODO: Timeout
-method test ( Pakku::Dist::Perl6:D :$dist ) {
+method test ( Pakku::Dist::Perl6:D :$dist!, :$repo ) {
 
   my @test-dir  = < tests    t >;
   my @extension = < rakutest t >;
@@ -31,6 +31,8 @@ method test ( Pakku::Dist::Perl6:D :$dist ) {
   my $dist-dir = $dist.prefix;
   my $lib-dir  = $dist-dir.add: 'lib';
   my $include  = "-I $lib-dir";
+
+  %*ENV<PERL6LIB> = $repo.path-spec with $repo;
 
   my @exitcode = @test.map( -> $test {
 

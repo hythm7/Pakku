@@ -143,17 +143,15 @@ method add (
     <== map( -> $cand { $cand.?prefix || $cand.source-url || $cand.support<source> } )
     <== @candies;
 
-  my $repo = @repo.head;
-
   @dist.map( -> $dist {
 
-    $!builder.build: :$dist if $build;
-    $!tester.test:   :$dist if $test;
+    $!builder.build: :$dist        if $build;
+    $!tester.test:   :$dist, repo => $into if $test;
 
     unless $!dont {
       🐛 "Pakku: Installing [$dist]";
-      $repo.install: $dist, :$force;
-      🦋 "Pakku: ✓ Installed [$dist] to repo [{$repo.name}]";
+      $into.install: $dist, :$force;
+      🦋 "Pakku: ✓ Installed [$dist] to repo [{$into.name}]";
     }
 
   } );
