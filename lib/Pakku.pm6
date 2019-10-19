@@ -418,7 +418,7 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
 
 
 
- TODO: Instead of napping see if can await for all Log msgs
+# TODO: Instead of napping see if can await for all Log msgs
 
 submethod BUILD ( ) {
 
