@@ -260,7 +260,8 @@ role Pakku::Grammar::Common::Actions {
 
     my $core = CompUnit::RepositoryRegistry.repository-for-name: 'core';
 
-    $into.next-repo = $core;
+    $*REPO.next-repo = $into;
+    $into.next-repo  = $core;
 
     make ~$<into> => $into;
 
@@ -275,6 +276,8 @@ role Pakku::Grammar::Common::Actions {
 
     $from.next-repo = Nil;
 
+    $*REPO.next-repo = $from;
+
     make ~$<from> => $from;
   }
 
@@ -288,6 +291,8 @@ role Pakku::Grammar::Common::Actions {
     my $repo = $<compunit-repo>.ast;
 
     $repo.next-repo = Nil;
+
+    $*REPO.next-repo = $repo;
 
     make ~$<repo> => $repo;
   }

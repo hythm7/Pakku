@@ -30,9 +30,7 @@ method test ( Pakku::Dist::Perl6:D :$dist!, :$repo ) {
 
   my $dist-dir = $dist.prefix;
   my $lib-dir  = $dist-dir.add: 'lib';
-  my $include  = "-I $lib-dir";
-
-  %*ENV<PERL6LIB> = $repo.path-spec with $repo;
+  my $include  = $repo ?? "-I $lib-dir,{$repo.path-spec}" !! "-I $lib-dir";
 
   my @exitcode = @test.map( -> $test {
 

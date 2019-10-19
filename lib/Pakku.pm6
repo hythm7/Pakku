@@ -21,6 +21,7 @@ unit class Pakku:ver<0.0.1>:auth<cpan:hythm>;
 
 has %!cnf;
 
+has $!repo;
 has Pakku::Log        $!log;
 has Pakku::Fetcher    $!fetcher;
 has Pakku::Builder    $!builder;
@@ -36,8 +37,6 @@ method add (
   :@what!,
 
   # TODO: Check if $*REPO.next ~~ Nil, and handle all repos individually
-  CompUnit::Repository :$into = @*repo.next-repo,
-
          :$deps  = 'recommends',
   Bool:D :$build = True,
   Bool:D :$test  = True,
@@ -45,7 +44,7 @@ method add (
 
 ) {
 
-    my @repo = $into.repo-chain.grep( CompUnit::Repository::Installation );
+    my @repo = $!repo.repo-chain.grep( CompUnit::Repository::Installation );
 
     🐛 "Pakku: Processing [{@what}]";
 
@@ -146,12 +145,12 @@ method add (
   @dist.map( -> $dist {
 
     $!builder.build: :$dist        if $build;
-    $!tester.test:   :$dist, repo => $into if $test;
+    $!tester.test:   :$dist, repo => $!repo if $test;
 
     unless $!dont {
       🐛 "Pakku: Installing [$dist]";
-      $into.install: $dist, :$force;
-      🦋 "Pakku: ✓ Installed [$dist] to repo [{$into.name}]";
+      $!repo.install: $dist, :$force;
+      🦋 "Pakku: ✓ Installed [$dist] to repo [{$!repo.name}]";
     }
 
   } );
@@ -248,12 +247,11 @@ method check ( :@what! ) {
 method remove (
 
   :@what!,
-  CompUnit::Repository :$from = $*REPO.next-repo,
 
 ) {
 
 
-    my @repo = $from.repo-chain.grep( CompUnit::Repository::Installation );
+    my @repo = $!repo.repo-chain.grep( CompUnit::Repository::Installation );
 
     my @dist = flat @what.map( -> $what {
 
@@ -302,11 +300,9 @@ method list (
   Bool:D :$remote  = False,
   Bool:D :$local   = !$remote,
 
-  CompUnit::Repository:D  :$repo = $*REPO.next-repo,
-
 ) {
 
-  my @repo = $repo.repo-chain.grep( CompUnit::Repository::Installation );
+  my @repo = $!repo.repo-chain.grep( CompUnit::Repository::Installation );
 
 
   my @dist;
@@ -453,11 +449,13 @@ submethod BUILD ( ) {
 
   $!log  = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
 
+  $!repo = $*REPO.next-repo;
 
-  $*REPO.next-repo.repo-chain
+  $!repo.repo-chain
     ==> grep( CompUnit::Repository::Installation )
     ==> map( -> $repo {
           eager $repo.installed
+            ==> grep( *.defined )
             ==> map( -> $dist { Pakku::Dist::Perl6::Inst.new: meta => $dist.meta } )
             ==> map( -> $dist { %!installed{$repo.name}{$dist.name}.push: $dist  } );
         });
