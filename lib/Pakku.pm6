@@ -36,7 +36,6 @@ method add (
 
   :@what!,
 
-  # TODO: Check if $*REPO.next ~~ Nil, and handle all repos individually
          :$deps  = 'recommends',
   Bool:D :$build = True,
   Bool:D :$test  = True,
@@ -309,7 +308,6 @@ method list (
 
   if $local {
 
-    # TODO: ⚠ if no dist
     @what
       ?? @dist.append: flat @what.map( -> $what { flat self.installed: $what, :@repo } ).unique: :with( &[===] )
       !! (
@@ -420,7 +418,7 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
 
 
 
-# TODO: Instead of napping see if can await for all Log msgs
+ TODO: Instead of napping see if can await for all Log msgs
 
 submethod BUILD ( ) {
 

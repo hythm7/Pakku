@@ -40,7 +40,7 @@ class SpecActions {
 
   method TOP ( $/ ) { make $<spec>.ast }
 
-  # TODO: verify regext matchers
+  # TODO Make it work with Regex matchers
   method spec ( $/ ) {
     my %id;
 

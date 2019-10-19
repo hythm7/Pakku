@@ -11,7 +11,6 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<test>   { <pakkuopt>* % <.space> <test>   <testopt>*   % <.space> <whats>    }
   rule TOP:sym<remove> { <pakkuopt>* % <.space> <remove> <removeopt>* % <.space> <whats>    }
   rule TOP:sym<check>  { <pakkuopt>* % <.space> <check>  <checkopt>*  % <.space> <whats>    }
-  # BUG: pakku list repo [site | core] details
   rule TOP:sym<list>   { <pakkuopt>* % <.space> <list>   <listopt>*   % <.space> <whats>?   }
   rule TOP:sym<help>   { <pakkuopt>* <help>? <cmd>? <anything> }
 
