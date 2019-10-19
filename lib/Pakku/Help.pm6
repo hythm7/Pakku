@@ -41,11 +41,12 @@ submethod !add ( ) {
   %add<example>.push: 'pakku add MyModule';
   %add<example>.push: 'pakku add nodeps MyModule';
   %add<example>.push: 'pakku add notest MyModule';
-  %add<example>.push: 'pakku add into home MyModule Another::Module';
+  %add<example>.push: 'pakku add into   /opt/MyApp MyModule';
+  %add<example>.push: 'pakku add force  into home  MyModule1 MyModule2';
 
-  %add<opt>.push: ( 'deps'            => 'add dependencies as well' );
+  %add<opt>.push: ( 'deps'            => 'add dependencies' );
   %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
-  %add<opt>.push: ( 'deps requires'   => 'add required dependencies' );
+  %add<opt>.push: ( 'deps requires'   => 'add required dependencies only' );
   %add<opt>.push: ( 'deps recommends' => 'add required and recommended dependencies' );
   %add<opt>.push: ( 'deps only'       => 'add dependencies only' );
   %add<opt>.push: ( 'build'           => 'build distribution' );
@@ -54,7 +55,7 @@ submethod !add ( ) {
   %add<opt>.push: ( 'notest'          => 'bypass test' );
   %add<opt>.push: ( 'force'           => 'force add distribution even if it is installed' );
   %add<opt>.push: ( 'noforce'         => 'no force' );
-  %add<opt>.push: ( 'into <repo>'     => 'add distribution to specified repo <home site vendor core>' );
+  %add<opt>.push: ( 'into <repo>'     => 'add distribution to repo <home site vendor core /path/MyApp>' );
 
   help %add;
 
@@ -82,11 +83,11 @@ submethod !list ( ) {
 
   %list<example>.push: 'pakku list';
   %list<example>.push: 'pakku list MyModule';
+  %list<example>.push: 'pakku list local   MyModule';
+  %list<example>.push: 'pakku list remote  MyModule';
   %list<example>.push: 'pakku list details MyModule';
-  %list<example>.push: 'pakku list local  MyModule';
-  %list<example>.push: 'pakku list remote MyModule';
   %list<example>.push: 'pakku list repo home';
-  %list<example>.push: 'pakku list repo site MyModule';
+  %list<example>.push: 'pakku list repo /opt/MyApp MyModule';
 
   %list<opt>.push: ( 'local'       => 'local  distribution'  );
   %list<opt>.push: ( 'remote'      => 'remote distribution'  );
@@ -121,7 +122,7 @@ submethod !test ( ) {
   %test<desc>    = 'Test distribution';
 
   %test<example>.push: 'pakku test MyModule';
-  %test<example>.push: 'pakku test .';
+  %test<example>.push: 'pakku test ./MyModule';
 
   help %test;
 
@@ -168,7 +169,6 @@ submethod !pakku ( ) {
   %pakku<example>.push: 'pakku noupdate add MyModule';
   %pakku<example>.push: 'pakku dont     add MyModule';
   %pakku<example>.push: 'pakku pretty   add MyModule';
-  %pakku<example>.push: 'pakku repo     home   add    MyModule';
   %pakku<example>.push: 'pakku verbose  trace  add    MyModule';
   %pakku<example>.push: 'pakku pretty   please remove MyModule';
 
@@ -176,12 +176,12 @@ submethod !pakku ( ) {
   %pakku<opt>.push: ( 'pretty'          => 'colorfull butterfly'  );
   %pakku<opt>.push: ( 'nopretty'        => 'no color' );
   %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it!' );
-  %pakku<opt>.push: ( 'repo    <name>'  => 'default repo  <home site vendor core>' );
   %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent trace debug info warn error fatal>' );
 
   help %pakku;
 
 }
+
 sub help ( %cmd --> Str:D ) {
 
   my $cmd     = %cmd<cmd>;

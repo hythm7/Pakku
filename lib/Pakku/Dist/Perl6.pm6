@@ -194,7 +194,7 @@ sub gist-prov ( %prov --> Str:D ) {
                    colored( '↳ ',  'yellow'       ) ~
                    colored( $k, 'bold magenta'    ) ~
                    colored( ' → ',  'yellow'      ) ~
-                   colored( $v // '', 'bold cyan' )
+                   colored( ~$v // '', 'bold cyan' )
                   } ).join("\n").indent( 2 )
                })
          !! colored( '↳ ', 'yellow' ) ~ colored( $mod, 'bold cyan' );

@@ -1,3 +1,5 @@
+#no precompilation;
+#use Grammar::Tracer;
 
 use Pakku::Grammar::Common;
 

@@ -5,7 +5,7 @@
   ],
   "build-depends" : [ ],
   "depends" : [ ],
-  "description" : "blah blah blah",
+  "description" : "A Package Manager for Raku",
   "license" : "Artistic-2.0",
   "name" : "Pakku",
   "perl" : "6.c",
