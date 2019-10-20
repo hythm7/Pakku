@@ -53,9 +53,9 @@ submethod !add ( ) {
   %add<opt>.push: ( 'nobuild'         => 'bypass build' );
   %add<opt>.push: ( 'test'            => 'test distribution' );
   %add<opt>.push: ( 'notest'          => 'bypass test' );
-  %add<opt>.push: ( 'force'           => 'force add distribution even installed' );
+  %add<opt>.push: ( 'force'           => 'force add distribution even if installed' );
   %add<opt>.push: ( 'noforce'         => 'no force' );
-  %add<opt>.push: ( 'into <repo>'     => 'add distribution to repo <home site vendor core /path/MyApp>' );
+  %add<opt>.push: ( 'into <repo>'     => 'add distribution to repo <home site vendor core /path/to/MyApp>' );
 
   help %add;
 
@@ -69,6 +69,8 @@ submethod !remove ( ) {
   %remove<desc>    = 'Remove distribution';
 
   %remove<example>.push: 'pakku remove MyModule';
+
+  %remove<opt>.push: ( 'from <repo>' => 'remove distribution from provided repo only' );
 
   help %remove;
 
@@ -168,7 +170,7 @@ submethod !pakku ( ) {
   %pakku<example>.push: 'pakku update   add MyModule';
   %pakku<example>.push: 'pakku noupdate add MyModule';
   %pakku<example>.push: 'pakku dont     add MyModule';
-  %pakku<example>.push: 'pakku pretty   add MyModule';
+  %pakku<example>.push: 'pakku nopretty add MyModule';
   %pakku<example>.push: 'pakku verbose  trace  add    MyModule';
   %pakku<example>.push: 'pakku pretty   please remove MyModule';
 
@@ -177,6 +179,7 @@ submethod !pakku ( ) {
   %pakku<opt>.push: ( 'nopretty'        => 'no color' );
   %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it' );
   %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent trace debug info warn error fatal>' );
+  %pakku<opt>.push: ( 'please' => 'be nice to the butterfly, she will be nice to you (TBD)' );
 
   help %pakku;
 

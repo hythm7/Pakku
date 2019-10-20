@@ -35,7 +35,6 @@ role Pakku::Grammar::Common {
   token pakkuopt:sym<pretty>  { <pretty> }
   token pakkuopt:sym<please>  { <sym>    }
   token pakkuopt:sym<dont>    { <sym>    }
-  #token pakkuopt:sym<repo>    { <repo>    <.space>* <compunit-repo> }
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
 
   proto token addopt { * }
@@ -56,7 +55,6 @@ role Pakku::Grammar::Common {
   proto token checkopt { * }
 
   proto token removeopt { * }
-  # token removeopt:sym<deps> { <deps> }
   token removeopt:sym<from> { <from> <.space>* <compunit-repo> }
 
 
@@ -268,8 +266,6 @@ role Pakku::Grammar::Common::Actions {
   }
 
 
-  # method removeopt:sym<deps> ( $/ ) { make $<deps>.ast }
-
   method removeopt:sym<from> ( $/ ) {
 
     my $from = $<compunit-repo>.ast;
@@ -364,35 +360,36 @@ role Pakku::Grammar::Common::Actions {
   }
 
   method level:sym<SILENT> ( $/ ) { make 0 }
-  method level:sym<TRACE> ( $/ ) { make 1 }
-  method level:sym<DEBUG> ( $/ ) { make 2 }
-  method level:sym<INFO>  ( $/ ) { make 3 }
-  method level:sym<WARN>  ( $/ ) { make 4 }
-  method level:sym<ERROR> ( $/ ) { make 5 }
-  method level:sym<FATAL> ( $/ ) { make 6 }
-  method level:sym<trace> ( $/ ) { make 1 }
-  method level:sym<debug> ( $/ ) { make 2 }
-  method level:sym<info>  ( $/ ) { make 3 }
-  method level:sym<warn>  ( $/ ) { make 4 }
-  method level:sym<error> ( $/ ) { make 5 }
-  method level:sym<fatal> ( $/ ) { make 6 }
-  method level:sym<S>     ( $/ ) { make 0 }
-  method level:sym<T>     ( $/ ) { make 1 }
-  method level:sym<D>     ( $/ ) { make 2 }
-  method level:sym<I>     ( $/ ) { make 3 }
-  method level:sym<W>     ( $/ ) { make 4 }
-  method level:sym<E>     ( $/ ) { make 5 }
-  method level:sym<F>     ( $/ ) { make 6 }
-  method level:sym<0>     ( $/ ) { make 0 }
-  method level:sym<1>     ( $/ ) { make 1 }
-  method level:sym<2>     ( $/ ) { make 2 }
-  method level:sym<3>     ( $/ ) { make 3 }
-  method level:sym<4>     ( $/ ) { make 4 }
-  method level:sym<5>     ( $/ ) { make 5 }
-  method level:sym<6>     ( $/ ) { make 6 }
-  method level:sym<42>    ( $/ ) { make 1 }
+  method level:sym<TRACE>  ( $/ ) { make 1 }
+  method level:sym<DEBUG>  ( $/ ) { make 2 }
+  method level:sym<INFO>   ( $/ ) { make 3 }
+  method level:sym<WARN>   ( $/ ) { make 4 }
+  method level:sym<ERROR>  ( $/ ) { make 5 }
+  method level:sym<FATAL>  ( $/ ) { make 6 }
+  method level:sym<silent> ( $/ ) { make 0 }
+  method level:sym<trace>  ( $/ ) { make 1 }
+  method level:sym<debug>  ( $/ ) { make 2 }
+  method level:sym<info>   ( $/ ) { make 3 }
+  method level:sym<warn>   ( $/ ) { make 4 }
+  method level:sym<error>  ( $/ ) { make 5 }
+  method level:sym<fatal>  ( $/ ) { make 6 }
+  method level:sym<S>      ( $/ ) { make 0 }
+  method level:sym<T>      ( $/ ) { make 1 }
+  method level:sym<D>      ( $/ ) { make 2 }
+  method level:sym<I>      ( $/ ) { make 3 }
+  method level:sym<W>      ( $/ ) { make 4 }
+  method level:sym<E>      ( $/ ) { make 5 }
+  method level:sym<F>      ( $/ ) { make 6 }
+  method level:sym<0>      ( $/ ) { make 0 }
+  method level:sym<1>      ( $/ ) { make 1 }
+  method level:sym<2>      ( $/ ) { make 2 }
+  method level:sym<3>      ( $/ ) { make 3 }
+  method level:sym<4>      ( $/ ) { make 4 }
+  method level:sym<5>      ( $/ ) { make 5 }
+  method level:sym<6>      ( $/ ) { make 6 }
+  method level:sym<42>     ( $/ ) { make 1 }
   method level:sym<🦋>     ( $/ ) { make 3 }
-  method level:sym<✗>     ( $/ ) { make 5 }
+  method level:sym<✗>      ( $/ ) { make 5 }
 
   method whats ( $/ ) { make $<what>».ast }
 

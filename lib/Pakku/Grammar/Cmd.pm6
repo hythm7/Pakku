@@ -1,6 +1,3 @@
-#no precompilation;
-#use Grammar::Tracer;
-
 use Pakku::Grammar::Common;
 
 grammar Pakku::Grammar::Cmd {
