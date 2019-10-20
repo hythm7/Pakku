@@ -27,13 +27,14 @@ Requires `git` to be available in `$PATH`
 
 <pre>
 git clone https://github.com/hythm7/Pakku.git
+
 cd Pakku
 
 # install to home directory
 ./hooks/install-pakku.raku
 
 # or to different destination
-./hooks/install-pakku.raku --dest=/path/to/pakku
+# ./hooks/install-pakku.raku --dest=/path/to/pakku
 </pre>
 
 
