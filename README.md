@@ -23,6 +23,8 @@ INSTALLATION
 
 `Pakku` installs herself in a custom `CompUnit::Repository` outside of `Raku`'s default repos.
 
+Requires `git` to be available in `$PATH`
+
 <pre>
 git clone https://github.com/hythm7/Pakku.git
 cd Pakku
