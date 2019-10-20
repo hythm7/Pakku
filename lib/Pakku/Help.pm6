@@ -53,7 +53,7 @@ submethod !add ( ) {
   %add<opt>.push: ( 'nobuild'         => 'bypass build' );
   %add<opt>.push: ( 'test'            => 'test distribution' );
   %add<opt>.push: ( 'notest'          => 'bypass test' );
-  %add<opt>.push: ( 'force'           => 'force add distribution even if it is installed' );
+  %add<opt>.push: ( 'force'           => 'force add distribution even installed' );
   %add<opt>.push: ( 'noforce'         => 'no force' );
   %add<opt>.push: ( 'into <repo>'     => 'add distribution to repo <home site vendor core /path/MyApp>' );
 
@@ -89,10 +89,10 @@ submethod !list ( ) {
   %list<example>.push: 'pakku list repo home';
   %list<example>.push: 'pakku list repo /opt/MyApp MyModule';
 
-  %list<opt>.push: ( 'local'       => 'local  distribution'  );
-  %list<opt>.push: ( 'remote'      => 'remote distribution'  );
-  %list<opt>.push: ( 'details'     => 'distribution details' );
-  %list<opt>.push: ( 'repo <name>' => 'list distributions in specific repo' );
+  %list<opt>.push: ( 'local'       => 'list local'  );
+  %list<opt>.push: ( 'remote'      => 'list remote'  );
+  %list<opt>.push: ( 'details'     => 'list details' );
+  %list<opt>.push: ( 'repo <name>' => 'list repo' );
 
   help %list;
 
@@ -175,7 +175,7 @@ submethod !pakku ( ) {
   %pakku<opt>.push: ( 'update'          => 'update  ecosystem'  );
   %pakku<opt>.push: ( 'pretty'          => 'colorfull butterfly'  );
   %pakku<opt>.push: ( 'nopretty'        => 'no color' );
-  %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it!' );
+  %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it' );
   %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent trace debug info warn error fatal>' );
 
   help %pakku;
@@ -224,7 +224,7 @@ sub opt ( @opt ) {
   @opt.map( {
     colored( .key, 'bold green' )  ~
     colored( ' → ', 'yellow' ).indent( $indent - .key.chars ) ~
-    colored( .value, 'bold cyan' )
+    colored( .value, 'cyan' )
   } ).join( "\n" ) ~ "\n";
  
 

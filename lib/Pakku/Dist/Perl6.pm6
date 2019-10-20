@@ -80,14 +80,14 @@ method deps (
 
 multi method gist ( Pakku::Dist::Perl6:D: :$details where not *.so --> Str:D ) {
 
-  colored( ~self, "bold cyan" );
+  colored( ~self, "bold 177" );
 
 }
 
 multi method gist ( Pakku::Dist::Perl6:D: :$details where *.so --> Str:D ) {
 
   (
-    (           self.gist     ),
+    ( self.gist               ),
     ( gist-name $!name        ),
     ( gist-ver  $!ver         ),
     ( gist-auth $!auth        ),
@@ -186,15 +186,15 @@ sub gist-prov ( %prov --> Str:D ) {
      %prov.kv.map( -> $mod, $path {
        $path ~~ Hash
          ?? colored( '↳ ',  'yellow'    ) ~
-            colored( $mod, 'bold green' ) ~
+            colored( ~$mod, 'bold 177' ) ~
             colored( ' → ', 'yellow'    ) ~
-            colored( ~$path.keys, 'bold cyan' ) ~ "\n" ~
+            colored( ~$path.keys, 'magenta' ) ~ "\n" ~
                $path.kv.map( -> $path, $info {
-                  $info.kv.map( -> $k, $v {
+                  $info.grep( *.value ).hash.kv.map( -> $k, $v {
                    colored( '↳ ',  'yellow'       ) ~
-                   colored( $k, 'bold magenta'    ) ~
+                   colored( ~$k, 'green'    ) ~
                    colored( ' → ',  'yellow'      ) ~
-                   colored( ~$v // '', 'bold cyan' )
+                   colored( ~$v, 'cyan' )
                   } ).join("\n").indent( 2 )
                })
          !! colored( '↳ ', 'yellow' ) ~ colored( $mod, 'bold cyan' );

@@ -60,7 +60,7 @@ method add (
 
         if @inst {
 
-          🐛 "Pakku: Found installed dists [{@inst}] matching [$what]";
+          🦋 "Pakku: Found installed dists [{@inst}] matching [$what]";
 
           🐛 "Pakku: Will not install [$what] unless forced";
 
@@ -423,7 +423,7 @@ multi submethod installed ( Pakku::DepSpec::Perl6:D $depspec, :$repo! ) {
 submethod BUILD ( ) {
 
   my $default-cnf = %?RESOURCES<pakku.cnf>.IO;
-  my $user-cnf    = $*HOME.add: '.pakku/pakku.cnf';
+  my $user-cnf    = $*REPO.Str.IO.parent.add: 'pakku.cnf';
 
   my $pakku-cnf = $user-cnf.e ?? $user-cnf !! $default-cnf;
 

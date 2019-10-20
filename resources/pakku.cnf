@@ -4,7 +4,7 @@
   # update           # update ecosystem
   # pretty           # colors
   # verbose info     # < 1 2 3 4 5 6 >
-  # dont             # dont do the operation (dry run)
+  # dont             # dont do it (dry run)
 
 # <add>
   # deps       # add deps as well < deps nodeps >
