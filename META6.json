@@ -4,7 +4,19 @@
     "Haytham Elganiny"
   ],
   "build-depends" : [ ],
-  "depends" : [ ],
+  "depends" : [
+    "File::Temp",
+    "Concurrent::File::Find",
+    "Hash::Merge::Augment",
+    "Terminal::ANSIColor",
+    "Log::Async",
+    "JSON::Fast",
+    "LibCurl",
+    "Libarchive",
+    "Cro::Core",
+    "System::Query",
+    "Distribution::Builder::MakeFromJSON"
+  ],
   "description" : "A Package Manager for Raku",
   "license" : "Artistic-2.0",
   "name" : "Pakku",
