@@ -1,5 +1,3 @@
-<img src=pakku.jpg width=77 height=77 />
-
 WHAT?
 =====
 `Pakku` - A Package Manager for `Raku`
