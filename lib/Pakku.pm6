@@ -60,9 +60,9 @@ method add (
 
         if @inst {
 
-          🦋 "Pakku: Found installed dists [{@inst}] matching [$what]";
+          🐛 "Pakku: Found installed dists [{@inst}] matching [$what]";
 
-          🐛 "Pakku: Will not install [$what] unless forced";
+          🦋 "Pakku: ✓ Will not install [$what] unless forced";
 
           🐛 "Pakku: Removing spec [$what] from list";
 
@@ -132,7 +132,7 @@ method add (
 
   @candies .= grep( Pakku::Dist::Perl6 );
 
-  🦋 "Pakku: ✓ Candies to be installed: [{@candies}]";
+  🦋 ( "Pakku: ✓ Candies to be installed: ↓\n" ~ @candies.join: "\n" );
 
 
   my @dist

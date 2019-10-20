@@ -54,22 +54,22 @@ sub MAIN ( IO( ) :$dest = $*HOME.add: '.pakku' ) {
 
   CompUnit::RepositoryRegistry.use-repository: $pakku-repo;
 
-  #  for @dep {
-  #
-  #     my $src-path = $dep-dir.add: .key;
-  #     my $src-url  = .value;
-  #
-  #     say "Installing Pakku dependency [{$src-path.basename}]";
-  #
-  #     # TODO: Replace git with curl
-  #     my $proc = run 'git', 'clone', $src-url, $src-path, :out, :err unless $src-path.d;
-  #
-  #     $proc.out.slurp( :close ).say with $proc;
-  #     $proc.err.slurp( :close ).say with $proc;
-  #
-  #     $pakku-repo.install: :force, Distribution::Path.new: $src-path;
-  #
-  #  }
+  for @dep {
+
+     my $src-path = $dep-dir.add: .key;
+     my $src-url  = .value;
+
+     say "Installing Pakku dependency [{$src-path.basename}]";
+
+     # TODO: Replace git with curl
+     my $proc = run 'git', 'clone', $src-url, $src-path, :out, :err unless $src-path.d;
+
+     $proc.out.slurp( :close ).say with $proc;
+     $proc.err.slurp( :close ).say with $proc;
+
+     $pakku-repo.install: :force, Distribution::Path.new: $src-path;
+
+  }
 
 
   say "Installing Pakku...";
@@ -92,13 +92,13 @@ sub MAIN ( IO( ) :$dest = $*HOME.add: '.pakku' ) {
   run 'chmod', '+x', $pakku-bin;
 
   %*ENV<PERL6LIB>  = "$src, {$pakku-repo.path-spec}";
-  #
-  #  run $pakku-bin, 'verbose 1', 'build', $src;
-  #  run $pakku-bin, 'verbose 1', 'test',  $src;
-  #
+
+  run $pakku-bin, 'verbose 1', 'build', $src;
+  run $pakku-bin, 'verbose 1', 'test',  $src;
+
 
   my $src-cnf = $src.add: 'resources/pakku.cnf';
-  run 'cp', $src-cnf, $dest;
+  run 'cp', $src-cnf, $dest unless $src-cnf.e;
 
 
   $pakku-repo.install: :force, Distribution::Path.new: $src;
