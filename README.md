@@ -10,7 +10,7 @@ Because TMTOWTDI
 
 WHEN?
 =====
-When she become a fully grown butterfly. currently `Pakku` is at larava.0 version and growing. She can do basic stuff but still little clumsy!
+When she become a fully grown butterfly. currently `Pakku` is at larva.0 version and growing. She can do basic stuff but still little clumsy!
 
 
 MOTTO
@@ -185,7 +185,7 @@ Most of `Pakku` commands and options can be written in shorter form, for example
 <pre>
 add    → a     update  → u     noupdate → nu    silent → «S 0»
 remove → r     pretty  → p     nopretty → np    trace  → «T 1»
-list   → a     deps    → d     nodeps   → nd    debug  → «D 2»
+list   → l     deps    → d     nodeps   → nd    debug  → «D 2»
 build  → b     force   → f     noforce  → nf    info   → «I 3»
 test   → t     verbose → v     details  → d     warn   → «W 4»
 check  → c     local   → l     local    → l     error  → «E 5»

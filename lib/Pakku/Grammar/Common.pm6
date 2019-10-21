@@ -180,6 +180,7 @@ role Pakku::Grammar::Common {
   token level:sym<WARN>   { <sym> }
   token level:sym<ERROR>  { <sym> }
   token level:sym<FATAL>  { <sym> }
+  token level:sym<silent> { <sym> }
   token level:sym<trace>  { <sym> }
   token level:sym<debug>  { <sym> }
   token level:sym<info>   { <sym> }
