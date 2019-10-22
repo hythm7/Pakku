@@ -22,8 +22,8 @@ grammar Pakku::Grammar::Cnf {
   rule sourceopt:sym<source>  { <source>  }
 
   proto rule logopt { * }
-  rule logopt:sym<name>  { <level> <sym> <level-name>  <.eol> }
-  rule logopt:sym<color> { <level> <sym> <level-color> <.eol> }
+  rule logopt:sym<name>  { <level> <sym> <level-name>  }
+  rule logopt:sym<color> { <level> <sym> <level-color> }
 
   token level-name  { <-[\s]>+ }
 
