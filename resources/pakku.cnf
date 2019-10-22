@@ -21,9 +21,9 @@
   # remote  # remote dists
   # details # list   details
 
- < log >
-   trace name T:
-   debug name D:
+# < log >
+  # trace name T:
+  # debug name D:
   # info  name I:
   # warn  name W:
   # error name E:
