@@ -97,8 +97,10 @@ sub MAIN ( IO( ) :$dest = $*HOME.add: '.pakku' ) {
   run $pakku-bin, 'verbose 1', 'test',  $src;
 
 
-  my $src-cnf = $src.add: 'resources/pakku.cnf';
-  run 'cp', $src-cnf, $dest unless $src-cnf.e;
+  my $src-cnf = $src.add:  'resources/pakku.cnf';
+  my $dst-cnf = $dest.add: 'pakku.cnf';
+
+  run 'cp', $src-cnf, $dst-cnf unless $dst-cnf.e;
 
 
   $pakku-repo.install: :force, Distribution::Path.new: $src;
