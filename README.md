@@ -35,6 +35,11 @@ cd Pakku
 
 # or to different destination
 # ./hooks/install-pakku.raku --dest=/path/to/pakku
+
+
+# if you prefer a ready to use distribution:
+# wget https://github.com/hythm7/Pakku/raw/master/distribution/Pakku-larva.0.txz
+# tar xf Pakku-larva.0.txz  # Pakku location: .pakku/bin/pakku
 </pre>
 
 
