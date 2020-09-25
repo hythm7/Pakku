@@ -32,7 +32,7 @@ Overview
   - `-Ofun` - Desired operation completed successfully
   - `Nofun` - Desired operation did not complete successfully
 
-* `Pakku` has 7 verbosity levels <silent trace debug info warn error fatal>
+* `Pakku` has 7 verbosity levels < silent trace debug info warn error fatal >
 
 * `Pakku` output meaning:
   - `🦋 PRC: ｢ ... ｣` → Start Processing...
