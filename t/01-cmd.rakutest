@@ -1,0 +1,97 @@
+#!/usr/bin/env perl6
+#
+use Test;
+use Pakku::Spec;
+use Grammar::Pakku::Cmd;
+
+my @tests = (
+  "" =>
+    ${:cmd("help"), :help(${:cmd("")})},
+  "add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add")},
+  "add nodeps" =>
+    ${:add(${:spec($["nodeps"])}), :cmd("add")},
+  "add nodeps Spec" =>
+    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add")},
+  "add build Spec" =>
+    ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
+  "add test Spec" =>
+    ${:add(${:spec($["Spec"]), :test}), :cmd("add")},
+  "add force Spec" =>
+    ${:add(${:force, :spec($["Spec"])}), :cmd("add")},
+  "add nobuild Spec" =>
+    ${:add(${:!build, :spec($["Spec"])}), :cmd("add")},
+  "add notest Spec" =>
+    ${:add(${:spec($["Spec"]), :!test}), :cmd("add")},
+  "add Spec1 Spec2" =>
+    ${:add(${:spec($["Spec1", "Spec2"])}), :cmd("add")},
+  "add noforce Spec" =>
+    ${:add(${:!force, :spec($["Spec"])}), :cmd("add")},
+  "add depsforce Spec" =>
+    ${:add(${:spec($["depsforce", "Spec"])}), :cmd("add")},
+  "add nodeps force Spec" =>
+    ${:add(${:!deps, :force, :spec($["Spec"])}), :cmd("add")},
+  "v3 add force Spec" =>
+    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+  "v 3 add nodeps Spec" =>
+    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+  "pretty v3 add force Spec" =>
+    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose(3)})},
+  "remove Spec1 Spec2" =>
+    ${:cmd("remove"), :remove(${:spec($["Spec1", "Spec2"])})},
+  "l" =>
+    ${:cmd("list")},
+  "list" =>
+    ${:cmd("list")},
+  "list local" =>
+    ${:cmd("list"), :list(${:local})},
+  "list remote" =>
+    ${:cmd("list"), :list(${:remote})},
+  "list local Spec" =>
+    ${:cmd("list"), :list(${:local, :spec($["Spec"])})},
+  "list remote Spec1 Spec2" =>
+    ${:cmd("list"), :list(${:remote, :spec($["Spec1", "Spec2"])})},
+  "list local details" =>
+    ${:cmd("list"), :list(${:details, :local})},
+  "list remote details Spec" =>
+    ${:cmd("list"), :list(${:details, :remote, :spec($["Spec"])})},
+  "list remote details Spec" =>
+    ${:cmd("list"), :list(${:details, :remote, :spec($["Spec"])})},
+  "list Spec" =>
+    ${:cmd("list"), :list(${:spec($["Spec"])})},
+  "add" =>
+    ${:cmd("help"), :help(${:cmd("add")})},
+  "help" =>
+    ${:cmd("help"), :help(${:cmd("")})},
+  "help add" =>
+    ${:cmd("help"), :help(${:cmd("add")})},
+  "a" =>
+    ${:cmd("help"), :help(${:cmd("add")})},
+  "notcmd" =>
+    ${:cmd("help"), :help(${:cmd("")})},
+  "help notcmd" =>
+    ${:cmd("help"), :help(${:cmd("")})},
+);
+
+#plan 30;
+
+
+for @tests {
+
+  my $cmd      = .key;
+  my $expected = .value;
+
+  my $parser  = Grammar::Pakku::Cmd;
+  my $actions = Grammar::Pakku::CmdActions;
+  my $got     = $parser.parse( $cmd, :$actions ).made;
+
+
+  $got<pakku>:delete unless $got<pakku>;
+  $got<list>:delete  unless $got<list>;
+
+  $got .= deepmap( -> $_ { $_ ~~ Pakku::Spec::Raku ?? .name !! $_ } );
+
+  is-deeply  $got, $expected, $cmd;
+}
+
+done-testing;

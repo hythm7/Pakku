@@ -1,0 +1,4 @@
+use v6.c;
+use Test;
+use Pakku;
+done-testing;

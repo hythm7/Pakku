@@ -1,0 +1,39 @@
+### pakku Config
+
+# < pakku >
+  # pretty           # colors
+  # verbose info     # < 0 1 2 3 4 5 6 >
+  # dont             # dont do it (dry run)
+
+# < add >
+  # deps       # add deps as well < deps nodeps >
+  # build      # build            < build nobuild >
+  # test       # test             < test notest >
+  # force      # force install    < force noforce >
+  # to  home # install into specific repo <home site vendor core /custom/repo/path>
+
+# < remove >
+  # from home  # remove from specific repo
+
+# < list >
+  # local   # local  dists
+  # remote  # remote dists
+  # details # list   details
+
+# < log >
+  # trace name T:
+  # debug name D:
+  # info  name I:
+  # warn  name W:
+  # error name E:
+  # fatal name F:
+
+  # trace color reset
+  # debug color green
+  # info  color blue
+  # warn  color yellow
+  # error color magenta
+  # fatal color red
+
+< recman >
+recman.pakku.org
