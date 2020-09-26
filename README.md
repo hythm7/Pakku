@@ -46,7 +46,9 @@ Overview
   - `🐞 TST: ｢ ... ｣` → Testing Dist
   - `🦋 TST: ｢ ... ｣` → Tested Dist successfully
   - `🦋 ADD: ｢ ... ｣` → Added Dist
-  - `💀 MTA: ｢ ... ｣` → No Meta found
+  - `💀 MTA: ｢ ... ｣` → No Meta found for Spec
+  - `💀 BLD: ｢ ... ｣` → Bulding Dist failed
+  - `💀 TST: ｢ ... ｣` → Testing Dist failed
   - `💀 CNF: ｢ ... ｣` → Config file error
   - `💀 CMD: ｢ ... ｣` → Command error
 
