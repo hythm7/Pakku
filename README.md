@@ -26,9 +26,11 @@ cd Pakku
 
 Overview
 ========
-* `Pakku` is a simple and colorful package manager for `Raku`, with many options and customizations which can be set in `pakku.conf` configuration file or via command line options.
+* `Pakku` is a simple package manager for `Raku`, with many options and customizations that can be configured in `pakku.cnf` file or via command line options.
 
-* `Pakku` commands result will be one of:
+* `Pakku` uses [Pakku::RecMan](https://github.com/hythm7/Pakku-RecMan) as a recommendation manager
+
+* `Pakku` command result is one of:
   - `-Ofun` - Desired operation completed successfully
   - `Nofun` - Desired operation did not complete successfully
 
