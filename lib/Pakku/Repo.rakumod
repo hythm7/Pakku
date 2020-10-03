@@ -74,10 +74,6 @@ multi method new ( ::?CLASS: IO $prefix ) {
 
   my $repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$prefix", next-repo => $core;
 
-  CompUnit::RepositoryRegistry.register-name: $prefix.basename, $repo;
-  CompUnit::RepositoryRegistry.use-repository: $repo;
-
-
   nextwith flat $repo, $core;
 }
 
