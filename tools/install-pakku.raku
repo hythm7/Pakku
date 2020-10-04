@@ -1,4 +1,4 @@
-#!/usr/bin/env perl6
+#!/usr/bin/env raku
 
 sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
 
