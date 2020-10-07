@@ -1,3 +1,4 @@
+use X::Pakku;
 use Pakku::Log;
 use Pakku::Help;
 use Pakku::Meta;
@@ -9,7 +10,6 @@ use Pakku::Fetcher;
 use Grammar::Pakku::Cnf;
 use Grammar::Pakku::Cmd;
 use Pakku::RecMan::Client;
-
 
 unit role Pakku::Guts;
   also does Pakku::Help;
@@ -256,7 +256,7 @@ submethod BUILD ( ) {
 
     }
 
-    default {
+    when X::Pakku {
 
       💀 .message;
 

@@ -134,7 +134,7 @@ method check ( :@spec! ) {
       ==> map( -> $spec { Spec.new: $spec } )
       ==> map( -> $spec { self.satisfy: :$spec } )
       ==> map( -> $meta { $!fetcher.fetch: $meta.source, :!unlink unless $!dont } )
-      ==> map( -> $path { 🦋 "CHK: $path" } );
+      ==> map( -> $path { 🦋 "CHK: ｢$path｣" } );
 
 
   ofun;
