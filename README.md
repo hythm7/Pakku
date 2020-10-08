@@ -140,11 +140,11 @@ repo < name-or-path > → list dists installed in specific repo
 
 <b>Options:</b>
 
-pretty            → colorfull butterfly
+pretty            → colors
 nopretty          → no color
-dont              → do everything but dont do it
+dont              → do everything but dont do it (dry run)
 verbose < level > → verbosity < silent trace debug info warn error fatal >
-please            → be nice to the butterfly, she will be nice to you (TBD)
+please            → be nice to the butterfly
 yolo              → dont stop on pakku exceptions, useful when adding multiple dists and need to continue if one failed
 </pre>
 
@@ -171,13 +171,13 @@ yolo              → dont stop on pakku exceptions, useful when adding multiple
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add    → a     yolo    → y     noupdate → nu    silent → «S 0»
-remove → r     pretty  → p     nopretty → np    trace  → «T 1»
-list   → l     deps    → d     nodeps   → nd    debug  → «D 2»
-build  → b     force   → f     noforce  → nf    info   → «I 3»
+add    → a     yolo    → y     nopretty → np    silent → «S 0»
+remove → r     pretty  → p     nodeps   → nd    trace  → «T 1»
+list   → l     only    → o     noforce  → nf    debug  → «D 2»
+build  → b     verbose → v     noforce  → nf    info   → «I 3»
 test   → t     verbose → v     details  → d     warn   → «W 4»
-check  → c     local   → l     local    → l     error  → «E 5»
-help   → h     remote  → r     remote   → r     fatal  → «F 6»
+check  → c     deps    → d     local    → l     error  → «E 5»
+help   → h     force   → f     remote   → r     fatal  → «F 6»
 </pre>
 
 So this is a valid `Pakku` command:
@@ -244,9 +244,6 @@ recman.pakku.org
 
 </pre>
 
-Known Issues
-============
-`%?RESOURCES` is not available during `test` phase when adding a distribution to a custom repo eg: `/tmp/my/custom/repo`.  might cause test failure for some modules, please see [here](https://github.com/hythm7/Pakku/issues/1) for more info. as temporary workaround you can bypass test by adding `notest`. This issue affects adding distribution to a custom repo only.
 
 TODO
 ====
