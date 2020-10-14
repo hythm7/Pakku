@@ -30,7 +30,7 @@ multi method list ( ::?CLASS:D: :@spec! where *.so ) {
 
   @spec.map( -> $spec { 
 
-    self.head.name eq 'core' ?? self !! self.head( * - 1 )
+    self
       ==> map( -> $repo {
 
         $repo.candidates( $spec.name, |$spec.spec )
@@ -48,7 +48,7 @@ multi method list ( ::?CLASS:D: :@spec! where *.so ) {
 
 multi method list ( ::?CLASS:D: :@spec! where not *.so ) {
 
-  self.head.name eq 'core' ?? self !! self.head( * - 1 )
+  self
     ==> map(  *.installed.map( *.meta ) ) 
     ==> flat( )
     ==> grep( *.defined );
@@ -59,22 +59,14 @@ multi method new ( ::?CLASS: Str $name ) {
 
   my $repo = CompUnit::RepositoryRegistry.repository-for-name: $name;
 
-  nextwith $repo if $name eq 'core';
-
-  my $core = CompUnit::RepositoryRegistry.repository-for-name: <core>;
-
-  $repo.next-repo = $core;
-
-  nextwith flat $repo, $core;
+  nextwith $repo;
 }
 
 multi method new ( ::?CLASS: IO $prefix ) {
 
-  my $core = CompUnit::RepositoryRegistry.repository-for-name: <core>;
+  my $repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$prefix", next-repo => $*REPO;
 
-  my $repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$prefix", next-repo => $core;
-
-  nextwith flat $repo, $core;
+  nextwith $repo;
 }
 
 multi method new ( ::?CLASS: Any:U $default ) {
