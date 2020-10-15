@@ -43,12 +43,24 @@ method build ( Distribution::Locally:D :$dist ) {
     CMD
 
 
-  my $proc = run ~$*EXECUTABLE, '-I', $lib, '-e', $cmd, cwd => $prefix, :out, :err;
-  $proc.out.lines.map( 🤓 * );
-  $proc.err.lines.map( 🔔  * );
+  my $proc = Proc::Async.new: ~$*EXECUTABLE, '-I', $lib, '-e', $cmd, cwd => $prefix;
 
-  die X::Pakku::Build.new: :$dist if $proc.exitcode;
+  my $exitcode; 
+
+  react {
+
+    whenever $proc.stdout.lines { 🤓 $^out }
+    whenever $proc.stderr.lines { 🔔 $^err }
+
+    whenever $proc.start( cwd => $prefix, :%*ENV ) {
+
+      $exitcode = .exitcode;
+      done;
+
+    }
+  }
+
+  die X::Pakku::Build.new: :$dist if $exitcode;
 
   🦋 "BLT: ｢$dist｣"; 
-
 }

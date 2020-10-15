@@ -42,7 +42,13 @@ method test ( Distribution::Locally:D :$dist! ) {
 
       whenever $proc.stdout.lines { 🤓 $^out }
       whenever $proc.stderr.lines { 🔔 $^err }
-      whenever $proc.start( cwd => $prefix, :%*ENV ) { $exitcode = .exitcode }
+
+      whenever $proc.start( cwd => $prefix, :%*ENV ) {
+
+        $exitcode = .exitcode;
+        done;
+
+      }
 
     }
 

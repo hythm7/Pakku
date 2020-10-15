@@ -260,7 +260,13 @@ submethod BUILD ( ) {
 
       💀 .message;
 
-      .resume if $!yolo;
+      if $!yolo {
+
+        💀 '¯\_(ツ)_/¯';
+
+        .resume;
+
+      }
 
       nofun;
     }
