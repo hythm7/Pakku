@@ -4,8 +4,6 @@ use X::Pakku::Build;
 unit role Pakku::Builder;
 
 
-# TODO: Timeout
-
 method build ( Distribution::Locally:D :$dist ) {
 
   my $builder = $dist.meta<builder>;
@@ -51,6 +49,18 @@ method build ( Distribution::Locally:D :$dist ) {
 
     whenever $proc.stdout.lines { 🤓 $^out }
     whenever $proc.stderr.lines { 🔔 $^err }
+
+    whenever $proc.stdout.stable( 420 ) {
+
+      🔔 "TOT: ｢$dist｣";
+
+      $proc.kill;
+
+      $exitcode = 1;
+
+      done;
+
+    }
 
     whenever $proc.start( cwd => $prefix, :%*ENV ) {
 

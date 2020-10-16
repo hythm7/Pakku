@@ -7,7 +7,6 @@ use Pakku::Log;
 
 unit class Pakku::Fetcher;
 
-# TODO: Timeout
 multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
   🤓 "FTC: ｢$src｣";

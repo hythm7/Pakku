@@ -5,7 +5,6 @@ use X::Pakku::Test;
 
 unit role Pakku::Tester;
 
-# TODO: Timeout
 method test ( Distribution::Locally:D :$dist! ) {
 
   <tests t>
@@ -23,11 +22,6 @@ method test ( Distribution::Locally:D :$dist! ) {
 
   my $prefix  = $dist.prefix;
   my $lib     = $prefix.add: <lib>;
-  # BUG: Applies only to custom path inst#
-     # including $*repo messes up %?RESOURCES
-     # And distributions like Test::META (which depends
-     # on License::SPDX) doesn't pass the testing phase
-     # Because License::SPDX's %?RESOURCES becomes empty
   my $include = "-I$lib,{ $*repo.head.path-spec }";
 
   #  my @deps    = $dist.deps( :$!deps ).grep( { .from ~~ 'raku' } );
@@ -43,12 +37,25 @@ method test ( Distribution::Locally:D :$dist! ) {
       whenever $proc.stdout.lines { 🤓 $^out }
       whenever $proc.stderr.lines { 🔔 $^err }
 
+      whenever $proc.stdout.stable( 420 ) {
+
+        🔔 "TOT: ｢$dist｣";
+
+        $proc.kill;
+
+        $exitcode = 1;
+
+        done;
+
+      }
+
       whenever $proc.start( cwd => $prefix, :%*ENV ) {
 
         $exitcode = .exitcode;
         done;
 
       }
+
 
     }
 
