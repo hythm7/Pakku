@@ -14,9 +14,10 @@ method build ( Distribution::Locally:D :$dist ) {
 
   🐞 "BLD: ｢$dist｣";
 
-  my $prefix = $dist.prefix;
-  my $lib    = $prefix.add: <lib>;
-  my @deps   = $dist.deps( :deps<build> ).grep( { .from ~~ 'raku' } );
+  my $prefix  = $dist.prefix;
+  my $lib     = $prefix.add: <lib>;
+  my $include = "$lib,{ $*repo.head.path-spec }";
+  my @deps    = $dist.deps( :deps<build> ).grep( { .from ~~ 'raku' } );
 
   my $cmd = $builder
 
@@ -41,7 +42,7 @@ method build ( Distribution::Locally:D :$dist ) {
     CMD
 
 
-  my $proc = Proc::Async.new: ~$*EXECUTABLE, '-I', $lib, '-e', $cmd, cwd => $prefix;
+  my $proc = Proc::Async.new: ~$*EXECUTABLE, '-I', $include, '-e', $cmd, cwd => $prefix;
 
   my $exitcode; 
 

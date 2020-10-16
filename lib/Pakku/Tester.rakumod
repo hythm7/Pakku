@@ -22,7 +22,7 @@ method test ( Distribution::Locally:D :$dist! ) {
 
   my $prefix  = $dist.prefix;
   my $lib     = $prefix.add: <lib>;
-  my $include = "-I$lib,{ $*repo.head.path-spec }";
+  my $include = "$lib,{ $*repo.head.path-spec }";
 
   #  my @deps    = $dist.deps( :$!deps ).grep( { .from ~~ 'raku' } );
 
@@ -32,7 +32,7 @@ method test ( Distribution::Locally:D :$dist! ) {
 
     react {
 
-      my $proc = Proc::Async.new: $*EXECUTABLE, $include, $test.IO.relative: $prefix;
+      my $proc = Proc::Async.new: $*EXECUTABLE, '-I', $include, $test.IO.relative: $prefix;
 
       whenever $proc.stdout.lines { 🤓 $^out }
       whenever $proc.stderr.lines { 🔔 $^err }
