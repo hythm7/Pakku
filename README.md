@@ -12,6 +12,7 @@ WHEN?
 
 INSTALLATION
 ============
+Requires `git`, `curl` and `tar` to be available in `$PATH`
 <pre>
 git clone https://github.com/hythm7/Pakku.git
 
