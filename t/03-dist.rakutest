@@ -68,3 +68,4 @@ my %got =  $meta.deps.deepmap( *.Str );
 
 is-deeply %got, %expected;
 
+done-testing;
