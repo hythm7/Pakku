@@ -30,9 +30,9 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
     'URL'
       => 'http://recman.pakku.org/archive/1e53bfeefe5db9cd764b58bb9fe18af65bc59da88ca1dbd8f64093f6b5596df4',
     'NativeLibs'
-      => 'http://recman.pakku.org/archive/511e9eba26b97810c4b2798ceb375761f85aea1d.tar.gz',
+      => 'http://recman.pakku.org/archive/ef5f740e3789379ca950254b78f84eb5fdb13c0159095457f8b2148cd852a957',
     'LibCurl'
-      => 'http://recman.pakku.org/archive/f740bc92758c5d055c2a6dc0b2ffcb9f4d881309c2468f74cb5ea4d2544c8aec',
+      => 'http://recman.pakku.org/archive/c821f1d3878ae13feda854840490888aa00fef46cd786b699b9a29f6d71b4ae7',
     'Archive::Libarchive::Raw'
       => 'http://recman.pakku.org/archive/fbcf74cca144adadce6f721e53a6f646ddd44ac0cae4f7537d693321e72f402a',
     'NativeHelpers::Callback'
@@ -43,12 +43,14 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
       => 'http://recman.pakku.org/archive/bd937bc029fc6fa20888e302fe25b726936ab30875b3a6656036f4d54606483a',
     'Libarchive'
       => 'http://recman.pakku.org/archive/c7b2052a1665180806fb431c960ca60e7abda4b00d2bed1c94b1476334b27f05',
+    'Retry'
+      => 'http://recman.pakku.org/archive/7f72c599cbdbaa275ad830e5aa59c32297777b372a923a88bcfdb68b146ed7de',
     'Pakku::Spec'
-      => 'http://recman.pakku.org/archive/dc0e12d43b1f96faad41f3b94bf5ac2f783b7e1e05413d9940fa7eeca300298d',
+      => 'http://recman.pakku.org/archive/115c90d169c46cfa6f57afdb7345456f2ae09e8e8fef1dcdd90786a8a50dd889',
     'Pakku::Meta'
-      => 'http://recman.pakku.org/archive/c89b5fd0ab68e533980f5fa89b19f8cfb2f929e4c953e09d755588e7e3e2d082',
+      => 'http://recman.pakku.org/archive/0eebddc662eccdcbebdcdc8690b63355008673e60fbf055bafb1f78b341da3fc',
     'Pakku::RecMan::Client'
-      => 'http://recman.pakku.org/archive/bcfacf8e35dc06b473954a672751becb8ee5a09fcd56d1c92730e78602e13c63',
+      => 'http://recman.pakku.org/archive/638f1e3209abeba4ca95f85580af3e234deafdc3568f17cc718a560e93aaf769',
   );
 
 

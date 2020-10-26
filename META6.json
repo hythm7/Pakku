@@ -12,9 +12,10 @@
     "URL",
     "LibCurl",
     "Libarchive",
-    "Pakku::Spec:ver<pupa>:auth<github:hythm7>",
-    "Pakku::Meta:ver<pupa>:auth<github:hythm7>",
-    "Pakku::RecMan::Client:ver<pupa>:auth<github:hythm7>"
+    "Retry",
+    "Pakku::Spec",
+    "Pakku::Meta",
+    "Pakku::RecMan::Client"
   ],
   "description" : "A Package Manager for Raku",
   "license" : "Artistic-2.0",
@@ -51,9 +52,6 @@
     "raku"
     ],
   "test-depends" : [
-    "JSON::Fast",
-    "Pakku::Spec:ver<pupa>:auth<github:hythm7>",
-    "Pakku::Meta:ver<pupa>:auth<github:hythm7>"
   ],
   "version" : "pupa"
 }
