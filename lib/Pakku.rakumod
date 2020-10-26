@@ -41,6 +41,11 @@ method add (
 
     ==> unique( as => *.Str )
 
+    ==> my @meta;
+
+
+  @meta
+
     ==> map( -> $meta {
 
       my $prefix = $!fetcher.fetch: $meta.source;
@@ -52,18 +57,19 @@ method add (
     ==> my @dist;
 
    
-    @dist 
+  @dist 
 
-      ==> map( -> $dist {
-    
-        $!builder.build: :$dist if $build;
-        $!tester.test:   :$dist if $test;
-    
-        $*repo.add: :$dist, :$force     unless $!dont;
+    ==> map( -> $dist {
+  
+      $!builder.build: :$dist if $build;
 
-        🦋 "ADD: ｢$dist｣" unless $!dont;
-    
-      } );
+      $!tester.test:   :$dist if $test;
+  
+      $*repo.add: :$dist, :$force     unless $!dont;
+
+      🦋 "ADD: ｢$dist｣" unless $!dont;
+  
+    } );
     
     
   ofun;
