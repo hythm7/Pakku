@@ -1,4 +1,5 @@
 use URL;
+use Retry;
 use File::Temp;
 use LibCurl::Easy;
 use Libarchive::Simple;
@@ -15,9 +16,7 @@ multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
   my $download = $dst.IO.add( $uri.path.tail ).Str;
 
-
-  LibCurl::Easy.new( URL => $uri.Str, :$download, :followlocation ).perform;
-
+  retry { LibCurl::Easy.new( URL => $uri.Str, :$download, :followlocation ).perform };
 
   .extract: destpath => $dst for archive-read $download;
 
