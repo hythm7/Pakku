@@ -23,6 +23,7 @@ jobs:
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
-      - name: Install Pakku
+      - name: Clone Pakku
         run: git clone https://github.com/hythm7/Pakku.git /tmp/Pakku 
+      - name: install Pakku
         run: /tmp/pakku/tools/install-pakku.raku
