@@ -37,36 +37,40 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
   >;
 
 
-  my $pakku-repo = CompUnit::Repository::Installation.new( prefix => $repo-dir, name => 'pakku' );
+  my $pakku-repo = CompUnit::Repository::Installation.new: prefix => $repo-dir;
 
   CompUnit::RepositoryRegistry.register-name: 'pakku', $pakku-repo;
   CompUnit::RepositoryRegistry.use-repository: $pakku-repo;
- 
+
+
   for @dep -> $dep {
 
     my $dep-name =  $dep.split('&').head;
 
-    my $meta-url = "http:/recman.pakku.org/meta?name=$dep";
+    unless $pakku-repo.candidates: $dep-name {
 
-    my $meta = run 'curl', '-s', $meta-url, :out;
+      say "Installing Pakku dependency [$dep-name]";
 
-    my $src-url = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp)<source>;
+      my $meta-url = "http:/recman.pakku.org/meta?name=$dep";
 
-    my $src-path = $dep-dir.add: $dep-name;
+      my $meta = run 'curl', '-s', $meta-url, :out;
 
-    say "Installing Pakku dependency [$dep-name]";
+      my $src-url = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp)<source>;
 
-    my $archive-path = "$src-path.tar.gz".IO;
+      my $src-path = $dep-dir.add: $dep-name;
 
-    unlink $archive-path;
+      my $archive-path = "$src-path.tar.gz".IO;
 
-    my $curl = run 'curl', '-s', '-o', $archive-path, $src-url;
+      unlink $archive-path;
 
-    mkdir $src-path;
+      my $curl = run 'curl', '-s', '-o', $archive-path, $src-url;
 
-    my $tar = run 'tar', 'xf', $archive-path, '-C', $src-path, '--strip-components=1';
+      mkdir $src-path;
 
-    $pakku-repo.install: :force, Distribution::Path.new: $src-path;
+      my $tar = run 'tar', 'xf', $archive-path, '-C', $src-path, '--strip-components=1';
+
+      $pakku-repo.install: Distribution::Path.new: $src-path
+    }
 
   }
 
