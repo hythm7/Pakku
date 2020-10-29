@@ -8,15 +8,19 @@ use Pakku::Log;
 
 unit class Pakku::Fetcher;
 
+has $!curl = LibCurl::Easy.new;
+
 multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
   🤓 "FTC: ｢$src｣";
 
-  my $uri = URL.new: $src;
+  my $URL = URL.new: $src;
 
-  my $download = $dst.IO.add( $uri.path.tail ).Str;
+  my $download = $dst.IO.add( $URL.path.tail ).Str;
 
-  retry { LibCurl::Easy.new( URL => $uri.Str, :$download, :followlocation ).perform };
+  $!curl.setopt: URL => $URL.Str, :$download;
+
+  retry { $!curl.perform };
 
   .extract: destpath => $dst for archive-read $download;
 

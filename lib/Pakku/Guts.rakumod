@@ -54,10 +54,11 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   🐞 "SPC: ｢$spec｣";
 
+  # TODO: revisit
   my $meta = 
     $spec.prefix
-      ?? try Pakku::Meta.new: prefix => $spec.prefix
-      !! try Pakku::Meta.new: meta   => $!recman.recommend: :$spec;
+      ?? try Pakku::Meta.new: $spec.prefix
+      !! try Pakku::Meta.new: $!recman.recommend: :$spec;
 
   die X::Pakku::Meta.new: meta => $spec unless $meta;
 
@@ -217,7 +218,9 @@ submethod BUILD ( ) {
 
   my Pakku::Repo $*repo .= new: %!cnf<add remove list>.first( *<repo> )<repo>;
 
-  $!recman = Pakku::RecMan::Client.new: :@url;
+  $!recman  = Pakku::RecMan::Client.new: :@url;
+
+  $!fetcher = Pakku::Fetcher.new;
 
   @!ignored = <Test NativeCall nqp>;
 

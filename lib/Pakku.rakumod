@@ -101,7 +101,7 @@ method list (
   @spec .= map( -> $spec { Spec.new: $spec } );
 
   $local ?? $*repo.list: :@spec !! $!recman.list: :@spec
-    ==> map( -> $meta { Meta.new( :$meta ).gist: :$details } )
+    ==> map( -> $meta { Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { 🦋 $meta } );
 
   ofun;
