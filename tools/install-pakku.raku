@@ -47,30 +47,27 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
 
     my $dep-name =  $dep.split('&').head;
 
-    unless $pakku-repo.candidates: $dep-name {
+    say "Installing Pakku dependency [$dep-name]";
 
-      say "Installing Pakku dependency [$dep-name]";
+    my $meta-url = "http:/recman.pakku.org/meta?name=$dep";
 
-      my $meta-url = "http:/recman.pakku.org/meta?name=$dep";
+    my $meta = run 'curl', '-s', $meta-url, :out;
 
-      my $meta = run 'curl', '-s', $meta-url, :out;
+    my $src-url = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp)<recman-src>;
 
-      my $src-url = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp)<recman-src>;
+    my $src-path = $dep-dir.add: $dep-name;
 
-      my $src-path = $dep-dir.add: $dep-name;
+    my $archive-path = "$src-path.tar.gz".IO;
 
-      my $archive-path = "$src-path.tar.gz".IO;
+    unlink $archive-path;
 
-      unlink $archive-path;
+    my $curl = run 'curl', '-s', '-o', $archive-path, $src-url;
 
-      my $curl = run 'curl', '-s', '-o', $archive-path, $src-url;
+    mkdir $src-path;
 
-      mkdir $src-path;
+    my $tar = run 'tar', 'xf', $archive-path, '-C', $src-path, '--strip-components=1';
 
-      my $tar = run 'tar', 'xf', $archive-path, '-C', $src-path, '--strip-components=1';
-
-      $pakku-repo.install: Distribution::Path.new: $src-path
-    }
+    $pakku-repo.install: :force, Distribution::Path.new: $src-path
 
   }
 
