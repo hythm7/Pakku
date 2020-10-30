@@ -55,7 +55,7 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
 
       my $meta = run 'curl', '-s', $meta-url, :out;
 
-      my $src-url = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp)<source>;
+      my $src-url = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp)<recman-src>;
 
       my $src-path = $dep-dir.add: $dep-name;
 
