@@ -36,5 +36,4 @@
   # fatal color red
 
 < recman >
-localhost
-#recman.pakku.org
+recman.pakku.org
