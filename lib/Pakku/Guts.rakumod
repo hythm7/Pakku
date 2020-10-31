@@ -157,11 +157,16 @@ multi method satisfied ( Pakku::Spec::Perl:D :$spec! --> Bool:D ) {
 
 multi method get-deps ( Pakku::Meta:D $meta, :$deps ) {
 
-  state %visited;
+  #TODO: Revisit if issues when required
+    # two different versions of same dependnecy.
+    # may be store meta in %visited and 
+    # then Meta ~~ Spec 
 
+  state %visited;
+  
   $meta.deps: :$deps
 
-    ==> grep( -> $spec { not self.satisfied: :$spec   } )
+    ==> grep( -> $spec { not ( %visited{ $spec.name } or self.satisfied: :$spec )   } )
 
     ==> map(  -> $spec { self.satisfy: :$spec } )
 
@@ -173,9 +178,9 @@ multi method get-deps ( Pakku::Meta:D $meta, :$deps ) {
 
     for @meta-deps -> $dep {
 
-      next if %visited{ ~ $dep };
+      next if %visited{ $dep.name };
 
-      %visited{ ~$dep } = True;
+      %visited{ $dep.name } = True;
 
       @dep.append: flat self.get-deps( $dep, :$deps), $dep
     }
