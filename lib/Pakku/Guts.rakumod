@@ -75,7 +75,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 multi method satisfy ( Pakku::Spec::Bin:D :$spec! ) {
 
   my $name = $spec.name;
-  my $bin  = qqx{ which $name };
+  my $bin  = qqx{ which "$name" };
 
   die X::Pakku::Spec.new: :$spec unless $bin;
 
@@ -87,9 +87,9 @@ multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
   my $name = $spec.name;
 
-  my $native = so qqx{ /sbin/ldconfig -p | grep $name };
+  my $native = so qqx{ /sbin/ldconfig -p | grep "$name" };
 
-  die X::Pakku::Spec::NotFound.new: :$spec unless $native;
+  die X::Pakku::Spec.new: :$spec unless $native;
 
   $native if $native;
 
@@ -126,7 +126,7 @@ multi method satisfied ( Pakku::Spec::Raku:D :$spec! --> Bool:D ) {
 multi method satisfied ( Pakku::Spec::Bin:D :$spec! --> Bool:D ) {
 
   my $name = $spec.name;
-  my $bin  = qqx{ which $name };
+  my $bin  = qqx{ which "$name" };
 
   return False unless so $bin;
 
@@ -137,7 +137,7 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   my $name = $spec.name;
 
-  my $native = so qqx{ /sbin/ldconfig -p | grep $name };
+  my $native = so qqx{ /sbin/ldconfig -p | grep "$name" };
 
   return False unless so $native;
 
