@@ -74,34 +74,22 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
 multi method satisfy ( Pakku::Spec::Bin:D :$spec! ) {
 
-  my $name = $spec.name;
-  my $bin  = qqx{ which "$name" };
-
-  die X::Pakku::Spec.new: :$spec unless $bin;
-
-  $spec if $spec;
+  # TODO
+  die X::Pakku::Spec.new: :$spec;
 
 }
 
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
-  my $name = $spec.name;
-
-  my $native = so qqx{ /sbin/ldconfig -p | grep "$name" };
-
-  die X::Pakku::Spec.new: :$spec unless $native;
-
-  $native if $native;
+  # TODO
+  die X::Pakku::Spec.new: :$spec;
 
 }
 
 multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
 
-  my $perl = <TODO:>;
-
-  die X::Pakku::Spec::NotFound.new: :$spec unless $perl;
-
-  $perl if $perl;
+  # TODO
+  die X::Pakku::Spec.new: :$spec;
 
 }
 
@@ -126,9 +114,9 @@ multi method satisfied ( Pakku::Spec::Raku:D :$spec! --> Bool:D ) {
 multi method satisfied ( Pakku::Spec::Bin:D :$spec! --> Bool:D ) {
 
   my $name = $spec.name;
-  my $bin  = qqx{ which "$name" };
+  my $bin  = run 'which', $name, :out, :err;
 
-  return False unless so $bin;
+  return False unless so $bin.out.get;
 
   True;
 }
@@ -137,18 +125,18 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   my $name = $spec.name;
 
-  my $native = so qqx{ /sbin/ldconfig -p | grep "$name" };
+  my $libs   = run '/sbin/ldconfig', '-p', :out, :err;
 
-  return False unless so $native;
+  my $native = run 'grep', $name, :in( $libs.out ), :out, :err;
+
+  return False unless so $native.out.get;
 
   True;
 }
 
 multi method satisfied ( Pakku::Spec::Perl:D :$spec! --> Bool:D ) {
 
-  #die X::Pakku::Spec::NotFound.new: :$spec unless $lib;
-
-  #return False unless so $native;
+  # TODO
 
   True;
 
