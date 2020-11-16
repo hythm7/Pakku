@@ -18,17 +18,22 @@ multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
   my $download = $dst.IO.add( $URL.path.tail ).Str;
 
-  $!curl.setopt: URL => $URL.Str, :$download;
 
-  retry { $!curl.perform };
+  retry {
 
-  .extract: destpath => $dst for archive-read $download;
+    $!curl.setopt: URL => $URL.Str, :$download;
 
-  my $prefix = $dst.IO.dir.first: *.d;
+    $!curl.perform;
 
-  🤓 "FTC: ｢$prefix｣";
+    .extract: destpath => $dst for archive-read $download;
 
-  $prefix.IO;
+    my $prefix = $dst.IO.dir.first: *.d;
+
+    🤓 "FTC: ｢$prefix｣";
+
+    $prefix.IO;
+
+  }
 
 }
 
