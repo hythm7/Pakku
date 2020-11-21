@@ -65,7 +65,7 @@ USAGE
 <b>pakku add force  to   home  MyModule1 MyModule2</b>
 
 
-<b>Options:</b>
+<b>Options:</b> - Specific to <b>add</b> command
 
 deps            → add dependencies
 nodeps          → no dependencies
@@ -90,7 +90,7 @@ to < repo >     → add distribution to repo < home site vendor core /path/to/My
 <b>pakku remove MyModule</b>
 
 
-<b>Options:</b>
+<b>Options:</b> - Specific to <b>remove</b> command
 
 from < repo > → remove distribution from provided repo only
 </pre>
@@ -107,7 +107,7 @@ from < repo > → remove distribution from provided repo only
 <b>pakku list repo /opt/MyApp MyModule</b>
 
 
-<b>Options:</b>
+<b>Options:</b> - Specific to <b>list</b> command
 
 local                 → list local installed dist
 remote                → list remote recman's dists
@@ -130,6 +130,13 @@ repo < name-or-path > → list dists installed in specific repo
 </pre>
 
 
+**Check distribution** (download)
+
+<pre>
+<b>pakku check MyModule</b>
+</pre>
+
+
 **Pakku Options**
 
 <pre>
@@ -139,21 +146,14 @@ repo < name-or-path > → list dists installed in specific repo
 <b>pakku pretty   please remove MyModule</b>
 
 
-<b>Options:</b>
+<b>Options:</b> - Global options control general Pakku behavior and placed before Pakku commands < add remove ... >
 
 pretty            → colors
 nopretty          → no color
 dont              → do everything but dont do it (dry run)
 verbose < level > → verbosity < silent trace debug info warn error fatal >
 please            → be nice to the butterfly
-yolo              → dont stop on pakku exceptions, useful when adding multiple dists and need to continue if one failed
-</pre>
-
-
-**Check distribution** (download)
-
-<pre>
-<b>pakku check MyModule</b>
+yolo              → dont stop on Pakku exceptions, useful when you don't want to stop on error (e.g. Test Faliure)
 </pre>
 
 
