@@ -18,6 +18,7 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
     File::Directory::Tree
     File::Temp
     File::Find
+    File::Which
     Terminal::ANSIColor
     Log::Async
     JSON::Fast
