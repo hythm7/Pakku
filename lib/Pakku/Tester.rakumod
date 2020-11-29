@@ -28,11 +28,13 @@ method test ( Distribution::Locally:D :$dist! ) {
 
   @test.map( -> $test {
 
+    🐞 "TST: ｢{$test.basename}｣";
+
     my $exitcode;
 
     react {
 
-      my $proc = Proc::Async.new: $*EXECUTABLE, '-I', $include, $test.IO.relative: $prefix;
+      my $proc = Proc::Async.new: $*EXECUTABLE, '-I', $include, $test.relative: $prefix;
 
       whenever $proc.stdout.lines { 🤓 $^out }
       whenever $proc.stderr.lines { 🔔 $^err }
