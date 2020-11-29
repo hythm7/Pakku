@@ -38,20 +38,20 @@ Overview
 * `Pakku` has 7 verbosity levels `silent trace debug info warn error fatal`
 
 * `Pakku` output meaning:
-  - `🦋 PRC: ｢ ... ｣` → Start Processing...
-  - `🐞 SPC: ｢ ... ｣` → Processing Spec
-  - `🐞 MTA: ｢ ... ｣` → Processing Meta
-  - `🤓 FTC: ｢ ... ｣` → Fetching URL
-  - `🐞 BLD: ｢ ... ｣` → Building Dist
-  - `🦋 BLT: ｢ ... ｣` → Built Dist successfully
-  - `🐞 TST: ｢ ... ｣` → Testing Dist
-  - `🦋 TST: ｢ ... ｣` → Tested Dist successfully
-  - `🦋 ADD: ｢ ... ｣` → Added Dist
-  - `💀 MTA: ｢ ... ｣` → No Meta found for Spec
-  - `💀 BLD: ｢ ... ｣` → Bulding Dist failed
-  - `💀 TST: ｢ ... ｣` → Testing Dist failed
-  - `💀 CNF: ｢ ... ｣` → Config file error
-  - `💀 CMD: ｢ ... ｣` → Command error
+  - 🦋 `PRC: ｢ ... ｣` → Start Processing...
+  - 🐞 `SPC: ｢ ... ｣` → Processing Spec
+  - 🐞 `MTA: ｢ ... ｣` → Processing Meta
+  - 🤓 `FTC: ｢ ... ｣` → Fetching URL
+  - 🐞 `BLD: ｢ ... ｣` → Building Dist
+  - 🦋 `BLT: ｢ ... ｣` → Built Dist successfully
+  - 🐞 `TST: ｢ ... ｣` → Testing Dist
+  - 🦋 `TST: ｢ ... ｣` → Tested Dist successfully
+  - 🦋 `ADD: ｢ ... ｣` → Added Dist
+  - 💀 `MTA: ｢ ... ｣` → No Meta found for Spec
+  - 💀 `BLD: ｢ ... ｣` → Bulding Dist failed
+  - 💀 `TST: ｢ ... ｣` → Testing Dist failed
+  - 💀 `CNF: ｢ ... ｣` → Config file error
+  - 💀 `CMD: ｢ ... ｣` → Command error
 
 USAGE
 =====
