@@ -206,7 +206,7 @@ Did I mention that the below are `Pakku` commands as well?
 </pre>
 
 Can you guess what they do?
-A full list is [here](https://github.com/hythm7/Pakku/blob/main/lib/Grammar/Pakku/Common.rakumod),you can add you favourite ones too if you like.
+A full list is [here](https://github.com/hythm7/Pakku/blob/main/lib/Grammar/Pakku/Common.rakumod), you can add you favourite ones too if you like.
 
 
 CONFIGURATION
