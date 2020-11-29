@@ -54,6 +54,7 @@ Overview
 🐞 TST: ｢ ... ｣ → Start testing dist
 🦋 TST: ｢ ... ｣ → Tested dist successfully
 🦋 ADD: ｢ ... ｣ → Added dist successfully
+🔔 TOT: ｢ ... ｣ → Timed out
 💀 MTA: ｢ ... ｣ → No valid meta obtained for spec
 💀 BLD: ｢ ... ｣ → Bulding dist failed
 💀 TST: ｢ ... ｣ → Testing dist failed
