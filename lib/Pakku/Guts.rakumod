@@ -198,19 +198,19 @@ submethod BUILD ( ) {
 
   given %!cnf<cmd> {
 
-    when 'add'    { self.add:     |%!cnf<add>    }
+    when 'add'      { self.add:      |%!cnf<add>    }
 
-    when 'build'  { self.build:   |%!cnf<build>  }
+    when 'build'    { self.build:    |%!cnf<build>  }
 
-    when 'test'   { self.test:    |%!cnf<test>   }
+    when 'test'     { self.test:     |%!cnf<test>   }
 
-    when 'remove' { self.remove:  |%!cnf<remove> }
+    when 'remove'   { self.remove:   |%!cnf<remove> }
 
-    when 'check'  { self.check:   |%!cnf<check>  }
+    when 'checkout' { self.checkout: |%!cnf<checkout>  }
 
-    when 'list'   { self.list:    |%!cnf<list>   }
+    when 'list'     { self.list:     |%!cnf<list>   }
     
-    when 'help'   { 🦋 self.help: |%!cnf<help>   }
+    when 'help'     { 🦋 self.help:  |%!cnf<help>   }
   }
 
   CATCH {

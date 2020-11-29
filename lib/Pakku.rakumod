@@ -134,7 +134,7 @@ method test ( :@spec! ) {
 
 }
 
-method check ( :@spec! ) {
+method checkout ( :@spec! ) {
 
   @spec
       ==> map( -> $spec { Spec.new: $spec } )

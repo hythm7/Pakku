@@ -57,6 +57,10 @@ my @tests = (
     ${:cmd("list"), :list(${:details, :remote, :spec($["Spec"])})},
   "list Spec" =>
     ${:cmd("list"), :list(${:spec($["Spec"])})},
+  "checkout Spec" =>
+    ${:cmd("checkout"), :checkout(${:spec($["Spec"])})},
+  "check Spec" =>
+    ${:cmd("checkout"), :checkout(${:spec($["Spec"])})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
   "help" =>

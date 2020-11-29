@@ -18,23 +18,23 @@ grammar Grammar::Pakku::Cmd {
 
 
   proto rule TOP { * }
-  rule TOP:sym<add>    { <pakkuopt>* % <.space> <add>    <addopt>*    % <.space> <whats>    }
-  rule TOP:sym<build>  { <pakkuopt>* % <.space> <build>  <buildopt>*  % <.space> <whats>    }
-  rule TOP:sym<test>   { <pakkuopt>* % <.space> <test>   <testopt>*   % <.space> <whats>    }
-  rule TOP:sym<remove> { <pakkuopt>* % <.space> <remove> <removeopt>* % <.space> <whats>    }
-  rule TOP:sym<check>  { <pakkuopt>* % <.space> <check>  <checkopt>*  % <.space> <whats>    }
-  rule TOP:sym<list>   { <pakkuopt>* % <.space> <list>   <listopt>*   % <.space> <whats>?   }
-  rule TOP:sym<help>   { <pakkuopt>* <help>? <cmd>? <anything> }
+  rule TOP:sym<add>      { <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>  }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <whats>  }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <whats>  }
+  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>  }
+  rule TOP:sym<checkout> { <pakkuopt>* % <.space> <checkout>  <checkoutopt>* % <.space> <whats>  }
+  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>? }
+  rule TOP:sym<help>     { <pakkuopt>* <help>? <cmd>? <anything> }
 
 
   proto token cmd { * }
-  token cmd:sym<add>    { <!before <.space>> ~ <!after <.space>> <add>    }
-  token cmd:sym<build>  { <!before <.space>> ~ <!after <.space>> <build>  }
-  token cmd:sym<test>   { <!before <.space>> ~ <!after <.space>> <test>   }
-  token cmd:sym<remove> { <!before <.space>> ~ <!after <.space>> <remove> }
-  token cmd:sym<check>  { <!before <.space>> ~ <!after <.space>> <check>  }
-  token cmd:sym<list>   { <!before <.space>> ~ <!after <.space>> <list>   }
-  token cmd:sym<help>   { <!before <.space>> ~ <!after <.space>> <help>   }
+  token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
+  token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
+  token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
+  token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
+  token cmd:sym<checkout> { <!before <.space>> ~ <!after <.space>> <checkout> }
+  token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
+  token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
 
 }
 
@@ -96,14 +96,14 @@ class Grammar::Pakku::CmdActions {
 
   }
 
-  method TOP:sym<check> ( $/ ) {
+  method TOP:sym<checkout> ( $/ ) {
 
     my %cmd;
 
-    %cmd<cmd>          = 'check';
-    %cmd<pakku>        = $<pakkuopt>».made.hash if defined $<pakkuopt>;
-    %cmd<check>       = $<checkopt>».made.hash  if defined $<checkopt>;
-    %cmd<check><spec> = $<whats>.made;
+    %cmd<cmd>            = 'checkout';
+    %cmd<pakku>          = $<pakkuopt>».made.hash     if defined $<pakkuopt>;
+    %cmd<checkout>       = $<checkoutopt>».made.hash  if defined $<checkoutopt>;
+    %cmd<checkout><spec> = $<whats>.made;
 
     make %cmd;
 
@@ -137,12 +137,12 @@ class Grammar::Pakku::CmdActions {
 
   }
 
-  method cmd:sym<add>    ( $/ ) { make 'add'    }
-  method cmd:sym<build>  ( $/ ) { make 'build'  }
-  method cmd:sym<test>   ( $/ ) { make 'test'   }
-  method cmd:sym<remove> ( $/ ) { make 'remove' }
-  method cmd:sym<check>  ( $/ ) { make 'check'  }
-  method cmd:sym<list>   ( $/ ) { make 'list'   }
-  method cmd:sym<help>   ( $/ ) { make 'help'   }
+  method cmd:sym<add>      ( $/ ) { make 'add'      }
+  method cmd:sym<build>    ( $/ ) { make 'build'    }
+  method cmd:sym<test>     ( $/ ) { make 'test'     }
+  method cmd:sym<remove>   ( $/ ) { make 'remove'   }
+  method cmd:sym<checkout> ( $/ ) { make 'checkout' }
+  method cmd:sym<list>     ( $/ ) { make 'list'     }
+  method cmd:sym<help>     ( $/ ) { make 'help'     }
 
 }
