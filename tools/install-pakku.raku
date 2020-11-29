@@ -98,7 +98,7 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
   
   run 'cp', $src-cnf, $dst-cnf unless $dst-cnf.e;
   
-  run $pakku-bin, 'verbose 1', 'add', 'force', 'to', $repo-dir,  $src;
+  run $pakku-bin, 'verbose debug', 'add', 'force', 'to', $repo-dir,  $src;
   
   say "Pakku installed to ｢$pakku-bin｣";
 
