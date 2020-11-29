@@ -6,13 +6,13 @@ method help ( Str:D :$cmd ) {
   # TODO: Better description for options
   given $cmd {
 
-    when 'add'    { self!add    }
-    when 'remove' { self!remove }
-    when 'list'   { self!list   }
-    when 'build'  { self!build  }
-    when 'test'   { self!test   }
-    when 'check'  { self!check  }
-    when 'help'   { self!help   }
+    when 'add'      { self!add    }
+    when 'remove'   { self!remove }
+    when 'list'     { self!list   }
+    when 'build'    { self!build  }
+    when 'test'     { self!test   }
+    when 'checkout' { self!checkout  }
+    when 'help'     { self!help   }
 
 
     default {
@@ -22,7 +22,7 @@ method help ( Str:D :$cmd ) {
         self!list,
         self!build,
         self!test,
-        self!check,
+        self!checkout,
         self!pakku,
         self!help,
       )
@@ -48,7 +48,7 @@ submethod !add ( ) {
   %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
   %add<opt>.push: ( 'deps requires'   => 'add required dependencies only' );
   %add<opt>.push: ( 'deps recommends' => 'add required and recommended dependencies' );
-  %add<opt>.push: ( 'deps only'       => 'add dependencies only' );
+  %add<opt>.push: ( 'deps only'       => 'dont add the dist, only dependencies' );
   %add<opt>.push: ( 'build'           => 'build distribution' );
   %add<opt>.push: ( 'nobuild'         => 'bypass build' );
   %add<opt>.push: ( 'test'            => 'test distribution' );
@@ -130,16 +130,16 @@ submethod !test ( ) {
 
 }
 
-submethod !check ( ) {
+submethod !checkout ( ) {
 
-  my %check;
+  my %checkout;
 
-  %check<cmd>     = 'Check';
-  %check<desc>    = 'Download distribution';
+  %checkout<cmd>     = 'Checkout';
+  %checkout<desc>    = 'Download distribution';
 
-  %check<example>.push: 'pakku check MyModule';
+  %checkout<example>.push: 'pakku checkout MyModule';
 
-  help %check;
+  help %checkout;
 
 }
 
