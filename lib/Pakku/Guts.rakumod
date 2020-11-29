@@ -74,26 +74,15 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
 multi method satisfy ( Pakku::Spec::Bin:D :$spec! ) {
 
-  # TODO
   die X::Pakku::Spec.new: :$spec;
 
 }
 
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
-  # TODO
   die X::Pakku::Spec.new: :$spec;
 
 }
-
-multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
-
-  # TODO
-  die X::Pakku::Spec.new: :$spec;
-
-}
-
-
 
 multi method satisfied ( :@spec! --> Bool:D ) {
 
@@ -113,33 +102,23 @@ multi method satisfied ( Pakku::Spec::Raku:D :$spec! --> Bool:D ) {
 
 multi method satisfied ( Pakku::Spec::Bin:D :$spec! --> Bool:D ) {
 
-  my $name = $spec.name;
-  my $bin  = run 'which', $name, :out, :err;
+  use File::Which;
 
-  return False unless so $bin.out.get;
+  return False unless which $spec.name;
 
   True;
 }
 
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
+  use NativeLibs;
+
   my $name = $spec.name;
+  my $ver  = $spec.ver;
 
-  my $libs   = run '/sbin/ldconfig', '-p', :out, :err;
-
-  my $native = run 'grep', $name, :in( $libs.out ), :out, :err;
-
-  return False unless so $native.out.get;
-
+  return False unless NativeLibs::Loader.load: NativeLibs::cannon-name( $name, |( $ver if $ver ) );
+ 
   True;
-}
-
-multi method satisfied ( Pakku::Spec::Perl:D :$spec! --> Bool:D ) {
-
-  # TODO
-
-  True;
-
 }
 
 
