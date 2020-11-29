@@ -1,10 +1,10 @@
 WHAT?
 =====
-`Pakku` - A Package Manager for `Raku`
+`Pakku` - A Package Manager for `Raku`.
 
 WHY?
 ====
-Because `TMTOWTDI`
+TMTOWTDI
 
 WHEN?
 =====
@@ -12,7 +12,7 @@ WHEN?
 
 INSTALLATION
 ============
-Requires `git`, `curl` and `tar` to be available in `$PATH`
+Requires `git`, `curl` and `tar` be available in `$PATH`
 <pre>
 git clone https://github.com/hythm7/Pakku.git
 
@@ -29,29 +29,39 @@ Overview
 ========
 * `Pakku` is a simple package manager for `Raku`, with many options and customizations that can be configured in `pakku.cnf` file or via command line options.
 
-* `Pakku` uses [Pakku::RecMan](https://github.com/hythm7/Pakku-RecMan) as a recommendation manager
-
-* `Pakku` command result is one of:
+* `Pakku` command result is either:
   - `-Ofun` - Desired operation completed successfully
   - `Nofun` - Desired operation did not complete successfully
 
-* `Pakku` has 7 verbosity levels `silent trace debug info warn error fatal`
+* `Pakku` verbosity levels:
+  - `0 (silent)`   - No output what so ever 
+  - `1 (trace)` 🤓 - If you want to see everything
+  - `2 (debug)` 🐞 - To debug some issue
+  - `3 (info )` 🦋 - Camelia delivers important things
+  - `4 (warn )` 🔔 - Only when some warnings happen
+  - `5 (error)` ❌ - When errors are what you care about
+  - `6 (fatal)` 💀 - You probably don't like to see that when running Pakku, me neither!
+
 
 * `Pakku` output meaning:
-  - 🦋 `PRC: ｢ ... ｣` → Start Processing...
-  - 🐞 `SPC: ｢ ... ｣` → Processing Spec
-  - 🐞 `MTA: ｢ ... ｣` → Processing Meta
-  - 🤓 `FTC: ｢ ... ｣` → Fetching URL
-  - 🐞 `BLD: ｢ ... ｣` → Building Dist
-  - 🦋 `BLT: ｢ ... ｣` → Built Dist successfully
-  - 🐞 `TST: ｢ ... ｣` → Testing Dist
-  - 🦋 `TST: ｢ ... ｣` → Tested Dist successfully
-  - 🦋 `ADD: ｢ ... ｣` → Added Dist
-  - 💀 `MTA: ｢ ... ｣` → No Meta found for Spec
-  - 💀 `BLD: ｢ ... ｣` → Bulding Dist failed
-  - 💀 `TST: ｢ ... ｣` → Testing Dist failed
-  - 💀 `CNF: ｢ ... ｣` → Config file error
-  - 💀 `CMD: ｢ ... ｣` → Command error
+```
+🦋 PRC: ｢ ... ｣ → Start processing...
+🐞 SPC: ｢ ... ｣ → Processing spec
+🐞 MTA: ｢ ... ｣ → Processing meta
+🤓 FTC: ｢ ... ｣ → Fetch URL
+🐞 BLD: ｢ ... ｣ → Start building dist
+🦋 BLT: ｢ ... ｣ → Built dist successfully
+🐞 TST: ｢ ... ｣ → Start testing dist
+🦋 TST: ｢ ... ｣ → Tested dist successfully
+🦋 ADD: ｢ ... ｣ → Added dist successfully
+💀 MTA: ｢ ... ｣ → No valid meta obtained for spec
+💀 BLD: ｢ ... ｣ → Bulding dist failed
+💀 TST: ｢ ... ｣ → Testing dist failed
+💀 CNF: ｢ ... ｣ → Config file error
+💀 CMD: ｢ ... ｣ → Could not understand command
+```
+
+* `Pakku` uses [Pakku::RecMan](https://github.com/hythm7/Pakku-RecMan) recommendation manager to obtain distributions `META` info and archives.
 
 USAGE
 =====
@@ -72,10 +82,10 @@ nodeps          → no dependencies
 deps runtime    → add runtime dependencies
 deps test       → add test    dependencies
 deps build      → add build dependencies
-deps requires   → add required dependencies
-deps recommends → add required and recommended dependencies as well
-deps suggests   → add required, recommended and suggested dependencies
-deps only       → dont add the distribution, only the dependencies
+deps requires   → only required dependencies
+deps recommends → required and recommended dependencies as well
+deps suggests   → required, recommended and suggested dependencies
+deps only       → dont add the distribution, only it's dependencies
 build           → build distribution
 nobuild         → bypass build
 test            → test distribution
@@ -110,7 +120,7 @@ from < repo > → remove distribution from provided repo only
 <b>Options:</b> - Specific to <b>list</b> command
 
 local                 → list local installed dist
-remote                → list remote recman's dists
+remote                → list remote recman's available dists
 details               → list details of dist
 repo < name-or-path > → list dists installed in specific repo
 </pre>
@@ -130,10 +140,10 @@ repo < name-or-path > → list dists installed in specific repo
 </pre>
 
 
-**Check distribution** (download)
+**Checkout (download) distribution**
 
 <pre>
-<b>pakku check MyModule</b>
+<b>pakku checkout MyModule</b>
 </pre>
 
 
@@ -142,18 +152,18 @@ repo < name-or-path > → list dists installed in specific repo
 <pre>
 <b>pakku dont     add MyModule</b>
 <b>pakku nopretty add MyModule</b>
-<b>pakku yolo     add MyModule MyOtherModule</b>
+<b>pakku yolo     add MyFailedModule MyModule</b>
 <b>pakku pretty   please remove MyModule</b>
 
 
 <b>Options:</b> - Global options control general Pakku behavior and placed before Pakku commands < add remove ... >
 
 pretty            → colors
-nopretty          → no color
+nopretty          → no colors
 dont              → do everything but dont do it (dry run)
 verbose < level > → verbosity < silent trace debug info warn error fatal >
-please            → be nice to the butterfly
-yolo              → dont stop on Pakku exceptions, useful when you don't want to stop on error (e.g. Test Faliure)
+please            → be nice to butterflies
+yolo              → dont stop on errors, useful when need to proceed after error (e.g. Test Faliure)
 </pre>
 
 
@@ -172,18 +182,18 @@ yolo              → dont stop on Pakku exceptions, useful when you don't want 
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add    → a     yolo    → y     nopretty → np    silent → «S 0»
-remove → r     pretty  → p     nodeps   → nd    trace  → «T 1»
-list   → l     only    → o     noforce  → nf    debug  → «D 2»
-build  → b     verbose → v     noforce  → nf    info   → «I 3»
-test   → t     verbose → v     details  → d     warn   → «W 4»
-check  → c     deps    → d     local    → l     error  → «E 5»
-help   → h     force   → f     remote   → r     fatal  → «F 6»
+add       → a     yolo    → y     nopretty → np     silent → «S 0»
+remove    → r     pretty  → p     nodeps   → nd     trace  → «T 1»
+list      → l     only    → o     noforce  → nf     debug  → «D 2»
+build     → b     verbose → v     noforce  → nf     info   → «I 3»
+test      → t     verbose → v     details  →  d     warn   → «W 4»
+checkout  → c     deps    → d     local    →  l     error  → «E 5»
+help      → h     force   → f     remote   →  r     fatal  → «F 6»
 </pre>
 
 So this is a valid `Pakku` command:
 <pre>
-<b>pakku y v0 a f nd MyModule</b>
+<b>pakku y a f MyModule</b>
 </pre>
 
 Did I mention that the below are `Pakku` commands as well?
@@ -195,12 +205,14 @@ Did I mention that the below are `Pakku` commands as well?
 </pre>
 
 Can you guess what they do?
-A full list is [here](https://github.com/hythm7/Pakku/blob/main/lib/Grammar/Pakku/Common.rakumod),You can add you favourite ones too if you like.
+A full list is [here](https://github.com/hythm7/Pakku/blob/main/lib/Grammar/Pakku/Common.rakumod),you can add you favourite ones too if you like.
 
 
 CONFIGURATION
 =============
-All options can be set in command line or in the config file <b>pakku.cnf</b> in installtion dir. Config file example is provided below:
+All options can be set in command line or in the config file <b>pakku.cnf</b> ｢`~/.pakku/pakku.cnf`｣. The only needed config is `<recman>` source, otherwise you will be able to install local distributions only.
+
+Config file example:
 
 <pre>
 ### pakku Config
@@ -225,6 +237,7 @@ All options can be set in command line or in the config file <b>pakku.cnf</b> in
   # remote  # remote recman's dists
   # details # list   details of dists
 
+## Customize verbosity levels symbols and colors
 # < log >
   # trace name T:
   # debug name D:
@@ -246,27 +259,19 @@ recman.pakku.org
 </pre>
 
 
-TODO
-====
-* Write more tests
-* Fix bugs
-* Redo things if a better way revealed to me
-* Improve the performance to live up to the motto
-
-
 CAVEATS
 =======
-Currently `Pakku` Works on GNU/Linux, Unfortunately I don't have access to Windows or Mac machine to test and make it compatible with different Operating Systems. However, PRs are very welcome :)
+Currently `Pakku` runs on Linux, more operating systems will be supported in the future.
 
 
 CREDITS
 =======
-Thanks to `Panda` and `Zef`, for `Pakku` inspiration.
-also Thanks for the nice `#perl6` and `#raku` community.
+Thanks to `Panda` and `Zef` for `Pakku` inspiration.
+also Thanks to the nice `#raku` community.
 
 MOTTO
 ===========
-Light as a 🦋, Colorful as a 🦋
+Light like a 🦋, Colorful like a 🦋
 
 AUTHOR
 ======

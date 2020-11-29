@@ -10,9 +10,10 @@ role Grammar::Pakku::Common {
   token remove:sym<r>      { <sym> }
   token remove:sym<↑>      { <sym> }
 
-  proto token check { * }
-  token check:sym<check> { <sym> }
-  token check:sym<c>     { <sym> }
+  proto token checkout { * }
+  token checkout:sym<checkout> { <sym> }
+  token checkout:sym<check>    { <sym> }
+  token checkout:sym<c>        { <sym> }
 
 
   proto token list { * }
@@ -50,11 +51,9 @@ role Grammar::Pakku::Common {
   token addopt:sym<force>     { <force>                       }
   token addopt:sym<to>        { <sym> <.space>* <repo>        }
 
-  proto token buildopt { * }
-
-  proto token testopt { * }
-
-  proto token checkopt { * }
+  proto token buildopt    { * }
+  proto token testopt     { * }
+  proto token checkoutopt { * }
 
   proto token removeopt { * }
   token removeopt:sym<from> { <from> <.space>* <repo> }
