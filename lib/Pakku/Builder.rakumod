@@ -49,7 +49,7 @@ method build ( Distribution::Locally:D :$dist ) {
   react {
 
     whenever $proc.stdout.lines { 🤓 $^out }
-    whenever $proc.stderr.lines { 🔔 $^err }
+    whenever $proc.stderr.lines { ❌ $^err }
 
     whenever $proc.stdout.stable( 420 ) {
 
