@@ -1,7 +1,7 @@
 use Pakku::Log;
 use Pakku::Guts;
 
-unit class Pakku:ver<pupa>:auth<github:hythm7>;
+unit class Pakku;
   also does Pakku::Guts;
 
 
