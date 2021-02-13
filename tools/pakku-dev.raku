@@ -1,8 +1,7 @@
 #!/usr/bin/env raku
-#
 
-use lib 'lib';
+use lib $*PROGRAM.resolve.parent( 2 ) ~ '/lib';
 
 use Pakku;
 
-Pakku.new;
+Pakku.new.fun;

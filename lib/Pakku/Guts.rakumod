@@ -182,9 +182,50 @@ multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 multi method fetch ( IO $prefix! ) { $prefix }
 
 
-submethod BUILD ( ) {
+method fun ( ) {
 
-  my $pakku-dir   = $*PROGRAM.absolute.IO.parent: 2;
+  CATCH {
+
+
+    when X::Pakku::Cnf {
+
+      Pakku::Log.new: :4verbose, :pretty;
+
+      💀 .message;
+
+      nofun;
+
+    }
+
+    when X::Pakku::Cmd {
+
+      Pakku::Log.new: :4verbose, :pretty;
+
+      💀 .message;
+
+      nofun;
+
+    }
+
+    when X::Pakku {
+
+      💀 .message;
+
+      if $!yolo {
+
+        🔔 'YOL: ｢¯\_(ツ)_/¯｣';
+
+        .resume;
+
+      }
+
+      nofun;
+
+    }
+
+  }
+
+  my $pakku-dir   = $*PROGRAM.resolve.parent: 2;
   my $default-cnf = %?RESOURCES<pakku.cnf>.IO;
   my $user-cnf    = $pakku-dir.add: 'pakku.cnf';
 
@@ -232,40 +273,7 @@ submethod BUILD ( ) {
     when 'help'     { 🦋 self.help:  |%!cnf<help>     }
   }
 
-  CATCH {
-
-    when X::Pakku::Cnf {
-
-      Pakku::Log.new: :4verbose, :pretty;
-
-      💀 .message;
-
-    }
-
-    when X::Pakku::Cmd {
-
-      Pakku::Log.new: :4verbose, :pretty;
-
-      💀 .message;
-
-    }
-
-    when X::Pakku {
-
-      💀 .message;
-
-      if $!yolo {
-
-        🔔 'YOL: ｢¯\_(ツ)_/¯｣';
-
-        .resume;
-
-      }
-
-      nofun;
-    }
-
-  }
+  ofun;
 
 }
 

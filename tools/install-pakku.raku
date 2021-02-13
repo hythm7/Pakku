@@ -79,12 +79,11 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
   my $pakku-bin-content = qq:to/END/;
   #!/usr/bin/env raku
   
-  # use Pakku's dependencies repo
-  use lib '{ $pakku-repo.path-spec }';
+  use lib 'inst#' ~ $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
   
   use Pakku;
   
-  Pakku.new;
+  Pakku.new.fun;
   
   END
   

@@ -75,7 +75,7 @@ method add (
     } );
     
     
-  ofun;
+  return;
 
 }
 
@@ -94,7 +94,7 @@ method remove (
 
   } );
 
-  ofun;
+  return;
 
 }
 
@@ -115,7 +115,9 @@ method pack (
   my $*repo = Pakku::Repo.new: :$repo;
 
   🦋 "PAC: ｢{@spec}｣";
-  
+
+  return;
+
 }
 
 method list (
@@ -137,7 +139,7 @@ method list (
     ==> map( -> $meta { Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { 🦋 $meta } );
 
-  ofun;
+  return;
 
 }
 
@@ -151,8 +153,7 @@ method build ( :@spec! ) {
      ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: $meta.recman-src } )
     ==> map( -> $dist { $!builder.build: :$dist unless $!dont } );
 
-
-  ofun;
+  return;
 
 }
 
@@ -166,8 +167,7 @@ method test ( :@spec! ) {
     ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: $meta.recman-src } )
     ==> map( -> $dist { $!tester.test: :$dist unless $!dont } );
 
-
-  ofun;
+  return;
 
 }
 
@@ -179,8 +179,7 @@ method checkout ( :@spec! ) {
       ==> map( -> $meta { $.fetch: $meta.recman-src, :!unlink unless $!dont } )
       ==> map( -> $path { 🦋 "CHK: ｢$path｣" } );
 
-
-  ofun;
+  return;
 
 }
 
