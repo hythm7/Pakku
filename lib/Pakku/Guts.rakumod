@@ -1,3 +1,7 @@
+use URL;
+use File::Temp;
+use Libarchive::Simple;
+
 use X::Pakku;
 use Pakku::Log;
 use Pakku::Help;
@@ -6,7 +10,6 @@ use Pakku::Spec;
 use Pakku::Repo;
 use Pakku::Tester;
 use Pakku::Builder;
-use Pakku::Fetcher;
 use Grammar::Pakku::Cnf;
 use Grammar::Pakku::Cmd;
 use Pakku::RecMan::Client;
@@ -20,7 +23,6 @@ has Bool $!yolo;
 has      @!ignored;
 
 has Pakku::Log            $!log;
-has Pakku::Fetcher        $!fetcher;
 has Pakku::Builder        $!builder;
 has Pakku::Tester         $!tester;
 has Pakku::RecMan::Client $!recman;
@@ -161,6 +163,24 @@ multi method get-deps( Pakku::Spec:D $spec, :$deps ) {
 
 }
 
+multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
+
+  🤓 "FTC: ｢$src｣";
+
+  my $url = URL.new: $src;
+
+  my $download = $dst.IO.add( $url.path.tail ).Str;
+
+  $!recman.fetch: URL => ~$url, :$download;
+
+  .extract: destpath => $dst for archive-read $download;
+
+  $dst.IO.dir.first: *.d;
+
+}
+
+multi method fetch ( IO $prefix! ) { $prefix }
+
 
 submethod BUILD ( ) {
 
@@ -192,8 +212,6 @@ submethod BUILD ( ) {
   my Pakku::Repo $*repo .= new: %!cnf<add remove pack list>.first( *<repo> )<repo>;
 
   $!recman  = Pakku::RecMan::Client.new: :@url;
-
-  $!fetcher = Pakku::Fetcher.new;
 
   @!ignored = <Test NativeCall nqp>;
 

@@ -48,7 +48,7 @@ method add (
 
     ==> map( -> $meta {
 
-      my $prefix = $!fetcher.fetch: $meta.recman-src;
+      my $prefix = $.fetch: $meta.recman-src;
     
       $meta.to-dist: :$prefix;
 
@@ -129,7 +129,7 @@ method build ( :@spec! ) {
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
     ==> map( -> $spec { self.satisfy: :$spec } )
-    ==> map( -> $meta { $meta.to-dist: prefix => $!fetcher.fetch: $meta.recman-src } )
+     ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: $meta.recman-src } )
     ==> map( -> $dist { $!builder.build: :$dist unless $!dont } );
 
 
@@ -142,7 +142,7 @@ method test ( :@spec! ) {
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
     ==> map( -> $spec { self.satisfy: :$spec } )
-    ==> map( -> $meta { $meta.to-dist: prefix => $!fetcher.fetch: $meta.recman-src } )
+    ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: $meta.recman-src } )
     ==> map( -> $dist { $!tester.test: :$dist unless $!dont } );
 
 
@@ -155,7 +155,7 @@ method checkout ( :@spec! ) {
   @spec
       ==> map( -> $spec { Spec.new: $spec } )
       ==> map( -> $spec { self.satisfy: :$spec } )
-      ==> map( -> $meta { $!fetcher.fetch: $meta.recman-src, :!unlink unless $!dont } )
+      ==> map( -> $meta { $.fetch: $meta.recman-src, :!unlink unless $!dont } )
       ==> map( -> $path { 🦋 "CHK: ｢$path｣" } );
 
 
