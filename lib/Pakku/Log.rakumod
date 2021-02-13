@@ -94,7 +94,7 @@ class Pakku::Log {
     else {
 
       my @fun  = < -Ofun Nofun >;
-      my @info = < PRC: BLT: TST: ADD: CHK: >;
+      my @info = < PRC: BLT: TST: ADD: PAC: CHK: >;
 
       logger.send-to: $*OUT, :level( INFO ), :msg( '-Ofun' ),        :formatter( $ofun-formatter);
       logger.send-to: $*OUT, :level( INFO ), :msg( 'Nofun' ),        :formatter( $nofun-formatter);

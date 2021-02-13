@@ -26,6 +26,7 @@ grammar Grammar::Pakku::Cnf {
   rule section:sym<build>  { <.ws> <.lt> <sym> <.gt> <.nl> <buildopt>*  %% <.eol> }
   rule section:sym<test>   { <.ws> <.lt> <sym> <.gt> <.nl> <testopt>*   %% <.eol> }
   rule section:sym<remove> { <.ws> <.lt> <sym> <.gt> <.nl> <removeopt>* %% <.eol> }
+  rule section:sym<pack>    { <.ws> <.lt> <sym> <.gt> <.nl> <packopt>*    %% <.eol> }
   rule section:sym<list>   { <.ws> <.lt> <sym> <.gt> <.nl> <listopt>*   %% <.eol> }
   rule section:sym<recman> { <.ws> <.lt> <sym> <.gt> <.nl> <recmanopt>* %% <.eol> }
   rule section:sym<log>    { <.ws> <.lt> <sym> <.gt> <.nl> <logopt>*    %% <.eol> }
@@ -71,6 +72,7 @@ class Grammar::Pakku::CnfActions {
   method section:sym<pakku>  ( $/ ) { %!cnf{~$<sym>} = $<pakkuopt>».made.hash }
   method section:sym<add>    ( $/ ) { %!cnf{~$<sym>} = $<addopt>».made.hash }
   method section:sym<remove> ( $/ ) { %!cnf{~$<sym>} = $<removeopt>».made.hash }
+  method section:sym<pack>    ( $/ ) { %!cnf{~$<sym>} = $<packopt>».made.hash }
   method section:sym<list>   ( $/ ) { %!cnf{~$<sym>} = $<listopt>».made.hash }
   method section:sym<recman> ( $/ ) { %!cnf{~$<sym>}.append: $<recmanopt>».made }
 

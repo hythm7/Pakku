@@ -10,6 +10,12 @@ role Grammar::Pakku::Common {
   token remove:sym<r>      { <sym> }
   token remove:sym<↑>      { <sym> }
 
+  proto token pack { * }
+  token pack:sym<pack> { <sym> }
+  token pack:sym<p>    { <sym> }
+  token pack:sym<📦>   { <sym>  }
+
+
   proto token checkout { * }
   token checkout:sym<checkout> { <sym> }
   token checkout:sym<check>    { <sym> }
@@ -57,6 +63,11 @@ role Grammar::Pakku::Common {
 
   proto token removeopt { * }
   token removeopt:sym<from> { <from> <.space>* <repo> }
+
+
+  proto token packopt { * }
+  token packopt:sym<raku>      { 'raku'                        }
+  token packopt:sym<to>        { <sym> <.space>* <repo>        }
 
 
   proto token listopt { * }
@@ -277,6 +288,9 @@ role Grammar::Pakku::CommonActions {
 
   method removeopt:sym<from> ( $/ ) { make ( repo => $<repo>.made ) }
 
+
+  method packopt:sym<raku> ( $/ ) { make ( :raku )                }
+  method packopt:sym<to>   ( $/ ) { make ( repo => $<repo>.made ) }
 
   method listopt:sym<remote>  ( $/ ) { make $<remote>.made  }
   method listopt:sym<local>   ( $/ ) { make $<local>.made   }

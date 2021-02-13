@@ -88,6 +88,22 @@ method remove ( :@spec! ) {
 
 }
 
+method pack (
+
+         :@spec!,
+         :$deps  = True,
+  Bool:D :$build = True,
+  Bool:D :$test  = True,
+  Bool:D :$force = False,
+
+) {
+
+  🦋 "PRC: ｢{@spec}｣";
+
+  🦋 "PAC: ｢{@spec}｣";
+  
+}
+
 method list (
 
   :@spec,

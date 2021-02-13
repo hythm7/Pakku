@@ -188,7 +188,7 @@ submethod BUILD ( ) {
 
   $!log  = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
 
-  my Pakku::Repo $*repo .= new: %!cnf<add remove list>.first( *<repo> )<repo>;
+  my Pakku::Repo $*repo .= new: %!cnf<add remove pack list>.first( *<repo> )<repo>;
 
   $!recman  = Pakku::RecMan::Client.new: :@url;
 
@@ -198,19 +198,21 @@ submethod BUILD ( ) {
 
   given %!cnf<cmd> {
 
-    when 'add'      { self.add:      |%!cnf<add>    }
+    when 'add'      { self.add:      |%!cnf<add>      }
 
-    when 'build'    { self.build:    |%!cnf<build>  }
+    when 'build'    { self.build:    |%!cnf<build>    }
 
-    when 'test'     { self.test:     |%!cnf<test>   }
+    when 'test'     { self.test:     |%!cnf<test>     }
 
-    when 'remove'   { self.remove:   |%!cnf<remove> }
+    when 'remove'   { self.remove:   |%!cnf<remove>   }
 
-    when 'checkout' { self.checkout: |%!cnf<checkout>  }
+    when 'checkout' { self.checkout: |%!cnf<checkout> }
 
-    when 'list'     { self.list:     |%!cnf<list>   }
+    when 'pack'     { self.pack:     |%!cnf<pack>     }
+
+    when 'list'     { self.list:     |%!cnf<list>     }
     
-    when 'help'     { 🦋 self.help:  |%!cnf<help>   }
+    when 'help'     { 🦋 self.help:  |%!cnf<help>     }
   }
 
   CATCH {
