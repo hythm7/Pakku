@@ -84,7 +84,6 @@ method remove (
   :@spec!,
   :$repo,
 
-
 ) {
 
   my $*repo = Pakku::Repo.new: :$repo;
@@ -144,6 +143,8 @@ method list (
 
 method build ( :@spec! ) {
 
+  my $*repo = Pakku::Repo.new;
+
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
     ==> map( -> $spec { self.satisfy: :$spec } )
@@ -156,6 +157,8 @@ method build ( :@spec! ) {
 }
 
 method test ( :@spec! ) {
+
+  my $*repo = Pakku::Repo.new;
 
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
