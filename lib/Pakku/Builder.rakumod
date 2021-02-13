@@ -16,7 +16,7 @@ method build ( Distribution::Locally:D :$dist ) {
 
   my $prefix  = $dist.prefix;
   my $lib     = $prefix.add: <lib>;
-  my $include = "$lib,{ $*repo.head.path-spec }";
+  my $include = "$lib,{ $*repo.path-spec }";
   my @deps    = $dist.deps( :deps<build> ).grep( { .from ~~ 'raku' } );
 
   my $cmd = $builder

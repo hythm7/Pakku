@@ -209,8 +209,6 @@ submethod BUILD ( ) {
 
   $!log  = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
 
-  my Pakku::Repo $*repo .= new: %!cnf<add remove pack list>.first( *<repo> )<repo>;
-
   $!recman  = Pakku::RecMan::Client.new: :@url;
 
   @!ignored = <Test NativeCall nqp>;

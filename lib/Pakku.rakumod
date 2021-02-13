@@ -12,10 +12,13 @@ method add (
   Bool:D :$build = True,
   Bool:D :$test  = True,
   Bool:D :$force = False,
+         :$repo,
 
 ) {
 
   🦋 "PRC: ｢{@spec}｣";
+
+  my $*repo = Pakku::Repo.new: :$repo;
 
   @spec
 
@@ -76,7 +79,15 @@ method add (
 
 }
 
-method remove ( :@spec! ) {
+method remove (
+
+  :@spec!,
+  :$repo,
+
+
+) {
+
+  my $*repo = Pakku::Repo.new: :$repo;
 
   @spec.map( -> $spec {
 
@@ -95,10 +106,14 @@ method pack (
   Bool:D :$build = True,
   Bool:D :$test  = True,
   Bool:D :$force = False,
+         :$repo,
+
 
 ) {
 
   🦋 "PRC: ｢{@spec}｣";
+
+  my $*repo = Pakku::Repo.new: :$repo;
 
   🦋 "PAC: ｢{@spec}｣";
   
@@ -106,13 +121,16 @@ method pack (
 
 method list (
 
-  :@spec,
-
+         :@spec,
   Bool:D :$details = False,
   Bool:D :$remote  = False,
   Bool:D :$local   = !$remote,
+         :$repo,
+
 
 ) {
+
+  my $*repo = Pakku::Repo.new: :$repo;
 
   @spec .= map( -> $spec { Spec.new: $spec } );
 

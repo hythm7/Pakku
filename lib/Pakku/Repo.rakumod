@@ -1,24 +1,25 @@
 use Pakku::Spec;
 
 unit class Pakku::Repo;
-  also is Array;
 
+has @!repo;
+has $!repo handles < install prefix path-spec > = @!repo.head;
 
 method candies ( ::?CLASS:D: Pakku::Spec:D $spec ) {
 
-  flat self.map( *.candidates: $spec.name, |$spec.spec );
+  flat @!repo.map( *.candidates: $spec.name, |$spec.spec );
 
 }
 
 method add ( Distribution::Locally:D :$dist!, :$force ) {
 
-  self.head.install: $dist, :$force;
+  $.install: $dist, :$force;
 
 }
 
 method remove ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
-  self.map( -> $repo {
+  @!repo.map( -> $repo {
 
     sink self.candies( $spec ).map( -> $dist { $repo.uninstall: $dist } )
 
@@ -30,7 +31,7 @@ multi method list ( ::?CLASS:D: :@spec! where *.so ) {
 
   @spec.map( -> $spec { 
 
-    self
+    @!repo
       ==> map( -> $repo {
 
         $repo.candidates( $spec.name, |$spec.spec )
@@ -48,31 +49,29 @@ multi method list ( ::?CLASS:D: :@spec! where *.so ) {
 
 multi method list ( ::?CLASS:D: :@spec! where not *.so ) {
 
-  self
+  @!repo
     ==> map(  *.installed.map( *.meta ) ) 
     ==> flat( )
     ==> grep( *.defined );
 }
 
 
-multi method new ( ::?CLASS: Str $name ) {
+multi submethod BUILD ( Str:D :$repo! ) {
 
-  my $repo = CompUnit::RepositoryRegistry.repository-for-name: $name;
+  @!repo = CompUnit::RepositoryRegistry.repository-for-name: $repo;
 
-  nextwith $repo;
 }
 
-multi method new ( ::?CLASS: IO $prefix ) {
+multi submethod BUILD ( IO::Path:D :$repo! ) {
 
-  my $repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$prefix", next-repo => $*REPO;
+  @!repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$repo", next-repo => $*REPO;
 
-  nextwith $repo;
 }
 
-multi method new ( ::?CLASS: Any:U $default ) {
+multi submethod BUILD ( ) {
 
   my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'home';
 
-  nextwith flat $repo.repo-chain.grep( CompUnit::Repository::Installation );
+  @!repo = flat $repo.repo-chain.grep( CompUnit::Repository::Installation );
 
 }
