@@ -298,12 +298,8 @@ role Grammar::Pakku::CommonActions {
 
   method listopt:sym<repo> ( $/ ) {
 
-
-    #$repo.next-repo = Nil;
-
-    #$*REPO.next-repo = $repo;
-
     make ( repo => $<repo>.made );
+
   }
 
 
@@ -350,19 +346,13 @@ role Grammar::Pakku::CommonActions {
   method details:sym<nd>        ( $/ ) { make ( :!details ) }
 
   method repo:sym<repo-name> ( $/ ) {
-    #make CompUnit::RepositoryRegistry.repository-for-name: $<repo-name>.Str
-    make $/.Str;
+
+    make ~$/;
+
   }
 
   method repo:sym<repo-path> ( $/ ) {
 
-    # my $prefix = $<repo-inst>.IO;
-
-    # my $repo = CompUnit::Repository::Installation.new: :$prefix;
-
-    # CompUnit::RepositoryRegistry.register-name(  $prefix.basename, $repo );
-
-    # make $repo;
     make $/.IO;
 
   }
