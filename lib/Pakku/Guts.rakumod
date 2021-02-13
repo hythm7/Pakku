@@ -164,8 +164,9 @@ multi method get-deps( Pakku::Spec:D $spec, :$deps ) {
 
 submethod BUILD ( ) {
 
+  my $pakku-dir   = $*PROGRAM.absolute.IO.parent: 2;
   my $default-cnf = %?RESOURCES<pakku.cnf>.IO;
-  my $user-cnf    = $*REPO.Str.IO.parent.add: 'pakku.cnf';
+  my $user-cnf    = $pakku-dir.add: 'pakku.cnf';
 
   my $pakku-cnf   = $user-cnf.e ?? $user-cnf !! $default-cnf;
 
