@@ -30,6 +30,7 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
     Number::Bytes::Human
     BitEnum
     Libarchive
+    URI::Encode
     Retry
     Pakku::Spec
     Pakku::Meta
