@@ -51,6 +51,12 @@ method build ( Distribution::Locally:D :$dist ) {
     whenever $proc.stdout.lines { 🤓 $^out }
     whenever $proc.stderr.lines { ❌ $^err }
 
+    whenever $proc.stdout.stable( 42 ) {
+
+    🐞 "WAI: ｢{$proc.command}｣";
+
+    }
+
     whenever $proc.stdout.stable( 420 ) {
 
       🔔 "TOT: ｢$dist｣";
@@ -66,6 +72,7 @@ method build ( Distribution::Locally:D :$dist ) {
     whenever $proc.start( cwd => $prefix, :%*ENV ) {
 
       $exitcode = .exitcode;
+
       done;
 
     }
@@ -73,5 +80,5 @@ method build ( Distribution::Locally:D :$dist ) {
 
   die X::Pakku::Build.new: :$dist if $exitcode;
 
-  🦋 "BLT: ｢$dist｣"; 
+  🦋 "BLD: ｢$dist｣"; 
 }

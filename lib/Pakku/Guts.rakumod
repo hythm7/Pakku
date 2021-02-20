@@ -165,7 +165,7 @@ multi method get-deps( Pakku::Spec:D $spec, :$deps ) {
 
 multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
-  🤓 "FTC: ｢$src｣";
+  🐞 "FTC: ｢$src｣";
 
   my $url = URL.new: $src;
 
@@ -175,11 +175,63 @@ multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
   .extract: destpath => $dst for archive-read $download;
 
-  $dst.IO.dir.first: *.d;
+  my $dir = $dst.IO.dir.first: *.d;
+
+  🐞 "FTC: ｢$dir｣";
+
+  $dir;
 
 }
 
 multi method fetch ( IO $prefix! ) { $prefix }
+
+
+method pakudo (
+
+  :$rakudo = 'master',
+  :$to     = tempdir :!unlink
+  --> IO::Path:D
+
+) {
+
+  🐞 "PAC: ｢Rakudo:$rakudo｣";
+
+  my $build-dir  = tempdir;
+  my $rakudo-url = 'https://github.com/rakudo/rakudo',
+  my $rakudo-src = $build-dir.IO.add: 'rakudo';
+
+  my $clone = Proc::Async.new: «git clone -b "$rakudo" --single-branch "$rakudo-url" rakudo»;
+
+  my $build = Proc::Async.new: «perl Configure.pl "--prefix=$to" --gen-moar --relocatable --make-install»; 
+
+  react {
+
+    whenever $clone.stdout.lines { 🤓 $^out }
+    whenever $clone.stderr.lines { ❌ $^err }
+
+    whenever $build.stdout.lines { 🤓 $^out }
+    whenever $build.stderr.lines { ❌ $^err }
+
+    whenever $clone.stdout.stable( 42 ) {
+      🐞 "WAI: ｢{$clone.command}｣";
+    }
+
+    whenever $build.stdout.stable( 42 ) {
+      🐞 "WAI: ｢{$build.command}｣";
+    }
+
+    whenever $clone.start( cwd => $build-dir, :%*ENV ) { 
+      whenever $build.start( cwd => $rakudo-src, :%*ENV ) {
+        done;
+      }
+    }
+  }
+
+  🦋 "PAC: ｢Rakudo:$rakudo｣";
+
+  $to.IO;
+
+}
 
 
 method fun ( ) {

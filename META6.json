@@ -30,7 +30,6 @@
     "Pakku::Help"            : "lib/Pakku/Help.rakumod",
     "Pakku::Repo"            : "lib/Pakku/Repo.rakumod",
     "Pakku::Tester"          : "lib/Pakku/Tester.rakumod",
-    "Pakku::Fetcher"         : "lib/Pakku/Fetcher.rakumod",
     "Pakku::Builder"         : "lib/Pakku/Builder.rakumod",
     "Grammar::Pakku::Cnf"    : "lib/Grammar/Pakku/Cnf.rakumod",
     "Grammar::Pakku::Cmd"    : "lib/Grammar/Pakku/Cmd.rakumod",

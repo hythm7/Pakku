@@ -46,20 +46,23 @@ Overview
 * `Pakku` output meaning:
 ```
 🦋 PRC: ｢ ... ｣ → Start processing...
-🐞 SPC: ｢ ... ｣ → Processing spec
-🐞 MTA: ｢ ... ｣ → Processing meta
-🤓 FTC: ｢ ... ｣ → Fetch URL
-🐞 BLD: ｢ ... ｣ → Start building dist
-🦋 BLT: ｢ ... ｣ → Built dist successfully
-🐞 TST: ｢ ... ｣ → Start testing dist
-🦋 TST: ｢ ... ｣ → Tested dist successfully
-🦋 ADD: ｢ ... ｣ → Added dist successfully
+🐞 SPC: ｢ ... ｣ → Spec
+🐞 MTA: ｢ ... ｣ → Meta
+🐞 FTC: ｢ ... ｣ → Fetch
+🐞 BLD: ｢ ... ｣ → Building dist
+🦋 BLD: ｢ ... ｣ → Built dist
+🐞 TST: ｢ ... ｣ → Testing dist
+🦋 TST: ｢ ... ｣ → Tested dist
+🦋 ADD: ｢ ... ｣ → Added dist
+🐞 PAC: ｢ ... ｣ → Packing rakudo and dist 
+🦋 PAC: ｢ ... ｣ → Pack location
+🐞 WAI: ｢ ... ｣ → Waiting
 🔔 TOT: ｢ ... ｣ → Timed out
-💀 MTA: ｢ ... ｣ → No valid meta obtained for spec
-💀 BLD: ｢ ... ｣ → Bulding dist failed
-💀 TST: ｢ ... ｣ → Testing dist failed
-💀 CNF: ｢ ... ｣ → Config file error
-💀 CMD: ｢ ... ｣ → Could not understand command
+💀 MTA: ｢ ... ｣ → Meta error
+💀 BLD: ｢ ... ｣ → Buld failed
+💀 TST: ｢ ... ｣ → Test failed
+💀 CNF: ｢ ... ｣ → Config error
+💀 CMD: ｢ ... ｣ → Command error
 ```
 
 * `Pakku` uses [Pakku::RecMan](https://github.com/hythm7/Pakku-RecMan) recommendation manager to obtain distributions `META` info and archives.
@@ -74,7 +77,6 @@ USAGE
 <b>pakku add notest MyModule</b>
 <b>pakku add to     /opt/MyApp MyModule</b>
 <b>pakku add force  to   home  MyModule1 MyModule2</b>
-
 
 <b>Options:</b> - Specific to <b>add</b> command
 
@@ -100,7 +102,6 @@ to < repo >     → add distribution to repo < home site vendor core /path/to/My
 <pre>
 <b>pakku remove MyModule</b>
 
-
 <b>Options:</b> - Specific to <b>remove</b> command
 
 from < repo > → remove distribution from provided repo only
@@ -117,13 +118,27 @@ from < repo > → remove distribution from provided repo only
 <b>pakku list repo home</b>
 <b>pakku list repo /opt/MyApp MyModule</b>
 
-
 <b>Options:</b> - Specific to <b>list</b> command
 
 local                 → list local installed dist
 remote                → list remote recman's available dists
 details               → list details of dist
 repo < name-or-path > → list dists installed in specific repo
+</pre>
+
+
+**Pack rakudo and distribution**
+<pre>
+<b>pakku pack MyModule</b>
+<b>pakku pack notest MyModule</b>
+<b>pakku pack rakudo 2020.10 MyModule</b>
+<b>pakku pack to     /opt/MyApp MyModule</b>
+
+<b>Options:</b> - Specific to <b>pack</b> command
+
+to < path > → pack to path /path/to/MyApp>
+rakudo ver  → package rakudo specific version
+< addopts > → add command options are available here as well
 </pre>
 
 
@@ -155,7 +170,6 @@ repo < name-or-path > → list dists installed in specific repo
 <b>pakku nopretty add MyModule</b>
 <b>pakku yolo     add MyFailedModule MyModule</b>
 <b>pakku pretty   please remove MyModule</b>
-
 
 <b>Options:</b> - Global options control general Pakku behavior and placed before Pakku commands < add remove ... >
 

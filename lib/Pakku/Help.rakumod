@@ -11,6 +11,7 @@ method help ( Str:D :$cmd ) {
     when 'list'     { self!list   }
     when 'build'    { self!build  }
     when 'test'     { self!test   }
+    when 'pack'     { self!test   }
     when 'checkout' { self!checkout  }
     when 'help'     { self!help   }
 
@@ -22,6 +23,7 @@ method help ( Str:D :$cmd ) {
         self!list,
         self!build,
         self!test,
+        self!pack,
         self!checkout,
         self!pakku,
         self!help,
@@ -99,6 +101,27 @@ submethod !list ( ) {
   help %list;
 
 }
+
+submethod !pack ( ) {
+
+  my %pack;
+
+  %pack<cmd>     = 'Pack';
+  %pack<desc>    = 'Pack rakudo and distribution';
+
+  %pack<example>.push: 'pakku pack MyModule';
+  %pack<example>.push: 'pakku pack notest MyModule';
+  %pack<example>.push: 'pakku pack rakudo 2020.10 MyModule';
+  %pack<example>.push: 'pakku pack to     /opt/MyApp MyModule';
+
+  %pack<opt>.push: ( 'to <path>'       => 'pack to path /path/to/MyApp>' );
+  %pack<opt>.push: ( 'rakudo version'  => 'package rakudo specific version' );
+  %pack<opt>.push: ( '<addopt>'  => 'options available for add command are available hereas well' );
+
+  help %pack;
+
+}
+
 
 
 submethod !build ( ) {

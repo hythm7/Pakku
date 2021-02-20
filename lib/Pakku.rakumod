@@ -98,27 +98,6 @@ method remove (
 
 }
 
-method pack (
-
-         :@spec!,
-         :$deps  = True,
-  Bool:D :$build = True,
-  Bool:D :$test  = True,
-  Bool:D :$force = False,
-         :$repo,
-
-
-) {
-
-  🦋 "PRC: ｢{@spec}｣";
-
-  my $*repo = Pakku::Repo.new: :$repo;
-
-  🦋 "PAC: ｢{@spec}｣";
-
-  return;
-
-}
 
 method list (
 
@@ -183,3 +162,22 @@ method checkout ( :@spec! ) {
 
 }
 
+method pack (
+
+  :@spec!,
+  *%args,
+
+) {
+
+  🦋 "PAC: ｢{@spec}｣";
+
+  my $rakudo = $.pakudo: |%args unless $!dont;
+
+  my $repo = .add: 'share/perl6/site' with $rakudo;
+
+  $.add: :@spec, :$repo, |%args;
+
+  🦋 "PAC: ｢$rakudo｣" unless $!dont;
+
+  return;
+}

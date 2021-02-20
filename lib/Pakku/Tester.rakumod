@@ -39,6 +39,12 @@ method test ( Distribution::Locally:D :$dist! ) {
       whenever $proc.stdout.lines { 🤓 $^out }
       whenever $proc.stderr.lines { ❌ $^err }
 
+      whenever $proc.stdout.stable( 42 ) {
+
+      🐞 "WAI: ｢{$proc.command}｣";
+
+      }
+
       whenever $proc.stdout.stable( 420 ) {
 
         🔔 "TOT: ｢$dist｣";

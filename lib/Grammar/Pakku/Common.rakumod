@@ -12,6 +12,7 @@ role Grammar::Pakku::Common {
 
   proto token pack { * }
   token pack:sym<pack> { <sym> }
+  token pack:sym<pak>  { <sym> }
   token pack:sym<p>    { <sym> }
   token pack:sym<📦>   { <sym>  }
 
@@ -66,8 +67,9 @@ role Grammar::Pakku::Common {
 
 
   proto token packopt { * }
-  token packopt:sym<raku>      { 'raku'                        }
-  token packopt:sym<to>        { <sym> <.space>* <repo>        }
+  token packopt:sym<rakudo> { <sym> <.space>* <ver>  }
+  token packopt:sym<to>     { <sym> <.space>* <path> }
+  token packopt:sym<addopt> { <addopt>               }
 
 
   proto token listopt { * }
@@ -143,6 +145,9 @@ role Grammar::Pakku::Common {
   token build:sym<nobuild> { <sym> }
   token build:sym<nb>      { <sym> }
 
+  # BUG: need to separate notest
+  # pakku nt MyModule
+  # parse as cmd => test
   proto token test { * }
   token test:sym<test>   { <sym> }
   token test:sym<t>      { <sym> }
@@ -193,6 +198,8 @@ role Grammar::Pakku::Common {
 
   token repo-path   { <path> }
 
+  token ver { <-[\s]>+ }
+   
   proto token level { * }
   token level:sym<SILENT> { <sym> }
   token level:sym<TRACE>  { <sym> }
@@ -252,8 +259,8 @@ role Grammar::Pakku::Common {
   token key:sym<version> { <sym> }
 
   proto token value { * }
-  token value:sym<angles> { '<' ~ '>' $<val>=[.*? <~~>?] }
-  token value:sym<parens> { '(' ~ ')' $<val>=[.*? <~~>?] }
+  token value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>?] }
+  token value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>?] }
 
   token anything { .* }
 
@@ -289,8 +296,10 @@ role Grammar::Pakku::CommonActions {
   method removeopt:sym<from> ( $/ ) { make ( repo => $<repo>.made ) }
 
 
-  method packopt:sym<raku> ( $/ ) { make ( :raku )                }
-  method packopt:sym<to>   ( $/ ) { make ( repo => $<repo>.made ) }
+  method packopt:sym<rakudo> ( $/ ) { make ( $<sym> => Version.new: $<ver> ) }
+  method packopt:sym<addopt> ( $/ ) { make $<addopt>.made                }
+  method packopt:sym<to>     ( $/ ) { make ( $<sym> => $<path>.IO ) }
+
 
   method listopt:sym<remote>  ( $/ ) { make $<remote>.made  }
   method listopt:sym<local>   ( $/ ) { make $<local>.made   }
