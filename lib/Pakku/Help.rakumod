@@ -11,7 +11,7 @@ method help ( Str:D :$cmd ) {
     when 'list'     { self!list   }
     when 'build'    { self!build  }
     when 'test'     { self!test   }
-    when 'pack'     { self!test   }
+    when 'pack'     { self!pack   }
     when 'checkout' { self!checkout  }
     when 'help'     { self!help   }
 
