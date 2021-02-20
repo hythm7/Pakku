@@ -165,7 +165,7 @@ multi method get-deps( Pakku::Spec:D $spec, :$deps ) {
 
 multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
-  🐞 "FTC: ｢$src｣";
+  🤓 "FTC: ｢$src｣";
 
   my $url = URL.new: $src;
 
@@ -177,7 +177,7 @@ multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
 
   my $dir = $dst.IO.dir.first: *.d;
 
-  🐞 "FTC: ｢$dir｣";
+  🤓 "FTC: ｢$dir｣";
 
   $dir;
 
