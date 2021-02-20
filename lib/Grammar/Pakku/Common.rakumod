@@ -259,8 +259,8 @@ role Grammar::Pakku::Common {
   token key:sym<version> { <sym> }
 
   proto token value { * }
-  token value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>?] }
-  token value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>?] }
+  token value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>? ] }
+  token value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>? ] }
 
   token anything { .* }
 
