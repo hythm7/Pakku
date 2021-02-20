@@ -79,7 +79,7 @@ class Pakku::Log {
       my $formatted =
         $!pretty
           ?? $msg
-          !! $msg;
+          !! colorstrip $msg;
 
       $fh.say: $formatted;
 
