@@ -51,7 +51,7 @@ sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
 
     say "Installing Pakku dependency [$dep-name]";
 
-    my $meta-url = "http:/recman.pakku.org/meta?name=$dep";
+    my $meta-url = "http:/recman.pakku.org/recommend?name=$dep";
 
     my $meta = run 'curl', '-s', $meta-url, :out;
 
