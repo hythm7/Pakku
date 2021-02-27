@@ -103,10 +103,7 @@ method list (
 
          :@spec,
   Bool:D :$details = False,
-  Bool:D :$remote  = False,
-  Bool:D :$local   = !$remote,
          :$repo,
-
 
 ) {
 
@@ -114,13 +111,31 @@ method list (
 
   @spec .= map( -> $spec { Spec.new: $spec } );
 
-  $local ?? $*repo.list: :@spec !! $!recman.list: :@spec
+  $*repo.list: :@spec
+    ==> map( -> $meta { Meta.new( $meta ).gist: :$details } )
+    ==> map( -> $meta { 🦋 $meta } ) unless $!dont;
+
+  return;
+
+}
+
+method search (
+
+         :@spec,
+  Bool:D :$details = False,
+
+) {
+
+  @spec
+    ==> map( -> $spec { Spec.new: $spec } )
+    ==> map( -> $spec { $!recman.recommend( :$spec, :count( ∞ ) ).Slip } )
     ==> map( -> $meta { Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { 🦋 $meta } );
 
   return;
 
 }
+
 
 method build ( :@spec! ) {
 

@@ -321,6 +321,8 @@ method fun ( ) {
     when 'pack'     { self.pack:     |%!cnf<pack>     }
 
     when 'list'     { self.list:     |%!cnf<list>     }
+
+    when 'search'   { self.search:   |%!cnf<search>   }
     
     when 'help'     { 🦋 self.help:  |%!cnf<help>     }
   }

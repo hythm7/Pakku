@@ -78,7 +78,7 @@ USAGE
 <b>pakku add to     /opt/MyApp MyModule</b>
 <b>pakku add force  to   home  MyModule1 MyModule2</b>
 
-<b>Options:</b> - Specific to <b>add</b> command
+<b>Options:</b> Specific to <b>add</b> command
 
 deps            → add dependencies
 nodeps          → no dependencies
@@ -102,7 +102,7 @@ to < repo >     → add distribution to repo < home site vendor core /path/to/My
 <pre>
 <b>pakku remove MyModule</b>
 
-<b>Options:</b> - Specific to <b>remove</b> command
+<b>Options:</b> Specific to <b>remove</b> command
 
 from < repo > → remove distribution from provided repo only
 </pre>
@@ -112,18 +112,25 @@ from < repo > → remove distribution from provided repo only
 <pre>
 <b>pakku list</b>
 <b>pakku list MyModule</b>
-<b>pakku list local   MyModule</b>
-<b>pakku list remote  MyModule</b>
 <b>pakku list details MyModule</b>
 <b>pakku list repo home</b>
 <b>pakku list repo /opt/MyApp MyModule</b>
 
-<b>Options:</b> - Specific to <b>list</b> command
+<b>Options:</b> Specific to <b>list</b> command
 
-local                 → list local installed dist
-remote                → list remote recman's available dists
 details               → list details of dist
 repo < name-or-path > → list dists installed in specific repo
+</pre>
+
+
+**Search distribution on RecMan**
+<pre>
+<b>pakku Search MyModule</b>
+<b>pakku Search details MyModule</b>
+
+<b>Options:</b> Specific to <b>search</b> command
+
+details → list details of dist
 </pre>
 
 
@@ -134,7 +141,7 @@ repo < name-or-path > → list dists installed in specific repo
 <b>pakku pack rakudo 2020.10 MyModule</b>
 <b>pakku pack to     /opt/MyApp MyModule</b>
 
-<b>Options:</b> - Specific to <b>pack</b> command
+<b>Options:</b> Specific to <b>pack</b> command
 
 to < path > → pack to path /path/to/MyApp>
 rakudo ver  → package rakudo specific version
@@ -171,7 +178,7 @@ rakudo ver  → package rakudo specific version
 <b>pakku yolo     add MyFailedModule MyModule</b>
 <b>pakku pretty   please remove MyModule</b>
 
-<b>Options:</b> - Global options control general Pakku behavior and placed before Pakku commands < add remove ... >
+<b>Options:</b> Global options control general Pakku behavior and placed before Pakku commands < add remove ... >
 
 pretty            → colors
 nopretty          → no colors
@@ -197,30 +204,24 @@ yolo              → dont stop on errors, useful when need to proceed after err
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add       → a     yolo    → y     nopretty → np     silent → «S 0»
+add       → a     verbose → v     nopretty → np     silent → «S 0»
 remove    → r     pretty  → p     nodeps   → nd     trace  → «T 1»
 list      → l     only    → o     noforce  → nf     debug  → «D 2»
-build     → b     verbose → v     noforce  → nf     info   → «I 3»
-test      → t     verbose → v     details  →  d     warn   → «W 4»
-checkout  → c     deps    → d     local    →  l     error  → «E 5»
-help      → h     force   → f     remote   →  r     fatal  → «F 6»
-</pre>
-
-So this is a valid `Pakku` command:
-<pre>
-<b>pakku y a f MyModule</b>
+search    → s     deps    → d     notest   → nt     info   → «I 3»
+build     → b     force   → f     nobuild  → nb     warn   → «W 4»
+test      → t     details → d                       error  → «E 5»
+checkout  → c     yolo    → y                       fatal  → «F 6»
+help      → h     
 </pre>
 
 Did I mention that the below are `Pakku` commands as well?
 <pre>
 <b>pakku 𝛒 ↓ 🔗 🔨 MyModule</b>
-<b>pakku 👓 🦋 ↑ MyModule</b>
-<b>pakku ↪ 🌎</b>
+<b>pakku 👓 🦋 ↑   MyModule</b>
+<b>pakku 🌎        MyModule</b>
+<b>pakku ↪</b>
 <b>pakku ❓</b>
 </pre>
-
-Can you guess what they do?
-A full list is [here](https://github.com/hythm7/Pakku/blob/main/lib/Grammar/Pakku/Common.rakumod), you can add you favourite ones too if you like.
 
 
 CONFIGURATION
@@ -248,8 +249,6 @@ Config file example:
   # from home  # remove from specific repo
 
 # < list >
-  # local   # local  installed dists
-  # remote  # remote recman's dists
   # details # list   details of dists
 
 ## Customize verbosity levels symbols and colors
@@ -269,7 +268,7 @@ Config file example:
   # fatal color red
 
 < recman >
-recman.pakku.org
+http://recman.pakku.org
 
 </pre>
 

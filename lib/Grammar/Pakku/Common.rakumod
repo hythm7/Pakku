@@ -28,6 +28,12 @@ role Grammar::Pakku::Common {
   token list:sym<l>    { <sym> }
   token list:sym<↪>    { <sym> }
 
+  proto token search { * }
+  token search:sym<search> { <sym> }
+  token search:sym<s>      { <sym> }
+  token search:sym<🌎>     { <sym> }
+
+
   proto token help { * }
   token help:sym<help> { <sym> }
   token help:sym<h>    { <sym> }
@@ -73,10 +79,12 @@ role Grammar::Pakku::Common {
 
 
   proto token listopt { * }
-  token listopt:sym<local>   { <local> }
-  token listopt:sym<remote>  { <remote> }
   token listopt:sym<details> { <details> }
   token listopt:sym<repo>    { <sym> <.space>* <repo> }
+
+
+  proto token searchopt { * }
+  token searchopt:sym<details> { <details> }
 
 
   proto token pretty { * }
@@ -170,7 +178,6 @@ role Grammar::Pakku::Common {
   proto token remote { * }
   token remote:sym<remote>   { <sym> }
   token remote:sym<r>        { <sym> }
-  token remote:sym<🌎>       { <sym> }
   token remote:sym<noremote> { <sym> }
   token remote:sym<nr>       { <sym> }
 
@@ -301,8 +308,6 @@ role Grammar::Pakku::CommonActions {
   method packopt:sym<to>     ( $/ ) { make ( $<sym> => $<path>.IO ) }
 
 
-  method listopt:sym<remote>  ( $/ ) { make $<remote>.made  }
-  method listopt:sym<local>   ( $/ ) { make $<local>.made   }
   method listopt:sym<details> ( $/ ) { make $<details>.made }
 
   method listopt:sym<repo> ( $/ ) {
@@ -311,6 +316,7 @@ role Grammar::Pakku::CommonActions {
 
   }
 
+  method searchopt:sym<details> ( $/ ) { make $<details>.made }
 
   method pretty:sym<pretty>   ( $/ )  { make ( :pretty  ) }
   method pretty:sym<p>        ( $/ )  { make ( :pretty  ) }

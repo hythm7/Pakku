@@ -23,7 +23,8 @@ grammar Grammar::Pakku::Cmd {
   rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <whats>  }
   rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>  }
   rule TOP:sym<checkout> { <pakkuopt>* % <.space> <checkout>  <checkoutopt>* % <.space> <whats>  }
-  rule TOP:sym<pack>      { <pakkuopt>* % <.space> <pack>       <packopt>*      % <.space> <whats>  }
+  rule TOP:sym<pack>     { <pakkuopt>* % <.space> <pack>      <packopt>*     % <.space> <whats>  }
+  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>  }
   rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>? }
   rule TOP:sym<help>     { <pakkuopt>* <help>? <cmd>? <anything> }
 
@@ -34,7 +35,8 @@ grammar Grammar::Pakku::Cmd {
   token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
   token cmd:sym<checkout> { <!before <.space>> ~ <!after <.space>> <checkout> }
-  token cmd:sym<pack>      { <!before <.space>> ~ <!after <.space>> <pack>      }
+  token cmd:sym<pack>     { <!before <.space>> ~ <!after <.space>> <pack>     }
+  token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
   token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
   token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
 
@@ -126,7 +128,6 @@ class Grammar::Pakku::CmdActions {
   }
 
 
-
   method TOP:sym<list> ( $/ ) {
 
     my %cmd;
@@ -135,6 +136,20 @@ class Grammar::Pakku::CmdActions {
     %cmd<pakku>      = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<list>       = $<listopt>».made.hash  if defined $<listopt>;
     %cmd<list><spec> = $<whats>.made          if defined $<whats>;
+
+    make %cmd;
+
+  }
+
+
+  method TOP:sym<search> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>          = 'search';
+    %cmd<pakku>        = $<pakkuopt>».made.hash   if defined $<pakkuopt>;
+    %cmd<search>       = $<searchopt>».made.hash  if defined $<searchopt>;
+    %cmd<search><spec> = $<whats>.made;
 
     make %cmd;
 
@@ -160,6 +175,7 @@ class Grammar::Pakku::CmdActions {
   method cmd:sym<checkout> ( $/ ) { make 'checkout' }
   method cmd:sym<pack>     ( $/ ) { make 'pack'      }
   method cmd:sym<list>     ( $/ ) { make 'list'     }
+  method cmd:sym<search>   ( $/ ) { make 'search'     }
   method cmd:sym<help>     ( $/ ) { make 'help'     }
 
 }

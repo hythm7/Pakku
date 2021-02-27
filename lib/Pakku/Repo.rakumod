@@ -27,9 +27,9 @@ method remove ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
 }
 
-multi method list ( ::?CLASS:D: :@spec! where *.so ) {
+multi method list ( ::?CLASS:D: :@spec! ) {
 
-  @spec.map( -> $spec { 
+  return flat @spec.map( -> $spec { 
 
     @!repo
       ==> map( -> $repo {
@@ -42,19 +42,13 @@ multi method list ( ::?CLASS:D: :@spec! where *.so ) {
       } )
       ==> flat( );
 
-  } )
-  ==> flat( );
-
-}
-
-multi method list ( ::?CLASS:D: :@spec! where not *.so ) {
+  } ) if @spec;
 
   @!repo
     ==> map(  *.installed.map( *.meta ) ) 
     ==> flat( )
     ==> grep( *.defined );
 }
-
 
 multi submethod BUILD ( Str:D :$repo! ) {
 

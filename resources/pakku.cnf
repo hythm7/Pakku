@@ -16,8 +16,6 @@
   # from home  # remove from specific repo
 
 # < list >
-  # local   # local  dists
-  # remote  # remote dists
   # details # list   details
 
 # < log >
@@ -36,4 +34,5 @@
   # fatal color red
 
 < recman >
-recman.pakku.org
+#localhost
+http://recman.pakku.org

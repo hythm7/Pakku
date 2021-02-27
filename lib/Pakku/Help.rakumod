@@ -9,6 +9,7 @@ method help ( Str:D :$cmd ) {
     when 'add'      { self!add    }
     when 'remove'   { self!remove }
     when 'list'     { self!list   }
+    when 'search'   { self!search   }
     when 'build'    { self!build  }
     when 'test'     { self!test   }
     when 'pack'     { self!pack   }
@@ -21,6 +22,7 @@ method help ( Str:D :$cmd ) {
         self!add,
         self!remove,
         self!list,
+        self!search,
         self!build,
         self!test,
         self!pack,
@@ -87,20 +89,33 @@ submethod !list ( ) {
 
   %list<example>.push: 'pakku list';
   %list<example>.push: 'pakku list MyModule';
-  %list<example>.push: 'pakku list local   MyModule';
-  %list<example>.push: 'pakku list remote  MyModule';
   %list<example>.push: 'pakku list details MyModule';
   %list<example>.push: 'pakku list repo home';
   %list<example>.push: 'pakku list repo /opt/MyApp MyModule';
 
-  %list<opt>.push: ( 'local'       => 'list local'  );
-  %list<opt>.push: ( 'remote'      => 'list remote'  );
   %list<opt>.push: ( 'details'     => 'list details' );
   %list<opt>.push: ( 'repo <name>' => 'list repo' );
 
   help %list;
 
 }
+
+submethod !search ( ) {
+
+  my %search;
+
+  %search<cmd>     = 'Search';
+  %search<desc>    = 'Search distribution on RecMan';
+
+  %search<example>.push: 'pakku search MyModule';
+  %search<example>.push: 'pakku search details MyModule';
+
+  %search<opt>.push: ( 'details'     => 'search details' );
+
+  help %search;
+
+}
+
 
 submethod !pack ( ) {
 
@@ -251,5 +266,4 @@ sub opt ( @opt ) {
     colored( .value, 'cyan' )
   } ).join( "\n" ) ~ "\n";
  
-
 }
