@@ -41,22 +41,14 @@ my @tests = (
     ${:cmd("list")},
   "list" =>
     ${:cmd("list")},
-  "list local" =>
-    ${:cmd("list"), :list(${:local})},
-  "list remote" =>
-    ${:cmd("list"), :list(${:remote})},
-  "list local Spec" =>
-    ${:cmd("list"), :list(${:local, :spec($["Spec"])})},
-  "list remote Spec1 Spec2" =>
-    ${:cmd("list"), :list(${:remote, :spec($["Spec1", "Spec2"])})},
-  "list local details" =>
-    ${:cmd("list"), :list(${:details, :local})},
-  "list remote details Spec" =>
-    ${:cmd("list"), :list(${:details, :remote, :spec($["Spec"])})},
-  "list remote details Spec" =>
-    ${:cmd("list"), :list(${:details, :remote, :spec($["Spec"])})},
+  "list details Spec" =>
+    ${:cmd("list"), :list(${:details, :spec($["Spec"])})},
   "list Spec" =>
     ${:cmd("list"), :list(${:spec($["Spec"])})},
+  "search Spec" =>
+    ${:cmd("search"), :search(${:spec($["Spec"])})},
+  "search details Spec" =>
+    ${:cmd("search"), :search(${:details, :spec($["Spec"])})},
   "checkout Spec" =>
     ${:cmd("checkout"), :checkout(${:spec($["Spec"])})},
   "check Spec" =>
