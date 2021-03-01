@@ -1,105 +1,130 @@
 #!/usr/bin/env raku
 
-sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ) {
+use lib $*PROGRAM.IO.parent(2);
 
-  my $src      = $?FILE.IO.parent(2);
+use Pakku::Log;
 
-  my $bin-dir  = $dest.add: 'bin';
-  my $dep-dir  = $dest.add: '.dep';
-  my $repo-dir = $dest.add: '.repo';
+unit sub MAIN (
+  IO( ) :$dest    = $*HOME.add( '.pakku' ).cleanup,
+        :$verbose = 3,
+        :$pretty  = True 
+);
 
-  $bin-dir.mkdir;
-  $dep-dir.mkdir;
-  $repo-dir.mkdir;
+Pakku::Log.new: :$verbose :$pretty;
 
+my $src      = $*PROGRAM.IO.parent(2);
 
-  my @dep = <
+my $bin-dir  = $dest.add: 'bin';
+my $dep-dir  = $dest.add: '.dep';
+my $repo-dir = $dest.add: '.repo';
 
-    File::Directory::Tree
-    File::Temp
-    File::Find
-    File::Which
-    Terminal::ANSIColor
-    Log::Async
-    JSON::Fast
-    URL
-    NativeLibs&auth=github:salortiz
-    LibCurl
-    Archive::Libarchive::Raw
-    NativeHelpers::Callback
-    Number::Bytes::Human
-    BitEnum
-    Libarchive
-    URI::Encode
-    Retry
-    Pakku::Spec
-    Pakku::Meta
-    Pakku::RecMan::Client
+🤓 "SRC: ｢$src｣";
+🤓 "DST: ｢$dest｣";
 
-  >;
+$bin-dir.mkdir;
+$dep-dir.mkdir;
+$repo-dir.mkdir;
 
 
-  my $pakku-repo = CompUnit::Repository::Installation.new: prefix => $repo-dir;
+my @dep = <
 
-  CompUnit::RepositoryRegistry.register-name: 'pakku', $pakku-repo;
-  CompUnit::RepositoryRegistry.use-repository: $pakku-repo;
+  File::Directory::Tree
+  File::Temp
+  File::Find
+  File::Which
+  Terminal::ANSIColor
+  Log::Async
+  JSON::Fast
+  URL
+  NativeLibs&auth=github:salortiz
+  LibCurl
+  Archive::Libarchive::Raw
+  NativeHelpers::Callback
+  Number::Bytes::Human
+  BitEnum
+  Libarchive
+  URI::Encode
+  Retry
+  Pakku::Spec
+  Pakku::Meta
+  Pakku::RecMan::Client
+
+>;
 
 
-  for @dep -> $dep {
+my $pakku-repo = CompUnit::Repository::Installation.new: prefix => $repo-dir;
 
-    my $dep-name =  $dep.split('&').head;
+CompUnit::RepositoryRegistry.register-name: 'pakku', $pakku-repo;
+CompUnit::RepositoryRegistry.use-repository: $pakku-repo;
 
-    say "Installing Pakku dependency [$dep-name]";
 
-    my $meta-url = "http:/recman.pakku.org/recommend?name=$dep";
+for @dep -> $dep {
 
-    my $meta = run 'curl', '-s', $meta-url, :out;
+  my $dep-name =  $dep.split('&').head;
 
-    my $src-url = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp)<recman-src>;
+  🐞 "SPC: ｢$dep-name｣";
 
-    my $src-path = $dep-dir.add: $dep-name;
+  my $meta-url = "http:/recman.pakku.org/recommend?name=$dep";
 
-    my $archive-path = "$src-path.tar.gz".IO;
+🤓 "FTC: ｢$meta-url｣";
 
-    unlink $archive-path;
+  my $meta = run 'curl', '-s', $meta-url, :out;
 
-    my $curl = run 'curl', '-s', '-o', $archive-path, $src-url;
+  my %meta = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp);
 
-    mkdir $src-path;
+  my $inst-dep = $pakku-repo.candidates( %meta<name> ).head;
 
-    my $tar = run 'tar', 'xf', $archive-path, '-C', $src-path, '--strip-components=1';
+  with $inst-dep {
 
-    $pakku-repo.install: :force, Distribution::Path.new: $src-path
+    next if %meta<version>.Version ~~ $inst-dep.meta<ver>.Version; 
 
   }
 
-  say "Installing Pakku...";
+  my $long-name = "%meta<name>:ver<%meta<version>>:auth<%meta<auth>>:api<%meta<api>>";
 
-  my $pakku-bin = $bin-dir.add: 'pakku';
+  my $src-path = $dep-dir.add: $dep-name;
 
-  my $pakku-bin-content = qq:to:!s/END/;
-    #!/usr/bin/env raku
+  my $archive-path = "$src-path.tar.gz".IO;
 
-    use lib 'inst#' ~ $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
+  unlink $archive-path;
 
-    use Pakku;
+  🤓 "FTC: ｢$archive-path｣";
 
-    Pakku.new.fun;
+  my $curl = run 'curl', '-s', '-o', $archive-path, %meta<recman-src>;
 
-    END
+  mkdir $src-path;
 
-  $pakku-bin.spurt: $pakku-bin-content;
-  run 'chmod', '+x', $pakku-bin;
+  my $tar = run 'tar', 'xf', $archive-path, '-C', $src-path, '--strip-components=1';
 
-  %*ENV<RAKULIB>  = "$src, { $pakku-repo.path-spec }";
+  $pakku-repo.install: :force, Distribution::Path.new: $src-path;
 
-  my $src-cnf = $src.add:  'resources/pakku.cnf';
-  my $dst-cnf = $dest.add: 'pakku.cnf';
-
-  run 'cp', $src-cnf, $dst-cnf unless $dst-cnf.e;
-
-  run $pakku-bin, 'verbose debug', 'add', 'force', 'to', $repo-dir,  $src;
-
-  say "Pakku installed to ｢$pakku-bin｣";
+  🦋 "ADD: ｢$long-name｣";
 
 }
+
+my $pakku-bin = $bin-dir.add: 'pakku';
+
+my $pakku-bin-content = qq:to:!s/END/;
+  #!/usr/bin/env raku
+
+  use lib 'inst#' ~ $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
+
+  use Pakku;
+
+  Pakku.new.fun;
+
+  END
+
+$pakku-bin.spurt: $pakku-bin-content;
+run 'chmod', '+x', $pakku-bin;
+
+%*ENV<RAKULIB>  = "$src, { $pakku-repo.path-spec }";
+
+my $src-cnf = $src.add:  'resources/pakku.cnf';
+my $dst-cnf = $dest.add: 'pakku.cnf';
+
+run 'cp', $src-cnf, $dst-cnf unless $dst-cnf.e;
+
+quietly run $pakku-bin, 'verbose debug', 'add', 'force', 'to', $repo-dir,  $src;
+
+🦋 "ADD: ｢$pakku-bin｣";
