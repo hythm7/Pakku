@@ -243,7 +243,7 @@ method fun ( ) {
 
     when X::Pakku::Cnf {
 
-      Pakku::Log.new: :4verbose, :pretty;
+      Pakku::Log.new: :4verbose :pretty;
 
       💀 .message;
 
@@ -253,7 +253,7 @@ method fun ( ) {
 
     when X::Pakku::Cmd {
 
-      Pakku::Log.new: :4verbose, :pretty;
+      Pakku::Log.new: :4verbose :pretty;
 
       💀 .message;
 
