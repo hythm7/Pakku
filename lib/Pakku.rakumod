@@ -68,12 +68,20 @@ method add (
 
       $!tester.test:   :$dist if $test;
   
-      $*repo.add: :$dist, :$force     unless $!dont;
+      unless $!dont {
 
-      🦋 "ADD: ｢$dist｣" unless $!dont;
+        $*repo.add: :$dist :$force;
+
+        $dist.meta<files>.Slip
+          ==> map  ( *.key )
+          ==> grep ( *.starts-with: 'bin' )
+          ==> map  ( -> $bin { 🦋 "ADD: ｢{ $*repo.prefix }/$bin｣" } );
+
+        🦋 "ADD: ｢$dist｣";
+
+      }
   
     } );
-    
     
   return;
 
