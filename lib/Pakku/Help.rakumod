@@ -108,8 +108,10 @@ submethod !search ( ) {
   %search<desc>    = 'Search distribution on RecMan';
 
   %search<example>.push: 'pakku search MyModule';
+  %search<example>.push: 'pakku search count 5 MyModule';
   %search<example>.push: 'pakku search details MyModule';
 
+  %search<opt>.push: ( 'count'       => 'distributions count' );
   %search<opt>.push: ( 'details'     => 'search details' );
 
   help %search;

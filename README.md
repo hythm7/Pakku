@@ -130,7 +130,8 @@ repo < name-or-path > → list dists installed in specific repo
 
 <b>Options:</b> Specific to <b>search</b> command
 
-details → list details of dist
+count < number > → return how many dists
+details          → list details of dist
 </pre>
 
 

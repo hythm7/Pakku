@@ -122,13 +122,14 @@ method list (
 method search (
 
          :@spec,
+         :$count   = ∞,
   Bool:D :$details = False,
 
 ) {
 
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
-    ==> map( -> $spec { $!recman.recommend( :$spec, :count( ∞ ) ).Slip } )
+    ==> map( -> $spec { $!recman.search( :$spec :$count ).Slip } )
     ==> map( -> $meta { Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { 🦋 $meta } );
 

@@ -85,6 +85,7 @@ role Grammar::Pakku::Common {
 
   proto token searchopt { * }
   token searchopt:sym<details> { <details> }
+  token searchopt:sym<count>   { <count> <.space>* <number> }
 
 
   proto token pretty { * }
@@ -193,6 +194,10 @@ role Grammar::Pakku::Common {
   token details:sym<nodetails> { <sym> }
   token details:sym<nd>        { <sym> }
 
+  proto token count { * }
+  token count:sym<count>   { <sym> }
+  token count:sym<c>       { <sym> }
+
   proto token repo { * }
   token repo:sym<repo-name>   { <repo-name> }
   token repo:sym<repo-path>   { <repo-path> }
@@ -207,6 +212,8 @@ role Grammar::Pakku::Common {
 
   token ver { <-[\s]>+ }
    
+  token number { <digit>+ }
+
   proto token level { * }
   token level:sym<SILENT> { <sym> }
   token level:sym<TRACE>  { <sym> }
@@ -317,6 +324,7 @@ role Grammar::Pakku::CommonActions {
   }
 
   method searchopt:sym<details> ( $/ ) { make $<details>.made }
+  method searchopt:sym<count>   ( $/ ) { make ( count => +$<number> ) }
 
   method pretty:sym<pretty>   ( $/ )  { make ( :pretty  ) }
   method pretty:sym<p>        ( $/ )  { make ( :pretty  ) }
