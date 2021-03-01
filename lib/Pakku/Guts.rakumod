@@ -135,7 +135,7 @@ multi method get-deps ( Pakku::Meta:D $meta, :$deps ) {
   
   $meta.deps: :$deps
 
-    ==> grep( -> $spec { not ( %visited{ $spec.name } or self.satisfied: :$spec )   } )
+    ==> grep( -> $spec { not ( %visited{ $spec.?name // any @$spec.map( *.name ) } or self.satisfied: :$spec )   } )
 
     ==> map(  -> $spec { self.satisfy: :$spec } )
 
@@ -147,9 +147,11 @@ multi method get-deps ( Pakku::Meta:D $meta, :$deps ) {
 
     for @meta-deps -> $dep {
 
-      next if %visited{ $dep.name };
+      my $name = $dep.name;
 
-      %visited{ $dep.name } = True;
+      next if %visited{ $name };
+
+      %visited{ $name } = True;
 
       @dep.append: flat self.get-deps( $dep, :$deps), $dep
     }
