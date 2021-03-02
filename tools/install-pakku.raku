@@ -1,12 +1,17 @@
 #!/usr/bin/env raku
 
-unit sub MAIN ( IO( ) :repo(:$dest) = $*HOME.add( '.pakku' ).cleanup ); 
+unit sub MAIN ( IO( ) :$dest = $*HOME.add( '.pakku' ).cleanup ); 
 
 my $src      = $*PROGRAM.resolve.parent(2);
 
+my $bin-dir  = $dest.add: 'bin';
 my $dep-dir  = $dest.add: '.dep';
+my $repo-dir = $dest.add: '.repo';
 
+$bin-dir.mkdir;
 $dep-dir.mkdir;
+$repo-dir.mkdir;
+
 
 my @dep = <
 
@@ -34,9 +39,11 @@ my @dep = <
 >;
 
 
-my $repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$dest";
+my $core = CompUnit::RepositoryRegistry.repository-for-name: 'core';
+my $repo = CompUnit::Repository::Installation.new: prefix => $repo-dir;
+
 CompUnit::RepositoryRegistry.register-name: 'pakku', $repo;
-CompUnit::RepositoryRegistry.use-repository: $repo;
+CompUnit::RepositoryRegistry.use-repository: $repo, current => $core;
 
 
 for @dep -> $dep {
@@ -75,39 +82,28 @@ for @dep -> $dep {
 
 }
 
-my $bin     = $src.add: 'bin/pakku';
-my $include = "$src,{ $repo.path-spec }";
+my $cnf-src = $src.add:  'resources/pakku.cnf';
+my $cnf-dst = $dest.add: 'pakku.cnf';
 
-run $*EXECUTABLE, '-I', $include, $bin, 'verbose debug', 'add', 'force', 'to', $repo,  $src;
+run 'cp', $cnf-src, $cnf-dst unless $cnf-dst.e;
 
-my $src-cnf = $src.add:  'resources/pakku.cnf';
-my $dst-cnf = $dest.add: 'pakku.cnf';
+my $bin-content = q:to/END/;
+  #!/usr/bin/env raku
 
-run 'cp', $src-cnf, $dst-cnf unless $dst-cnf.e;
+  use lib 'inst#' ~ $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
 
-my $wrapper = $repo.prefix.add: 'bin/pakku';
+  use Pakku;
 
-my $wrapper-content = q:to:!s/END/;
-  #!/usr/bin/env #raku#
-
-  my $repo = CompUnit::RepositoryRegistry.repository-for-spec: 'inst#' ~ $*PROGRAM.resolve.parent( 2 );
-
-  CompUnit::RepositoryRegistry.register-name: 'pakku', $repo;
-
-  CompUnit::RepositoryRegistry.use-repository: $repo;
-
-  unit sub MAIN(:$name, :$auth, :$ver, *@, *%);
-
-  CompUnit::RepositoryRegistry.run-script( 'pakku', :$name, :$auth, :$ver );
+  Pakku.new.fun;
 
   END
 
-for '', '-m', '-j', '-js' -> $backend {
+my $bin = $bin-dir.add: 'pakku';
 
-  my $wrapper = $repo.prefix.add: 'bin/pakku' ~ $backend;
+$bin.spurt: $bin-content;
 
-  $wrapper.spurt: $wrapper-content.subst: '#raku#', 'perl6' ~ $backend;
+$bin.IO.chmod(0o755);
 
-  $wrapper.IO.chmod(0o755);;
+run  $*EXECUTABLE, '-I', $src, $bin, 'verbose debug', 'add', 'force', 'to', $repo-dir,  $src;
 
-}
+say "Pakku installed to: ｢$bin｣";
