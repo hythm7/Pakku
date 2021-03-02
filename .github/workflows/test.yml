@@ -28,3 +28,5 @@ jobs:
         run: git clone https://github.com/hythm7/Pakku.git /tmp/Pakku 
       - name: Install Pakku
         run: /tmp/Pakku/tools/install-pakku.raku
+      - name: Test Installing a module
+        run: /home/runner/.pakku/bin/pakku verbose debug add App::Mi6
