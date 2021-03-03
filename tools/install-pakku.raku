@@ -49,7 +49,7 @@ Pakku::Log.new: :$verbose :$pretty;
 
 my $src      = $*PROGRAM.resolve.parent(2);
 
-🦋 "PRC: ｢🦋｣";
+🦋 "PRC: ｢Pakku｣";
 🤓 "SRC: ｢$src｣";
 🤓 "DST: ｢$dest｣";
 

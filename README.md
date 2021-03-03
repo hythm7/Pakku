@@ -21,8 +21,9 @@ cd Pakku
 # install to home directory
 ./tools/install-pakku.raku
 
-# or to different destination
-# ./tools/install-pakku.raku --dest=/path/to/pakku
+# --dest=/path/to/pakku     # Install to a different directory
+# --verbose=<0 1 2 3 4 5 6> # verbosity level
+# --pretty                  # colors
 </pre>
 
 Overview
@@ -53,6 +54,8 @@ Overview
 🦋 BLD: ｢ ... ｣ → Built dist
 🐞 TST: ｢ ... ｣ → Testing dist
 🦋 TST: ｢ ... ｣ → Tested dist
+🦋 RES: ｢ ... ｣ → Added resource
+🦋 BIN: ｢ ... ｣ → Added bin file
 🦋 ADD: ｢ ... ｣ → Added dist
 🐞 PAC: ｢ ... ｣ → Packing rakudo and dist 
 🦋 PAC: ｢ ... ｣ → Pack location
