@@ -7,5 +7,5 @@
 /resources/*.so
 /resources/*.dylib
 .precomp/
-tools/deps
+.repo
 /Pakku-*

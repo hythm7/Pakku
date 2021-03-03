@@ -72,10 +72,19 @@ method add (
 
         $*repo.add: :$dist :$force;
 
-        $dist.meta<files>.Slip
-          ==> map  ( *.key )
-          ==> grep ( *.starts-with: 'bin' )
-          ==> map  ( -> $bin { 🦋 "ADD: ｢{ $*repo.prefix }/$bin｣" } );
+        $dist.meta<files>
+          ==> keys( )
+          ==> categorize( *.IO.dirname )
+          ==> my %files;
+
+        my @bin = .flat with %files<bin>;
+        my @res = .flat with %files<resources>;
+
+        @bin
+          ==> map( -> $bin { 🦋 "BIN: ｢{ $*repo.prefix }/$bin｣" } );
+
+        @res
+          ==> map( -> $res { 🦋 "RES: ｢$res｣" } );
 
         🦋 "ADD: ｢$dist｣";
 
