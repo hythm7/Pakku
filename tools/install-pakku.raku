@@ -102,11 +102,13 @@ for @dep -> $dep {
 
   my %meta = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp);
 
-  my $inst-dep = $repo.candidates( %meta<name> ).head;
+  my $candy = $repo.candidates( %meta<name> ).head;
 
-  with $inst-dep {
+  with $candy {
 
-    next if %meta<version>.Version ~~ $inst-dep.meta<ver>.Version; 
+    next if %meta<version>.Version ~~ $candy.meta<ver>.Version; 
+
+    $repo.uninstall: $candy;
 
   }
 
