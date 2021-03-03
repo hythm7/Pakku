@@ -78,11 +78,15 @@ multi method satisfy ( Pakku::Spec::Bin:D :$spec! ) {
 
   die X::Pakku::Spec.new: :$spec;
 
+  Empty;
+
 }
 
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
   die X::Pakku::Spec.new: :$spec;
+
+  Empty;
 
 }
 
