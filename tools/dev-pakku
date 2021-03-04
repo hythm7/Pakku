@@ -4,8 +4,6 @@ BEGIN {
 
   my $prefix = $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
 
-  my $core = CompUnit::RepositoryRegistry.repository-for-name: 'core';
-
   my $pakku = CompUnit::Repository::Installation.new: :$prefix;
 
   CompUnit::RepositoryRegistry.register-name: 'pakku', $pakku;
