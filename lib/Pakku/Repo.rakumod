@@ -1,4 +1,6 @@
+use Pakku::Log;
 use Pakku::Spec;
+use X::Pakku::Repo;
 
 unit class Pakku::Repo;
 
@@ -13,7 +15,16 @@ method candies ( ::?CLASS:D: Pakku::Spec:D $spec ) {
 
 method add ( Distribution::Locally:D :$dist!, :$force ) {
 
-  $.install: $dist, :$force;
+
+  try $.install: $dist, :$force;
+
+  with $! {
+
+    .message.lines.map( { ❌ $^err } );
+
+    die X::Pakku::Repo::Add.new: :$dist;
+
+  }
 
 }
 

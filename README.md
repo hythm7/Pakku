@@ -51,11 +51,12 @@ Overview
 🐞 MTA: ｢ ... ｣ → Meta
 🐞 FTC: ｢ ... ｣ → Fetch
 🐞 BLD: ｢ ... ｣ → Building dist
-🦋 BLD: ｢ ... ｣ → Built dist
 🐞 TST: ｢ ... ｣ → Testing dist
+🐞 ADD: ｢ ... ｣ → Adding dist
+🦋 BLD: ｢ ... ｣ → Built dist
 🦋 TST: ｢ ... ｣ → Tested dist
-🦋 RES: ｢ ... ｣ → Added resource
-🦋 BIN: ｢ ... ｣ → Added bin file
+🦋 RES: ｢ ... ｣ → Resource
+🦋 BIN: ｢ ... ｣ → Biniary
 🦋 ADD: ｢ ... ｣ → Added dist
 🐞 PAC: ｢ ... ｣ → Packing rakudo and dist 
 🦋 PAC: ｢ ... ｣ → Pack location

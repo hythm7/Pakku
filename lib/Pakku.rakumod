@@ -21,15 +21,10 @@ method add (
   my $*repo = Pakku::Repo.new: :$repo;
 
   @spec
-
     ==> map( -> $spec { Spec.new: $spec } )
-
     ==> grep( -> $spec { $force or not self.satisfied: :$spec } )
-
     ==> unique( as => *.Str )
-
     ==> map( -> $spec { self.satisfy: :$spec } )
-
     ==> map( -> $dep {
 
       my @dep = self.get-deps( $dep, :$deps );
@@ -39,16 +34,12 @@ method add (
       @dep;
 
     } )
-
     ==> flat( )
-
     ==> unique( as => *.Str )
-
     ==> my @meta;
 
 
   @meta
-
     ==> map( -> $meta {
 
       my $prefix = $.fetch: $meta.recman-src;
@@ -56,12 +47,10 @@ method add (
       $meta.to-dist: :$prefix;
 
     } )
-
     ==> my @dist;
 
    
   @dist 
-
     ==> map( -> $dist {
   
       $!builder.build: :$dist if $build;
@@ -69,6 +58,8 @@ method add (
       $!tester.test:   :$dist if $test;
   
       unless $!dont {
+
+        🐞 "ADD: ｢$dist｣";
 
         $*repo.add: :$dist :$force;
 
@@ -129,8 +120,7 @@ method list (
   @spec .= map( -> $spec { Spec.new: $spec } );
 
   $*repo.list: :@spec
-    ==> map( -> $meta { Meta.new( $meta ).gist: :$details } )
-    ==> map( -> $meta { 🦋 $meta } ) unless $!dont;
+    ==> map( -> $meta { 🦋 Meta.new( $meta ).gist: :$details } ) unless $!dont;
 
   return;
 
@@ -162,7 +152,7 @@ method build ( :@spec! ) {
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
     ==> map( -> $spec { self.satisfy: :$spec } )
-     ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: $meta.recman-src } )
+    ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: $meta.recman-src } )
     ==> map( -> $dist { $!builder.build: :$dist unless $!dont } );
 
   return;
