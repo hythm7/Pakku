@@ -167,19 +167,24 @@ unless $cnf-dst.e {
 my $bin-content = q:to/END/;
   #!/usr/bin/env raku
 
-  BEGIN {
+  use lib 'inst#' ~ $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
+  
+  # Disable isolating Pakku from Raku's default
+  # repositories fro now
+  #
+  # BEGIN {
 
-    my $prefix = $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
+  #   my $prefix = $*PROGRAM.resolve.parent( 2 ) ~ '/.repo';
 
-    my $core = CompUnit::RepositoryRegistry.repository-for-name: 'core';
+  #   my $core = CompUnit::RepositoryRegistry.repository-for-name: 'core';
 
-    my $pakku = CompUnit::Repository::Installation.new: :$prefix;
+  #   my $pakku = CompUnit::Repository::Installation.new: :$prefix;
 
-    CompUnit::RepositoryRegistry.register-name: 'pakku', $pakku;
+  #   CompUnit::RepositoryRegistry.register-name: 'pakku', $pakku;
 
-    CompUnit::RepositoryRegistry.use-repository: $pakku, current => $core;
+  #   CompUnit::RepositoryRegistry.use-repository: $pakku, current => $core;
 
-  }
+  # }
 
   use Pakku;
 
