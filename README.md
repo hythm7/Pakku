@@ -218,8 +218,8 @@ remove    → r     pretty  → p     nodeps   → nd     trace  → «T 1»
 list      → l     only    → o     noforce  → nf     debug  → «D 2»
 search    → s     deps    → d     notest   → nt     info   → «I 3»
 build     → b     force   → f     nobuild  → nb     warn   → «W 4»
-test      → t     details → d                       error  → «E 5»
-checkout  → c     yolo    → y                       fatal  → «F 6»
+test      → t     details → d     nocache  → nc     error  → «E 5»
+checkout  → c     yolo    → y     norecman → nr     fatal  → «F 6»
 help      → h     
 </pre>
 
