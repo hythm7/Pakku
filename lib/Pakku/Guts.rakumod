@@ -1,5 +1,3 @@
-use URL;
-use File::Temp;
 use Libarchive::Simple;
 
 use X::Pakku;
@@ -8,6 +6,7 @@ use Pakku::Help;
 use Pakku::Meta;
 use Pakku::Spec;
 use Pakku::Repo;
+use Pakku::Cache;
 use Pakku::Tester;
 use Pakku::Builder;
 use Grammar::Pakku::Cnf;
@@ -18,13 +17,17 @@ unit role Pakku::Guts;
   also does Pakku::Help;
 
 has      %!cnf;
+
 has Bool $!dont;
 has Bool $!yolo;
-has      @!ignored;
+
+has IO::Path $!cached;
+has          @!ignored;
 
 has Pakku::Log            $!log;
 has Pakku::Builder        $!builder;
 has Pakku::Tester         $!tester;
+has Pakku::Cache          $!cache;
 has Pakku::RecMan::Client $!recman;
 
 
@@ -56,11 +59,11 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   🐞 "SPC: ｢$spec｣";
 
-  # TODO: revisit
-  my $meta = 
-    $spec.prefix
-      ?? try Pakku::Meta.new: $spec.prefix
-      !! try Pakku::Meta.new: $!recman.recommend: :$spec;
+  my $meta = try Pakku::Meta.new(
+    ( $spec.prefix                           ) //
+    ( $!cache .recommend: :$spec if $!cache  ) //
+    ( $!recman.recommend: :$spec if $!recman )
+  );
 
   die X::Pakku::Meta.new: meta => $spec unless $meta;
 
@@ -169,40 +172,54 @@ multi method get-deps( Pakku::Spec:D $spec, :$deps ) {
 
 }
 
-multi method fetch ( Str $src!, :$unlink = True, :$dst = tempdir :$unlink ) {
+method fetch ( Pakku::Meta:D :$meta! ) {
 
-  🤓 "FTC: ｢$src｣";
+  🐞 "FTC: ｢$meta｣";
 
-  my $url = URL.new: $src;
+  with $meta.path -> $path {
 
-  my $download = $dst.IO.add( $url.path.tail ).Str;
+    🐞 "FTC: ｢$path｣";
 
-  $!recman.fetch: URL => ~$url, :$download;
+    return $path;
 
-  .extract: destpath => $dst for archive-read $download;
+  }
 
-  my $dir = $dst.IO.dir.first: *.d;
+  my $dest = $!cached.IO.add( $meta.name ).add( ~$meta ).mkdir;
 
-  🤓 "FTC: ｢$dir｣";
+  my $url      = $meta.recman-src;
+  my $download = $dest.add( $meta ~ '.tar.gz' ).Str;
 
-  $dir;
+  🤓 "FTC: ｢$url｣";
+
+  $!recman.fetch: :$url :$download;
+
+  for archive-read $download {
+
+    my $path = .pathname.IO;
+    my $pathname = ~ $dest.add( $path.relative: $*SPEC.splitdir( $path ).head );
+    .extract: :$pathname :extract-unlink;
+
+  }
+
+  unlink $download;
+
+  🤓 "FTC: ｢$dest｣";
+
+  $dest;
 
 }
 
-multi method fetch ( IO $prefix! ) { $prefix }
-
 
 method pakudo (
-
-  :$rakudo = 'master',
-  :$to     = tempdir :!unlink
-  --> IO::Path:D
-
+:$rakudo        = 'master',
+IO::Path:D :$to = $*CWD,
+--> IO::Path:D
 ) {
+
 
   🐞 "PAC: ｢Rakudo:$rakudo｣";
 
-  my $build-dir  = tempdir;
+  my $build-dir  = $to.add( '.build' ).mkdir;
   my $rakudo-url = 'https://github.com/rakudo/rakudo',
   my $rakudo-src = $build-dir.IO.add: 'rakudo';
 
@@ -233,9 +250,11 @@ method pakudo (
     }
   }
 
+  LEAVE  nuke-dir $build-dir;
+
   🦋 "PAC: ｢Rakudo:$rakudo｣";
 
-  $to.IO;
+  $to;
 
 }
 
@@ -243,44 +262,59 @@ method pakudo (
 method fun ( ) {
 
   CATCH {
-
-
-    when X::Pakku::Cnf {
-
-      Pakku::Log.new: :4verbose :pretty;
-
-      💀 .message;
-
-      nofun;
-
-    }
-
-    when X::Pakku::Cmd {
-
-      Pakku::Log.new: :4verbose :pretty;
-
-      💀 .message;
-
-      nofun;
-
-    }
-
     when X::Pakku {
 
       💀 .message;
 
       if $!yolo {
-
         🔔 'YOL: ｢¯\_(ツ)_/¯｣';
-
         .resume;
-
       }
 
       nofun;
-
     }
+  }
 
+  my $cmd = %!cnf<cmd>;
+
+  self."$cmd"( |%!cnf{ $cmd } );
+
+  ofun;
+
+}
+
+submethod BUILD ( :%!cnf! ) {
+
+  my $pretty  = %!cnf<pakku><pretty>  // True;
+  my $verbose = %!cnf<pakku><verbose> // 3;
+  my %level   = %!cnf<log><level>     // {};
+
+  my $cache   = %!cnf<pakku><cache>   // True;
+  my $recman  = %!cnf<pakku><recman>  // True;
+  my @url     = %!cnf<recman>.flat;
+
+  $!dont      = %!cnf<pakku><dont>    // False;
+  $!yolo      = %!cnf<pakku><yolo>    // False;
+
+
+  $!cached  = $*PROGRAM.resolve.parent( 2 ).add( '.cache' );
+  @!ignored = <Test NativeCall nqp>;
+
+
+  $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
+
+  $!cache  = Pakku::Cache.new:          :$!cached if $cache;
+  $!recman = Pakku::RecMan::Client.new: :@url     if $recman;
+
+}
+
+method new ( ) {
+
+  CATCH {
+
+    Pakku::Log.new: :3verbose :pretty;
+      💀 .message;
+      nofun;
   }
 
   my $pakku-dir   = $*PROGRAM.resolve.parent: 2;
@@ -297,43 +331,9 @@ method fun ( ) {
 
   die X::Pakku::Cmd.new( cmd => @*ARGS ) unless $cmd;
 
-  %!cnf =  hashmerge $cnf.made, $cmd.made;
+  my %cnf =  hashmerge $cnf.made, $cmd.made;
 
-  my @url     = %!cnf<recman>.flat;
-  my $verbose = %!cnf<pakku><verbose> // 3;
-  my $pretty  = %!cnf<pakku><pretty>  // True;
-
-  $!dont = %!cnf<pakku><dont> // False;
-  $!yolo = %!cnf<pakku><yolo> // False;
-
-  $!log  = Pakku::Log.new: :$verbose, :$pretty, cnf => %!cnf<log>;
-
-  $!recman  = Pakku::RecMan::Client.new: :@url;
-
-  @!ignored = <Test NativeCall nqp>;
-
-  given %!cnf<cmd> {
-
-    when 'add'      { self.add:      |%!cnf<add>      }
-
-    when 'build'    { self.build:    |%!cnf<build>    }
-
-    when 'test'     { self.test:     |%!cnf<test>     }
-
-    when 'remove'   { self.remove:   |%!cnf<remove>   }
-
-    when 'checkout' { self.checkout: |%!cnf<checkout> }
-
-    when 'pack'     { self.pack:     |%!cnf<pack>     }
-
-    when 'list'     { self.list:     |%!cnf<list>     }
-
-    when 'search'   { self.search:   |%!cnf<search>   }
-    
-    when 'help'     { 🦋 self.help:  |%!cnf<help>     }
-  }
-
-  ofun;
+  self.bless: :%cnf;
 
 }
 
@@ -355,5 +355,17 @@ sub hashmerge ( %merge-into, %merge-source ) {
   }
 
   %merge-into;
+}
+
+sub nuke-dir ( IO::Path:D $dir ) is export {
+
+  return unless $dir.d;
+
+  for $dir.dir {
+    when :f { .unlink };
+    nuke-dir .self when :d;
+  }
+
+  $dir.rmdir;
 }
 

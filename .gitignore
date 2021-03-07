@@ -8,4 +8,5 @@
 /resources/*.dylib
 .precomp/
 .repo
+.cache
 /Pakku-*

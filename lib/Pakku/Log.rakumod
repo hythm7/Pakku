@@ -3,26 +3,32 @@ use Terminal::ANSIColor;
 
 class Pakku::Log {
 
-  has      %.cnf;
-  has      $.verbose;
-  has Bool $.pretty;
+  has      %!level   is built;
+  has Int  $!verbose is built;
+  has Bool $!pretty  is built;
 
 
-  submethod BUILD ( Int:D :$verbose!, Bool:D :$!pretty!, :$cnf ) {
+  submethod BUILD (
 
-    %!cnf<TRACE><name>    = $cnf<1><name>  // '🤓';
-    %!cnf<DEBUG><name>    = $cnf<2><name>  // '🐞';
-    %!cnf<INFO><name>     = $cnf<3><name>  // '🦋';
-    %!cnf<WARNING><name>  = $cnf<4><name>  // '🔔';
-    %!cnf<ERROR><name>    = $cnf<5><name>  // '❌';
-    %!cnf<FATAL><name>    = $cnf<6><name>  // '💀';
+    Bool:D :$!pretty = True,
+    Int:D  :$verbose = 3,
+           :%level,
 
-    %!cnf<TRACE><color>   = $cnf<1><color> // '42';
-    %!cnf<DEBUG><color>   = $cnf<2><color> // '14';
-    %!cnf<INFO><color>    = $cnf<3><color> // '177';
-    %!cnf<WARNING><color> = $cnf<4><color> // '220';
-    %!cnf<ERROR><color>   = $cnf<5><color> // '9';
-    %!cnf<FATAL><color>   = $cnf<6><color> // '1';
+  ) {
+
+    %!level<TRACE><name>    = %level<1><name>  // '🤓';
+    %!level<DEBUG><name>    = %level<2><name>  // '🐞';
+    %!level<INFO><name>     = %level<3><name>  // '🦋';
+    %!level<WARNING><name>  = %level<4><name>  // '🔔';
+    %!level<ERROR><name>    = %level<5><name>  // '❌';
+    %!level<FATAL><name>    = %level<6><name>  // '💀';
+
+    %!level<TRACE><color>   = %level<1><color> // '42';
+    %!level<DEBUG><color>   = %level<2><color> // '14';
+    %!level<INFO><color>    = %level<3><color> // '177';
+    %!level<WARNING><color> = %level<4><color> // '220';
+    %!level<ERROR><color>   = %level<5><color> // '9';
+    %!level<FATAL><color>   = %level<6><color> // '1';
 
 
     my Int $color;
@@ -31,8 +37,8 @@ class Pakku::Log {
 
     my Code $level-formatter = -> $m, :$fh {
 
-      my $color = %!cnf{ $m<level> }<color>;
-      my $level = %!cnf{ $m<level> }<name>;
+      my $color = %!level{ $m<level> }<color>;
+      my $level = %!level{ $m<level> }<name>;
       my $msg   = $m<msg>;
 
       my $formatted =

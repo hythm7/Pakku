@@ -33,7 +33,7 @@ grammar Grammar::Pakku::Cnf {
   rule section:sym<log>    { <.ws> <.lt> <sym> <.gt> <.nl> <logopt>*    %% <.eol> }
 
   proto rule recmanopt { * }
-  rule recmanopt:sym<recman>  { <recman>  }
+  rule recmanopt:sym<recman>  { <url>  }
 
   proto rule logopt { * }
   rule logopt:sym<name>  { <level> <sym> <level-name>  }
@@ -51,7 +51,7 @@ grammar Grammar::Pakku::Cnf {
   token level-color:sym<magenta> { <sym> }
   token level-color:sym<red>     { <sym> }
 
-  token recman { <-[<\n]>+ } # TODO use better token
+  token url { <-[<\n]>+ } # TODO use better token
 
   token eol { [ \h* [ <[#]> \N* ]? \n ]+ }
 
@@ -80,16 +80,16 @@ class Grammar::Pakku::CnfActions {
 
   method logopt:sym<name>    ( $/ ) {
 
-    %!cnf<log>{$<level>.made}{~$<sym>} = ~$<level-name>;
+    %!cnf<log><level>{$<level>.made}{~$<sym>} = ~$<level-name>;
 
   }
 
   method logopt:sym<color>    ( $/ ) {
 
-    %!cnf<log>{$<level>.made}{~$<sym>} = ~$<level-color>;
+    %!cnf<log><level>{$<level>.made}{~$<sym>} = ~$<level-color>;
 
   }
 
-  method recmanopt:sym<recman> ( $/ ) { make $<recman>.Str }
+  method recmanopt:sym<recman> ( $/ ) { make $<url>.Str }
 
 }

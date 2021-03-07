@@ -1,5 +1,3 @@
-use File::Find;
-
 use Pakku::Log;
 use X::Pakku::Test;
 
@@ -10,7 +8,7 @@ method test ( Distribution::Locally:D :$dist! ) {
   <tests t>
     ==> map( -> $dir { $dist.prefix.add: $dir }  )
     ==> grep( *.d )
-    ==> map( -> $dir { find :$dir, name => / '.' < t rakutest > $ / } )
+    ==> map( -> $dir { find-tests :$dir } )
     ==> flat()
     ==> my @test;
 
@@ -75,3 +73,21 @@ method test ( Distribution::Locally:D :$dist! ) {
   🦋 "TST: ｢$dist｣";
 
 }
+
+sub find-tests ( IO::Path:D :$dir! ) {
+
+  my @test;
+
+  my @stack = $dir;
+
+  while @stack {
+
+    with @stack.pop {
+        when :d { @stack.append: .dir }
+        @test.push: .self when .extension.lc ~~ any <rakutest t>;
+    }
+  }
+
+  @test;
+}
+

@@ -58,14 +58,10 @@ my $repo-dir = $dest.add( '.repo' ).mkdir;
 
 my @dep = <
 
-  File::Directory::Tree
-  File::Temp
-  File::Find
   File::Which
   Terminal::ANSIColor
   Log::Async
   JSON::Fast
-  URL
   NativeLibs&auth=github:salortiz
   LibCurl
   Archive::Libarchive::Raw
@@ -197,11 +193,20 @@ $bin.IO.chmod(0o755);
 
 LEAVE {
 
- require File::Directory::Tree;
+  sub nuke-dir ( IO::Path:D $dir ) is export {
 
- my &rm = ::("File::Directory::Tree::EXPORT::DEFAULT::&rmtree");
+  return unless $dir.d;
 
- rm $dep-dir;
+  for $dir.dir {
+    when :f { .unlink };
+    nuke-dir .self when :d;
+  }
+
+  $dir.rmdir;
+}
+
+
+ nuke-dir $dep-dir;
 
 }
 

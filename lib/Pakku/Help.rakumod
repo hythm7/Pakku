@@ -1,24 +1,25 @@
+use Pakku::Log;
 use Terminal::ANSIColor;
 
 unit role Pakku::Help;
 
 method help ( Str:D :$cmd ) {
-  # TODO: Better description for options
+
   given $cmd {
 
-    when 'add'      { self!add    }
-    when 'remove'   { self!remove }
-    when 'list'     { self!list   }
-    when 'search'   { self!search   }
-    when 'build'    { self!build  }
-    when 'test'     { self!test   }
-    when 'pack'     { self!pack   }
-    when 'checkout' { self!checkout  }
-    when 'help'     { self!help   }
+    when 'add'      { 🦋 self!add    }
+    when 'remove'   { 🦋 self!remove }
+    when 'list'     { 🦋 self!list   }
+    when 'search'   { 🦋 self!search   }
+    when 'build'    { 🦋 self!build  }
+    when 'test'     { 🦋 self!test   }
+    when 'pack'     { 🦋 self!pack   }
+    when 'checkout' { 🦋 self!checkout  }
+    when 'help'     { 🦋 self!help   }
 
 
     default {
-      (
+      🦋 (
         self!add,
         self!remove,
         self!list,
@@ -29,8 +30,7 @@ method help ( Str:D :$cmd ) {
         self!checkout,
         self!pakku,
         self!help,
-      )
-      .join: "\n";
+      ).join: "\n";
     }
   }
 }

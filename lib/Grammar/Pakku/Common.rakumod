@@ -44,6 +44,8 @@ role Grammar::Pakku::Common {
 
   proto token pakkuopt { * }
   token pakkuopt:sym<pretty>  { <pretty> }
+  token pakkuopt:sym<recman>  { <recman> }
+  token pakkuopt:sym<cache>   { <cache> }
   token pakkuopt:sym<yolo>    { <yolo> }
   token pakkuopt:sym<please>  { <sym>    }
   token pakkuopt:sym<dont>    { <sym>    }
@@ -96,6 +98,18 @@ role Grammar::Pakku::Common {
   token pretty:sym<𝛒>        { <sym> }
   token pretty:sym<nopretty> { <sym> }
   token pretty:sym<np>       { <sym> }
+
+  proto token recman { * }
+  token recman:sym<recman>   { <sym> }
+  token recman:sym<r>        { <sym> }
+  token recman:sym<norecman> { <sym> }
+  token recman:sym<nr>       { <sym> }
+
+  proto token cache { * }
+  token cache:sym<cache>   { <sym> }
+  token cache:sym<c>       { <sym> }
+  token cache:sym<nocache> { <sym> }
+  token cache:sym<nc>      { <sym> }
 
   proto token yolo { * }
   token yolo:sym<yolo>       { <sym> }
@@ -259,7 +273,7 @@ role Grammar::Pakku::Common {
   token what:sym<path> { {} <path> }
 
   token spec { <name> <pair>* }
-  token path { <[ a..z A..Z 0..9 \-_.!~*'():@&=+$,/ ]>+ }
+  token path { <[ a..z A..Z 0..9 \-_.!~*'<>():@&=+$,/ ]>+ }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
 
@@ -285,6 +299,8 @@ role Grammar::Pakku::Common {
 role Grammar::Pakku::CommonActions {
 
   method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made }
+  method pakkuopt:sym<recman>  ( $/ ) { make $<recman>.made }
+  method pakkuopt:sym<cache>   ( $/ ) { make $<cache>.made  }
   method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )      }
   method pakkuopt:sym<please>  ( $/ ) { make ( :please )    }
   method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )      }
@@ -334,6 +350,16 @@ role Grammar::Pakku::CommonActions {
   method pretty:sym<nopretty> ( $/ )  { make ( :!pretty ) }
   method pretty:sym<np>       ( $/ )  { make ( :!pretty ) }
 
+  method recman:sym<recman>   ( $/ )  { make ( :recman  ) }
+  method recman:sym<r>        ( $/ )  { make ( :recman  ) }
+  method recman:sym<norecman> ( $/ )  { make ( :!recman ) }
+  method recman:sym<nr>       ( $/ )  { make ( :!recman ) }
+
+  method cache:sym<cache>   ( $/ )  { make ( :cache  ) }
+  method cache:sym<r>       ( $/ )  { make ( :cache  ) }
+  method cache:sym<nocache> ( $/ )  { make ( :!cache ) }
+  method cache:sym<nc>      ( $/ )  { make ( :!cache ) }
+
   method build:sym<build>   ( $/ )  { make ( :build  ) }
   method build:sym<b>       ( $/ )  { make ( :build  ) }
   method build:sym<nobuild> ( $/ )  { make ( :!build ) }
@@ -347,14 +373,14 @@ role Grammar::Pakku::CommonActions {
   method force:sym<force>   ( $/ )  { make ( :force  ) }
   method force:sym<f>       ( $/ )  { make ( :force  ) }
   method force:sym<𝙁>       ( $/ )  { make ( :force  ) }
-  method force:sym<🔨>       ( $/ )  { make ( :force  ) }
+  method force:sym<🔨>      ( $/ )  { make ( :force  ) }
   method force:sym<➟>       ( $/ )  { make ( :force  ) }
   method force:sym<noforce> ( $/ )  { make ( :!force ) }
   method force:sym<nf>      ( $/ )  { make ( :!force ) }
 
   method remote:sym<remote>   ( $/ )  { make ( :remote  ) }
   method remote:sym<r>        ( $/ )  { make ( :remote  ) }
-  method remote:sym<🌎>        ( $/ )  { make ( :remote  ) }
+  method remote:sym<🌎>       ( $/ )  { make ( :remote  ) }
   method remote:sym<noremote> ( $/ )  { make ( :!remote ) }
   method remote:sym<nr>       ( $/ )  { make ( :!remote ) }
 
