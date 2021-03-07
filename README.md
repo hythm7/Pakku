@@ -179,6 +179,8 @@ rakudo ver  → package rakudo specific version
 
 <pre>
 <b>pakku dont     add MyModule</b>
+<b>pakku nocache  add MyModule</b>
+<b>pakku norecman add MyModule</b>
 <b>pakku nopretty add MyModule</b>
 <b>pakku yolo     add MyFailedModule MyModule</b>
 <b>pakku pretty   please remove MyModule</b>
@@ -187,6 +189,8 @@ rakudo ver  → package rakudo specific version
 
 pretty            → colors
 nopretty          → no colors
+nocache           → disable cache
+norecman          → disable remote recommendation manager
 dont              → do everything but dont do it (dry run)
 verbose < level > → verbosity < silent trace debug info warn error fatal >
 please            → be nice to butterflies

@@ -208,12 +208,16 @@ submethod !pakku ( ) {
   %pakku<desc>    = 'Pakku Options';
 
   %pakku<example>.push: 'pakku dont     add MyModule';
+  %pakku<example>.push: 'pakku nocache  add MyModule';
+  %pakku<example>.push: 'pakku norecman add MyModule';
   %pakku<example>.push: 'pakku nopretty add MyModule';
   %pakku<example>.push: 'pakku verbose  trace  add    MyModule';
   %pakku<example>.push: 'pakku pretty   please remove MyModule';
 
   %pakku<opt>.push: ( 'pretty'          => 'colorfull butterfly'  );
   %pakku<opt>.push: ( 'nopretty'        => 'no color' );
+  %pakku<opt>.push: ( 'nocache'         => 'disable cache' );
+  %pakku<opt>.push: ( 'norecman'        => 'disable recman' );
   %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it' );
   %pakku<opt>.push: ( 'yolo'            => 'dont stop on Pakku exceptions' );
   %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent trace debug info warn error fatal>' );
