@@ -198,7 +198,7 @@ $bin.IO.chmod(0o755);
 
 LEAVE {
 
-  sub nuke-dir ( IO::Path:D $dir ) is export {
+  sub nuke-dir ( IO::Path:D $dir ) {
 
   return unless $dir.d;
 

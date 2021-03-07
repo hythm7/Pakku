@@ -357,7 +357,7 @@ sub hashmerge ( %merge-into, %merge-source ) {
   %merge-into;
 }
 
-sub nuke-dir ( IO::Path:D $dir ) is export {
+sub nuke-dir ( IO::Path:D $dir ) {
 
   return unless $dir.d;
 
