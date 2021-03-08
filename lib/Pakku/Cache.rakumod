@@ -4,6 +4,7 @@ unit class Pakku::Cache;
 
 has IO $!cached is built;
 
+# TODO: Recommend if match %provides
 method recommend ( Pakku::Spec:D :$spec! ) {
 
   my $spec-dir = $!cached.add: $spec.name;
@@ -18,9 +19,7 @@ method recommend ( Pakku::Spec:D :$spec! ) {
 
   return unless @candy;
 
-  my $candy = @candy.reduce( &reduce-latest );
-
-  $candy.prefix;
+  @candy.reduce( &reduce-latest ).prefix;
 
 }
 

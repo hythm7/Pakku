@@ -22,6 +22,7 @@
   "api"  : "",
   "provides" : {
     "Pakku"                  : "lib/Pakku.rakumod",
+    "Pakku::Util"            : "lib/Pakku/Util.rakumod",
     "Pakku::Log"             : "lib/Pakku/Log.rakumod",
     "Pakku::Guts"            : "lib/Pakku/Guts.rakumod",
     "Pakku::Cache"           : "lib/Pakku/Cache.rakumod",

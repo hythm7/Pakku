@@ -1,6 +1,5 @@
-use Libarchive::Simple;
-
 use X::Pakku;
+use Pakku::Util;
 use Pakku::Log;
 use Pakku::Help;
 use Pakku::Meta;
@@ -184,7 +183,7 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   }
 
-  my $dest = $!cached.IO.add( $meta.name ).add( ~$meta ).mkdir;
+  my $dest = mkdir $!cached.IO.add( $meta.name ).add( ~$meta );
 
   my $url      = $meta.recman-src;
   my $download = $dest.add( $meta ~ '.tar.gz' ).Str;
@@ -193,13 +192,7 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   $!recman.fetch: :$url :$download;
 
-  for archive-read $download {
-
-    my $path = .pathname.IO;
-    my $pathname = ~ $dest.add( $path.relative: $*SPEC.splitdir( $path ).head );
-    .extract: :$pathname :extract-unlink;
-
-  }
+  extract archive => $download, dest => ~$dest;
 
   unlink $download;
 
@@ -273,6 +266,13 @@ method fun ( ) {
 
       nofun;
     }
+
+    default {
+
+      💀 .message;
+
+      nofun;
+    }
   }
 
   my $cmd = %!cnf<cmd>;
@@ -313,8 +313,10 @@ method new ( ) {
   CATCH {
 
     Pakku::Log.new: :3verbose :pretty;
-      💀 .message;
-      nofun;
+
+    💀 .message;
+    
+    nofun;
   }
 
   my $pakku-dir   = $*PROGRAM.resolve.parent: 2;
@@ -335,37 +337,5 @@ method new ( ) {
 
   self.bless: :%cnf;
 
-}
-
-# Stolen from Hash::Merge:cpan:TYIL to fix #6
-sub hashmerge ( %merge-into, %merge-source ) {
-
-  for %merge-source.keys -> $key {
-    if %merge-into{$key}:exists {
-      given %merge-source{$key} {
-        when Hash {
-          hashmerge %merge-into{$key}, %merge-source{$key};
-        }
-        default { %merge-into{$key} = %merge-source{$key} }
-      }
-    }
-    else {
-      %merge-into{$key} = %merge-source{$key};
-    }
-  }
-
-  %merge-into;
-}
-
-sub nuke-dir ( IO::Path:D $dir ) {
-
-  return unless $dir.d;
-
-  for $dir.dir {
-    when :f { .unlink };
-    nuke-dir .self when :d;
-  }
-
-  $dir.rmdir;
 }
 

@@ -65,10 +65,6 @@ my @dep = <
   NativeLibs&auth=github:salortiz
   LibCurl
   Archive::Libarchive::Raw
-  NativeHelpers::Callback
-  Number::Bytes::Human
-  BitEnum
-  Libarchive
   URI::Encode
   Retry
   Pakku::Spec
@@ -135,9 +131,11 @@ use lib {$src.Str.raku};
 use Pakku;
 
 @*ARGS = «
+  norecman
   verbose $verbose
   { $pretty ?? 'pretty' !! 'nopretty' }
   add
+  nodeps
   force
   to "$repo-dir"
   "$src"
