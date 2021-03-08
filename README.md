@@ -46,7 +46,7 @@ Overview
 
 * `Pakku` output meaning:
 ```
-🦋 PRC: ｢ ... ｣ → Start processing...
+🦋 PRC: ｢ ... ｣ → Start processing
 🐞 SPC: ｢ ... ｣ → Spec
 🐞 MTA: ｢ ... ｣ → Meta
 🐞 FTC: ｢ ... ｣ → Fetch
@@ -112,7 +112,7 @@ from < repo > → remove distribution from provided repo only
 </pre>
 
 
-**List distribution**
+**List installed distributions**
 <pre>
 <b>pakku list</b>
 <b>pakku list MyModule</b>
