@@ -41,7 +41,11 @@ sub find-bin ( Str:D $name --> Bool:D ) is export {
 }
 
 
-sub colondash ( Str() $s ) is export { $s.subst: / ':'+ /, '-', :g }
+sub colondash ( Str() $s ) is export {
+
+  $s.trans: / ':'+ / => '-', /<[<>\s]>/ => '';
+
+}
 
 
 # adboted from Archive::Libarchive::Raw examples
