@@ -1,7 +1,7 @@
 use Pakku::Log;
 use X::Pakku::Test;
 
-unit role Pakku::Tester;
+unit role Pakku::Test;
 
 method test ( Distribution::Locally:D :$dist! ) {
 
@@ -34,8 +34,8 @@ method test ( Distribution::Locally:D :$dist! ) {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, '-I', $include, $test.relative: $prefix;
 
-      whenever $proc.stdout.lines { 🤓 $^out }
-      whenever $proc.stderr.lines { ❌ $^err }
+      whenever $proc.stdout.lines { 🤓 ( 'TST: ' ~ $^out ) }
+      whenever $proc.stderr.lines { ❌ ( 'TST: ' ~ $^err ) }
 
       whenever $proc.stdout.stable( 42 ) {
 

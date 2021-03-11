@@ -1,6 +1,5 @@
 unit module Pakku::Util;
 
-
 sub nuke-dir ( IO::Path:D $dir ) is export {
 
   return unless $dir.d;
@@ -35,8 +34,17 @@ sub hashmerge ( %merge-into, %merge-source ) is export {
 }
 
 
-# adboted from Archive::Libarchive::Raw examples
+sub find-bin ( Str:D $name --> Bool:D ) is export {
 
+  so $*SPEC.path.first: { $*SPEC.catfile( $_, $name ).IO.f }
+
+}
+
+
+sub colondash ( Str() $s ) is export { $s.subst: / ':'+ /, '-', :g }
+
+
+# adboted from Archive::Libarchive::Raw examples
 sub extract( Str:D :$archive!, Str:D :$dest! ) is export {
 
   use NativeCall;

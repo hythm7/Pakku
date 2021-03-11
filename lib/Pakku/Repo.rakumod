@@ -1,6 +1,6 @@
 use Pakku::Log;
 use Pakku::Spec;
-use X::Pakku::Repo;
+use X::Pakku;
 
 unit class Pakku::Repo;
 

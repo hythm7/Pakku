@@ -1,20 +1,20 @@
 use Pakku::Log;
 use X::Pakku::Build;
 
-unit role Pakku::Builder;
+unit role Pakku::Build;
 
 
 method build ( Distribution::Locally:D :$dist ) {
 
+  my $prefix  = $dist.prefix.absolute.IO;
   my $builder = $dist.meta<builder>;
 
-  my $file = <Build.rakumod Build.pm6 Build.pm>.map( -> $file { $dist.prefix.add: $file } ).first( *.f );
+  my $file = <Build.rakumod Build.pm6 Build.pm>.map( -> $file { $prefix.add: $file } ).first( *.f );
 
   return unless $file or $builder;
 
   🐞 "BLD: ｢$dist｣";
 
-  my $prefix  = $dist.prefix;
   my $lib     = $prefix.add: <lib>;
   my $include = "$lib,{ $*repo.path-spec }";
   my @deps    = $dist.deps( :deps<build> ).grep( { .from ~~ 'raku' } );
@@ -48,8 +48,8 @@ method build ( Distribution::Locally:D :$dist ) {
 
   react {
 
-    whenever $proc.stdout.lines { 🤓 $^out }
-    whenever $proc.stderr.lines { ❌ $^err }
+    whenever $proc.stdout.lines { 🤓 ( 'BLD: ' ~ $^out ) }
+    whenever $proc.stderr.lines { ❌ ( 'BLD: ' ~ $^err ) }
 
     whenever $proc.stdout.stable( 42 ) {
 

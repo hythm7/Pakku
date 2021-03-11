@@ -105,7 +105,7 @@ submethod !search ( ) {
   my %search;
 
   %search<cmd>     = 'Search';
-  %search<desc>    = 'Search distribution on RecMan';
+  %search<desc>    = 'Search distribution on Recman';
 
   %search<example>.push: 'pakku search MyModule';
   %search<example>.push: 'pakku search count 5 MyModule';

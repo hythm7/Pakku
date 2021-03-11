@@ -2,15 +2,15 @@ use X::Pakku;
 use Pakku::Util;
 use Pakku::Log;
 use Pakku::Help;
-use Pakku::Meta;
 use Pakku::Spec;
+use Pakku::Meta;
+use Pakku::Recman;
 use Pakku::Repo;
 use Pakku::Cache;
-use Pakku::Tester;
-use Pakku::Builder;
+use Pakku::Test;
+use Pakku::Build;
 use Grammar::Pakku::Cnf;
 use Grammar::Pakku::Cmd;
-use Pakku::RecMan::Client;
 
 unit role Pakku::Guts;
   also does Pakku::Help;
@@ -23,11 +23,11 @@ has Bool $!yolo;
 has IO::Path $!cached;
 has          @!ignored;
 
-has Pakku::Log            $!log;
-has Pakku::Builder        $!builder;
-has Pakku::Tester         $!tester;
-has Pakku::Cache          $!cache;
-has Pakku::RecMan::Client $!recman;
+has Pakku::Log    $!log;
+has Pakku::Build  $!builder;
+has Pakku::Test   $!tester;
+has Pakku::Cache  $!cache;
+has Pakku::Recman $!recman;
 
 
 multi method satisfy ( :@spec! ) {
@@ -110,15 +110,15 @@ multi method satisfied ( Pakku::Spec::Raku:D :$spec! --> Bool:D ) {
 
 multi method satisfied ( Pakku::Spec::Bin:D :$spec! --> Bool:D ) {
 
-  use File::Which;
-
-  return False unless which $spec.name;
+  return False unless find-bin $spec.name;
 
   True;
 }
 
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
+  # TODO: Add native dir1:dir2 option to pakku
+  # to include in search path;
   use NativeLibs;
 
   my $name = $spec.name;
@@ -183,10 +183,10 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   }
 
-  my $dest = mkdir $!cached.IO.add( $meta.name ).add( ~$meta );
+  my $dest = mkdir $!cached.IO.add( colondash $meta.name ).add( colondash ~$meta );
 
   my $url      = $meta.recman-src;
-  my $download = $dest.add( $meta ~ '.tar.gz' ).Str;
+  my $download = $dest.add( colondash( ~$meta ) ~ '.tar.gz' ).Str;
 
   🤓 "FTC: ｢$url｣";
 
@@ -303,8 +303,8 @@ submethod BUILD ( :%!cnf! ) {
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
-  $!cache  = Pakku::Cache.new:          :$!cached if $cache;
-  $!recman = Pakku::RecMan::Client.new: :@url     if $recman;
+  $!cache  = Pakku::Cache.new:  :$!cached if $cache;
+  $!recman = Pakku::Recman.new: :@url     if $recman;
 
 }
 

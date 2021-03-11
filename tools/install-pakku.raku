@@ -58,7 +58,6 @@ my $repo-dir = $dest.add( '.repo' ).mkdir;
 
 my @dep = <
 
-  File::Which
   Terminal::ANSIColor
   Log::Async
   JSON::Fast
@@ -66,10 +65,6 @@ my @dep = <
   LibCurl
   Archive::Libarchive::Raw
   URI::Encode
-  Retry
-  Pakku::Spec
-  Pakku::Meta
-  Pakku::RecMan::Client
 
 >;
 

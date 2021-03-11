@@ -5,15 +5,10 @@
   ],
   "build-depends" : [ ],
   "depends" : [
-    "File::Which",
     "Terminal::ANSIColor",
     "Log::Async",
     "LibCurl",
-    "Libarchive",
-    "Retry",
-    "Pakku::Spec",
-    "Pakku::Meta",
-    "Pakku::RecMan::Client"
+    "Libarchive"
   ],
   "description" : "A Package Manager for Raku",
   "license" : "Artistic-2.0",
@@ -25,18 +20,23 @@
     "Pakku::Util"            : "lib/Pakku/Util.rakumod",
     "Pakku::Log"             : "lib/Pakku/Log.rakumod",
     "Pakku::Guts"            : "lib/Pakku/Guts.rakumod",
+    "Pakku::Spec"            : "lib/Pakku/Spec.rakumod",
+    "Pakku::Meta"            : "lib/Pakku/Meta.rakumod",
+    "Pakku::Recman"          : "lib/Pakku/Recman.rakumod",
     "Pakku::Cache"           : "lib/Pakku/Cache.rakumod",
     "Pakku::Help"            : "lib/Pakku/Help.rakumod",
     "Pakku::Repo"            : "lib/Pakku/Repo.rakumod",
-    "Pakku::Tester"          : "lib/Pakku/Tester.rakumod",
-    "Pakku::Builder"         : "lib/Pakku/Builder.rakumod",
+    "Pakku::Test"            : "lib/Pakku/Test.rakumod",
+    "Pakku::Build"           : "lib/Pakku/Build.rakumod",
     "Grammar::Pakku::Cnf"    : "lib/Grammar/Pakku/Cnf.rakumod",
     "Grammar::Pakku::Cmd"    : "lib/Grammar/Pakku/Cmd.rakumod",
     "Grammar::Pakku::Common" : "lib/Grammar/Pakku/Common.rakumod",
     "X::Pakku"               : "lib/X/Pakku.rakumod",
+    "X::Pakku::Spec"         : "lib/X/Pakku/Spec.rakumod",
+    "X::Pakku::Meta"         : "lib/X/Pakku/Meta.rakumod",
+    "X::Pakku::Add"          : "lib/X/Pakku/Add.rakumod",
     "X::Pakku::Test"         : "lib/X/Pakku/Test.rakumod",
-    "X::Pakku::Build"        : "lib/X/Pakku/Build.rakumod",
-    "X::Pakku::Repo"         : "lib/X/Pakku/Repo.rakumod"
+    "X::Pakku::Build"        : "lib/X/Pakku/Build.rakumod"
   },
   "resources" : [
     "pakku.cnf"
