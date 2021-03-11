@@ -61,6 +61,7 @@ my @dep = <
   Terminal::ANSIColor
   Log::Async
   Archive::Libarchive::Raw
+  JSON::Fast
   NativeLibs&auth=github:salortiz
   LibCurl
   URI::Encode
