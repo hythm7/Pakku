@@ -8,6 +8,7 @@
     "Terminal::ANSIColor",
     "Log::Async",
     "Libarchive",
+    "URI::Encode",
     "LibCurl"
   ],
   "description" : "A Package Manager for Raku",

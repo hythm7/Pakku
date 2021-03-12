@@ -41,9 +41,12 @@ sub find-bin ( Str:D $name --> Bool:D ) is export {
 }
 
 
-sub colondash ( Str() $s ) is export {
+sub norm-name ( Str:D $s ) is export {
 
-  $s.trans: / ':'+ / => '-', /<[<>\s]>/ => '';
+  $s.trans:
+    '< >:*' => '',
+    / '::' / => '-',
+    / [':ver' | ':auth' | ':api' ] / => '-';
 
 }
 

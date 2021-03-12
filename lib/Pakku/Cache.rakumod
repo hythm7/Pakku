@@ -7,7 +7,7 @@ has IO $!cached is built;
 # TODO: Recommend if match %provides
 method recommend ( Pakku::Spec:D :$spec! ) {
 
-  my $spec-dir = $!cached.add: $spec.name.trans: / ':'+ / => '-';
+  my $spec-dir = $!cached.add: $spec.name.subst: '::', '-', :g;
 
   return Empty unless $spec-dir.d;
 

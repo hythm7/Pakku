@@ -183,10 +183,12 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   }
 
-  my $dest = mkdir $!cached.IO.add( colondash $meta.name ).add( colondash ~$meta );
+  my $norm-name = norm-name ~$meta;
+
+  my $dest = mkdir $!cached.IO.add( $meta.name.subst: '::', '-', :g ).add( $norm-name );
 
   my $url      = $meta.recman-src;
-  my $download = $dest.add( colondash( ~$meta ) ~ '.tar.gz' ).Str;
+  my $download = $dest.add( $norm-name ~ '.tar.gz' ).Str;
 
   🤓 "FTC: ｢$url｣";
 
