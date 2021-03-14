@@ -7,35 +7,35 @@ method help ( Str:D :$cmd ) {
 
   given $cmd {
 
-    when 'add'      { 🦋 self!add    }
-    when 'remove'   { 🦋 self!remove }
-    when 'list'     { 🦋 self!list   }
-    when 'search'   { 🦋 self!search   }
-    when 'build'    { 🦋 self!build  }
-    when 'test'     { 🦋 self!test   }
-    when 'pack'     { 🦋 self!pack   }
-    when 'checkout' { 🦋 self!checkout  }
-    when 'help'     { 🦋 self!help   }
+    when 'add'      { 🦋 self!add-help      }
+    when 'remove'   { 🦋 self!remove-help   }
+    when 'list'     { 🦋 self!list-help     }
+    when 'search'   { 🦋 self!search-help   }
+    when 'build'    { 🦋 self!build-help    }
+    when 'test'     { 🦋 self!test-help     }
+    when 'pack'     { 🦋 self!pack-help     }
+    when 'checkout' { 🦋 self!checkout-help }
+    when 'help'     { 🦋 self!help-help     }
 
 
     default {
       🦋 (
-        self!add,
-        self!remove,
-        self!list,
-        self!search,
-        self!build,
-        self!test,
-        self!pack,
-        self!checkout,
-        self!pakku,
-        self!help,
+        self!add-help,
+        self!remove-help,
+        self!list-help,
+        self!search-help,
+        self!build-help,
+        self!test-help,
+        self!pack-help,
+        self!checkout-help,
+        self!pakku-help,
+        self!help-help,
       ).join: "\n";
     }
   }
 }
 
-submethod !add ( ) {
+submethod !add-help ( ) {
 
   my %add;
 
@@ -65,7 +65,7 @@ submethod !add ( ) {
 
 }
 
-submethod !remove ( ) {
+submethod !remove-help ( ) {
 
   my %remove;
 
@@ -80,7 +80,7 @@ submethod !remove ( ) {
 
 }
 
-submethod !list ( ) {
+submethod !list-help ( ) {
 
   my %list;
 
@@ -100,7 +100,7 @@ submethod !list ( ) {
 
 }
 
-submethod !search ( ) {
+submethod !search-help ( ) {
 
   my %search;
 
@@ -119,7 +119,7 @@ submethod !search ( ) {
 }
 
 
-submethod !pack ( ) {
+submethod !pack-help ( ) {
 
   my %pack;
 
@@ -141,7 +141,7 @@ submethod !pack ( ) {
 
 
 
-submethod !build ( ) {
+submethod !build-help ( ) {
 
   my %build;
 
@@ -156,7 +156,7 @@ submethod !build ( ) {
 
 }
 
-submethod !test ( ) {
+submethod !test-help ( ) {
 
   my %test;
 
@@ -170,7 +170,7 @@ submethod !test ( ) {
 
 }
 
-submethod !checkout ( ) {
+submethod !checkout-help ( ) {
 
   my %checkout;
 
@@ -183,7 +183,7 @@ submethod !checkout ( ) {
 
 }
 
-submethod !help ( ) {
+submethod !help-help ( ) {
 
   my %help;
 
@@ -200,7 +200,7 @@ submethod !help ( ) {
 
 }
 
-submethod !pakku ( ) {
+submethod !pakku-help ( ) {
 
   my %pakku;
 
