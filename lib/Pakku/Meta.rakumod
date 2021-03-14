@@ -1,6 +1,5 @@
 use Terminal::ANSIColor;
 
-use X::Pakku::Meta;
 use Pakku::Spec;
 
 unit class Pakku::Meta;
@@ -215,7 +214,7 @@ multi method new ( Str:D $json ) {
 
   my $meta = Rakudo::Internals::JSON.from-json: $json;
 
-  die X::Pakku::Meta.new: meta => $json unless $meta;
+  die 'Invalid json' unless $meta;
 
   samewith $meta;
 
@@ -227,7 +226,7 @@ multi method new ( IO::Path:D $path ) {
 
   my $meta-file = @meta.map( -> $file { $path.add: $file } ).first( *.f );
 
-  die X::Pakku::Meta.new: meta => $path unless $meta-file;
+  die 'No META file' unless $meta-file;
 
   my $meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
 
@@ -239,7 +238,7 @@ multi method new ( IO::Path:D $path ) {
 
 multi method new ( %meta ) {
 
-  die X::Pakku::Meta.new: :%meta unless %meta<name>;
+  die 'Invalid META' unless %meta<name>;
 
   %meta<meta-version> = Version.new( %meta<meta-version> || 0   );
   %meta<perl>         = Version.new( %meta<perl>         || '*' );

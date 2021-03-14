@@ -1,4 +1,3 @@
-use X::Pakku::Spec;
 
 unit class Pakku::Spec;
 
@@ -183,7 +182,7 @@ multi method new ( Str:D $spec ) {
 
     self.bless: |$_;
 
-  } else { die X::Pakku::Spec.new: :$spec }
+  } else { die 'Invalid Spec' }
 
 }
 
@@ -201,7 +200,7 @@ multi method new ( IO $prefix! ) {
   my $meta-file = @meta.map( -> $file { $prefix.add: $file } ).first( *.f );
 
 
-  die X::Pakku::Spec.new: spec => $prefix unless $meta-file;
+  die 'No META file' unless $meta-file;
 
   my %meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
 
@@ -215,7 +214,7 @@ multi method new ( %spec! ) {
 
   return self.new: %spec<any> if %spec<any>;
 
-  die X::Pakku::Spec.new: :%spec unless %spec<name>;
+  die 'Invalid Spec' unless %spec<name>;
 
   given %spec<name> {
 

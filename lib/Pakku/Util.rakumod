@@ -1,5 +1,22 @@
 unit module Pakku::Util;
 
+sub find-tests ( IO::Path:D :$dir! ) is export {
+
+  my @test;
+
+  my @stack = $dir;
+
+  while @stack {
+
+    with @stack.pop {
+        when :d { @stack.append: .dir }
+        @test.push: .self when .extension.lc ~~ any <rakutest t>;
+    }
+  }
+
+  @test;
+}
+
 sub nuke-dir ( IO::Path:D $dir ) is export {
 
   return unless $dir.d;

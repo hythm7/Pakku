@@ -53,9 +53,9 @@ method add (
   @dist 
     ==> map( -> $dist {
   
-      $!builder.build: :$dist if $build;
+      self!build: :$dist if $build;
 
-      $!tester.test:   :$dist if $test;
+      self!test:  :$dist if $test;
   
       unless $!dont {
 
@@ -135,10 +135,10 @@ method search (
 ) {
 
   @spec
-    ==> map( -> $spec { Spec.new: $spec } )
+    ==> map( -> $spec { Spec.new: $spec                        } )
     ==> map( -> $spec { $!recman.search( :$spec :$count ).Slip } )
-    ==> map( -> $meta { Meta.new( $meta ).gist: :$details } )
-    ==> map( -> $meta { 🦋 $meta } );
+    ==> map( -> $meta { Meta.new( $meta ).gist: :$details      } )
+    ==> map( -> $meta { 🦋 $meta                               } );
 
   return;
 
@@ -150,10 +150,10 @@ method build ( :@spec! ) {
   my $*repo = Pakku::Repo.new;
 
   @spec
-    ==> map( -> $spec { Spec.new: $spec } )
-    ==> map( -> $spec { self.satisfy: :$spec } )
+    ==> map( -> $spec { Spec.new: $spec                          } )
+    ==> map( -> $spec { self.satisfy: :$spec                     } )
     ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: :$meta } )
-    ==> map( -> $dist { $!builder.build: :$dist unless $!dont } );
+    ==> map( -> $dist { self!build: :$dist unless $!dont         } );
 
   return;
 
@@ -164,10 +164,10 @@ method test ( :@spec! ) {
   my $*repo = Pakku::Repo.new;
 
   @spec
-    ==> map( -> $spec { Spec.new: $spec } )
-    ==> map( -> $spec { self.satisfy: :$spec } )
+    ==> map( -> $spec { Spec.new: $spec                          } )
+    ==> map( -> $spec { self.satisfy: :$spec                     } )
     ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: :$meta } )
-    ==> map( -> $dist { $!tester.test: :$dist unless $!dont } );
+    ==> map( -> $dist { self!test: :$dist unless $!dont          } );
 
   return;
 

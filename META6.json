@@ -27,17 +27,10 @@
     "Pakku::Cache"           : "lib/Pakku/Cache.rakumod",
     "Pakku::Help"            : "lib/Pakku/Help.rakumod",
     "Pakku::Repo"            : "lib/Pakku/Repo.rakumod",
-    "Pakku::Test"            : "lib/Pakku/Test.rakumod",
-    "Pakku::Build"           : "lib/Pakku/Build.rakumod",
     "Grammar::Pakku::Cnf"    : "lib/Grammar/Pakku/Cnf.rakumod",
     "Grammar::Pakku::Cmd"    : "lib/Grammar/Pakku/Cmd.rakumod",
     "Grammar::Pakku::Common" : "lib/Grammar/Pakku/Common.rakumod",
-    "X::Pakku"               : "lib/X/Pakku.rakumod",
-    "X::Pakku::Spec"         : "lib/X/Pakku/Spec.rakumod",
-    "X::Pakku::Meta"         : "lib/X/Pakku/Meta.rakumod",
-    "X::Pakku::Add"          : "lib/X/Pakku/Add.rakumod",
-    "X::Pakku::Test"         : "lib/X/Pakku/Test.rakumod",
-    "X::Pakku::Build"        : "lib/X/Pakku/Build.rakumod"
+    "X::Pakku"               : "lib/X/Pakku.rakumod"
   },
   "resources" : [
     "pakku.cnf"

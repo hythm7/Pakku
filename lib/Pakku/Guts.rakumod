@@ -7,8 +7,6 @@ use Pakku::Meta;
 use Pakku::Recman;
 use Pakku::Repo;
 use Pakku::Cache;
-use Pakku::Test;
-use Pakku::Build;
 use Grammar::Pakku::Cnf;
 use Grammar::Pakku::Cmd;
 
@@ -24,11 +22,158 @@ has IO::Path $!cached;
 has          @!ignored;
 
 has Pakku::Log    $!log;
-has Pakku::Build  $!builder;
-has Pakku::Test   $!tester;
 has Pakku::Cache  $!cache;
 has Pakku::Recman $!recman;
 
+method !test ( Distribution::Locally:D :$dist! ) {
+
+  <tests t>
+    ==> map( -> $dir { $dist.prefix.add: $dir }  )
+    ==> grep( *.d )
+    ==> map( -> $dir { find-tests :$dir } )
+    ==> flat()
+    ==> my @test;
+
+  return unless @test;
+
+  🐞 "TST: ｢$dist｣";
+
+
+
+  my $prefix  = $dist.prefix;
+  my $lib     = $prefix.add: <lib>;
+  my $include = "$lib,{ $*repo.path-spec }";
+
+  #  my @deps    = $dist.deps( :$!deps ).grep( { .from ~~ 'raku' } );
+
+  @test.map( -> $test {
+
+    🐞 "TST: ｢{$test.basename}｣";
+
+    my $exitcode;
+
+    react {
+
+      my $proc = Proc::Async.new: $*EXECUTABLE, '-I', $include, $test.relative: $prefix;
+
+      whenever $proc.stdout.lines { 🤓 ( 'TST: ' ~ $^out ) }
+      whenever $proc.stderr.lines { ❌ ( 'TST: ' ~ $^err ) }
+
+      whenever $proc.stdout.stable( 42 ) {
+
+      🐞 "WAI: ｢{$proc.command}｣";
+
+      }
+
+      whenever $proc.stdout.stable( 420 ) {
+
+        🔔 "TOT: ｢$dist｣";
+
+        $proc.kill;
+
+        $exitcode = 1;
+
+        done;
+
+      }
+
+      whenever $proc.start( cwd => $prefix, :%*ENV ) {
+
+        $exitcode = .exitcode;
+        done;
+
+      }
+
+
+    }
+
+    die X::Pakku::Test.new: :$dist if $exitcode;
+
+  });
+
+
+  🦋 "TST: ｢$dist｣";
+
+}
+
+method !build ( Distribution::Locally:D :$dist ) {
+
+  my $prefix  = $dist.prefix.absolute.IO;
+  my $builder = $dist.meta<builder>;
+
+  my $file = <Build.rakumod Build.pm6 Build.pm>.map( -> $file { $prefix.add: $file } ).first( *.f );
+
+  return unless $file or $builder;
+
+  🐞 "BLD: ｢$dist｣";
+
+  my $lib     = $prefix.add: <lib>;
+  my $include = "$lib,{ $*repo.path-spec }";
+  my @deps    = $dist.deps( :deps<build> ).grep( { .from ~~ 'raku' } );
+
+  my $cmd = $builder
+
+    ?? qq:to/CMD/
+
+    my %meta   := {$dist.meta.perl};
+
+    @deps.map( -> $dep { "use $dep;" } )
+
+    ::( "$builder" ).new( :%meta).build(  "$prefix" );
+
+    CMD
+
+    !! qq:to/CMD/;
+
+    require "$file";
+
+    @deps.map( -> $dep { "require ::( \"$dep\" );" } )
+
+    ::( 'Build' ).new.build(  "$prefix" );
+
+    CMD
+
+
+  my $proc = Proc::Async.new: ~$*EXECUTABLE, '-I', $include, '-e', $cmd, cwd => $prefix;
+
+  my $exitcode;
+
+  react {
+
+    whenever $proc.stdout.lines { 🤓 ( 'BLD: ' ~ $^out ) }
+    whenever $proc.stderr.lines { ❌ ( 'BLD: ' ~ $^err ) }
+
+    whenever $proc.stdout.stable( 42 ) {
+
+    🐞 "WAI: ｢{$proc.command}｣";
+
+    }
+
+    whenever $proc.stdout.stable( 420 ) {
+
+      🔔 "TOT: ｢$dist｣";
+
+      $proc.kill;
+
+      $exitcode = 1;
+
+      done;
+
+    }
+
+    whenever $proc.start( cwd => $prefix, :%*ENV ) {
+
+      $exitcode = .exitcode;
+
+      done;
+
+    }
+  }
+
+  die X::Pakku::Build.new: :$dist if $exitcode;
+
+  🦋 "BLD: ｢$dist｣";
+}
 
 multi method satisfy ( :@spec! ) {
 
