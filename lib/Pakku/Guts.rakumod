@@ -262,14 +262,19 @@ multi method satisfied ( Pakku::Spec::Bin:D :$spec! --> Bool:D ) {
 
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
-  # TODO: Add native dir1:dir2 option to pakku
-  # to include in search path;
-  use NativeLibs;
+  # stolen from NativeLibs:auth<github:salortiz
+  use NativeCall;
 
-  my $name = $spec.name;
-  my $ver  = $spec.ver;
+  my class DLLib is repr('CPointer') { };
 
-  return False unless NativeLibs::Loader.load: NativeLibs::cannon-name( $name, |( $ver if $ver ) );
+  my sub dlopen( Str, uint32 --> DLLib ) is native { !!! }
+
+  my $name    = $spec.name;
+  my $version = $spec.ver;
+
+  my \lib  = $*VM.platform-library-name( $name.IO, |( version => Version.new( $version ) if $version ) ).Str;
+
+  return False unless dlopen lib, 0x102;
  
   True;
 }

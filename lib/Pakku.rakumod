@@ -12,16 +12,14 @@ method add (
   Bool:D :$build  = True,
   Bool:D :$test   = True,
   Bool:D :$force  = False,
+         :$exclude,
          :$repo,
-         :$exclude is copy,
 
 ) {
 
   🦋 "PRC: ｢{@spec}｣";
 
   my $*repo = Pakku::Repo.new: :$repo;
-
-  $exclude =  Spec.new( $exclude ) if $exclude;
 
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
@@ -30,7 +28,7 @@ method add (
     ==> map( -> $spec { self.satisfy: :$spec } )
     ==> map( -> $dep {
 
-      my @dep = self.get-deps: $dep, :$deps, :$exclude;
+      my @dep = self.get-deps: $dep, :$deps, |( exclude => Spec.new( $exclude )  if $exclude );
 
       @dep.append: $dep unless $deps ~~ <only>;
 
