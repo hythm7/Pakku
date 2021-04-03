@@ -64,7 +64,8 @@ role Grammar::Pakku::Common {
   token addopt:sym<build>     { <build>                       }
   token addopt:sym<test>      { <test>                        }
   token addopt:sym<force>     { <force>                       }
-  token addopt:sym<to>        { <sym> <.space>* <repo>        }
+  token addopt:sym<to>        { <sym>     <.space>* <repo>    }
+  token addopt:sym<exclude>   { <exclude> <.space>* <spec>    }
 
   proto token buildopt    { * }
   proto token testopt     { * }
@@ -186,6 +187,9 @@ role Grammar::Pakku::Common {
   token force:sym<noforce> { <sym> }
   token force:sym<nf>      { <sym> }
 
+  proto token exclude { * }
+  token exclude:sym<exclude> { <sym> }
+  token exclude:sym<x>       { <sym> }
 
   proto token from { * }
   token from:sym<from> { <sym> }
@@ -321,6 +325,8 @@ role Grammar::Pakku::CommonActions {
   method addopt:sym<force>     ( $/ ) { make $<force>.made }
 
   method addopt:sym<to>        ( $/ ) { make ( repo => $<repo>.made ) }
+
+  method addopt:sym<exclude>   ( $/ ) { make ( exclude => $<spec>.made ) }
 
 
   method removeopt:sym<from> ( $/ ) { make ( repo => $<repo>.made ) }

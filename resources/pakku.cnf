@@ -6,10 +6,11 @@
   # dont             # dont do it (dry run)
 
 # < add >
-  # deps       # add deps as well < deps nodeps >
-  # build      # build            < build nobuild >
-  # test       # test             < test notest >
-  # force      # force install    < force noforce >
+  # deps         # add deps as well < deps nodeps >
+  # build        # build            < build nobuild >
+  # test         # test             < test notest >
+  # force        # force install    < force noforce >
+  # exclude Dep1 # exclude dependency
   # to  home # install into specific repo <home site vendor core /custom/repo/path>
 
 # < remove >

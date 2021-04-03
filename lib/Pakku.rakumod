@@ -8,17 +8,20 @@ unit class Pakku;
 method add (
 
          :@spec!,
-         :$deps  = True,
-  Bool:D :$build = True,
-  Bool:D :$test  = True,
-  Bool:D :$force = False,
+         :$deps   = True,
+  Bool:D :$build  = True,
+  Bool:D :$test   = True,
+  Bool:D :$force  = False,
          :$repo,
+         :$exclude is copy,
 
 ) {
 
   🦋 "PRC: ｢{@spec}｣";
 
   my $*repo = Pakku::Repo.new: :$repo;
+
+  $exclude =  Spec.new( $exclude ) if $exclude;
 
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
@@ -27,7 +30,7 @@ method add (
     ==> map( -> $spec { self.satisfy: :$spec } )
     ==> map( -> $dep {
 
-      my @dep = self.get-deps( $dep, :$deps );
+      my @dep = self.get-deps: $dep, :$deps, :$exclude;
 
       @dep.append: $dep unless $deps ~~ <only>;
 

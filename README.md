@@ -77,15 +77,17 @@ USAGE
 
 <pre>
 <b>pakku add MyModule</b>
-<b>pakku add nodeps MyModule</b>
-<b>pakku add notest MyModule</b>
-<b>pakku add to     /opt/MyApp MyModule</b>
-<b>pakku add force  to   home  MyModule1 MyModule2</b>
+<b>pakku add nodeps  MyModule</b>
+<b>pakku add notest  MyModule</b>
+<b>pakku add exclude Dep1 MyModule</b>
+<b>pakku add to      /opt/MyApp MyModule</b>
+<b>pakku add force   to   home  MyModule1 MyModule2</b>
 
 <b>Options:</b> Specific to <b>add</b> command
 
 deps            → add dependencies
 nodeps          → no dependencies
+exclude Dep1    → exclude Dep1 dependency
 deps runtime    → add runtime dependencies
 deps test       → add test    dependencies
 deps build      → add build dependencies
@@ -220,7 +222,7 @@ search    → s     deps    → d     notest   → nt     info   → «I 3»
 build     → b     force   → f     nobuild  → nb     warn   → «W 4»
 test      → t     details → d     nocache  → nc     error  → «E 5»
 checkout  → c     yolo    → y     norecman → nr     fatal  → «F 6»
-help      → h     
+help      → h     exclude → x
 </pre>
 
 Did I mention that the below are `Pakku` commands as well?

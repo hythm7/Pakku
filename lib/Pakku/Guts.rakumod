@@ -275,7 +275,7 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 }
 
 
-multi method get-deps ( Pakku::Meta:D $meta, :$deps ) {
+multi method get-deps ( Pakku::Meta:D $meta, :$deps, :$exclude ) {
 
   #TODO: Revisit if issues when required
     # two different versions of same dependnecy.
@@ -284,6 +284,8 @@ multi method get-deps ( Pakku::Meta:D $meta, :$deps ) {
 
   state %visited;
   
+  once %visited{ .name } = True with $exclude;
+
   $meta.deps: :$deps
 
     ==> grep( -> $spec { not ( %visited{ $spec.?name // any @$spec.map( *.name ) } or self.satisfied: :$spec )   } )
