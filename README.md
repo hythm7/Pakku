@@ -264,12 +264,12 @@ Config file example:
 
 ## Customize verbosity levels symbols and colors
 # < log >
-  # trace name T:
-  # debug name D:
-  # info  name I:
-  # warn  name W:
-  # error name E:
-  # fatal name F:
+  # trace prefix T:
+  # debug prefix D:
+  # info  prefix I:
+  # warn  prefix W:
+  # error prefix E:
+  # fatal prefix F:
 
   # trace color reset
   # debug color green

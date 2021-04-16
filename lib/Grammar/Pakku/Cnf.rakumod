@@ -36,10 +36,10 @@ grammar Grammar::Pakku::Cnf {
   rule recmanopt:sym<recman>  { <url>  }
 
   proto rule logopt { * }
-  rule logopt:sym<name>  { <level> <sym> <level-name>  }
-  rule logopt:sym<color> { <level> <sym> <level-color> }
+  rule logopt:sym<prefix> { <level> <sym> <level-prefix>  }
+  rule logopt:sym<color>  { <level> <sym> <level-color>   }
 
-  token level-name  { <-[\s]>+ }
+  token level-prefix  { <-[\s]>+ }
 
   proto token level-color { * }
   token level-color:sym<reset>   { <sym> }
@@ -78,9 +78,9 @@ class Grammar::Pakku::CnfActions {
   method section:sym<search> ( $/ ) { %!cnf{~$<sym>} = $<searchopt>».made.hash }
   method section:sym<recman> ( $/ ) { %!cnf{~$<sym>}.append: $<recmanopt>».made }
 
-  method logopt:sym<name>    ( $/ ) {
+  method logopt:sym<prefix>    ( $/ ) {
 
-    %!cnf<log><level>{$<level>.made}{~$<sym>} = ~$<level-name>;
+    %!cnf<log><level>{$<level>.made}{~$<sym>} = ~$<level-prefix>;
 
   }
 

@@ -16,12 +16,12 @@ class Pakku::Log {
 
   ) {
 
-    %!level<TRACE><name>    = %level<1><name>  // '🤓';
-    %!level<DEBUG><name>    = %level<2><name>  // '🐞';
-    %!level<INFO><name>     = %level<3><name>  // '🦋';
-    %!level<WARNING><name>  = %level<4><name>  // '🔔';
-    %!level<ERROR><name>    = %level<5><name>  // '❌';
-    %!level<FATAL><name>    = %level<6><name>  // '💀';
+    %!level<TRACE><prefix>    = %level<1><prefix>  // '🤓';
+    %!level<DEBUG><prefix>    = %level<2><prefix>  // '🐞';
+    %!level<INFO><prefix>     = %level<3><prefix>  // '🦋';
+    %!level<WARNING><prefix>  = %level<4><prefix>  // '🔔';
+    %!level<ERROR><prefix>    = %level<5><prefix>  // '❌';
+    %!level<FATAL><prefix>    = %level<6><prefix>  // '💀';
 
     %!level<TRACE><color>   = %level<1><color> // '42';
     %!level<DEBUG><color>   = %level<2><color> // '14';
@@ -38,7 +38,7 @@ class Pakku::Log {
     my Code $level-formatter = -> $m, :$fh {
 
       my $color = %!level{ $m<level> }<color>;
-      my $level = %!level{ $m<level> }<name>;
+      my $level = %!level{ $m<level> }<prefix>;
       my $msg   = $m<msg>;
 
       my $formatted =
