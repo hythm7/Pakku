@@ -269,7 +269,7 @@ Config file example:
 # < list >
   # details # list   details of dists
 
-## Customize verbosity levels symbols and colors
+## Customize log levels prefixes and colors
 # < log >
   # trace prefix T:
   # debug prefix D:
