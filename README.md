@@ -237,7 +237,7 @@ Did I mention that the below are `Pakku` commands as well?
 
 CONFIGURATION
 =============
-All options can be set in command line or in the config file <b>pakku.cnf</b> ｢`~/.pakku/pakku.cnf`｣. The only needed config is `<recman>` source, otherwise you will be able to install local distributions only.
+* All options can be set in command line or in the config file <b>pakku.cnf</b> ｢`~/.pakku/pakku.cnf`｣. The only needed config is `<recman>` source, otherwise you will be able to install local distributions only.
 
 * In case your terminal font does not support emojis, you can replace them by changing `prefix` values in the `< log >` section of your config file (usually `~/.pakku/pakku.cnf`):
 ```
