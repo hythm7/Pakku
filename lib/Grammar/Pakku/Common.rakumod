@@ -294,7 +294,7 @@ role Grammar::Pakku::Common {
   token value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>? ] }
   token value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>? ] }
 
-  token anything { .* }
+  token anything { {} .* }
 
   token lt  { '<' }
   token gt  { '>' }

@@ -18,15 +18,15 @@ grammar Grammar::Pakku::Cmd {
 
 
   proto rule TOP { * }
-  rule TOP:sym<add>      { <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>  }
-  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <whats>  }
-  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <whats>  }
-  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>  }
-  rule TOP:sym<checkout> { <pakkuopt>* % <.space> <checkout>  <checkoutopt>* % <.space> <whats>  }
-  rule TOP:sym<pack>     { <pakkuopt>* % <.space> <pack>      <packopt>*     % <.space> <whats>  }
-  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>  }
-  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>? }
-  rule TOP:sym<help>     { <pakkuopt>* <help>? <cmd>? <anything> }
+  rule TOP:sym<add>      { <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>    }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <whats>    }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <whats>    }
+  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>    }
+  rule TOP:sym<checkout> { <pakkuopt>* % <.space> <checkout>  <checkoutopt>* % <.space> <whats>    }
+  rule TOP:sym<pack>     { <pakkuopt>* % <.space> <pack>      <packopt>*     % <.space> <whats>    }
+  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>    }
+  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>?   }
+  rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>?     <cmd>?                    <anything> }
 
 
   proto token cmd { * }
