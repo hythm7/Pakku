@@ -7,7 +7,7 @@
   "depends" : [
     "Terminal::ANSIColor",
     "Log::Async",
-    "Libarchive",
+    "Archive::Libarchive::Raw",
     "URI::Encode",
     "LibCurl"
   ],

@@ -339,7 +339,7 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   my $dest = mkdir $!cached.IO.add( $meta.name.subst: '::', '-', :g ).add( $norm-name );
 
-  my $url      = $meta.recman-src;
+  my $url      = $meta.source-url;
   my $download = $dest.add( $norm-name ~ '.tar.gz' ).Str;
 
   🤓 "FTC: ｢$url｣";

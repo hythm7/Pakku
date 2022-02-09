@@ -22,7 +22,7 @@ method add ( Distribution::Locally:D :$dist!, :$force ) {
 
     .message.lines.map( { ❌ $^err } );
 
-    die X::Pakku::Repo::Add.new: :$dist;
+    die X::Pakku::Add.new: :$dist;
 
   }
 

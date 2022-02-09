@@ -49,7 +49,6 @@ has $.test-depends;
 has $.resources;
 has $.tags;
 has $.path;
-has $.recman-src;
 
 
 has %.provides;

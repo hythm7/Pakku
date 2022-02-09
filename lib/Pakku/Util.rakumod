@@ -136,7 +136,7 @@ sub extract( Str:D :$archive!, Str:D :$dest! ) is export {
 
     my int64 $res;
     my Pointer[void] $buff .= new;
-    my int64 $size;
+    my size_t $size;
     my int64 $offset;
 
     loop {

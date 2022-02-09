@@ -20,13 +20,14 @@ sub log-dep ( ) {
 
     my $meta = run 'curl', '-s', $meta-url, :out;
 
+
     my %meta = Rakudo::Internals::JSON.from-json($meta.out(:close).slurp);
 
     my $src-path = $dep-dir.add: $dep;
 
     my $archive-path = "$src-path.tar.gz".IO;
 
-    my $curl = run 'curl', '-s', '-o', $archive-path, %meta<recman-src>;
+    my $curl = run 'curl', '-s', '-o', $archive-path, %meta<source-url>;
 
     mkdir $src-path;
 
@@ -107,7 +108,7 @@ for @dep -> $dep {
 
   🤓 "FTC: ｢$archive-path｣";
 
-  my $curl = run 'curl', '-s', '-o', $archive-path, %meta<recman-src>;
+  my $curl = run 'curl', '-s', '-o', $archive-path, %meta<source-url>;
 
   mkdir $src-path;
 
@@ -193,18 +194,17 @@ LEAVE {
 
   sub nuke-dir ( IO::Path:D $dir ) {
 
-  return unless $dir.d;
+    return unless $dir.d;
 
-  for $dir.dir {
-    when :f { .unlink };
-    nuke-dir .self when :d;
+    for $dir.dir {
+      when :f { .unlink };
+      nuke-dir .self when :d;
+    }
+
+    $dir.rmdir;
   }
 
-  $dir.rmdir;
-}
-
-
- nuke-dir $dep-dir;
+  nuke-dir $dep-dir;
 
 }
 
