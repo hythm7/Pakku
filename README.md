@@ -5,6 +5,11 @@ Pakku
 Installation
 ============
 <pre>
+
+# `Pakku` needs `libarchive` and `libcurl`, they should be
+# installed on most operating systems but if not, then you need
+# to install them for `Pakku` to function
+
 git clone https://github.com/hythm7/Pakku.git
 
 cd Pakku
