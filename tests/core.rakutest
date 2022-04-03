@@ -28,7 +28,7 @@ lives-ok {
 
 my $*repo = Pakku::Repo.new: 'home';
 
-ok  $core.satisfied( spec => Pakku::Spec.new( { :from<native>, :name<archive> } ) ), 'Native dependency exists' unless $*DISTRO.is-win;
+ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "archive:ver<13>:from<native>", "archiv:from<native>" ] } ) ), 'Native dependency exists' unless $*DISTRO.is-win;
 nok $core.satisfied( spec => Pakku::Spec.new( { :from<native>, :name<missing> } ) ), 'Native dependency missing';
 
 ok  $core.satisfied( spec => Pakku::Spec.new( { :from<bin>, :name<raku>    } ) ), 'Binary dependency exists';
