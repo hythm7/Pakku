@@ -180,12 +180,14 @@ sub system-collapse($data) {
         die "Unable to resolve path: {$idx} in \%*ENV\nhad: {$value // ''}";
       }
       when /^'by-' (['distro'|'kernel'|'backend'])/ {
-        my $PTR   = $/[0] eq 'distro' ?? 
-                      $*DISTRO !! $/[0] eq 'kernel' ??
-                      $*KERNEL !! 
-                      $*BACKEND;
+        my $PTR = $/[0] eq 'distro'
+          ?? $*DISTRO
+          !! $/[0] eq 'kernel'
+            ?? $*KERNEL
+            !!  $*BACKEND;
+
         my $path  = $idx.split('.');
-        my $value = follower($path, 1, $*DISTRO);
+        my $value = follower($path, 1, $PTR);
         my $fkey;
 
         if $value ~~ Version {
