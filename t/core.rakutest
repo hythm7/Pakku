@@ -17,7 +17,7 @@ lives-ok {
 
       my @url  = %!cnf<recman>.flat;
 
-      $!log    = Pakku::Log.new: :0verbose;
+      $!log    = Pakku::Log.new: :1verbose;
       $!recman = Pakku::Recman.new: :@url;
 
 
@@ -38,20 +38,17 @@ ok  $core.satisfied( spec => Pakku::Spec.new( 'CORE'         ) ), 'Raku dependen
 nok $core.satisfied( spec => Pakku::Spec.new( 'CORE:ver<-1>' ) ), 'Raku dependency missing';
 
 dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<native>, :name<archive> } ) ) }, 'Native dependency no satisfy';
-dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku>    } ) ) }, 'binary dependency no satisfy';
+dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku>    } ) ) }, 'Binary dependency no satisfy';
 
 
-my $meta;
+lives-ok {
 
-lives-ok { $meta = $core.satisfy( spec => Pakku::Spec.new( 'Pakku' ) ) }, 'Satisfy dependency';
+my $meta = $core.satisfy( spec => Pakku::Spec.new( 'Pakku' ) );
 
+my $prefix = $core.fetch( :$meta ); 
 
-my $prefix;
+my $dist = $meta.to-dist( :$prefix );
 
-lives-ok { $prefix = $core.fetch( :$meta ) }, 'Fetch dependency';
-
-my $dist;
-
-lives-ok { $dist = $meta.to-dist( :$prefix ) }, 'Convert meta to distribution';
+}, 'Can satisfy and fetch dependency';
 
 done-testing;
