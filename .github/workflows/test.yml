@@ -2,8 +2,6 @@ name: test
 
 on:
   push:
-  schedule:
-      - cron: '0 2 * * *'
     branches:
       - 'main'
       - 'dev'
