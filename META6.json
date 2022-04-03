@@ -10,7 +10,7 @@
 				"by-distro.name": {
 					"mswin32": [ ],
 					"": [
-						"archive:from<native>",
+						"archive:ver<13>:from<native>",
 						"curl:ver<4>:from<native>"
 					]
 				}
