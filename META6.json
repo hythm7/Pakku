@@ -8,15 +8,11 @@
     "runtime": {
       "requires": {
 				"by-kernel.name": {
+					"mswin32": [ ],
 					"linux": [
 						"archive:ver<13>:from<native>",
 						"curl:ver<4>:from<native>"
 					],
-					"macOS": [
-						"archive:from<native>",
-						"curl:ver<4>:from<native>"
-					],
-					"mswin32": [ ],
 					"": [
 						"archive:from<native>",
 						"curl:from<native>"
