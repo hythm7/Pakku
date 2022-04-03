@@ -10,13 +10,6 @@ role Grammar::Pakku::Common {
   token remove:sym<r>      { <sym> }
   token remove:sym<↑>      { <sym> }
 
-  proto token pack { * }
-  token pack:sym<pack> { <sym> }
-  token pack:sym<pak>  { <sym> }
-  token pack:sym<p>    { <sym> }
-  token pack:sym<📦>   { <sym>  }
-
-
   proto token checkout { * }
   token checkout:sym<checkout> { <sym> }
   token checkout:sym<check>    { <sym> }
@@ -50,6 +43,7 @@ role Grammar::Pakku::Common {
   token pakkuopt:sym<please>  { <sym>    }
   token pakkuopt:sym<dont>    { <sym>    }
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
+  token pakkuopt:sym<config>  { <config>  <.space>* <path> }
 
   proto token addopt { * }
   token addopt:sym<deps-run>  { <deps> <.space>* <run>    }
@@ -67,18 +61,14 @@ role Grammar::Pakku::Common {
   token addopt:sym<to>        { <sym>     <.space>* <repo>    }
   token addopt:sym<exclude>   { <exclude> <.space>* <spec>    }
 
-  proto token buildopt    { * }
-  proto token testopt     { * }
   proto token checkoutopt { * }
+  proto token buildopt    { * }
+
+  proto token testopt { * }
+  token testopt:sym<build> { <build> }
 
   proto token removeopt { * }
   token removeopt:sym<from> { <from> <.space>* <repo> }
-
-
-  proto token packopt { * }
-  token packopt:sym<rakudo> { <sym> <.space>* <ver>  }
-  token packopt:sym<to>     { <sym> <.space>* <path> }
-  token packopt:sym<addopt> { <addopt>               }
 
 
   proto token listopt { * }
@@ -125,6 +115,10 @@ role Grammar::Pakku::Common {
   token verbose:sym<👀>      { <sym> }
   token verbose:sym<👓>      { <sym> }
 
+  proto token config { * }
+  token config:sym<config> { <sym> }
+  token config:sym<conf>   { <sym> }
+  token config:sym<cnf>    { <sym> }
 
   proto token deps { * }
   token deps:sym<deps>   { <sym> }
@@ -234,40 +228,36 @@ role Grammar::Pakku::Common {
 
   proto token level { * }
   token level:sym<SILENT> { <sym> }
-  token level:sym<TRACE>  { <sym> }
   token level:sym<DEBUG>  { <sym> }
+  token level:sym<NOW>   { <sym> }
   token level:sym<INFO>   { <sym> }
   token level:sym<WARN>   { <sym> }
   token level:sym<ERROR>  { <sym> }
-  token level:sym<FATAL>  { <sym> }
   token level:sym<silent> { <sym> }
-  token level:sym<trace>  { <sym> }
   token level:sym<debug>  { <sym> }
+  token level:sym<now>    { <sym> }
   token level:sym<info>   { <sym> }
   token level:sym<warn>   { <sym> }
   token level:sym<error>  { <sym> }
   token level:sym<fatal>  { <sym> }
   token level:sym<S>      { <sym> }
-  token level:sym<T>      { <sym> }
   token level:sym<D>      { <sym> }
+  token level:sym<N>      { <sym> }
   token level:sym<I>      { <sym> }
   token level:sym<W>      { <sym> }
   token level:sym<E>      { <sym> }
-  token level:sym<F>      { <sym> }
   token level:sym<0>      { <sym> }
   token level:sym<1>      { <sym> }
   token level:sym<2>      { <sym> }
   token level:sym<3>      { <sym> }
   token level:sym<4>      { <sym> }
   token level:sym<5>      { <sym> }
-  token level:sym<6>      { <sym> }
   token level:sym<42>     { <sym> }
-  token level:sym<🤓>     { <sym> }
-  token level:sym<🐞>     { <sym> }
+  token level:sym<🐛>     { <sym> }
   token level:sym<🦋>     { <sym> }
-  token level:sym<🔔>     { <sym> }
-  token level:sym<❌>     { <sym> }
-  token level:sym<💀>     { <sym> }
+  token level:sym<🧚>     { <sym> }
+  token level:sym<🐞>     { <sym> }
+  token level:sym<🦗>     { <sym> }
 
 
   token whats { <what>+ % \h }
@@ -302,13 +292,14 @@ role Grammar::Pakku::Common {
 
 role Grammar::Pakku::CommonActions {
 
-  method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made }
-  method pakkuopt:sym<recman>  ( $/ ) { make $<recman>.made }
-  method pakkuopt:sym<cache>   ( $/ ) { make $<cache>.made  }
-  method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )      }
-  method pakkuopt:sym<please>  ( $/ ) { make ( :please )    }
-  method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )      }
+  method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made               }
+  method pakkuopt:sym<recman>  ( $/ ) { make $<recman>.made               }
+  method pakkuopt:sym<cache>   ( $/ ) { make $<cache>.made                }
+  method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )                    }
+  method pakkuopt:sym<please>  ( $/ ) { make ( :please )                  }
+  method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )                    }
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.made ) }
+  method pakkuopt:sym<config>  ( $/ ) { make ( config  => $<path>.made  ) }
 
   method addopt:sym<deps>      ( $/ ) { make ( :deps             ) }
   method addopt:sym<nodeps>    ( $/ ) { make ( :!deps            ) }
@@ -324,18 +315,14 @@ role Grammar::Pakku::CommonActions {
   method addopt:sym<test>      ( $/ ) { make $<test>.made  }
   method addopt:sym<force>     ( $/ ) { make $<force>.made }
 
-  method addopt:sym<to>        ( $/ ) { make ( repo => $<repo>.made ) }
+  method addopt:sym<to>        ( $/ ) { make ( to => $<repo>.made ) }
 
   method addopt:sym<exclude>   ( $/ ) { make ( exclude => $<spec>.made ) }
 
 
-  method removeopt:sym<from> ( $/ ) { make ( repo => $<repo>.made ) }
+  method removeopt:sym<from> ( $/ ) { make ( from => $<repo>.made ) }
 
-
-  method packopt:sym<rakudo> ( $/ ) { make ( $<sym> => Version.new: $<ver> ) }
-  method packopt:sym<addopt> ( $/ ) { make $<addopt>.made                }
-  method packopt:sym<to>     ( $/ ) { make ( $<sym> => $<path>.IO ) }
-
+  method testopt:sym<build> ( $/ ) { make $<build>.made }
 
   method listopt:sym<details> ( $/ ) { make $<details>.made }
 
@@ -413,40 +400,35 @@ role Grammar::Pakku::CommonActions {
   }
 
   method level:sym<SILENT> ( $/ ) { make 0 }
-  method level:sym<TRACE>  ( $/ ) { make 1 }
-  method level:sym<DEBUG>  ( $/ ) { make 2 }
+  method level:sym<DEBUG>  ( $/ ) { make 1 }
+  method level:sym<NOW>    ( $/ ) { make 2 }
   method level:sym<INFO>   ( $/ ) { make 3 }
   method level:sym<WARN>   ( $/ ) { make 4 }
   method level:sym<ERROR>  ( $/ ) { make 5 }
-  method level:sym<FATAL>  ( $/ ) { make 6 }
   method level:sym<silent> ( $/ ) { make 0 }
-  method level:sym<trace>  ( $/ ) { make 1 }
-  method level:sym<debug>  ( $/ ) { make 2 }
+  method level:sym<debug>  ( $/ ) { make 1 }
+  method level:sym<now>    ( $/ ) { make 2 }
   method level:sym<info>   ( $/ ) { make 3 }
   method level:sym<warn>   ( $/ ) { make 4 }
   method level:sym<error>  ( $/ ) { make 5 }
-  method level:sym<fatal>  ( $/ ) { make 6 }
   method level:sym<S>      ( $/ ) { make 0 }
-  method level:sym<T>      ( $/ ) { make 1 }
-  method level:sym<D>      ( $/ ) { make 2 }
+  method level:sym<D>      ( $/ ) { make 1 }
+  method level:sym<N>      ( $/ ) { make 2 }
   method level:sym<I>      ( $/ ) { make 3 }
   method level:sym<W>      ( $/ ) { make 4 }
   method level:sym<E>      ( $/ ) { make 5 }
-  method level:sym<F>      ( $/ ) { make 6 }
   method level:sym<0>      ( $/ ) { make 0 }
   method level:sym<1>      ( $/ ) { make 1 }
   method level:sym<2>      ( $/ ) { make 2 }
   method level:sym<3>      ( $/ ) { make 3 }
   method level:sym<4>      ( $/ ) { make 4 }
   method level:sym<5>      ( $/ ) { make 5 }
-  method level:sym<6>      ( $/ ) { make 6 }
   method level:sym<42>     ( $/ ) { make 1 }
-  method level:sym<🤓>     ( $/ ) { make 1 }
-  method level:sym<🐞>     ( $/ ) { make 2 }
-  method level:sym<🦋>     ( $/ ) { make 3 }
-  method level:sym<🔔>     ( $/ ) { make 4 }
-  method level:sym<❌>     ( $/ ) { make 5 }
-  method level:sym<💀>     ( $/ ) { make 5 }
+  method level:sym<🐛>     ( $/ ) { make 1 }
+  method level:sym<🦋>     ( $/ ) { make 2 }
+  method level:sym<🧚>     ( $/ ) { make 3 }
+  method level:sym<🐞>     ( $/ ) { make 4 }
+  method level:sym<🦗>     ( $/ ) { make 5 }
 
   method whats ( $/ ) { make $<what>».made }
 

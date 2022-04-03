@@ -1,141 +1,32 @@
-use Terminal::ANSIColor;
-
 use Pakku::Spec;
 
 unit class Pakku::Meta;
 
-my class Identity {
-
-  has Str     $.auth;
-  has Str     $.name;
-  has Version $.ver; 
-
-  submethod BUILD ( :$!auth!, :$name!, :$!ver! ) {
-
-    $!name = $name.subst: '::', '-', :g;
-
-  }
-
-  method Str ( ) {
-
-    quietly ( $!auth, $!name, $!ver ).join( ':' )
-
-  }
-
-}
-
-
 has %.meta;
 
-has Version $.meta-version;
-has Version $!perl;
-has Version $.version;
-has Version $!ver;
-has Version $.api;
+has Str $.dist   is built( False );
+has Str $.name   is built( False );
 
-has Str     $.name;
-has Str     $.auth;
-has Str     $.description;
-has Str     $.author;
-has Str     $.license;
-has Str     $.source-url;
-has Str     $.builder;
-
-has Bool    $.production;
-
-has $.authors;
-has $.build-depends;
-has $.test-depends;
-has $.resources;
-has $.tags;
-has $.path;
-
-
-has %.provides;
-has $.depends;
-has %.build;
-
-has %.emulates;
-has %.supersedes;
-has %.superseded-by;
-has %.excludes;
-has %.support;
+has $.source-url is built( False );
 
 has %!deps;
 
-has Identity $!identity;
 
-
-method ver ( ) { $!version }
-
-method raku-version  ( ) {  $!perl }
 method to-json  ( ) { Rakudo::Internals::JSON.to-json: %!meta }
 
-method identity ( ) { $!identity }
-
-multi method Str ( ::?CLASS:D: --> Str:D ) {
-
-  quietly "{$!name}:ver<$!ver>:auth<$!auth>:api<$!api>"
-
-}
-
+multi method Str ( ::?CLASS:D: --> Str:D ) { $!dist }
 
 multi method deps ( ) { %!deps }
 
 multi method deps ( Bool:D :$deps where *.so ) {
 
-  samewith :deps<suggests>;
-
-}
-
-multi method deps ( Str:D :$deps where 'suggests' ) {
-
   %!deps<build test runtime>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
 
 }
 
-multi method deps ( Str:D :$deps where 'only' ) {
+multi method deps ( Str:D :$deps where 'only' ) { samewith :deps }
 
-  samewith :deps;
-
-}
-
-
-multi method deps ( Str:D :$deps where 'recommends' ) {
-
-  %!deps<build test runtime>.map( *<requires recommends>.grep( *.defined ).Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
-
-}
-
-multi method deps ( Str:D :$deps where 'requires' ) {
-
-  %!deps<build test runtime>.map( *<requires>.grep( *.defined ).Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
-
-}
-
-multi method deps ( Str:D :$deps where 'runtime' ) {
-
-  %!deps<runtime>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
-
-}
-
-multi method deps ( Str:D :$deps where 'test' ) {
-
-  %!deps<test>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
-
-}
-
-multi method deps ( Str:D :$deps where 'build' ) {
-
-  %!deps<build>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
-
-}
-
-multi method deps ( Bool:D :$deps where not *.so ) {
-
-  Empty;
-
-}
+multi method deps ( Bool:D :$deps where not *.so ) { Empty }
 
 
 method to-dist ( ::?CLASS:D: IO :$prefix! ) {
@@ -149,7 +40,7 @@ method to-dist ( ::?CLASS:D: IO :$prefix! ) {
   }
 
   my $resources-dir = $prefix.add('resources');
-  my %resources = self.resources.grep(*.?chars).map(*.IO).map: -> $path {
+  my %resources = %!meta<resources>.grep(*.?chars).map(*.IO).map: -> $path {
     my $real-path = $path ~~ m/^libraries\/(.*)/
         ?? $resources-dir.add('libraries').add( $*VM.platform-library-name($0.Str.IO) )
         !! $resources-dir.add($path);
@@ -168,18 +59,20 @@ method to-dist ( ::?CLASS:D: IO :$prefix! ) {
 
 submethod TWEAK ( ) {
 
-  $!identity = Identity.new: auth => self.auth, name => self.name, ver => self.ver;
+  
+  $!dist = %!meta<dist>;
+  $!name = %!meta<name>;
 
-  $!ver = $!version;
+  $!source-url = %!meta<source-url>;
 
-  %!deps<build><requires>.append: flat self.build-depends if self.build-depends;
-  %!deps<test><requires>.append:  flat self.test-depends  if self.test-depends;
+  %!deps<build><requires>.append: flat %!meta<build-depends> if %!meta<build-depends>;
+  %!deps<test><requires>.append:  flat %!meta<test-depends>  if %!meta<test-depends>;
 
-  given self.depends {
+  given %!meta<depends> {
 
     when Positional {
 
-      %!deps<runtime><requires>.append: flat self.depends if self.depends;
+      %!deps<runtime><requires>.append: flat %!meta<depends> if %!meta<depends>;
 
     }
 
@@ -204,14 +97,15 @@ submethod TWEAK ( ) {
 
   }
 
-
 }
+
+
 
 proto method new ( | ) { * };
 
 multi method new ( Str:D $json ) {
 
-  my $meta = Rakudo::Internals::JSON.from-json: $json;
+  my $meta = system-collapse Rakudo::Internals::JSON.from-json: $json;
 
   die 'Invalid json' unless $meta;
 
@@ -237,38 +131,137 @@ multi method new ( IO::Path:D $path ) {
 
 multi method new ( %meta ) {
 
-  die 'Invalid META' unless %meta<name>;
+  # $*REPO will not uninstall without api
+  %meta<api> //= v0;
 
-  %meta<meta-version> = Version.new( %meta<meta-version> || 0   );
-  %meta<perl>         = Version.new( %meta<perl>         || '*' );
-  %meta<version>      = Version.new( %meta<version> // %meta<ver> // ''   );
-  %meta<api>          = Version.new( %meta<api>          // ''  );
+  unless %meta<dist> {
 
-  %meta<auth> //= %meta<authors>.head // '';
+    my Str $dist = %meta<name>;
 
-  %meta<production> .= so if defined %meta<production>;
+    $dist ~= ":ver<$_>"  with %meta<version>;
+    $dist ~= ":auth<$_>" with %meta<auth>;
+    $dist ~= ":api<$_>"  with %meta<api>;
 
-  %meta{ grep { not defined %meta{ $_ } }, %meta.keys}:delete;
+    %meta<dist> = $dist;
 
-  self.bless: :%meta, |%meta;
+  }
+
+  self.bless: meta => system-collapse %meta;
+
 }
 
+### stolen from System::Query:ver<0.1.6>:auth<zef:tony-o>
+### to avoid adding a dependency
+
+sub follower(@path, $idx, $PTR) {
+  die "Attempting to find \$*{@path[0].uc}.{@path[1..*].join('.')}"
+    if !$PTR.^can("{@path[$idx]}") && $idx < @path.elems;
+  return $PTR."{@path[$idx]}"()
+    if $idx+1 == @path.elems;
+  return follower(@path, $idx+1, $PTR."{@path[$idx]}"());   
+}
+
+sub system-collapse($data) {
+  return $data 
+    if $data !~~ Hash && $data !~~ Array;
+  my $return = $data.WHAT.new;
+  for $data.keys -> $idx {
+    given $idx {
+      when /^'by-env-exists'/ {
+        my $key = $idx.split('.')[1];
+        my $value = %*ENV{$key}:exists ?? 'yes' !! 'no';
+        return system-collapse($data{$idx}{$value}) if $data{$idx}{$value}:exists;
+        die "Unable to resolve path: {$idx} in \%*ENV\nhad: {$value}";
+      }
+      when /^'by-env'/ {
+        my $key = $idx.split('.')[1];
+        my $value = %*ENV{$key};
+        return system-collapse($data{$idx}{$value}) if defined $value and $data{$idx}{$value}:exists;
+        die "Unable to resolve path: {$idx} in \%*ENV\nhad: {$value // ''}";
+      }
+      when /^'by-' (['distro'|'kernel'|'backend'])/ {
+        my $PTR   = $/[0] eq 'distro' ?? 
+                      $*DISTRO !! $/[0] eq 'kernel' ??
+                      $*KERNEL !! 
+                      $*BACKEND;
+        my $path  = $idx.split('.');
+        my $value = follower($path, 1, $*DISTRO);
+        my $fkey;
+
+        if $value ~~ Version {
+          my @checks = $data{$idx}.keys.map({ 
+            my $suff = $_.substr(*-1);
+            %(
+              version  => Version.new($suff eq qw<+ ->.any ?? $_.substr(0, *-1) !! $_),
+              orig-key => $_,
+              ($suff eq qw<+ ->.any ?? suffix  => $suff !! ()),
+            )
+          }).sort({ $^b<version> cmp $^a<version> });
+          for @checks -> $version {
+            next unless
+              $version<version> cmp $value ~~ Same ||
+              ($version<version> cmp $value ~~ Less && $version<suffix> eq '+') ||
+              ($version<version> cmp $value ~~ More && $version<suffix> eq '-');
+            $fkey = $version<orig-key>;
+            last;
+          }
+        } else { 
+          $fkey  = ($data{$idx}{$value}:exists) ?? 
+                     $value !!
+                     ($data{$idx}{''}:exists) ??
+                       '' !!
+                       Any;
+        }
+        
+        die "Unable to resolve path: {$path.cache[*-1].join('.')} in \$*DISTRO\nhad: {$value} ~~ {$value.WHAT.^name}"
+          if Any ~~ $fkey;
+        return system-collapse($data{$idx}{$fkey});
+      }
+      default {
+        my $val = system-collapse($data ~~ Array ?? $data[$idx] !! $data{$idx});
+        $return{$idx} = $val
+          if $return ~~ Hash;
+        $return.push($val)
+          if $return ~~ Array;
+
+      }
+    };
+  }
+  return $return;
+}
+
+my enum Color (
+
+  RESET   =>  0,
+  BLACK   => 30,
+  RED     => 31,
+  GREEN   => 32,
+  YELLOW  => 33,
+  BLUE    => 34,
+  MAGENTA => 35,
+  CYAN    => 36,
+  WHITE   => 37,
+
+);
+
+my sub color ( Str:D $text, Color $color ) { "\e\[" ~ $color.Int ~ "m" ~ $text ~ "\e\[0m" }
 
 multi method gist ( ::?CLASS:D: Bool:D :$details --> Str:D ) {
 
-  return colored( ~self, '177' ) unless $details;
+  return color( ~self, MAGENTA ) unless $details;
   
   (
-    ( colored( ~self, '177' )                  ),
-    ( gist-name $!name                         ),
-    ( gist-ver  $!ver         if $!ver         ),
-    ( gist-auth $!auth        if $!auth        ),
-    ( gist-api  $!api         if $!api         ),
-    ( gist-desc $!description if $!description ),
-    ( gist-url  $!source-url  if $!source-url  ),
-    ( gist-deps %!deps        if %!deps        ),
-    ( gist-prov %!provides    if %!provides    ),
-    (            ''                            ),
+    ( color( ~self, MAGENTA )                              ),
+    ( gist-name $!name                                     ),
+    ( gist-ver  %!meta<version>     if %!meta<version>     ),
+    ( gist-auth %!meta<auth>        if %!meta<auth>        ),
+    ( gist-api  %!meta<api>         if %!meta<api>         ),
+    ( gist-desc %!meta<description> if %!meta<description> ),
+    ( gist-url  %!meta<source-url>  if %!meta<source-url>  ),
+    ( gist-deps %!deps              if %!deps              ),
+    ( gist-prov %!meta<provides>    if %!meta<provides>    ),
+    ( gist-file %!meta<files>       if %!meta<files>       ),
+    (            ''                                        ),
   ).join( "\n" );
 
 
@@ -276,66 +269,66 @@ multi method gist ( ::?CLASS:D: Bool:D :$details --> Str:D ) {
 
 sub gist-name ( $name --> Str:D ) {
 
-  colored( 'name', '33'     ) ~
-  colored( ' → ',  'yellow' ) ~
-  colored( ~$name, '117'    )
+  color( 'name', BLUE     ) ~
+  color( ' → ',  YELLOW ) ~
+  color( ~$name, CYAN    )
 
 }
 
 sub gist-ver ( $ver --> Str:D ) {
 
-  colored( 'ver',  '33'     ) ~
-  colored( '  → ', 'yellow' ) ~
-  colored( ~$ver,  '117'    )
+  color( 'ver',  BLUE     ) ~
+  color( '  → ', YELLOW ) ~
+  color( ~$ver,  CYAN    )
 
 }
 
 sub gist-auth ( $auth --> Str:D ) {
 
-  colored( 'auth', '33'     ) ~
-  colored( ' → ',  'yellow' ) ~
-  colored( ~$auth, '117'    )
+  color( 'auth', BLUE     ) ~
+  color( ' → ',  YELLOW ) ~
+  color( ~$auth, CYAN    )
 
 }
 
 sub gist-api ( $api --> Str:D ) {
 
-  colored( 'api',  '33'     ) ~
-  colored( '  → ', 'yellow' ) ~
-  colored( ~$api,  '117'    )
+  color( 'api',  BLUE     ) ~
+  color( '  → ', YELLOW ) ~
+  color( ~$api,  CYAN    )
 
 }
 
 sub gist-desc ( $desc --> Str:D ) {
 
-  colored( 'desc', '33'     ) ~
-  colored( ' → ',  'yellow' ) ~
-  colored( ~$desc, '117'    )
+  color( 'desc', BLUE     ) ~
+  color( ' → ',  YELLOW ) ~
+  color( ~$desc, CYAN    )
 
 }
 
 sub gist-url ( $url --> Str:D ) {
 
-  colored( 'url',  '33'     ) ~
-  colored( '  → ', 'yellow' ) ~
-  colored( ~$url,  '117'    )
+  color( 'url',  BLUE     ) ~
+  color( '  → ', YELLOW ) ~
+  color( ~$url,  CYAN    )
 
 }
 
 sub gist-deps ( %deps --> Str:D ) {
 
-  my $label = colored( 'deps', '33' );
+  my $label = color( 'deps', BLUE );
   (
       "$label \n" ~
        %deps.kv.map( -> $phase, $need {
-         colored( '↳ ',  'yellow'    )           ~
-         colored( ~$phase, '68' ) ~ "\n"         ~
-         colored( '↳ ',  'yellow'    ).indent(2) ~
-         colored( ~$need.keys, '66' ) ~ "\n"     ~
+         color( '↳ ',        YELLOW )           ~
+         color( ~$phase,     GREEN  ) ~ "\n"    ~
+         color( '↳ ',        YELLOW ).indent(2) ~
+         color( ~$need.keys, RED    ) ~ "\n"    ~
             $need.values.map( -> @spec  {
                 @spec.map( -> $spec {
-                  colored( '↳ ',  'yellow'    )  ~
-                  colored( $spec.gist,  '177' )
+                  color( '↳ ',       YELLOW  )  ~
+                  color( $spec.gist, MAGENTA )
                 } ).join("\n").indent( 4 )
 
                } )
@@ -346,29 +339,47 @@ sub gist-deps ( %deps --> Str:D ) {
 
 sub gist-prov ( %prov --> Str:D ) {
 
-  my $label = colored( 'prov', '33' );
+  my $label = color( 'prov', BLUE );
 
   (
     "$label \n" ~
      %prov.kv.map( -> $unit, $file {
        $file ~~ Hash
-         ?? colored( '↳ ',  'yellow'    )                      ~
-            colored( ~$unit, '177' ) ~ "\n"                    ~
-            colored( '↳ ',  'yellow'    ).indent( 2 )          ~
-            colored( ~$file.keys, '66' )  ~ "\n"               ~
+         ?? color( '↳ ',        YELLOW  )                      ~
+            color( ~$unit,      MAGENTA ) ~ "\n"                    ~
+            color( '↳ ',        YELLOW  ).indent( 2 )          ~
+            color( ~$file.keys, CYAN    )  ~ "\n"               ~
               $file.kv.map( -> $file, $info {
                 $info.grep( *.value ).hash.kv.map( -> $k, $v {
-                  colored( '↳ ',  'yellow'       ).indent( 2 ) ~
-                  colored( ~$k, '70'    )                      ~
-                  colored( ' → ',  'yellow'      )             ~
-                  colored( ~$v, '117' )
+                  color( '↳ ',  YELLOW ).indent( 2 ) ~
+                  color( ~$k,   RED    )             ~
+                  color( ' → ', YELLOW )             ~
+                  color( ~$v,   GREEN  )
                 } ).join("\n").indent( 2 )
               })
-         !! colored( '↳ ', 'yellow'  )                         ~
-            colored( ~$unit, '177' ) ~ "\n"                    ~
-            colored( '↳ ',  'yellow'    ).indent( 2 )          ~
-            colored( $file, '66'    );
+         !! color( '↳ ',   YELLOW  )             ~
+            color( ~$unit, MAGENTA ) ~ "\n"      ~
+            color( '↳ ',   YELLOW  ).indent( 2 ) ~
+            color( $file,  CYAN    );
      }).join( "\n" ).indent( 5 )
   )
 }
 
+sub gist-file ( %file --> Str:D ) {
+
+  my $label = color( 'file', BLUE );
+
+  (
+    "$label \n" ~
+     %file.kv.map( -> $name, $file {
+
+       color( '↳ ',   YELLOW )             ~
+       color( ~$name, CYAN   ) ~ "\n"      ~
+       color( '↳ ',   YELLOW ).indent( 2 ) ~
+         color( 'file', RED  )             ~
+         color( ' → ',  YELLOW )           ~
+         color( ~$file, GREEN  )
+     }).join( "\n" ).indent( 5 )
+  )
+
+}

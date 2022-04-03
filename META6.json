@@ -4,50 +4,59 @@
     "Haytham Elganiny"
   ],
   "build-depends" : [ ],
-  "depends" : [
-    "Terminal::ANSIColor",
-    "Log::Async",
-    "Archive::Libarchive::Raw",
-    "URI::Encode",
-    "LibCurl"
-  ],
-  "description" : "A Package Manager for Raku",
+  "depends" : {
+    "runtime": {
+      "requires": {
+				"by-distro.name": {
+					"mswin32": [ ],
+					"": [
+						"archive:from<native>",
+						"curl:ver<4>:from<native>"
+					]
+				}
+		  }
+    }
+  },
+  "description" : "Package Manager for Raku",
   "license" : "Artistic-2.0",
   "name" : "Pakku",
   "perl" : "6.d",
-  "api"  : "",
+  "api"  : "0",
   "provides" : {
     "Pakku"                  : "lib/Pakku.rakumod",
     "Pakku::Log"             : "lib/Pakku/Log.rakumod",
     "Pakku::Help"            : "lib/Pakku/Help.rakumod",
-    "Pakku::Util"            : "lib/Pakku/Util.rakumod",
-    "Pakku::Guts"            : "lib/Pakku/Guts.rakumod",
+    "Pakku::Core"            : "lib/Pakku/Core.rakumod",
     "Pakku::Spec"            : "lib/Pakku/Spec.rakumod",
     "Pakku::Meta"            : "lib/Pakku/Meta.rakumod",
     "Pakku::Repo"            : "lib/Pakku/Repo.rakumod",
+    "Pakku::Curl"            : "lib/Pakku/Curl.rakumod",
     "Pakku::Cache"           : "lib/Pakku/Cache.rakumod",
+    "Pakku::Native"          : "lib/Pakku/Native.rakumod",
     "Pakku::Recman"          : "lib/Pakku/Recman.rakumod",
+    "Pakku::Archive"         : "lib/Pakku/Archive.rakumod",
     "Grammar::Pakku::Cnf"    : "lib/Grammar/Pakku/Cnf.rakumod",
     "Grammar::Pakku::Cmd"    : "lib/Grammar/Pakku/Cmd.rakumod",
     "Grammar::Pakku::Common" : "lib/Grammar/Pakku/Common.rakumod",
     "X::Pakku"               : "lib/X/Pakku.rakumod"
   },
   "resources" : [
-    "pakku.cnf"
+    "cnf/pakku.cnf",
+    "lib/curl.dll",
+    "lib/archive.dll"
   ],
   "source-url" : "https://github.com/hythm7/Pakku.git",
   "tags" : [
-    "spec",
-    "meta",
     "repo",
+    "dist",
     "module",
     "install",
     "package",
     "manager",
+    "repository",
     "distribution",
     "raku"
     ],
-  "test-depends" : [
-  ],
-  "version" : "pupa"
+  "test-depends" : [ ],
+  "version" : "ava-1"
 }

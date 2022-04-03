@@ -1,9 +1,10 @@
+use CompUnit::Repository::Staging;
+
 use Pakku::Log;
-use Pakku::Guts;
+use Pakku::Core;
 
 unit class Pakku;
-  also does Pakku::Guts;
-
+  also does Pakku::Core;
 
 method add (
 
@@ -12,14 +13,14 @@ method add (
   Bool:D :$build  = True,
   Bool:D :$test   = True,
   Bool:D :$force  = False,
+         :$to     = 'site',
          :$exclude,
-         :$repo,
 
 ) {
 
-  🦋 "PRC: ｢{@spec}｣";
+  🧚 "PRC: ｢{@spec}｣";
 
-  my $*repo = Pakku::Repo.new: :$repo;
+  my $*repo = Pakku::Repo.new: $to; 
 
   @spec
     ==> map( -> $spec { Spec.new: $spec } )
@@ -39,89 +40,126 @@ method add (
     ==> unique( as => *.Str )
     ==> my @meta;
 
-
   @meta
     ==> map( -> $meta {
 
       my $prefix = $.fetch: :$meta;
-    
+
       $meta.to-dist: :$prefix;
 
     } )
     ==> my @dist;
 
-   
+  my $target = CompUnit::RepositoryRegistry.repository-for-name: $to ~~ Str ?? $to !! 'custom';
+
+  $target.upgrade-repository unless $target.prefix.add( 'version' ).e;
+
+  my $*stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage,
+    name      => $target.name,
+    next-repo => $target;
+
+  try $*stage.self-destruct;
+
   @dist 
     ==> map( -> $dist {
   
       self!build: :$dist if $build;
 
-      self!test:  :$dist if $test;
-  
-      unless $!dont {
+      🦋 "STG: ｢$dist｣";
 
-        🐞 "ADD: ｢$dist｣";
+      $*stage.install: $dist;
 
-        $*repo.add: :$dist :$force;
+      self!test: :$dist if $test;
 
-        $dist.meta<files>
-          ==> keys( )
-          ==> categorize( *.IO.dirname )
-          ==> my %files;
-
-        my @bin = .flat with %files<bin>;
-        my @res = .flat with %files<resources>;
-
-        @bin
-          ==> map( -> $bin { 🦋 "BIN: ｢{ $*repo.prefix }/$bin｣" } );
-
-        @res
-          ==> map( -> $res { 🦋 "RES: ｢$res｣" } );
-
-        🦋 "ADD: ｢$dist｣";
-
-      }
-  
     } );
-    
-  return;
+
+  $*stage.remove-artifacts;
+
+  unless $!dont {
+
+    if @dist {
+
+      $*stage.deploy;
+
+      my $bin = $*stage.prefix.add( 'bin' ).Str;
+
+      🧚 "BIN: ｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+    }
+  }
+   
+  try $*stage.self-destruct;
+  
+  ofun;
 
 }
 
-method remove (
+method test ( :$spec!, Bool:D :$build = True ) {
 
-  :@spec!,
-  :$repo,
+  my $*stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage,
+    name      => 'stage',
+    next-repo => CompUnit::RepositoryRegistry.repository-for-name: 'home';
 
-) {
+  try $*stage.self-destruct;
 
-  my $*repo = Pakku::Repo.new: :$repo;
+  my $meta = self.satisfy: spec => Spec.new: $spec;
+  my $dist = $meta.to-dist: prefix => $.fetch: :$meta;
 
-  @spec.map( -> $spec {
+  self!build: :$dist if $build;
 
-    sink $*repo.remove: spec => Spec.new: $spec unless $!dont;
+  🦋 "STG: ｢$dist｣";
 
-  } );
+  $*stage.install: $dist;
 
-  return;
+  self!test: :$dist unless $!dont;
+
+  try $*stage.self-destruct;
+
+  ofun;
 
 }
 
+method build ( :$spec! ) {
+
+  my $meta = self.satisfy: spec => Spec.new: $spec;
+
+  my $dist = $meta.to-dist: prefix => $.fetch: :$meta;
+
+  my $*stage := CompUnit::RepositoryRegistry.repository-for-spec: $dist.prefix.add( 'lib' ).Str;
+
+  self!build: :$dist unless $!dont;
+
+  ofun;
+
+}
+
+method remove ( :@spec!, :$from ) {
+
+  my $repo = Pakku::Repo.new: $from;
+
+  @spec.map( -> $spec { sink $repo.remove: :$from, spec => Spec.new: $spec } ) unless $!dont;
+
+  ofun;
+
+}
 
 method list (
 
          :@spec,
   Bool:D :$details = False,
-         :$repo,
+         :repo( $name ),
 
 ) {
 
-  my $*repo = Pakku::Repo.new: :$repo;
+  my $repo = Pakku::Repo.new: $name;
 
-  @spec .= map( -> $spec { Spec.new: $spec } );
-
-  $*repo.list: :@spec
-    ==> map( -> $meta { 🦋 Meta.new( $meta ).gist: :$details } ) unless $!dont;
+  @spec 
+    ??  ( $repo.list( spec => @spec.map( -> $spec { Spec.new: $spec } ) )
+          ==> map( -> $meta { out Meta.new( $meta ).gist: :$details } ) )
+    !!  ( $repo.list
+          ==> map( -> $meta { out Meta.new( $meta ).gist: :$details } ) ) unless $!dont;
 
   return;
 
@@ -130,7 +168,7 @@ method list (
 method search (
 
          :@spec,
-         :$count   = ∞,
+  Int    :$count,
   Bool:D :$details = False,
 
 ) {
@@ -139,36 +177,7 @@ method search (
     ==> map( -> $spec { Spec.new: $spec                        } )
     ==> map( -> $spec { $!recman.search( :$spec :$count ).Slip } )
     ==> map( -> $meta { Meta.new( $meta ).gist: :$details      } )
-    ==> map( -> $meta { 🦋 $meta                               } );
-
-  return;
-
-}
-
-
-method build ( :@spec! ) {
-
-  my $*repo = Pakku::Repo.new;
-
-  @spec
-    ==> map( -> $spec { Spec.new: $spec                          } )
-    ==> map( -> $spec { self.satisfy: :$spec                     } )
-    ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: :$meta } )
-    ==> map( -> $dist { self!build: :$dist unless $!dont         } );
-
-  return;
-
-}
-
-method test ( :@spec! ) {
-
-  my $*repo = Pakku::Repo.new;
-
-  @spec
-    ==> map( -> $spec { Spec.new: $spec                          } )
-    ==> map( -> $spec { self.satisfy: :$spec                     } )
-    ==> map( -> $meta { $meta.to-dist: prefix => $.fetch: :$meta } )
-    ==> map( -> $dist { self!test: :$dist unless $!dont          } );
+    ==> map( -> $meta { out $meta                              } );
 
   return;
 
@@ -177,32 +186,11 @@ method test ( :@spec! ) {
 method checkout ( :@spec! ) {
 
   @spec
-      ==> map( -> $spec { Spec.new: $spec               } )
-      ==> map( -> $spec { self.satisfy: :$spec          } )
-      ==> map( -> $meta { $.fetch: :$meta unless $!dont } )
-      ==> map( -> $path { 🦋 "CHK: ｢$path｣"             } );
+    ==> map( -> $spec { Spec.new:      $spec               } )
+    ==> map( -> $spec { self.satisfy: :$spec               } )
+    ==> map( -> $meta { self.fetch:   :$meta unless $!dont } )
+    ==> map( -> $path { 🧚 "CHK: ｢$path｣"                  } );
 
-  return;
-
-}
-
-method pack (
-
-  :@spec!,
-  *%args,
-
-) {
-
-  🦋 "PAC: ｢{@spec}｣";
-
-  my $rakudo = $.pakudo: |%args unless $!dont;
-
-  my $repo = .add: 'share/perl6/site' with $rakudo;
-
-  $.add: :@spec, :$repo, |%args;
-
-  🦋 "PAC: ｢$rakudo｣" unless $!dont;
-
-  return;
+  ofun;
 
 }

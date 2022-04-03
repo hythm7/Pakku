@@ -1,0 +1,58 @@
+#!/usr/bin/env raku
+
+use Test;
+
+plan 1;
+use Grammar::Pakku::Cnf;
+
+my $cnf = q:to/CNF/;
+  ### pakku Config
+
+  < pakku >
+    pretty           # colors
+    verbose info     # < 0 1 2 3 4 5 6 >
+    dont             # dont do it (dry run)
+
+  < add >
+    deps         # add deps as well < deps nodeps >
+    build        # build            < build nobuild >
+    test         # test             < test notest >
+    force        # force install    < force noforce >
+    exclude Dep1 # exclude dependency
+    to  home # install into specific repo <home site vendor core /custom/repo/path>
+
+  < remove >
+    from home  # remove from specific repo
+
+  < list >
+    details # list   details
+
+  < log >
+    debug prefix D:
+    now   prefix N:
+    info  prefix I:
+    warn  prefix W:
+    error prefix E:
+
+    debug color white
+    now   color green
+    info  color blue
+    warn  color yellow
+    error color magenta
+
+  < recman >
+  http://recman.my-company.com
+  http://recman.pakku.org
+
+  CNF
+
+my $expected = 
+{:add(${:build(Bool::True), :deps(Bool::True), :exclude("Dep1"), :force(Bool::True), :test(Bool::True), :to("home")}), :list(${:details(Bool::True)}), :log(${:level(${"1" => ${:color(37), :prefix("D:")}, "2" => ${:color(Any), :prefix("N:")}, "3" => ${:color(34), :prefix("I:")}, "4" => ${:color(33), :prefix("W:")}, "5" => ${:color(35), :prefix("E:")}})}), :pakku(${:dont(Bool::True), :pretty(Bool::True), :verbose(3)}), :recman($["http://recman.my-company.com", "http://recman.pakku.org"]), :remove(${:from("home")})};
+
+
+my $m = Grammar::Pakku::Cnf.parse( $cnf, actions => Grammar::Pakku::CnfActions.new );
+
+is-deeply $m.made, $expected, 'Can parse config';
+
+done-testing;
+

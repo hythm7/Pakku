@@ -1,6 +1,10 @@
 name: test
 
 on:
+  schedule:
+      - cron: '0 2 * * *'
+    branches:
+      - 'main'
   push:
     branches:
       - 'main'
@@ -15,6 +19,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          - macOS-latest
+          - windows-latest
         raku-version:
           - 'latest'
     runs-on: ${{ matrix.os }}
@@ -23,9 +29,7 @@ jobs:
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
-      - name: Clone Pakku
-        run: git clone https://github.com/hythm7/Pakku.git /tmp/Pakku 
-      - name: Install Pakku
-        run: /tmp/Pakku/tools/install-pakku.raku
-      - name: Test Installing a module
-        run: /home/runner/.pakku/bin/pakku verbose debug add App::Mi6
+      - name: Add Pakku
+        run: raku -I. bin/pakku add .
+      - name: Add Distribution
+        run: pakku add App::Mi6

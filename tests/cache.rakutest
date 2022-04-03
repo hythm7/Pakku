@@ -1,0 +1,16 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use Pakku::Cache;
+
+my $cached = $*HOME.add( '.pakku' ).add( 'cache' );
+
+my $cache;
+
+lives-ok { $cache = Pakku::Cache.new: :$cached }, 'Create Pakku::Cache';
+
+isa-ok $cache, Pakku::Cache, 'Pakku::Cache type';
+
+
+done-testing;

@@ -1,5 +1,4 @@
 use Pakku::Log;
-use Terminal::ANSIColor;
 
 unit role Pakku::Help;
 
@@ -7,26 +6,24 @@ method help ( Str:D :$cmd ) {
 
   given $cmd {
 
-    when 'add'      { 🦋 self!add-help      }
-    when 'remove'   { 🦋 self!remove-help   }
-    when 'list'     { 🦋 self!list-help     }
-    when 'search'   { 🦋 self!search-help   }
-    when 'build'    { 🦋 self!build-help    }
-    when 'test'     { 🦋 self!test-help     }
-    when 'pack'     { 🦋 self!pack-help     }
-    when 'checkout' { 🦋 self!checkout-help }
-    when 'help'     { 🦋 self!help-help     }
+    when 'add'      { out self!add-help      }
+    when 'remove'   { out self!remove-help   }
+    when 'list'     { out self!list-help     }
+    when 'search'   { out self!search-help   }
+    when 'build'    { out self!build-help    }
+    when 'test'     { out self!test-help     }
+    when 'checkout' { out self!checkout-help }
+    when 'help'     { out self!help-help     }
 
 
     default {
-      🦋 (
+      out (
         self!add-help,
         self!remove-help,
         self!list-help,
         self!search-help,
         self!build-help,
         self!test-help,
-        self!pack-help,
         self!checkout-help,
         self!pakku-help,
         self!help-help,
@@ -51,8 +48,6 @@ submethod !add-help ( ) {
 
   %add<opt>.push: ( 'deps'            => 'add dependencies' );
   %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
-  %add<opt>.push: ( 'deps requires'   => 'add required dependencies only' );
-  %add<opt>.push: ( 'deps recommends' => 'add required and recommended dependencies' );
   %add<opt>.push: ( 'deps only'       => 'dont add the dist, only dependencies' );
   %add<opt>.push: ( 'build'           => 'build distribution' );
   %add<opt>.push: ( 'nobuild'         => 'bypass build' );
@@ -121,28 +116,6 @@ submethod !search-help ( ) {
 }
 
 
-submethod !pack-help ( ) {
-
-  my %pack;
-
-  %pack<cmd>     = 'Pack';
-  %pack<desc>    = 'Pack rakudo and distribution';
-
-  %pack<example>.push: 'pakku pack MyModule';
-  %pack<example>.push: 'pakku pack notest MyModule';
-  %pack<example>.push: 'pakku pack rakudo 2020.10 MyModule';
-  %pack<example>.push: 'pakku pack to     /opt/MyApp MyModule';
-
-  %pack<opt>.push: ( 'to <path>'       => 'pack to path /path/to/MyApp>' );
-  %pack<opt>.push: ( 'rakudo version'  => 'package rakudo specific version' );
-  %pack<opt>.push: ( '<addopt>'  => 'options available for add command are available hereas well' );
-
-  help %pack;
-
-}
-
-
-
 submethod !build-help ( ) {
 
   my %build;
@@ -167,6 +140,10 @@ submethod !test-help ( ) {
 
   %test<example>.push: 'pakku test MyModule';
   %test<example>.push: 'pakku test ./MyModule';
+  %test<example>.push: 'pakku test nobuild ./MyModule';
+
+  %test<opt>.push: ( 'build'   => 'build distribution' );
+  %test<opt>.push: ( 'nobuild' => 'dont build distribution' );
 
   help %test;
 
@@ -213,7 +190,7 @@ submethod !pakku-help ( ) {
   %pakku<example>.push: 'pakku nocache  add MyModule';
   %pakku<example>.push: 'pakku norecman add MyModule';
   %pakku<example>.push: 'pakku nopretty add MyModule';
-  %pakku<example>.push: 'pakku verbose  trace  add    MyModule';
+  %pakku<example>.push: 'pakku verbose  debug  add    MyModule';
   %pakku<example>.push: 'pakku pretty   please remove MyModule';
 
   %pakku<opt>.push: ( 'pretty'          => 'colorfull butterfly'  );
@@ -222,8 +199,9 @@ submethod !pakku-help ( ) {
   %pakku<opt>.push: ( 'norecman'        => 'disable recman' );
   %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it' );
   %pakku<opt>.push: ( 'yolo'            => 'dont stop on Pakku exceptions' );
-  %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent trace debug info warn error fatal>' );
-  %pakku<opt>.push: ( 'please' => 'be nice to the butterfly, she will be nice to you (TBD)' );
+  %pakku<opt>.push: ( 'please'          => 'be nice to butterflies' );
+  %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent debug now info warn error>' );
+  %pakku<opt>.push: ( 'config  <path>'  => 'specify config file' );
 
   help %pakku;
 
@@ -248,8 +226,8 @@ sub help ( %cmd --> Str:D ) {
 
 sub desc ( $cmd, $desc ) {
 
-  colored( "$cmd: \n", 'bold magenta' ) ~
-  colored( $desc, 'cyan' ) ~ "\n";
+  color( "$cmd: \n", MAGENTA ) ~
+  color( $desc, CYAN ) ~ "\n";
 
 }
 
@@ -257,8 +235,8 @@ sub example ( @example ) {
 
   return '' unless any @example;
   "\n" ~
-  colored( "Examples:\n", 'bold yellow' ) ~
-  colored( @example.join( "\n" ), 'italic 177' ) ~ "\n";
+  color( "Examples:\n", YELLOW ) ~
+  color( @example.join( "\n" ), MAGENTA ) ~ "\n";
 
 }
 
@@ -267,11 +245,11 @@ sub opt ( @opt ) {
   return '' unless any @opt;
   my $indent  = @opt.map( *.key.chars ).max if @opt;
   "\n" ~
-  colored( "Options:\n", 'bold yellow' ) ~ 
+  color( "Options:\n", YELLOW ) ~ 
   @opt.map( {
-    colored( .key, 'green' )  ~
-    colored( ' → ', 'yellow' ).indent( $indent - .key.chars ) ~
-    colored( .value, 'cyan' )
+    color( .key, GREEN )  ~
+    color( ' → ', YELLOW ).indent( $indent - .key.chars ) ~
+    color( .value, CYAN )
   } ).join( "\n" ) ~ "\n";
  
 }

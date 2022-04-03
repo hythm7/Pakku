@@ -1,82 +1,91 @@
-use Pakku::Log;
-use Pakku::Spec;
-use X::Pakku;
 
 unit class Pakku::Repo;
 
-has @!repo;
-has $!repo handles < install prefix path-spec > = @!repo.head;
+has @!repo   is built;
 
-method candies ( ::?CLASS:D: Pakku::Spec:D $spec ) {
+has $!wanted is built = True;
+
+method candies ( ::?CLASS:D: $spec ) {
 
   flat @!repo.map( *.candidates: $spec.name, |$spec.spec );
 
 }
 
-method add ( Distribution::Locally:D :$dist!, :$force ) {
-
-
-  try $.install: $dist, :$force;
-
-  with $! {
-
-    .message.lines.map( { ❌ $^err } );
-
-    die X::Pakku::Add.new: :$dist;
-
-  }
-
-}
-
-method remove ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
-
-  @!repo.map( -> $repo {
-
-    sink self.candies( $spec ).map( -> $dist { $repo.uninstall: $dist } )
-
-  } );
-
-}
-
-multi method list ( ::?CLASS:D: :@spec! ) {
-
-  return flat @spec.map( -> $spec { 
-
-    @!repo
-      ==> map( -> $repo {
-
-        $repo.candidates( $spec.name, |$spec.spec )
-          ==> map( -> $dist { $dist.id } )
-          ==> map( -> $id   { $repo.distribution: $id } )
-          ==> map( -> $dist { $dist.meta } )
-          ==> flat( );
-      } )
-      ==> flat( );
-
-  } ) if @spec;
+method remove ( ::?CLASS:D: :$spec! ) {
 
   @!repo
+		==> grep( -> $repo { $repo.name ~~ $!wanted  } )
+    ==> map( -> $repo {
+      sink self.candies( $spec ).map( -> $dist { $repo.uninstall: $dist } )
+    } );
+
+}
+
+
+multi method list ( ::?CLASS:D: :@spec!,  ) {
+
+  flat @spec.map( -> $spec { 
+
+    @!repo
+			==> grep( -> $repo { $repo.name ~~ $!wanted } )
+			==> map( -> $repo {
+        $repo.candidates( $spec.name, |$spec.spec )
+					==> map( -> $dist { $dist.id } )
+					==> map( -> $id   { $repo.distribution: $id } )
+					==> map( -> $dist { $dist.meta } )
+					==> flat( );
+				} )
+				==> flat( );
+		} );
+}
+
+
+multi method list ( ::?CLASS:D: ) {
+
+  @!repo
+		==> grep( -> $repo { $repo.name ~~ $!wanted } )
     ==> map(  *.installed.map( *.meta ) ) 
     ==> flat( )
     ==> grep( *.defined );
 }
 
-multi submethod BUILD ( Str:D :$repo! ) {
 
-  @!repo = CompUnit::RepositoryRegistry.repository-for-name: $repo;
+multi method new ( Str:D $name ) {
+
+  my $home = CompUnit::RepositoryRegistry.repository-for-name: 'home';
+
+  my @repo; 
+
+  @repo.append: $home.repo-chain.grep( CompUnit::Repository::Installation );
+
+  self.bless: wanted => $name, :@repo;
 
 }
 
-multi submethod BUILD ( IO::Path:D :$repo! ) {
+multi method new ( IO::Path:D $repo-prefix ) {
 
-  @!repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$repo", next-repo => $*REPO;
+  my $home = CompUnit::RepositoryRegistry.repository-for-name: 'home';
+
+  my $repo = CompUnit::RepositoryRegistry.repository-for-spec: "inst#$repo-prefix", next-repo => $home;
+
+  CompUnit::RepositoryRegistry.register-name( 'custom', $repo );
+
+  my @repo = $repo;
+
+  @repo.append: $home.repo-chain.grep( CompUnit::Repository::Installation );
+
+  self.bless: wanted => 'custom', :@repo;
 
 }
 
-multi submethod BUILD ( ) {
+multi method new ( Any:U ) {
 
-  my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'home';
+  my $home = CompUnit::RepositoryRegistry.repository-for-name: 'home';
 
-  @!repo = flat $repo.repo-chain.grep( CompUnit::Repository::Installation );
+  my @repo; 
+
+  @repo.append: $home.repo-chain.grep( CompUnit::Repository::Installation );
+
+  self.bless: :@repo;
 
 }

@@ -1,0 +1,13 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use Pakku::Log;
+
+my $log;
+
+lives-ok { $log = Pakku::Log.new: :!pretty :1verbose }, 'Create Pakku::Log';
+
+isa-ok $log, Pakku::Log, 'Pakku::Log type';
+
+done-testing;
