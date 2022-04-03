@@ -8,7 +8,7 @@
     "runtime": {
       "requires": {
 				"by-kernel.name": {
-					"mswin32": [ ],
+					"win32": [ ],
 					"linux": [
 						"archive:ver<13>:from<native>",
 						"curl:ver<4>:from<native>"
