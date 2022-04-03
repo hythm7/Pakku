@@ -333,9 +333,10 @@ method fly ( ) {
 			}
 		
 			nofun;
+      exit 1;
 		}
 		
-		default { 🦗 .gist; nofun }
+		default { 🦗 .gist; nofun; exit 1 }
 
 	}
 
