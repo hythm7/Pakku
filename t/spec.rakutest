@@ -15,21 +15,7 @@ my @spec = (
   'Spec::Spec:ver<0.1>:auth<github:jojo>:api<42>',
   { :from<bin>, :name<bin> },
   { :from<lib>, :name<lib>, :ver<42> },
-  {
-    name => "svm:from<native>",
-    hints => {
-      source => {
-        builder => "Distribution::Builder::MakeFromJSON",
-        build => {
-          src-dir => "src",
-          makefile-variables => {
-            VERSION =>  "3.22",
-            svm => {resource => "libraries/svm"}
-          }
-        }
-      }
-    }
-  }
+
 );
 
 for @spec -> $spec {

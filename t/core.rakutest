@@ -17,7 +17,7 @@ lives-ok {
 
       my @url  = %!cnf<recman>.flat;
 
-      $!log    = Pakku::Log.new: :1verbose;
+      $!log    = Pakku::Log.new: :0verbose;
       $!recman = Pakku::Recman.new: :@url;
 
 
