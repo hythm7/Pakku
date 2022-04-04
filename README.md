@@ -29,12 +29,12 @@ Overview
   - `Nofun` - On failure
 
 * `Pakku` verbosity levels:
-  - `0 ｢silent｣ ` - No output what so ever 
-  - `1 ｢debug｣ ` 🐛 - If you want to see everything
-  - `2 ｢now  ｣ ` 🦋 - What is happenning now
-  - `3 ｢info ｣ ` 🧚 - Important things only
-  - `4 ｢warn ｣ ` 🐞 - Only when some warnings happen
-  - `5 ｢error｣ ` 🦗 - You probably don't like to see that when running Pakku, me neither!
+  - `0 ｢silent｣` - No output what so ever 
+  - `1 ｢debug｣` 🐛 - If you want to see everything
+  - `2 ｢ now ｣` 🦋 - What is happenning now
+  - `3 ｢info ｣` 🧚 - Important things only
+  - `4 ｢warn ｣` 🐞 - Only when some warnings happen
+  - `5 ｢error｣` 🦗 - You probably don't like to see that when running Pakku, me neither!
 
 
 * `Pakku` log meaning:
