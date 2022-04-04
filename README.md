@@ -30,12 +30,12 @@ Overview
   - `Nofun` - On failure
 
 * `Pakku` verbosity levels:
-	-1 `｢debug｣` 🐛 → Everything
-	-2 `｢ now ｣` 🦋 → What is happenning now
-	-3 `｢info ｣` 🧚 → Important things only
-	-4 `｢warn ｣` 🐞 → Warnings only
-	-5 `｢error｣` 🦗 → You probably don't like to see that when running Pakku!
-	-0 `｢silent｣`   → Nothing
+	*1 `｢debug｣` 🐛 → Everything
+	*2 `｢ now ｣` 🦋 → What is happenning now
+	*3 `｢info ｣` 🧚 → Important things only
+	*4 `｢warn ｣` 🐞 → Warnings only
+	*5 `｢error｣` 🦗 → You probably don't like to see that when running Pakku!
+	*0 `｢silent｣`   → Nothing
 
 
 * `Pakku` log meaning:
