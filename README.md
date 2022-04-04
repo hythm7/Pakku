@@ -6,9 +6,8 @@ Installation
 ============
 <pre>
 
-# Pakku depends on libarchive and libcurl, they should be
-# installed already on most operating systems but if not,
-# they need to be installed for Pakku to function.
+# Pakku depends on libarchive and libcurl,
+# should be installed already on most systems
 
 
 # Install using Pakku
