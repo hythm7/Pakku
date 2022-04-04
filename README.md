@@ -38,7 +38,6 @@ Overview
 
 
 * `Pakku` log meaning:
-```
 🧚 PRC → Start processing
 🦋 SPC → Processing Spec
 🦋 MTA → Processing Meta
@@ -57,7 +56,6 @@ Overview
 🦗 TST → Test failure
 🦗 CNF → Config error
 🦗 CMD → Command error
-```
 
 Usage
 =====
