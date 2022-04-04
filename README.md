@@ -30,6 +30,7 @@ Overview
   - `Nofun` - On failure
 
 * `Pakku` verbosity levels:
+
 	0. `｢silent｣`   → No output what so ever 
 	1. `｢debug｣` 🐛 → If you want to see everything
 	2. `｢ now ｣` 🦋 → What is happenning now
