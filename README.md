@@ -74,17 +74,17 @@ Usage
 
 <b>Options:</b> Specific to <b>add</b> command
 
-deps            → add dependencies
-nodeps          → no dependencies
-exclude Dep1    → exclude Dep1 dependency
-deps only       → dont add the distribution, only it's dependencies
-build           → build distribution
-nobuild         → bypass build
-test            → test distribution
-notest          → bypass test
-force           → force add distribution even if installed
-noforce         → no force
-to < repo >     → add distribution to repo < home site vendor core /path/to/MyApp >
+deps            → Add dependencies
+nodeps          → No dependencies
+exclude Dep1    → Exclude Dep1
+deps only       → Dependencies only
+build           → Build distribution
+nobuild         → Bypass build
+test            → Test distribution
+notest          → Bypass test
+force           → Force add distribution even if installed
+noforce         → No force
+to < repo >     → Add distribution to repo < home site vendor core /path/to/MyApp >
 </pre>
 
 **Remove distribution**
@@ -94,7 +94,7 @@ to < repo >     → add distribution to repo < home site vendor core /path/to/My
 
 <b>Options:</b> Specific to <b>remove</b> command
 
-from < repo > → remove distribution from provided repo only
+from < repo > → Remove distribution from provided repo only
 </pre>
 
 
@@ -108,8 +108,8 @@ from < repo > → remove distribution from provided repo only
 
 <b>Options:</b> Specific to <b>list</b> command
 
-details               → list details of dist
-repo < name-or-path > → list dists installed in specific repo
+details               → Details
+repo < name-or-path > → List specific repo
 </pre>
 
 
@@ -121,8 +121,8 @@ repo < name-or-path > → list dists installed in specific repo
 
 <b>Options:</b> Specific to <b>search</b> command
 
-count < number > → number of dists to be returned
-details          → list details of dist
+count < number > → Number of dists to be returned
+details          → Details of dist
 </pre>
 
 
@@ -141,8 +141,8 @@ details          → list details of dist
 
 <b>Options:</b> Specific to <b>add</b> command
 
-build           → build distribution
-nobuild         → bypass build
+build           → Build distribution
+nobuild         → Bypass build
 </pre>
 
 
@@ -165,15 +165,15 @@ nobuild         → bypass build
 
 <b>Options:</b> Global options control general Pakku behavior
 
-pretty            → colors
-nopretty          → no colors
-nocache           → disable cache
-norecman          → disable remote recommendation manager
-dont              → do everything but dont do it (dry run)
-verbose < level > → verbosity < silent debug now info warn error fatal >
-config  < path >  → use config file
+pretty            → Colors
+nopretty          → No colors
+nocache           → Disable cache
+norecman          → Disable remote recommendation manager
+dont              → Do everything but dont do it (dry run)
+verbose < level > → Verbosity < silent debug now info warn error fatal >
+config  < path >  → Use config file
 please            → be nice to butterflies
-yolo              → dont stop on errors, useful when need to proceed after error (e.g. Test Faliure)
+yolo              → Dont stop on errors, useful when need to proceed after error (e.g. Test Faliure)
 </pre>
 
 
@@ -214,9 +214,9 @@ Did I mention that the below are `Pakku` commands as well?
 
 Configuration
 =============
-* All options can be set in command line or in the config file <b>pakku.cnf</b>.
+* All options can be set in command line or in config file <b>pakku.cnf</b>.
 Config file will be loaded from command line if specified, or from home directory ｢`$*HOME/.pakku/pakku.cnf`｣, if doesn't exist `Pakku` will use the default config file from `%?RESOURCES`.
-The only needed config is the recommendation manager `<recman>`, otherwise you will be able to install local distributions only.
+The only needed config is the recommendation manager `<recman>`, otherwise `Pakku` will be able to install local distributions only.
 
 * In case your terminal font does not support emojis, you can replace them by changing `prefix` values in the `< log >` section of your config file `~/.pakku/pakku.cnf`:
 ```
