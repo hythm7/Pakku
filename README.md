@@ -6,10 +6,11 @@ Installation
 ============
 <pre>
 
-# `Pakku` needs `libarchive` and `libcurl`, they should be
-# installed on most operating systems but if not, then you need
-# to install them for `Pakku` to function
+# Pakku depends on libarchive and libcurl, they should be
+# installed already on most operating systems but if not,
+# then you need to install them for `Pakku` to function
 
+# Install using Pakku
 git clone https://github.com/hythm7/Pakku.git
 
 cd Pakku
@@ -29,12 +30,12 @@ Overview
   - `Nofun` - On failure
 
 * `Pakku` verbosity levels:
-  - `0 (silent)`   - No output what so ever 
-  - `1 (debug)` 🐛 - If you want to see everything
-  - `2 (now)`   🦋 - What is happenning now
-  - `3 (info )` 🧚 - Important things only
-  - `4 (warn )` 🐞 - Only when some warnings happen
-  - `5 (error)` 🦗 - You probably don't like to see that when running Pakku, me neither!
+  - `0 silent`   - No output what so ever 
+  - `1 debug` 🐛 - If you want to see everything
+  - `2 now  ` 🦋 - What is happenning now
+  - `3 info ` 🧚 - Important things only
+  - `4 warn ` 🐞 - Only when some warnings happen
+  - `5 error` 🦗 - You probably don't like to see that when running Pakku, me neither!
 
 
 * `Pakku` log meaning:
