@@ -18,7 +18,7 @@ method add (
 
 ) {
 
-  🧚 "PRC: ｢{@spec}｣";
+  🧚 PRC ~ "｢{@spec}｣";
 
   my $*repo = Pakku::Repo.new: $to; 
 
@@ -66,7 +66,7 @@ method add (
   
       self!build: :$dist if $build;
 
-      🦋 "STG: ｢$dist｣";
+      🦋 STG ~ "｢$dist｣";
 
       $*stage.install: $dist;
 
@@ -84,7 +84,7 @@ method add (
 
       my $bin = $*stage.prefix.add( 'bin' ).Str;
 
-      🧚 "BIN: ｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+      🧚 BIN ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
     }
   }
@@ -109,7 +109,7 @@ method test ( :$spec!, Bool:D :$build = True ) {
 
   self!build: :$dist if $build;
 
-  🦋 "STG: ｢$dist｣";
+  🦋 STG ~ "｢$dist｣";
 
   $*stage.install: $dist;
 

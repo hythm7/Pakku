@@ -41,7 +41,7 @@ method !test ( Distribution::Locally:D :$dist! ) {
 
   return unless @test;
 
-  🦋 "TST: ｢$dist｣";
+  🦋 TST ~ "｢$dist｣";
 
 
   my $prefix  = $dist.prefix;
@@ -52,26 +52,26 @@ method !test ( Distribution::Locally:D :$dist! ) {
 
   @test.race( :1batch, degree => $!cores ).map( -> $test {
 
-    🦋 "TST: ｢{$test.basename}｣";
+    🦋 TST ~ "｢$test.basename()｣";
 
 
     react {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $test.relative: $prefix;
 
-      whenever $proc.stdout.lines { 🐛 ( 'TST: ' ~ $^out ) }
-      whenever $proc.stderr.lines { 🦗 ( 'TST: ' ~ $^err ) }
+      whenever $proc.stdout.lines { 🐛 TST ~ $^out }
+      whenever $proc.stderr.lines { 🦗 TST ~ $^err }
 
       whenever $proc.stdout.stable( 42 ) {
 
-      🦋 "WAI: ｢{$proc.command}｣";
+      🦋 WAI ~ "｢$proc.command()｣";
 
       }
 
 
       whenever $proc.stdout.stable( 420 ) {
 
-        🐞 "TOT: ｢$dist｣";
+        🐞 TOT ~ "｢$dist｣";
 
         $proc.kill;
 
@@ -98,9 +98,9 @@ method !test ( Distribution::Locally:D :$dist! ) {
 
   die X::Pakku::Test.new: :$dist if $exitcode;
 
-  🐞 "OLO: ｢$dist｣" if $exitcode;
+  🐞 OLO ~ "｢$dist｣" if $exitcode;
 
-  🧚 "TST: ｢$dist｣";
+  🧚 TST ~ "｢$dist｣";
 
 }
 
@@ -113,7 +113,7 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   return unless $file or $builder;
 
-  🦋 "BLD: ｢$dist｣";
+  🦋 BLD ~ "｢$dist｣";
 
   my @deps = $dist.deps( :deps ).grep( { .from ~~ 'raku' } );
 
@@ -145,18 +145,18 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   react {
 
-    whenever $proc.stdout.lines { 🐛 ( 'BLD: ' ~ $^out ) }
-    whenever $proc.stderr.lines { 🦗 ( 'BLD: ' ~ $^err ) }
+    whenever $proc.stdout.lines { 🐛 BLD ~ $^out }
+    whenever $proc.stderr.lines { 🦗 BLD ~ $^err }
 
     whenever $proc.stdout.stable( 42 ) {
 
-    🦋 "WAI: ｢{$proc.command}｣";
+    🦋 WAI ~ "｢$proc.command()｣";
 
     }
 
     whenever $proc.stdout.stable( 420 ) {
 
-      🐞 "TOT: ｢$dist｣";
+      🐞 TOT ~ "｢$dist｣";
 
       $proc.kill;
 
@@ -177,15 +177,15 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   die X::Pakku::Build.new: :$dist if $exitcode;
 
-  🐞 "OLO: ｢$dist｣" if $exitcode;
+  🐞 OLO ~ "｢$dist｣" if $exitcode;
 
-  🧚 "BLD: ｢$dist｣";
+  🧚 BLD ~ "｢$dist｣";
 }
 
 
 multi method satisfy ( :@spec! ) {
 
-  🦋 "SPC: ｢{@spec}｣";
+  🦋 SPC ~ "｢{@spec}｣";
 
   my $meta =
     @spec.map( -> $spec {
@@ -194,7 +194,7 @@ multi method satisfy ( :@spec! ) {
 
       if $meta {
 
-        🦋 "MTA: ｢$meta｣"; 
+        🦋 MTA ~ "｢$meta｣"; 
 
         return $meta;
 
@@ -208,7 +208,7 @@ multi method satisfy ( :@spec! ) {
 
 multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
-  🐛 "SPC: ｢$spec｣";
+  🐛 SPC ~ "｢$spec｣";
 
   my $meta = try Pakku::Meta.new(
     ( $spec.prefix                            ) //
@@ -220,15 +220,15 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   if $meta {
 
-    🦋 "MTA: ｢$meta｣"; 
+    🦋 MTA ~ "｢$meta｣"; 
 
     $meta;
   }
 
 }
 
-multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 "OLO: ｢$spec｣"; Empty }
-multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 "OLO: ｢$spec｣"; Empty }
+multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
+multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 
 multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) { return so $*repo.candies( $spec ) }
 multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) { return False unless find-bin $spec.name; True }
@@ -278,11 +278,11 @@ method get-deps ( Pakku::Meta:D $meta, :$deps, :$exclude ) {
 
 method fetch ( Pakku::Meta:D :$meta! ) {
 
-  🦋 "FTC: ｢$meta｣";
+  🦋 FTC ~ "｢$meta｣";
 
   with $meta.meta<path> -> $path {
 
-    🐛 "FTC: ｢$path｣";
+    🐛 FTC ~ "｢$path｣";
 
     return $path;
 
@@ -295,7 +295,7 @@ method fetch ( Pakku::Meta:D :$meta! ) {
   my $url      = $meta.source-url;
   my $download = $dest.add( $norm-name ~ '.tar.gz' ).Str;
 
-  🐛 "FTC: ｢$url｣";
+  🐛 FTC ~ "｢$url｣";
 
   $!recman.fetch: :$url :$download;
 
@@ -308,7 +308,7 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   unlink $download;
 
-  🐛 "FTC: ｢$dest｣";
+  🐛 FTC ~ "｢$dest｣";
 
   $dest;
 
@@ -324,20 +324,13 @@ method fly ( ) {
 
 	CATCH {
 		
-		when X::Pakku {
+		when X::Pakku { 🦗 .message; .resume if $!yolo }
 		
-			🦗 .message;
-		
-			if $!yolo {
-				.resume;
-			}
-		
-			nofun;
-      exit 1;
-		}
-		
-		default { 🦗 .gist; nofun; exit 1 }
+		default { 🦗 .gist }
 
+		nofun;
+
+		exit 1;
 	}
 
 }

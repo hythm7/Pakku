@@ -69,11 +69,11 @@ submethod BUILD (
 
 sub out  ( Str:D $msg ) is export { $logger.out: $msg }
 
-sub prefix:<🐛> ( Str:D $msg ) is export { $logger.debug.msg: $msg }
-sub prefix:<🦋> ( Str:D $msg ) is export { $logger.now.msg:   $msg }
-sub prefix:<🧚> ( Str:D $msg ) is export { $logger.info.msg:  $msg }
-sub prefix:<🐞> ( Str:D $msg ) is export { $logger.warn.msg:  $msg }
-sub prefix:<🦗> ( Str:D $msg ) is export { $logger.error.msg: $msg }
+sub prefix:<🐛> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.debug.msg: $msg }
+sub prefix:<🦋> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.now.msg:   $msg }
+sub prefix:<🧚> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.info.msg:  $msg }
+sub prefix:<🐞> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.warn.msg:  $msg }
+sub prefix:<🦗> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.error.msg: $msg }
 
 sub ofun  ( ) is export { 🧚 '-Ofun' }
 sub nofun ( ) is export { 🦗 'Nofun' }
@@ -94,3 +94,21 @@ enum Color is export (
 );
 
 sub color ( Str:D $text, Color $color ) is export { "\e\[" ~ $color.Int ~ "m" ~ $text ~ "\e\[0m" }
+
+enum PRF is export (
+
+  PRC => 'PRC: ',
+  SPC => 'SPC: ',
+  MTA => 'MTA: ',
+  FTC => 'FTC: ',
+  STG => 'STG: ',
+  BLD => 'BLD: ',
+  TST => 'TST: ',
+  BIN => 'BIN: ',
+  WAI => 'WAI: ',
+  TOT => 'TOT: ',
+  OLO => 'OLO: ',
+  CNF => 'CNF: ',
+  CMD => 'CMD: ',
+
+);
