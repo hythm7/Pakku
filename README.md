@@ -31,12 +31,12 @@ Overview
 
 * `Pakku` verbosity levels:
 
-	0 `｢silent｣` → No output what so ever 
-	1 `｢debug｣` 🐛 → If you want to see everything
-	2 `｢ now ｣` 🦋 → What is happenning now
-	3 `｢info ｣` 🧚 → Important things only
-	4 `｢warn ｣` 🐞 → Warnings only
-	5 `｢error｣` 🦗 → You probably don't like to see that when running Pakku!
+	1. `｢debug｣` 🐛 → If you want to see everything
+	2. `｢ now ｣` 🦋 → What is happenning now
+	3. `｢info ｣` 🧚 → Important things only
+	4. `｢warn ｣` 🐞 → Warnings only
+	5. `｢error｣` 🦗 → You probably don't like to see that when running Pakku!
+	0. `｢silent｣` → No output what so ever 
 
 
 * `Pakku` log meaning:
