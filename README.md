@@ -30,7 +30,6 @@ Overview
   - `Nofun` - On failure
 
 * `Pakku` verbosity levels:
-
 	-1 `｢debug｣` 🐛 → Everything
 	-2 `｢ now ｣` 🦋 → What is happenning now
 	-3 `｢info ｣` 🧚 → Important things only
