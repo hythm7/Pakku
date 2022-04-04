@@ -18,7 +18,7 @@ cd Pakku
 raku -I. bin/pakku add .
 
 # Install using zef
-zef install "Pakku:ver<ava-1>"
+zef install "Pakku:ver\<ava-1\>"
 </pre>
 
 Overview
