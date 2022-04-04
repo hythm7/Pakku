@@ -53,7 +53,6 @@ submethod BUILD (
 
   $logger = self;
 
-
   return $logger if $verbose == SILENT;
 
   my $color = '' unless $!pretty;
@@ -64,10 +63,7 @@ submethod BUILD (
   $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🐞 ' ) :color( $color // %level<4><color> // '33' ) if  WARN  ≥ $verbose;
   $!error = Level.new: :fh( $*ERR ) :prefix( %level<5><prefix> // '🦗 ' ) :color( $color // %level<5><color> // '31' ) if  ERROR ≥ $verbose;
 
-
 }
-
-sub out  ( Str:D $msg ) is export { $logger.out: $msg }
 
 sub prefix:<🐛> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.debug.msg: $msg }
 sub prefix:<🦋> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.now.msg:   $msg }
@@ -75,25 +71,10 @@ sub prefix:<🧚> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.inf
 sub prefix:<🐞> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.warn.msg:  $msg }
 sub prefix:<🦗> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.error.msg: $msg }
 
+sub out  ( Str:D $msg ) is export { $logger.out: $msg }
+
 sub ofun  ( ) is export { 🧚 '-Ofun' }
 sub nofun ( ) is export { 🦗 'Nofun' }
-
-
-enum Color is export (
-
-  RESET   =>  0,
-  BLACK   => 30,
-  RED     => 31,
-  GREEN   => 32,
-  YELLOW  => 33,
-  BLUE    => 34,
-  MAGENTA => 35,
-  CYAN    => 36,
-  WHITE   => 37,
-
-);
-
-sub color ( Str:D $text, Color $color ) is export { "\e\[" ~ $color.Int ~ "m" ~ $text ~ "\e\[0m" }
 
 enum PRF is export (
 
@@ -112,3 +93,20 @@ enum PRF is export (
   CMD => 'CMD: ',
 
 );
+
+enum Color is export (
+
+  RESET   =>  0,
+  BLACK   => 30,
+  RED     => 31,
+  GREEN   => 32,
+  YELLOW  => 33,
+  BLUE    => 34,
+  MAGENTA => 35,
+  CYAN    => 36,
+  WHITE   => 37,
+
+);
+
+sub color ( Str:D $text, Color $color ) is export { "\e\[" ~ $color.Int ~ "m" ~ $text ~ "\e\[0m" }
+
