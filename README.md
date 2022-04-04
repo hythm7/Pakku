@@ -1,6 +1,6 @@
 Pakku
 =====
-Package Manager for `Raku`.
+Package Manager for `Raku`
 
 Installation
 ============
