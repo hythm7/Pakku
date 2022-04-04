@@ -38,25 +38,26 @@ Overview
 
 
 * `Pakku` log meaning:
-
-- `🧚 PRC → Start processing`
-- `🦋 SPC → Processing Spec`
-- `🦋 MTA → Processing Meta`
-- `🦋 FTC → Fetching`
-- `🦋 BLD → Building`
-- `🦋 STG → Staging`
-- `🦋 TST → Testing`
-- `🧚 BLD → Build success`
-- `🧚 TST → Test success`
-- `🧚 BIN → Binary added`
-- `🦋 WAI → Waiting`
-- `🐞 TOT → Timed out`
-- `🦗 SPC → Error processing Spec`
-- `🦗 MTA → Error processing Meta`
-- `🦗 BLD → Build failure`
-- `🦗 TST → Test failure`
-- `🦗 CNF → Config error`
-- `🦗 CMD → Command error`
+```
+🧚 PRC → Start processing
+🦋 SPC → Processing Spec
+🦋 MTA → Processing Meta
+🦋 FTC → Fetching
+🦋 BLD → Building
+🦋 STG → Staging
+🦋 TST → Testing
+🧚 BLD → Build success
+🧚 TST → Test success
+🧚 BIN → Binary added
+🦋 WAI → Waiting
+🐞 TOT → Timed out
+🦗 SPC → Error processing Spec
+🦗 MTA → Error processing Meta
+🦗 BLD → Build failure
+🦗 TST → Test failure
+🦗 CNF → Config error
+🦗 CMD → Command error
+```
 
 Usage
 =====
