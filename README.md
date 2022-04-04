@@ -171,9 +171,9 @@ nocache           → Disable cache
 norecman          → Disable remote recommendation manager
 dont              → Do everything but dont do it (dry run)
 verbose < level > → Verbosity < debug now info warn error silent >
-config  < path >  → Use config file
-please            → be nice to butterflies
-yolo              → Dont stop on errors, useful when need to proceed after error (e.g. Test Faliure)
+config  < path >  → Specify config file
+please            → Be nice to butterflies
+yolo              → Dont stop on errors, (e.g. proceed after Test Faliure)
 </pre>
 
 
