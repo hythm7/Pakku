@@ -3,8 +3,6 @@ use Pakku::Spec;
 use Grammar::Pakku::Cmd;
 
 my @tests = (
-  "" =>
-    ${:cmd("help"), :help(${:cmd("")})},
   "add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add")},
   "add nodeps" =>
@@ -61,13 +59,11 @@ my @tests = (
     ${:cmd("help"), :help(${:cmd("add")})},
   "a" =>
     ${:cmd("help"), :help(${:cmd("add")})},
-  "notcmd" =>
+  "no cmd" =>
     ${:cmd("help"), :help(${:cmd("")})},
-  "help notcmd" =>
+  "help no cmd" =>
     ${:cmd("help"), :help(${:cmd("")})},
 );
-
-#plan 30;
 
 
 for @tests {
