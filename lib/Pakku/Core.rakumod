@@ -324,13 +324,10 @@ method fly ( ) {
 
 	CATCH {
 		
-		when X::Pakku { 🦗 .message; .resume if $!yolo }
+		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun; exit 1 }
 		
-		default { 🦗 .gist }
+		default { 🦗 .gist; nofun; exit 1 }
 
-		nofun;
-
-		exit 1;
 	}
 
 }
@@ -365,7 +362,7 @@ method new ( ) {
 
   CATCH {
 
-    Pakku::Log.new: :2verbose :pretty;
+    Pakku::Log.new: :pretty :2verbose;
 
     🦗 .message;
     
