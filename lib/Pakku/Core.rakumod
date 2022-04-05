@@ -62,12 +62,7 @@ method !test ( Distribution::Locally:D :$dist! ) {
       whenever $proc.stdout.lines { 🐛 TST ~ $^out }
       whenever $proc.stderr.lines { 🦗 TST ~ $^err }
 
-      whenever $proc.stdout.stable( 42 ) {
-
-      🦋 WAI ~ "｢$proc.command()｣";
-
-      }
-
+      whenever $proc.stdout.stable( 42 ) { 🐞 WAI ~ "｢$proc.command()｣" }
 
       whenever $proc.stdout.stable( 420 ) {
 
@@ -77,6 +72,8 @@ method !test ( Distribution::Locally:D :$dist! ) {
 
         $exitcode =  1;
 
+        🦗 TST ~ "｢$test.basename()｣";
+
         done;
 
       }
@@ -84,7 +81,7 @@ method !test ( Distribution::Locally:D :$dist! ) {
 
       whenever $proc.start( cwd => $prefix, :%*ENV ) {
 
-        $exitcode = 1 if .exitcode;
+        if .exitcode { $exitcode = 1; 🦗 TST ~ "｢$test.basename()｣" }
 
         done;
 
@@ -96,9 +93,13 @@ method !test ( Distribution::Locally:D :$dist! ) {
 
   });
 
-  die X::Pakku::Test.new: :$dist if $exitcode;
+  if $exitcode {
 
-  🐞 OLO ~ "｢$dist｣" if $exitcode;
+		die X::Pakku::Test.new: :$dist;
+
+		🐞 OLO ~ "｢$dist｣";
+
+  }
 
   🧚 TST ~ "｢$dist｣";
 
@@ -148,11 +149,7 @@ method !build ( Distribution::Locally:D :$dist ) {
     whenever $proc.stdout.lines { 🐛 BLD ~ $^out }
     whenever $proc.stderr.lines { 🦗 BLD ~ $^err }
 
-    whenever $proc.stdout.stable( 42 ) {
-
-    🦋 WAI ~ "｢$proc.command()｣";
-
-    }
+    whenever $proc.stdout.stable( 42 ) { 🦗 WAI ~ "｢$proc.command()｣" }
 
     whenever $proc.stdout.stable( 420 ) {
 
@@ -175,11 +172,16 @@ method !build ( Distribution::Locally:D :$dist ) {
     }
   }
 
-  die X::Pakku::Build.new: :$dist if $exitcode;
+  if $exitcode { 
 
-  🐞 OLO ~ "｢$dist｣" if $exitcode;
+		die X::Pakku::Build.new: :$dist;
+
+		🐞 OLO ~ "｢$dist｣";
+
+  }
 
   🧚 BLD ~ "｢$dist｣";
+
 }
 
 

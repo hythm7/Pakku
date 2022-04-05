@@ -49,7 +49,7 @@ Overview
 🧚 BLD → Build success
 🧚 TST → Test success
 🧚 BIN → Binary added
-🦋 WAI → Waiting
+🐞 WAI → Waiting
 🐞 TOT → Timed out
 🦗 SPC → Error processing Spec
 🦗 MTA → Error processing Meta
