@@ -95,6 +95,24 @@ method add (
 
 }
 
+method upgrade (
+
+         :@spec!,
+         :$deps   = True,
+  Bool:D :$build  = True,
+  Bool:D :$test   = True,
+  Bool:D :$force  = False,
+         :$in,
+         :$exclude,
+
+) {
+
+  🧚 PRC ~ "｢{@spec}｣";
+
+  say 'Upgrading';
+
+}
+
 method test ( :$spec!, Bool:D :$build = True ) {
 
   my $*stage := CompUnit::Repository::Staging.new:

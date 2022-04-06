@@ -5,10 +5,15 @@ role Grammar::Pakku::Common {
   token add:sym<a>   { <sym> }
   token add:sym<↓>   { <sym>  }
 
+  proto token upgrade { * }
+  token upgrade:sym<upgrade> { <sym> }
+  token upgrade:sym<up>      { <sym> }
+  token upgrade:sym<u>       { <sym> }
+  token upgrade:sym<↑>       { <sym> }
+
   proto token remove { * }
   token remove:sym<remove> { <sym> }
   token remove:sym<r>      { <sym> }
-  token remove:sym<↑>      { <sym> }
 
   proto token checkout { * }
   token checkout:sym<checkout> { <sym> }
@@ -46,20 +51,25 @@ role Grammar::Pakku::Common {
   token pakkuopt:sym<config>  { <config>  <.space>* <path> }
 
   proto token addopt { * }
-  token addopt:sym<deps-run>  { <deps> <.space>* <run>    }
-  token addopt:sym<deps-tst>  { <deps> <.space>* <tst>        }
-  token addopt:sym<deps-bld>  { <deps> <.space>* <bld>        }
-  token addopt:sym<deps-req>  { <deps> <.space>* <requires>   }
-  token addopt:sym<deps-rec>  { <deps> <.space>* <recommends> }
-  token addopt:sym<deps-sug>  { <deps> <.space>* <suggests>   }
-  token addopt:sym<deps-only> { <deps> <.space>* <only>       }
-  token addopt:sym<deps>      { <deps>                        }
-  token addopt:sym<nodeps>    { <nodeps>                      }
-  token addopt:sym<build>     { <build>                       }
-  token addopt:sym<test>      { <test>                        }
-  token addopt:sym<force>     { <force>                       }
-  token addopt:sym<to>        { <sym>     <.space>* <repo>    }
-  token addopt:sym<exclude>   { <exclude> <.space>* <spec>    }
+  token addopt:sym<deps-only> { <deps> <.space>* <only>    }
+  token addopt:sym<deps>      { <deps>                     }
+  token addopt:sym<nodeps>    { <nodeps>                   }
+  token addopt:sym<build>     { <build>                    }
+  token addopt:sym<test>      { <test>                     }
+  token addopt:sym<force>     { <force>                    }
+  token addopt:sym<to>        { <sym>     <.space>* <repo> }
+  token addopt:sym<exclude>   { <exclude> <.space>* <spec> }
+
+  proto token upgradeopt { * }
+  token upgradeopt:sym<deps-only> { <deps> <.space>* <only>    }
+  token upgradeopt:sym<deps>      { <deps>                     }
+  token upgradeopt:sym<nodeps>    { <nodeps>                   }
+  token upgradeopt:sym<build>     { <build>                    }
+  token upgradeopt:sym<test>      { <test>                     }
+  token upgradeopt:sym<force>     { <force>                    }
+  token upgradeopt:sym<in>        { <sym>     <.space>* <repo> }
+  token upgradeopt:sym<exclude>   { <exclude> <.space>* <spec> }
+
 
   proto token checkoutopt { * }
   proto token buildopt    { * }
@@ -301,23 +311,24 @@ role Grammar::Pakku::CommonActions {
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.made ) }
   method pakkuopt:sym<config>  ( $/ ) { make ( config  => $<path>.made  ) }
 
-  method addopt:sym<deps>      ( $/ ) { make ( :deps             ) }
-  method addopt:sym<nodeps>    ( $/ ) { make ( :!deps            ) }
-  method addopt:sym<deps-run>  ( $/ ) { make ( :deps<runtime>    ) }
-  method addopt:sym<deps-tst>  ( $/ ) { make ( :deps<test>       ) }
-  method addopt:sym<deps-bld>  ( $/ ) { make ( :deps<build>      ) }
-  method addopt:sym<deps-sug>  ( $/ ) { make ( :deps<suggests>   ) }
-  method addopt:sym<deps-rec>  ( $/ ) { make ( :deps<recommends> ) }
-  method addopt:sym<deps-req>  ( $/ ) { make ( :deps<requires>   ) }
-  method addopt:sym<deps-only> ( $/ ) { make ( :deps<only>       ) }
-
+  method addopt:sym<deps>      ( $/ ) { make ( :deps       ) }
+  method addopt:sym<nodeps>    ( $/ ) { make ( :!deps      ) }
+  method addopt:sym<deps-only> ( $/ ) { make ( :deps<only> ) }
   method addopt:sym<build>     ( $/ ) { make $<build>.made }
   method addopt:sym<test>      ( $/ ) { make $<test>.made  }
   method addopt:sym<force>     ( $/ ) { make $<force>.made }
-
   method addopt:sym<to>        ( $/ ) { make ( to => $<repo>.made ) }
-
   method addopt:sym<exclude>   ( $/ ) { make ( exclude => $<spec>.made ) }
+
+
+  method upgradeopt:sym<deps>      ( $/ ) { make ( :deps       ) }
+  method upgradeopt:sym<nodeps>    ( $/ ) { make ( :!deps      ) }
+  method upgradeopt:sym<deps-only> ( $/ ) { make ( :deps<only> ) }
+  method upgradeopt:sym<build>     ( $/ ) { make $<build>.made }
+  method upgradeopt:sym<test>      ( $/ ) { make $<test>.made  }
+  method upgradeopt:sym<force>     ( $/ ) { make $<force>.made }
+  method upgradeopt:sym<in>        ( $/ ) { make ( in => $<repo>.made ) }
+  method upgradeopt:sym<exclude>   ( $/ ) { make ( exclude => $<spec>.made ) }
 
 
   method removeopt:sym<from> ( $/ ) { make ( from => $<repo>.made ) }

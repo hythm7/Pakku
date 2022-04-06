@@ -144,6 +144,31 @@ build           → Build distribution
 nobuild         → Bypass build
 </pre>
 
+**Upgrade distribution**
+
+<pre>
+<b>pakku upgrade MyModule</b>
+<b>pakku upgrade nodeps  MyModule</b>
+<b>pakku upgrade notest  MyModule</b>
+<b>pakku upgrade exclude Dep1 MyModule</b>
+<b>pakku upgrade in      /opt/MyApp MyModule</b>
+<b>pakku upgrade force   to   vendor  MyModule1 MyModule2</b>
+
+<b>Options:</b> Specific to <b>upgrade</b> command
+
+deps            → Upgrade dependencies
+nodeps          → No dependencies
+exclude Dep1    → Exclude Dep1
+deps only       → Dependencies only
+build           → Build distribution
+nobuild         → Bypass build
+test            → Test distribution
+notest          → Bypass test
+force           → Force upgrade
+noforce         → No force
+in < repo >     → Upgrade distribution in repo < home site vendor core /path/to/MyApp >
+</pre>
+
 
 **Checkout (download) distribution**
 
@@ -191,14 +216,14 @@ yolo              → Dont stop on errors (e.g. proceed after Test Faliure)
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add       → a     verbose → v     nopretty → np     silent → «S 0»
-remove    → r     pretty  → p     nodeps   → nd     debug  → «D 1»
-list      → l     only    → o     noforce  → nf     now    → «N 2»
-search    → s     deps    → d     notest   → nt     info   → «I 3»
-build     → b     force   → f     nobuild  → nb     warn   → «W 4»
-test      → t     details → d     nocache  → nc     error  → «E 5»
-checkout  → c     yolo    → y     norecman → nr
-help      → h     exclude → x
+add    → a  upgrade  → u  yolo     → y	nopretty → np     silent → «S 0»
+remove → r	checkout → c  exclude  → x	nodeps   → nd     debug  → «D 1»
+list   → l	help     → h  deps     → d	noforce  → nf     now    → «N 2»
+search → s	verbose  → v  force    → f	notest   → nt     info   → «I 3»
+build  → b	pretty   → p  details  → d	nobuild  → nb     warn   → «W 4»
+test   → t	only     → o  norecman → nr nocache  → nc     error  → «E 5»
+									     
+									
 </pre>
 
 Did I mention that the below are `Pakku` commands as well?

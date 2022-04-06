@@ -19,6 +19,7 @@ grammar Grammar::Pakku::Cmd {
 
   proto rule TOP { * }
   rule TOP:sym<add>      { <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>    }
+  rule TOP:sym<upgrade>  { <pakkuopt>* % <.space> <upgrade>   <upgradeopt>*  % <.space> <whats>    }
   rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <what>     }
   rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <what>     }
   rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>    }
@@ -30,6 +31,7 @@ grammar Grammar::Pakku::Cmd {
 
   proto token cmd { * }
   token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
+  token cmd:sym<upgrade>  { <!before <.space>> ~ <!after <.space>> <upgrade>  }
   token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
   token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
@@ -57,6 +59,19 @@ class Grammar::Pakku::CmdActions {
 
   }
 
+
+  method TOP:sym<upgrade> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>           = 'upgrade';
+    %cmd<pakku>         = $<pakkuopt>».made.hash   if defined $<pakkuopt>;
+    %cmd<upgrade>       = $<upgradeopt>».made.hash if defined $<upgradeopt>;
+    %cmd<upgrade><spec> = $<whats>.made;
+
+    make %cmd;
+
+  }
 
   method TOP:sym<build> ( $/ ) {
 
@@ -153,6 +168,7 @@ class Grammar::Pakku::CmdActions {
   }
 
   method cmd:sym<add>      ( $/ ) { make 'add'      }
+  method cmd:sym<upgrade>  ( $/ ) { make 'upgrade'      }
   method cmd:sym<build>    ( $/ ) { make 'build'    }
   method cmd:sym<test>     ( $/ ) { make 'test'     }
   method cmd:sym<remove>   ( $/ ) { make 'remove'   }

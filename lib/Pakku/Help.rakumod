@@ -10,6 +10,7 @@ method help ( Str:D :$cmd ) {
     when 'remove'   { out self!remove-help   }
     when 'list'     { out self!list-help     }
     when 'search'   { out self!search-help   }
+    when 'upgrade'  { out self!upgrade-help  }
     when 'build'    { out self!build-help    }
     when 'test'     { out self!test-help     }
     when 'checkout' { out self!checkout-help }
@@ -22,6 +23,7 @@ method help ( Str:D :$cmd ) {
         self!remove-help,
         self!list-help,
         self!search-help,
+        self!upgrade-help,
         self!build-help,
         self!test-help,
         self!checkout-help,
@@ -115,6 +117,36 @@ submethod !search-help ( ) {
 
 }
 
+submethod !upgrade-help ( ) {
+
+  my %upgrade;
+
+  %upgrade<cmd>     = 'Upgrade';
+  %upgrade<desc>    = 'Upgrade distribution';
+
+  %upgrade<example>.push: 'pakku upgrade MyModule';
+  %upgrade<example>.push: 'pakku upgrade nodeps MyModule';
+  %upgrade<example>.push: 'pakku upgrade notest MyModule';
+  %upgrade<example>.push: 'pakku upgrade exclude Dep MyModule';
+  %upgrade<example>.push: 'pakku upgrade in     /opt/MyApp MyModule';
+  %upgrade<example>.push: 'pakku upgrade force  in   vendor  MyModule1 MyModule2';
+
+  %upgrade<opt>.push: ( 'deps'            => 'upgrade dependencies' );
+  %upgrade<opt>.push: ( 'nodeps'          => 'dont upgrade dependencies' );
+  %upgrade<opt>.push: ( 'deps only'       => 'upgrade dependencies only' );
+  %upgrade<opt>.push: ( 'build'           => 'build distribution' );
+  %upgrade<opt>.push: ( 'nobuild'         => 'bypass build' );
+  %upgrade<opt>.push: ( 'test'            => 'test distribution' );
+  %upgrade<opt>.push: ( 'notest'          => 'bypass test' );
+  %upgrade<opt>.push: ( 'force'           => 'force upgrade' );
+  %upgrade<opt>.push: ( 'noforce'         => 'no force' );
+  %upgrade<opt>.push: ( 'exclude <dep>'   => 'upgrade distribution but exclude specific dep' );
+  %upgrade<opt>.push: ( 'in <repo>'       => 'upgrade distribution in repo <home site vendor core /path/to/MyApp>' );
+
+  help %upgrade;
+
+}
+
 
 submethod !build-help ( ) {
 
@@ -171,6 +203,7 @@ submethod !help-help ( ) {
 
   %help<example>.push: 'pakku';
   %help<example>.push: 'pakku add';
+  %help<example>.push: 'pakku upgrade';
   %help<example>.push: 'pakku help';
   %help<example>.push: 'pakku help list';
   %help<example>.push: 'pakku help help';
