@@ -8,8 +8,8 @@ use Pakku::Cache;
 use Pakku::Native;
 use Pakku::Recman;
 use Pakku::Archive;
-use Grammar::Pakku::Cnf;
-use Grammar::Pakku::Cmd;
+use Pakku::Grammar::Cnf;
+use Pakku::Grammar::Cmd;
 
 unit role Pakku::Core;
   also does Pakku::Help;
@@ -42,7 +42,6 @@ method !test ( Distribution::Locally:D :$dist! ) {
   return unless @test;
 
   🦋 TST ~ "｢$dist｣";
-
 
   my $prefix  = $dist.prefix;
 
@@ -371,7 +370,7 @@ method new ( ) {
     nofun;
   }
 
-  my $cmd = Grammar::Pakku::Cmd.parse( @*ARGS, actions => Grammar::Pakku::CmdActions );
+  my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::CmdActions );
 
   die X::Pakku::Cmd.new( cmd => @*ARGS ) unless $cmd;
 
@@ -381,7 +380,7 @@ method new ( ) {
 
   my $config-file = %cmd<pakku><config> // ( $user-config.e ?? $user-config !! %?RESOURCES<cnf/pakku.cnf> );
 
-  my $cnf = Grammar::Pakku::Cnf.parsefile( $config-file.IO, actions => Grammar::Pakku::CnfActions.new );
+  my $cnf = Pakku::Grammar::Cnf.parsefile( $config-file.IO, actions => Pakku::Grammar::CnfActions.new );
 
   die X::Pakku::Cnf.new( cnf => $config-file ) unless $cnf;
 

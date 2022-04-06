@@ -1,4 +1,4 @@
-use Grammar::Pakku::Common;
+use Pakku::Grammar::Common;
 
 class X::Pakku::Cmd {
   also is Exception;
@@ -13,8 +13,8 @@ class X::Pakku::Cmd {
 
 }
 
-grammar Grammar::Pakku::Cmd {
-  also does Grammar::Pakku::Common;
+grammar Pakku::Grammar::Cmd {
+  also does Pakku::Grammar::Common;
 
 
   proto rule TOP { * }
@@ -42,8 +42,8 @@ grammar Grammar::Pakku::Cmd {
 
 }
 
-class Grammar::Pakku::CmdActions {
-  also does Grammar::Pakku::CommonActions;
+class Pakku::Grammar::CmdActions {
+  also does Pakku::Grammar::CommonActions;
 
 
   method TOP:sym<add> ( $/ ) {

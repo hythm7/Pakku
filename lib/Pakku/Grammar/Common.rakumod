@@ -1,4 +1,4 @@
-role Grammar::Pakku::Common {
+role Pakku::Grammar::Common {
 
   proto token add { * }
   token add:sym<add> { <sym> }
@@ -300,7 +300,7 @@ role Grammar::Pakku::Common {
   token gt  { '>' }
 }
 
-role Grammar::Pakku::CommonActions {
+role Pakku::Grammar::CommonActions {
 
   method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made               }
   method pakkuopt:sym<recman>  ( $/ ) { make $<recman>.made               }

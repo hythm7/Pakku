@@ -1,4 +1,4 @@
-use Grammar::Pakku::Common;
+use Pakku::Grammar::Common;
 
 class X::Pakku::Cnf {
   also is Exception;
@@ -13,8 +13,8 @@ class X::Pakku::Cnf {
 
 }
 
-grammar Grammar::Pakku::Cnf {
-  also does Grammar::Pakku::Common;
+grammar Pakku::Grammar::Cnf {
+  also does Pakku::Grammar::Common;
 
   token TOP { <sections> }
 
@@ -63,8 +63,8 @@ grammar Grammar::Pakku::Cnf {
 
 }
 
-class Grammar::Pakku::CnfActions {
-  also does Grammar::Pakku::CommonActions;
+class Pakku::Grammar::CnfActions {
+  also does Pakku::Grammar::CommonActions;
 
   has %!cnf;
 
