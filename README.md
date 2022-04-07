@@ -149,10 +149,7 @@ nobuild         → Bypass build
 <pre>
 <b>pakku upgrade MyModule</b>
 <b>pakku upgrade nodeps  MyModule</b>
-<b>pakku upgrade notest  MyModule</b>
-<b>pakku upgrade exclude Dep1 MyModule</b>
-<b>pakku upgrade in      /opt/MyApp MyModule</b>
-<b>pakku upgrade force   to   vendor  MyModule1 MyModule2</b>
+<b>pakku upgrade force   in   vendor  MyModule1 MyModule2</b>
 
 <b>Options:</b> Specific to <b>upgrade</b> command
 

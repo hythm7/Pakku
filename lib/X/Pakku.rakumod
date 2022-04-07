@@ -61,6 +61,15 @@ class X::Pakku::Archive is X::Pakku {
 
 }
 
+class X::Pakku::Upgrade is X::Pakku {
+
+  has $.spec;
+
+  method message ( ) { "UPG: ｢$!spec｣" }
+
+}
+
+
 class X::Pakku::Native is X::Pakku {
 
   has $.lib;

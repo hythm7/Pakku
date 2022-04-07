@@ -1,6 +1,6 @@
 use Test;
 use Pakku::Spec;
-use Grammar::Pakku::Cmd;
+use Pakku::Grammar::Cmd;
 
 my @tests = (
   "add Spec" =>
@@ -71,8 +71,8 @@ for @tests {
   my $cmd      = .key;
   my $expected = .value;
 
-  my $parser  = Grammar::Pakku::Cmd;
-  my $actions = Grammar::Pakku::CmdActions;
+  my $parser  = Pakku::Grammar::Cmd;
+  my $actions = Pakku::Grammar::CmdActions;
   my $got     = $parser.parse( $cmd, :$actions ).made;
 
 

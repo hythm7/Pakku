@@ -85,6 +85,7 @@ enum PRF is export (
   STG => 'STG: ',
   BLD => 'BLD: ',
   TST => 'TST: ',
+  UPG => 'UPG: ',
   BIN => 'BIN: ',
   WAI => 'WAI: ',
   TOT => 'TOT: ',

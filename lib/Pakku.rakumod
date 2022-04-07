@@ -23,11 +23,11 @@ method add (
   my $*repo = Pakku::Repo.new: $to; 
 
   @spec
-    ==> map( -> $spec { Spec.new: $spec } )
+    ==> map(  -> $spec { Spec.new: $spec } )
     ==> grep( -> $spec { $force or not self.satisfied: :$spec } )
     ==> unique( as => *.Str )
-    ==> map( -> $spec { self.satisfy: :$spec } )
-    ==> map( -> $dep {
+    ==> map(  -> $spec { self.satisfy: :$spec } )
+    ==> map(  -> $dep {
 
       my @dep = self.get-deps: $dep, :$deps, |( exclude => Spec.new( $exclude )  if $exclude );
 
@@ -102,14 +102,22 @@ method upgrade (
   Bool:D :$build  = True,
   Bool:D :$test   = True,
   Bool:D :$force  = False,
-         :$in,
+         :$in     = 'site',
          :$exclude,
 
 ) {
 
   🧚 PRC ~ "｢{@spec}｣";
 
-  say 'Upgrading';
+  my $*repo = Pakku::Repo.new: $in;
+
+  @spec .= map(  -> $spec { self.upgradable: spec => Pakku::Spec.new: $spec } );
+
+  return ofun unless so @spec;
+
+  @spec .= map( *.Str );
+
+  self.add: :@spec :$deps :$build :$test :$force :$exclude :to( $in );
 
 }
 

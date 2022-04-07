@@ -231,7 +231,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 
-multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) { return so $*repo.candies( $spec ) }
+multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) { return so $*repo.candies: $spec }
 multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) { return False unless find-bin $spec.name; True }
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
@@ -243,6 +243,32 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
 multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samewith :$spec } ) }
 
+
+method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
+
+  my $inst = $*repo.candies( $spec ).map( *.meta ).sort( *.<ver> ).sort( *.<api> ).tail;
+
+  die X::Pakku::Upgrade.new: :$spec unless $inst;
+
+  my $inst-spec = Pakku::Spec.new: %( name => $spec.name, |$inst );
+
+  🦋 UPG ~ "｢$inst-spec｣"; 
+
+  my %candy-spec = %( name => $spec.name, auth => $spec.auth );
+
+  my $candy-meta = $!recman.recommend: spec => Pakku::Spec.new: %candy-spec;
+
+  die X::Pakku::Meta.new: spec => %candy-spec unless $candy-meta;
+
+  my $candy-spec = Pakku::Spec.new: Rakudo::Internals::JSON.from-json( $candy-meta ).<dist>;
+
+  return Empty unless $candy-spec cmp $inst-spec ~~ More ;
+
+  🦋 UPG ~ "｢$candy-spec｣"; 
+
+  $candy-spec;
+
+}
 
 method get-deps ( Pakku::Meta:D $meta, :$deps, :$exclude ) {
 
@@ -321,7 +347,6 @@ method fly ( ) {
   my $cmd = %!cnf<cmd>;
 
   self."$cmd"( |%!cnf{ $cmd } );
-
 
 	CATCH {
 		

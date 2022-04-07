@@ -55,6 +55,12 @@ multi method ACCEPTS ( ::?CLASS:D: Pakku::Spec:D $spec! --> Bool:D ) {
 
 }
 
+multi sub infix:<cmp>( Pakku::Spec:D \a, Pakku::Spec:D \b --> Order:D ) is export {
+
+  ( Version.new( a.ver ) cmp Version.new( b.ver ) ) or quietly
+  ( Version.new( a.api ) cmp Version.new( b.api ) );
+
+}
 
 grammar SpecGrammar {
 

@@ -3,7 +3,7 @@
 use Test;
 
 plan 1;
-use Grammar::Pakku::Cnf;
+use Pakku::Grammar::Cnf;
 
 my $cnf = q:to/CNF/;
   ### pakku Config
@@ -50,7 +50,7 @@ my $expected =
 {:add(${:build(Bool::True), :deps(Bool::True), :exclude("Dep1"), :force(Bool::True), :test(Bool::True), :to("home")}), :list(${:details(Bool::True)}), :log(${:level(${"1" => ${:color(37), :prefix("D:")}, "2" => ${:color(Any), :prefix("N:")}, "3" => ${:color(34), :prefix("I:")}, "4" => ${:color(33), :prefix("W:")}, "5" => ${:color(35), :prefix("E:")}})}), :pakku(${:dont(Bool::True), :pretty(Bool::True), :verbose(3)}), :recman($["http://recman.my-company.com", "http://recman.pakku.org"]), :remove(${:from("home")})};
 
 
-my $m = Grammar::Pakku::Cnf.parse( $cnf, actions => Grammar::Pakku::CnfActions.new );
+my $m = Pakku::Grammar::Cnf.parse( $cnf, actions => Pakku::Grammar::CnfActions.new );
 
 is-deeply $m.made, $expected, 'Can parse config';
 
