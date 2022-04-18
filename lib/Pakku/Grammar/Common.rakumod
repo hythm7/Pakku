@@ -51,24 +51,26 @@ role Pakku::Grammar::Common {
   token pakkuopt:sym<config>  { <config>  <.space>* <path> }
 
   proto token addopt { * }
-  token addopt:sym<deps-only> { <deps> <.space>* <only>    }
-  token addopt:sym<deps>      { <deps>                     }
-  token addopt:sym<nodeps>    { <nodeps>                   }
-  token addopt:sym<build>     { <build>                    }
-  token addopt:sym<test>      { <test>                     }
-  token addopt:sym<force>     { <force>                    }
-  token addopt:sym<to>        { <sym>     <.space>* <repo> }
-  token addopt:sym<exclude>   { <exclude> <.space>* <spec> }
+  token addopt:sym<deps>       { <deps>       }
+  token addopt:sym<nodeps>     { <nodeps>     }
+  token addopt:sym<build>      { <build>      }
+  token addopt:sym<test>       { <test>       }
+  token addopt:sym<force>      { <force>      }
+  token addopt:sym<precompile> { <precompile> }
+  token addopt:sym<deps-only>  { <deps> <.space>* <only>    }
+  token addopt:sym<to>         { <sym>     <.space>* <repo> }
+  token addopt:sym<exclude>    { <exclude> <.space>* <spec> }
 
   proto token upgradeopt { * }
-  token upgradeopt:sym<deps-only> { <deps> <.space>* <only>    }
-  token upgradeopt:sym<deps>      { <deps>                     }
-  token upgradeopt:sym<nodeps>    { <nodeps>                   }
-  token upgradeopt:sym<build>     { <build>                    }
-  token upgradeopt:sym<test>      { <test>                     }
-  token upgradeopt:sym<force>     { <force>                    }
-  token upgradeopt:sym<in>        { <sym>     <.space>* <repo> }
-  token upgradeopt:sym<exclude>   { <exclude> <.space>* <spec> }
+  token upgradeopt:sym<deps>       { <deps>       }
+  token upgradeopt:sym<nodeps>     { <nodeps>     }
+  token upgradeopt:sym<build>      { <build>      }
+  token upgradeopt:sym<test>       { <test>       }
+  token upgradeopt:sym<force>      { <force>      }
+  token upgradeopt:sym<precompile> { <precompile> }
+  token upgradeopt:sym<deps-only>  { <deps> <.space>* <only>    }
+  token upgradeopt:sym<in>         { <sym>     <.space>* <repo> }
+  token upgradeopt:sym<exclude>    { <exclude> <.space>* <spec> }
 
 
   proto token checkoutopt { * }
@@ -191,6 +193,14 @@ role Pakku::Grammar::Common {
   token force:sym<noforce> { <sym> }
   token force:sym<nf>      { <sym> }
 
+  proto token precompile { * }
+  token precompile:sym<precompile>   { <sym> }
+  token precompile:sym<precomp>      { <sym> }
+  token precompile:sym<p>            { <sym> }
+  token precompile:sym<noprecompile> { <sym> }
+  token precompile:sym<noprecomp>    { <sym> }
+  token precompile:sym<np>           { <sym> }
+
   proto token exclude { * }
   token exclude:sym<exclude> { <sym> }
   token exclude:sym<x>       { <sym> }
@@ -311,24 +321,26 @@ role Pakku::Grammar::CommonActions {
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.made ) }
   method pakkuopt:sym<config>  ( $/ ) { make ( config  => $<path>.made  ) }
 
-  method addopt:sym<deps>      ( $/ ) { make ( :deps       ) }
-  method addopt:sym<nodeps>    ( $/ ) { make ( :!deps      ) }
-  method addopt:sym<deps-only> ( $/ ) { make ( :deps<only> ) }
-  method addopt:sym<build>     ( $/ ) { make $<build>.made }
-  method addopt:sym<test>      ( $/ ) { make $<test>.made  }
-  method addopt:sym<force>     ( $/ ) { make $<force>.made }
-  method addopt:sym<to>        ( $/ ) { make ( to => $<repo>.made ) }
-  method addopt:sym<exclude>   ( $/ ) { make ( exclude => $<spec>.made ) }
+  method addopt:sym<deps>       ( $/ ) { make ( :deps       )    }
+  method addopt:sym<nodeps>     ( $/ ) { make ( :!deps      )    }
+  method addopt:sym<deps-only>  ( $/ ) { make ( :deps<only> )    }
+  method addopt:sym<build>      ( $/ ) { make $<build>.made      }
+  method addopt:sym<test>       ( $/ ) { make $<test>.made       }
+  method addopt:sym<force>      ( $/ ) { make $<force>.made      }
+  method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
+  method addopt:sym<to>         ( $/ ) { make ( to => $<repo>.made ) }
+  method addopt:sym<exclude>    ( $/ ) { make ( exclude => $<spec>.made ) }
 
 
-  method upgradeopt:sym<deps>      ( $/ ) { make ( :deps       ) }
-  method upgradeopt:sym<nodeps>    ( $/ ) { make ( :!deps      ) }
-  method upgradeopt:sym<deps-only> ( $/ ) { make ( :deps<only> ) }
-  method upgradeopt:sym<build>     ( $/ ) { make $<build>.made }
-  method upgradeopt:sym<test>      ( $/ ) { make $<test>.made  }
-  method upgradeopt:sym<force>     ( $/ ) { make $<force>.made }
-  method upgradeopt:sym<in>        ( $/ ) { make ( in => $<repo>.made ) }
-  method upgradeopt:sym<exclude>   ( $/ ) { make ( exclude => $<spec>.made ) }
+  method upgradeopt:sym<deps>      ( $/ )  { make ( :deps       ) }
+  method upgradeopt:sym<nodeps>    ( $/ )  { make ( :!deps      ) }
+  method upgradeopt:sym<deps-only> ( $/ )  { make ( :deps<only> ) }
+  method upgradeopt:sym<build>     ( $/ )  { make $<build>.made }
+  method upgradeopt:sym<test>      ( $/ )  { make $<test>.made  }
+  method upgradeopt:sym<force>     ( $/ )  { make $<force>.made }
+  method upgradeopt:sym<precompile> ( $/ ) { make $<precompile>.made }
+  method upgradeopt:sym<in>        ( $/ )  { make ( in => $<repo>.made ) }
+  method upgradeopt:sym<exclude>   ( $/ )  { make ( exclude => $<spec>.made ) }
 
 
   method removeopt:sym<from> ( $/ ) { make ( from => $<repo>.made ) }
@@ -381,6 +393,12 @@ role Pakku::Grammar::CommonActions {
   method force:sym<➟>       ( $/ )  { make ( :force  ) }
   method force:sym<noforce> ( $/ )  { make ( :!force ) }
   method force:sym<nf>      ( $/ )  { make ( :!force ) }
+
+  method precompile:sym<precompile>   ( $/ )  { make ( :precompile  ) }
+  method precompile:sym<precomp>      ( $/ )  { make ( :precompile  ) }
+  method precompile:sym<noprecompile> ( $/ )  { make ( :!precompile ) }
+  method precompile:sym<noprecomp>    ( $/ )  { make ( :!precompile ) }
+  method precompile:sym<np>           ( $/ )  { make ( :!precompile ) }
 
   method remote:sym<remote>   ( $/ )  { make ( :remote  ) }
   method remote:sym<r>        ( $/ )  { make ( :remote  ) }

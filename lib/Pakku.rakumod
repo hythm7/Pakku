@@ -9,11 +9,12 @@ unit class Pakku;
 method add (
 
          :@spec!,
-         :$deps   = True,
-  Bool:D :$build  = True,
-  Bool:D :$test   = True,
-  Bool:D :$force  = False,
-         :$to     = 'site',
+         :$deps       = True,
+  Bool:D :$build      = True,
+  Bool:D :$test       = True,
+  Bool:D :$precompile = True,
+  Bool:D :$force      = False,
+         :$to         = 'site',
          :$exclude,
 
 ) {
@@ -68,7 +69,7 @@ method add (
 
       🦋 STG ~ "｢$dist｣";
 
-      $*stage.install: $dist;
+      $*stage.install: $dist, :$precompile;
 
       self!test: :$dist if $test;
 

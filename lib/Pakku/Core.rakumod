@@ -349,11 +349,8 @@ method fly ( ) {
   self."$cmd"( |%!cnf{ $cmd } );
 
 	CATCH {
-		
 		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun; exit 1 }
-		
-		default { 🦗 .gist; nofun; exit 1 }
-
+		default       { 🦗 .gist; nofun; exit 1 }
 	}
 
 }

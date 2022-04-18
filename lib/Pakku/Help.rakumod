@@ -45,6 +45,7 @@ submethod !add-help ( ) {
   %add<example>.push: 'pakku add nodeps MyModule';
   %add<example>.push: 'pakku add notest MyModule';
   %add<example>.push: 'pakku add exclude Dep MyModule';
+  %add<example>.push: 'pakku add noprecomp notest MyModule';
   %add<example>.push: 'pakku add to     /opt/MyApp MyModule';
   %add<example>.push: 'pakku add force  to   home  MyModule1 MyModule2';
 
@@ -57,6 +58,8 @@ submethod !add-help ( ) {
   %add<opt>.push: ( 'notest'          => 'bypass test' );
   %add<opt>.push: ( 'force'           => 'force add distribution even if installed' );
   %add<opt>.push: ( 'noforce'         => 'no force' );
+  %add<opt>.push: ( 'precomp'         => 'precomp distribution' );
+  %add<opt>.push: ( 'noprecomp'       => 'no precomp' );
   %add<opt>.push: ( 'exclude <dep>'   => 'add distribution but exclude specific dep' );
   %add<opt>.push: ( 'to <repo>'       => 'add distribution to repo <home site vendor core /path/to/MyApp>' );
 
@@ -140,6 +143,8 @@ submethod !upgrade-help ( ) {
   %upgrade<opt>.push: ( 'notest'          => 'bypass test' );
   %upgrade<opt>.push: ( 'force'           => 'force upgrade' );
   %upgrade<opt>.push: ( 'noforce'         => 'no force' );
+  %upgrade<opt>.push: ( 'precomp'         => 'precomp distribution' );
+  %upgrade<opt>.push: ( 'noprecomp'       => 'no precomp' );
   %upgrade<opt>.push: ( 'exclude <dep>'   => 'upgrade distribution but exclude specific dep' );
   %upgrade<opt>.push: ( 'in <repo>'       => 'upgrade distribution in repo <home site vendor core /path/to/MyApp>' );
 

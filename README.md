@@ -68,6 +68,7 @@ Usage
 <b>pakku add nodeps  MyModule</b>
 <b>pakku add notest  MyModule</b>
 <b>pakku add exclude Dep1 MyModule</b>
+<b>pakku add noprecomp notest  MyModule</b>
 <b>pakku add to      /opt/MyApp MyModule</b>
 <b>pakku add force   to   vendor  MyModule1 MyModule2</b>
 
@@ -83,6 +84,8 @@ test            → Test distribution
 notest          → Bypass test
 force           → Force add distribution even if installed
 noforce         → No force
+precomp         → Precompile distribution 
+noprecomp       → No precompile
 to < repo >     → Add distribution to repo < home site vendor core /path/to/MyApp >
 </pre>
 
@@ -163,6 +166,8 @@ test            → Test distribution
 notest          → Bypass test
 force           → Force upgrade
 noforce         → No force
+precomp         → Precompile distribution 
+noprecomp       → No precompile
 in < repo >     → Upgrade distribution in repo < home site vendor core /path/to/MyApp >
 </pre>
 
