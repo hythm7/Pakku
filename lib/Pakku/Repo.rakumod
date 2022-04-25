@@ -32,7 +32,7 @@ multi method list ( ::?CLASS:D: :@spec!,  ) {
         $repo.candidates( $spec.name, |$spec.spec )
 					==> map( -> $dist { $dist.id } )
 					==> map( -> $id   { $repo.distribution: $id } )
-					==> map( -> $dist { $dist.meta } )
+					==> map( -> $dist { $dist.meta.item } )
 					==> flat( );
 				} )
 				==> flat( );
@@ -44,7 +44,7 @@ multi method list ( ::?CLASS:D: ) {
 
   @!repo
 		==> grep( -> $repo { $repo.name ~~ $!wanted } )
-    ==> map(  *.installed.map( *.meta ) ) 
+    ==> map(  *.installed.map( *.meta.item ) ) 
     ==> flat( )
     ==> grep( *.defined );
 }
