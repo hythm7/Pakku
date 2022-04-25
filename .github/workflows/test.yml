@@ -26,6 +26,6 @@ jobs:
         with:
           raku-version: ${{ matrix.raku-version }}
       - name: Add Pakku
-        run: raku -I. bin/pakku verbose debug add .
+        run: raku -I. bin/pakku add .
       - name: Add Distribution
         run: pakku add App::Mi6
