@@ -34,7 +34,7 @@ Overview
 	- 2 `｢ now ｣` 🦋 → What is happenning now
 	- 3 `｢info ｣` 🧚 → Important things only
 	- 4 `｢warn ｣` 🐞 → Warnings only
-	- 5 `｢error｣` 🦗 → You probably don't like to see that when running Pakku!
+	- 5 `｢error｣` 🦗 → Errors only
 	- 0 `｢silent｣`   → Nothing
 
 
@@ -219,12 +219,12 @@ yolo              → Dont stop on errors (e.g. proceed after Test Faliure)
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add    → a  upgrade  → u  yolo     → y	nopretty → np     silent → «S 0»
-remove → r	checkout → c  exclude  → x	nodeps   → nd     debug  → «D 1»
-list   → l	help     → h  deps     → d	noforce  → nf     now    → «N 2»
-search → s	verbose  → v  force    → f	notest   → nt     info   → «I 3»
-build  → b	pretty   → p  details  → d	nobuild  → nb     warn   → «W 4»
-test   → t	only     → o  norecman → nr nocache  → nc     error  → «E 5»
+add    → a  upgrade  → u  yolo     → y  nopretty → np  silent → «S 0»
+remove → r  checkout → c  exclude  → x  nodeps   → nd  debug  → «D 1»
+list   → l  help     → h  deps     → d  noforce  → nf  now    → «N 2»
+search → s  verbose  → v  force    → f  notest   → nt  info   → «I 3»
+build  → b  pretty   → p  details  → d  nobuild  → nb  warn   → «W 4»
+test   → t  only     → o  norecman → nr nocache  → nc  error  → «E 5»
 									     
 									
 </pre>
