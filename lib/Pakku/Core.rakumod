@@ -3,7 +3,6 @@ use Pakku::Log;
 use Pakku::Help;
 use Pakku::Spec;
 use Pakku::Meta;
-use Pakku::Repo;
 use Pakku::Cache;
 use Pakku::Native;
 use Pakku::Recman;
@@ -20,6 +19,7 @@ has Bool $!dont;
 has Bool $!yolo;
 
 has Int  $!cores;
+has Int  $!degree;
 
 has IO::Path $!cached;
 has IO::Path $!stage;
@@ -28,14 +28,20 @@ has Pakku::Log    $!log;
 has Pakku::Cache  $!cache;
 has Pakku::Recman $!recman;
 
+has CompUnit::Repository @!repo;
 
-method !test ( Distribution::Locally:D :$dist! ) {
+method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
-  <tests t>
+	my @dir =  <tests t>;
+
+	@dir.append: <xtest xt> if $xtest;
+
+	@dir
     ==> map( -> $dir { $dist.prefix.add: $dir } )
     ==> grep( *.d )
     ==> map( -> $dir { Rakudo::Internals.DIR-RECURSE: ~$dir, file => *.ends-with: any <.rakutest .t> } )
     ==> flat( )
+		==> sort( )
     ==> map( *.IO )
     ==> my @test;
 
@@ -49,17 +55,16 @@ method !test ( Distribution::Locally:D :$dist! ) {
 
   my Int $exitcode;
 
-  @test.race( :1batch, degree => $!cores ).map( -> $test {
+  @test.hyper( :$!degree :1batch ).map( -> $test {
 
     🦋 TST ~ "｢$test.basename()｣";
-
 
     react {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $test.relative: $prefix;
 
       whenever $proc.stdout.lines { 🐛 TST ~ $^out }
-      whenever $proc.stderr.lines { 🦗 TST ~ $^err }
+      whenever $proc.stderr.lines { 🐞 TST ~ $^err }
 
       whenever $proc.stdout.stable( 42 ) { 🐞 WAI ~ "｢$proc.command()｣" }
 
@@ -76,7 +81,6 @@ method !test ( Distribution::Locally:D :$dist! ) {
         done;
 
       }
-
 
       whenever $proc.start( cwd => $prefix, :%*ENV ) {
 
@@ -115,40 +119,34 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   🦋 BLD ~ "｢$dist｣";
 
-  my @deps = $dist.deps( :deps ).grep( { .from ~~ 'raku' } );
+  my @cmd; 
 
-  my $cmd = $builder
+	if $builder {
 
-    ?? qq:to/CMD/
+    @cmd =
+		  $*EXECUTABLE.absolute,
+			'-I', $prefix,
+			'-e', "require $builder; my %meta := { $dist.meta.raku }; ::( '$builder' ).new( :%meta ).build( '$prefix' );"
+	} else {
+    @cmd =
+		  $*EXECUTABLE.absolute,
+			'-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
+	}
 
-    @deps.map( -> $dep { "use $dep;" } ).join( "\n" )
+  %*ENV<RAKULIB> = "$*stage.path-spec()";
 
-    my %meta   := { $dist.meta.raku };
+  my $proc = Proc::Async.new: @cmd;
 
-    ::( '$builder' ).new( :%meta ).build( '$prefix' );
-
-    CMD
-
-    !! qq:to/CMD/;
-
-    @deps.map( -> $dep { "require ::( '$dep' );" } )
-
-    require '$file';
-
-    ::( 'Build' ).new.build(  '$prefix' );
-
-    CMD
-
-  my $proc = Proc::Async.new: ~$*EXECUTABLE, '-I', $*stage.path-spec, '-e', $cmd;
+  🐛 BLD ~ "｢$proc.command()｣";
 
   my $exitcode;
 
   react {
 
     whenever $proc.stdout.lines { 🐛 BLD ~ $^out }
-    whenever $proc.stderr.lines { 🦗 BLD ~ $^err }
+    whenever $proc.stderr.lines { 🐞 BLD ~ $^err }
 
-    whenever $proc.stdout.stable( 42 ) { 🦗 WAI ~ "｢$proc.command()｣" }
+    whenever $proc.stdout.stable( 42 ) { 🐞 WAI ~ "｢$proc.command()｣" }
 
     whenever $proc.stdout.stable( 420 ) {
 
@@ -230,8 +228,9 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
 multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
+multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 
-multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) { return so $*repo.candies: $spec }
+multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) { so flat @!repo.map( *.candidates: $spec.name, |$spec.spec ); }
 multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) { return False unless find-bin $spec.name; True }
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
@@ -240,13 +239,14 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
   Pakku::Native.can-load: lib; 
  
 }
+multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) { return False unless find-perl-module $spec.name; True }
 
 multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samewith :$spec } ) }
 
 
 method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
-  my $inst = $*repo.candies( $spec ).map( *.meta ).sort( *.<ver> ).sort( *.<api> ).tail;
+  my $inst = @!repo.map( *.candidates: $spec.name, |$spec.spec ).flat.map( *.meta ).sort( *.<ver> ).sort( *.<api> ).tail;
 
   die X::Pakku::Upgrade.new: :$spec unless $inst;
 
@@ -260,7 +260,7 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
   die X::Pakku::Meta.new: spec => %candy-spec unless $candy-meta;
 
-  my $candy-spec = Pakku::Spec.new: Rakudo::Internals::JSON.from-json( $candy-meta ).<dist>;
+  my $candy-spec = Pakku::Spec.new: Pakku::Meta.new( Rakudo::Internals::JSON.from-json( $candy-meta )).Str;
 
   return Empty unless $candy-spec cmp $inst-spec ~~ More ;
 
@@ -272,34 +272,37 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
 method get-deps ( Pakku::Meta:D $meta, :$deps, :$exclude ) {
 
+	# cannot use .name instead of .id (that will save a few calls)
+	# because dists that depends on two different versions of
+	# same dependency, will fail. 
   state %visited;
   
-  once %visited{ .name } = True with $exclude;
+  once %visited{ .id } = True with $exclude;
 
   $meta.deps: :$deps
 
-    ==> grep( -> $spec { not ( %visited{ $spec.?name // any @$spec.map( *.name ) } or self.satisfied: :$spec )   } )
+    ==> grep( -> $spec { not ( %visited{ $spec.?id // any @$spec.map( *.id ) } or self.satisfied: :$spec )   } )
 
     ==> map(  -> $spec { self.satisfy: :$spec } )
 
     ==> my @meta-deps;
 
-    return Empty unless +@meta-deps;
+  return Empty unless +@meta-deps;
 
-    my @dep;
+  my @dep;
 
-    for @meta-deps -> $dep {
+  for @meta-deps -> $dep {
 
-      my $name = $dep.name;
+    my $id = $dep.id;
 
-      next if %visited{ $name };
+    next if %visited{ $id };
 
-      %visited{ $name } = True;
+    %visited{ $id } = True;
 
-      @dep.append: flat self.get-deps( $dep, :$deps), $dep
-    }
+    @dep.append: flat self.get-deps( $dep, :$deps), $dep
+  }
 
-    @dep;
+  @dep;
 }
 
 
@@ -307,20 +310,20 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   🦋 FTC ~ "｢$meta｣";
 
-  with $meta.meta<path> -> $path {
+  with $meta.meta<local-path> -> $local-path {
 
-    🐛 FTC ~ "｢$path｣";
+    🐛 FTC ~ "｢$local-path｣";
 
-    return $path;
+    return $local-path;
 
   }
 
-  my $norm-name = norm-name ~$meta;
+  my $id = $meta.id;
 
-  my $dest = mkdir $!cached.add( $meta.name.subst: '::', '-', :g ).add( $norm-name );
+  my $dest = mkdir $!cached.add( $meta.name.subst: '::', '-', :g ).add( $id );
 
   my $url      = $meta.source-url;
-  my $download = $dest.add( $norm-name ~ '.tar.gz' ).Str;
+  my $download = $dest.add( $id ~ '.tar.gz' ).Str;
 
   🐛 FTC ~ "｢$url｣";
 
@@ -330,9 +333,6 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
   die X::Pakku::Archive.new: :$download unless $extract;
 
-  # use recman META becuase some dists missing auth or ver in meta file
-  $dest.add( 'META6.json' ).spurt: $meta.to-json;
-
   unlink $download;
 
   🐛 FTC ~ "｢$dest｣";
@@ -341,20 +341,22 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
 }
 
+method clear-stage ( ) { clear-stage $!stage if $!stage.d }
 
 method fly ( ) {
+
+  LEAVE try self.clear-stage;
+
+	CATCH {
+		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun }
+		default       { 🦗 .gist;                       nofun }
+	}
 
   my $cmd = %!cnf<cmd>;
 
   self."$cmd"( |%!cnf{ $cmd } );
 
-	CATCH {
-		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun; exit 1 }
-		default       { 🦗 .gist; nofun; exit 1 }
-	}
-
 }
-
 
 submethod BUILD ( :%!cnf! ) {
 
@@ -365,19 +367,22 @@ submethod BUILD ( :%!cnf! ) {
   my $recman  = %!cnf<pakku><recman>  // True;
   my @url     = %!cnf<recman>.flat;
 
-  $!cores = $*KERNEL.cpu-cores - 1;
-
   $!dont  = %!cnf<pakku><dont>    // False;
   $!yolo  = %!cnf<pakku><yolo>    // False;
 
+  $!cores  = $*KERNEL.cpu-cores - 1;
+  $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
+
   $!cached = $*HOME.add( '.pakku' ).add( 'cache' );
-  $!stage  = $*HOME.add( '.pakku' ).add( 'stage' );
+
+  $!stage  = $*HOME.add( '.pakku' ).add( 'stage' ).add( now.Num );
 
   $!cache  = Pakku::Cache.new:  :$!cached if $cache;
   $!recman = Pakku::Recman.new: :@url     if $recman;
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
+  @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 }
 
 
@@ -400,7 +405,7 @@ method new ( ) {
 
   my $user-config = $*HOME.add( '.pakku' ).add( 'pakku.cnf' );
 
-  my $config-file = %cmd<pakku><config> // ( $user-config.e ?? $user-config !! %?RESOURCES<cnf/pakku.cnf> );
+  my $config-file = %cmd<pakku><config> // ( $user-config.e ?? $user-config !! %?RESOURCES<pakku.cnf> );
 
   my $cnf = Pakku::Grammar::Cnf.parsefile( $config-file.IO, actions => Pakku::Grammar::CnfActions.new );
 
@@ -412,7 +417,7 @@ method new ( ) {
 
 }
 
-# Stolen from Hash::Merge:cpan:TYIL to fix #6
+# borrowed from Hash::Merge:cpan:TYIL to fix #6
 sub hashmerge ( %merge-into, %merge-source ) {
 
   for %merge-source.keys -> $key {
@@ -436,4 +441,15 @@ sub find-bin ( Str:D $name --> Bool:D ) is export {
 
 }
 
-sub norm-name ( Str:D $s ) is export { $s.trans: '< >:*' => '', / '::' / => '-', / [':ver' | ':auth' | ':api' ] / => '-' }
+sub find-perl-module ( Str:D $name --> Bool:D ) {
+
+  return True if run('perl', "-M$name", '-e 1', :err).exitcode == 0;
+
+	return False;
+}
+
+sub clear-stage(IO::Path:D $io --> Nil) {
+  # borrowed from CURS.self-destruct
+  .d ?? clear-stage($_) !! .unlink for $io.dir;
+  $io.rmdir;
+}

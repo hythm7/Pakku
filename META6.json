@@ -6,19 +6,10 @@
   "build-depends" : [ ],
   "depends" : {
     "runtime": {
-      "requires": {
-				"by-kernel.name": {
-					"win32": [ ],
-					"linux": [
-						"archive:ver<13>:from<native>",
-						"curl:ver<4>:from<native>"
-					],
-					"": [
-						"archive:from<native>",
-						"curl:from<native>"
-					]
-				}
-		  }
+      "requires": [
+						{ "any": [ "curl:ver<4>:from<native>",     "curl:from<native>"    ] },
+						{ "any": [ "archive:ver<13>:from<native>", "archive:from<native>" ] }
+		  ]
     }
   },
   "description" : "Package Manager for Raku",
@@ -33,7 +24,6 @@
     "Pakku::Core"            : "lib/Pakku/Core.rakumod",
     "Pakku::Spec"            : "lib/Pakku/Spec.rakumod",
     "Pakku::Meta"            : "lib/Pakku/Meta.rakumod",
-    "Pakku::Repo"            : "lib/Pakku/Repo.rakumod",
     "Pakku::Curl"            : "lib/Pakku/Curl.rakumod",
     "Pakku::Cache"           : "lib/Pakku/Cache.rakumod",
     "Pakku::Native"          : "lib/Pakku/Native.rakumod",
@@ -44,11 +34,7 @@
     "Pakku::Grammar::Common" : "lib/Pakku/Grammar/Common.rakumod",
     "X::Pakku"               : "lib/X/Pakku.rakumod"
   },
-  "resources" : [
-    "cnf/pakku.cnf",
-    "lib/curl.dll",
-    "lib/archive.dll"
-  ],
+  "resources" : [ "pakku.cnf" ],
   "source-url" : "https://github.com/hythm7/Pakku.git",
   "tags" : [
     "repo",

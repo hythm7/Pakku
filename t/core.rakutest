@@ -13,29 +13,26 @@ lives-ok {
 
     submethod BUILD( :%!cnf ) {
 
-      my $stage = $*HOME.add( '.pakku' ).add( 'stage' ).add( 'tmp-stage' );
-
+      my $stage = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
       my @url  = %!cnf<recman>.flat;
 
       $!log    = Pakku::Log.new: :0verbose;
       $!recman = Pakku::Recman.new: :@url;
-
-
       $!cached = $stage.add( 'cached' );
+      @!repo   = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
     }
   } .new
 }, 'Compose Pakku::Core';
 
-my $*repo = Pakku::Repo.new: 'home';
-
-ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "archive:ver<13>:from<native>", "archiv:from<native>" ] } ) ), 'Native dependency exists' if $*KERNEL ~~ 'linux';
+ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "curl:ver<4>:from<native>", "curl:from<native>" ] } ) ), 'Native dependency exists' if $*KERNEL ~~ 'linux';
 nok $core.satisfied( spec => Pakku::Spec.new( { :from<native>, :name<missing> } ) ), 'Native dependency missing';
 
 ok  $core.satisfied( spec => Pakku::Spec.new( { :from<bin>, :name<raku>    } ) ), 'Binary dependency exists';
 nok $core.satisfied( spec => Pakku::Spec.new( { :from<bin>, :name<missing> } ) ), 'Binary dependency missing';
 
-ok  $core.satisfied( spec => Pakku::Spec.new( 'CORE'         ) ), 'Raku dependency exists';
-nok $core.satisfied( spec => Pakku::Spec.new( 'CORE:ver<-1>' ) ), 'Raku dependency missing';
+ok  $core.satisfied( spec => Pakku::Spec.new( 'rakudo'          ) ), 'Raku dependency exists';
+nok $core.satisfied( spec => Pakku::Spec.new( 'rakudo:ver<-42>' ) ), 'Raku dependency missing';
 
 dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<native>, :name<archive> } ) ) }, 'Native dependency no satisfy';
 dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku>    } ) ) }, 'Binary dependency no satisfy';

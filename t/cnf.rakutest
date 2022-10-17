@@ -19,10 +19,10 @@ my $cnf = q:to/CNF/;
     test         # test             < test notest >
     force        # force install    < force noforce >
     exclude Dep1 # exclude dependency
-    to  home # install into specific repo <home site vendor core /custom/repo/path>
+    #to  home # install into specific repo <home site vendor core /custom/repo/path>
 
   < remove >
-    from home  # remove from specific repo
+    #from home  # remove from specific repo
 
   < list >
     details # list   details
@@ -47,7 +47,7 @@ my $cnf = q:to/CNF/;
   CNF
 
 my $expected = 
-{:add(${:build(Bool::True), :deps(Bool::True), :exclude("Dep1"), :force(Bool::True), :test(Bool::True), :to("home")}), :list(${:details(Bool::True)}), :log(${:level(${"1" => ${:color(37), :prefix("D:")}, "2" => ${:color(Any), :prefix("N:")}, "3" => ${:color(34), :prefix("I:")}, "4" => ${:color(33), :prefix("W:")}, "5" => ${:color(35), :prefix("E:")}})}), :pakku(${:dont(Bool::True), :pretty(Bool::True), :verbose(3)}), :recman($["http://recman.my-company.com", "http://recman.pakku.org"]), :remove(${:from("home")})};
+{:add(${:build(Bool::True), :deps(Bool::True), :exclude("Dep1"), :force(Bool::True), :test(Bool::True)}), :list(${:details(Bool::True)}), :log(${:level(${"1" => ${:color(37), :prefix("D:")}, "2" => ${:color(Any), :prefix("N:")}, "3" => ${:color(34), :prefix("I:")}, "4" => ${:color(33), :prefix("W:")}, "5" => ${:color(35), :prefix("E:")}})}), :pakku(${:dont(Bool::True), :pretty(Bool::True), :verbose(3)}), :recman($["http://recman.my-company.com", "http://recman.pakku.org"]), :remove({})};
 
 
 my $m = Pakku::Grammar::Cnf.parse( $cnf, actions => Pakku::Grammar::CnfActions.new );

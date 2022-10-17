@@ -61,6 +61,7 @@ my %meta :=
   'source-url'   => 'https://dummy.tar.gz',
   'support'      => { irc => 'irc://irc.freenode.org/#raku' },
   'version'      => '0.1',
+  'api'          => '42',
 };
 
 my $meta;
@@ -69,9 +70,10 @@ lives-ok { $meta = Pakku::Meta.new: %meta }, 'Create Meta object' ;
 
 isa-ok Pakku::Meta, $meta, 'Meta object is correct type';
 
+my $dist = "%meta<name>:ver<%meta<version>>:auth<%meta<auth>>:api<%meta<api>>";
 
-ok $meta.Str  ~~ %meta<dist>, 'Stringfy';
-ok $meta.dist ~~ %meta<dist>, 'dist is correct';
+ok $meta.Str  ~~ $dist, 'Stringfy';
+ok $meta.dist ~~ $dist, 'dist is correct';
 ok $meta.name ~~ %meta<name>, 'name is correct';
 
 

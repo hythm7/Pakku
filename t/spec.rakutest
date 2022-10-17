@@ -15,6 +15,7 @@ my @spec = (
   'Spec::Spec:ver<0.1>:auth<github:jojo>:api<42>',
   { :from<bin>, :name<bin> },
   { :from<lib>, :name<lib>, :ver<42> },
+  { any => [ 'spec:ver<1>:from<native>', 'spec:from<native>' ] },
 
 );
 

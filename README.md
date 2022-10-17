@@ -83,6 +83,8 @@ build           → Build distribution
 nobuild         → Bypass build
 test            → Test distribution
 notest          → Bypass test
+xtest           → XTest distribution
+noxtest         → Bypass xtest
 force           → Force add distribution even if installed
 noforce         → No force
 precomp         → Precompile distribution 
@@ -140,10 +142,13 @@ details          → Details of dist
 <pre>
 <b>pakku test MyModule</b>
 <b>pakku test ./MyModule</b>
+<b>pakku test xtest ./MyModule</b>
 <b>pakku test nobuild ./MyModule</b>
 
 <b>Options:</b> Specific to <b>add</b> command
 
+xtest           → XTest distribution
+noxtest         → Bypass xtest
 build           → Build distribution
 nobuild         → Bypass build
 </pre>
@@ -165,6 +170,8 @@ build           → Build distribution
 nobuild         → Bypass build
 test            → Test distribution
 notest          → Bypass test
+xtest           → XTest distribution
+noxtest         → Bypass xtest
 force           → Force upgrade
 noforce         → No force
 precomp         → Precompile distribution 
@@ -173,10 +180,10 @@ in < repo >     → Upgrade distribution in repo < home site vendor core /path/t
 </pre>
 
 
-**Checkout (download) distribution**
+**Download distribution**
 
 <pre>
-<b>pakku checkout MyModule</b>
+<b>pakku download MyModule</b>
 </pre>
 
 
@@ -184,6 +191,7 @@ in < repo >     → Upgrade distribution in repo < home site vendor core /path/t
 
 <pre>
 <b>pakku dont     add MyModule</b>
+<b>pakku async    add MyModule</b>
 <b>pakku nocache  add MyModule</b>
 <b>pakku norecman add MyModule</b>
 <b>pakku nopretty add MyModule</b>
@@ -194,6 +202,8 @@ in < repo >     → Upgrade distribution in repo < home site vendor core /path/t
 
 pretty            → Colors
 nopretty          → No colors
+async             → Run asynchronously (disabled by default because some dists tests will fail if run asynchronously)
+noasync           → Dont run asynchronously
 nocache           → Disable cache
 norecman          → Disable remote recommendation manager
 dont              → Do everything but dont do it (dry run)
@@ -220,7 +230,7 @@ yolo              → Dont stop on errors (e.g. proceed after Test Faliure)
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
 add    → a  upgrade  → u  yolo     → y  nopretty → np  silent → «S 0»
-remove → r  checkout → c  exclude  → x  nodeps   → nd  debug  → «D 1»
+remove → r  download → d  exclude  → x  nodeps   → nd  debug  → «D 1»
 list   → l  help     → h  deps     → d  noforce  → nf  now    → «N 2»
 search → s  verbose  → v  force    → f  notest   → nt  info   → «I 3»
 build  → b  pretty   → p  details  → d  nobuild  → nb  warn   → «W 4»
@@ -261,6 +271,7 @@ Config file example:
   # pretty           # colors
   # verbose info     # < 0 1 2 3 4 5 >
   # dont             # dont do it (dry run)
+  # async            # run asynchronously when possible
 
 # add command options
 # < add >

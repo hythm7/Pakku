@@ -12,16 +12,17 @@ method add (
          :$deps       = True,
   Bool:D :$build      = True,
   Bool:D :$test       = True,
+  Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
   Bool:D :$force      = False,
-         :$to         = 'site',
          :$exclude,
+
+  CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
 
 ) {
 
   🧚 PRC ~ "｢{@spec}｣";
 
-  my $*repo = Pakku::Repo.new: $to; 
 
   @spec
     ==> map(  -> $spec { Spec.new: $spec } )
@@ -41,7 +42,7 @@ method add (
     ==> unique( as => *.Str )
     ==> my @meta;
 
-  @meta
+  @meta.hyper( degree => $!cores )
     ==> map( -> $meta {
 
       my $prefix = $.fetch: :$meta;
@@ -51,16 +52,15 @@ method add (
     } )
     ==> my @dist;
 
-  my $target = CompUnit::RepositoryRegistry.repository-for-name: $to ~~ Str ?? $to !! 'custom';
+  #my $target = CompUnit::RepositoryRegistry.repository-for-name: $to.name ~~ Str ?? $to !! 'custom';
 
-  $target.upgrade-repository unless $target.prefix.add( 'version' ).e;
+  #$target.upgrade-repository unless $target.prefix.add( 'version' ).e;
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage,
-    name      => $target.name,
-    next-repo => $target;
+    name      => $repo.name // 'custom',
+    next-repo => $*REPO;
 
-  try $*stage.self-destruct;
 
   @dist 
     ==> map( -> $dist {
@@ -71,7 +71,7 @@ method add (
 
       $*stage.install: $dist, :$precompile;
 
-      self!test: :$dist if $test;
+      self!test: :$dist :$xtest if $test;
 
     } );
 
@@ -90,7 +90,6 @@ method add (
     }
   }
    
-  try $*stage.self-destruct;
   
   ofun;
 
@@ -102,15 +101,15 @@ method upgrade (
          :$deps   = True,
   Bool:D :$build  = True,
   Bool:D :$test   = True,
+  Bool:D :$xtest  = False,
   Bool:D :$force  = False,
-         :$in     = 'site',
          :$exclude,
+
+  CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
 
 ) {
 
   🧚 PRC ~ "｢{@spec}｣";
-
-  my $*repo = Pakku::Repo.new: $in;
 
   @spec .= map(  -> $spec { self.upgradable: spec => Pakku::Spec.new: $spec } );
 
@@ -118,31 +117,29 @@ method upgrade (
 
   @spec .= map( *.Str );
 
-  self.add: :@spec :$deps :$build :$test :$force :$exclude :to( $in );
+  self.add: :@spec :$deps :$build :$test :$force :$exclude :$repo;
 
 }
 
-method test ( :$spec!, Bool:D :$build = True ) {
+method test ( :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
+  
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage,
-    name      => 'stage',
-    next-repo => CompUnit::RepositoryRegistry.repository-for-name: 'home';
+    name      => 'home',
+    next-repo => $*REPO;
 
-  try $*stage.self-destruct;
 
   my $meta = self.satisfy: spec => Spec.new: $spec;
   my $dist = $meta.to-dist: prefix => $.fetch: :$meta;
 
-  self!build: :$dist if $build;
+  self!build: :$dist :$xtest if $build;
 
   🦋 STG ~ "｢$dist｣";
 
   $*stage.install: $dist;
 
-  self!test: :$dist unless $!dont;
-
-  try $*stage.self-destruct;
+  self!test: :$dist :$xtest unless $!dont;
 
   ofun;
 
@@ -162,31 +159,58 @@ method build ( :$spec! ) {
 
 }
 
-method remove ( :@spec!, :$from ) {
+method remove ( :@spec!, CompUnit::Repository :$repo ) {
 
-  my $repo = Pakku::Repo.new: $from;
+	@!repo
+	  ==> grep( $repo )
+		==> map( -> $repo {
+		  sink @spec.map( -> $str {
+				my $spec = Pakku::Spec.new: $str;
+				my @dist = $repo.candidates( $spec.name, |$spec.spec );
 
-  @spec.map( -> $spec { sink $repo.remove: :$from, spec => Spec.new: $spec } ) unless $!dont;
+				sink @dist.map( -> $dist { $repo.uninstall: $dist } )
+
+			} ) unless $!dont
+		} );
 
   ofun;
 
 }
 
-method list (
+method list ( :@spec, CompUnit::Repository :$repo, Bool:D :$details = False ) {
 
-         :@spec,
-  Bool:D :$details = False,
-         :repo( $name ),
+	if @spec {
+	  
+		@spec .= map( -> $spec { Pakku::Spec.new: $spec } );
 
-) {
+    @spec.map( -> $spec {
 
-  my $repo = Pakku::Repo.new: $name;
+			@!repo
+				==> grep( $repo )
+				==> map( -> $repo {
+					$repo.candidates( $spec.name, |$spec.spec )
+						==> map( -> $dist { $dist.id } )
+						==> map( -> $id   { $repo.distribution: $id } )
+						==> map( -> $dist { $dist.meta.item } )
+						==> flat( );
+					} )
+				==> flat( );
+    } )
+    ==> flat( )
+		==> map( -> $meta { Meta.new: $meta } )
+		==> map( -> $meta { out $meta.gist: :$details } );
 
-  @spec 
-    ??  ( $repo.list( spec => @spec.map( -> $spec { Spec.new: $spec } ) )
-          ==> map( -> $meta { out Meta.new( $meta ).gist: :$details } ) )
-    !!  ( $repo.list
-          ==> map( -> $meta { out Meta.new( $meta ).gist: :$details } ) ) unless $!dont;
+
+	} else {
+
+	@!repo
+	  ==> grep( $repo )
+		==> map( *.installed.map( *.meta.item ) )
+		==> flat( )
+		==> grep( *.defined )
+		==> map( -> $meta { Meta.new: $meta } )
+		==> map( -> $meta { out $meta.gist: :$details } );
+	}
 
   return;
 
@@ -210,7 +234,7 @@ method search (
 
 }
 
-method checkout ( :@spec! ) {
+method download ( :@spec! ) {
 
   @spec
     ==> map( -> $spec { Spec.new:      $spec               } )

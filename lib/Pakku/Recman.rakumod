@@ -11,12 +11,17 @@ has @!url is required is built;
 
 method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
+	my $name = $spec.name;
+	my $ver  = $spec.ver;
+	my $auth = $spec.auth;
+	my $api  = $spec.api;
+
   my $query = '/recommend';
 
-  $query ~= '?name='  ~ $!curl.escape: $spec.name;
-  $query ~= '&ver='   ~ $!curl.escape: $_  with $spec.ver;
-  $query ~= '&auth='  ~ $!curl.escape: $_  with $spec.auth;
-  $query ~= '&api='   ~ $!curl.escape: $_  with $spec.api;
+  $query ~= '?name='  ~ $!curl.escape: $name;
+  $query ~= '&ver='   ~ $!curl.escape: $ver  if $ver;
+  $query ~= '&auth='  ~ $!curl.escape: $auth if $auth;
+  $query ~= '&api='   ~ $!curl.escape: $api  if $api;
 
   my $meta;
  
@@ -30,13 +35,18 @@ method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
 method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
 
+  my $name = $spec.name;
+	my $ver  = $spec.ver;
+	my $auth = $spec.auth;
+	my $api  = $spec.api;
+
   my $query = '/search';
 
-  $query ~= '?name='  ~ $!curl.escape: $spec.name;
-  $query ~= '&ver='   ~ $!curl.escape: $_  with $spec.ver;
-  $query ~= '&auth='  ~ $!curl.escape: $_  with $spec.auth;
-  $query ~= '&api='   ~ $!curl.escape: $_  with $spec.api;
-  $query ~= '&count=' ~                $_  with $count;
+  $query ~= '?name='  ~ $!curl.escape: $name;
+  $query ~= '&ver='   ~ $!curl.escape: $ver   if $ver;
+  $query ~= '&auth='  ~ $!curl.escape: $auth  if $auth;
+  $query ~= '&api='   ~ $!curl.escape: $api   if $api;
+  $query ~= '&count=' ~                $count if $count;
 
   my $meta;
  

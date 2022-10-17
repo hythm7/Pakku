@@ -10,16 +10,18 @@ has $.api;
 has $.from;
 has $.prefix;
 
+has Str $.id is built( False );
+
 
 method spec ( ) {
 
   my %h;
 
   %h<name>    = $!name;
-  %h<ver>     = $!ver   if defined $!ver;
-  %h<auth>    = $!auth  if defined $!auth;
-  %h<api>     = $!api   if defined $!api;
-  %h<from>    = $!from  if defined $!from;
+  %h<ver>     = $!ver   if $!ver;
+  %h<auth>    = $!auth  if $!auth;
+  %h<api>     = $!api   if $!api;
+  %h<from>    = $!from  if $!from;
 
   %h;
 }
@@ -40,10 +42,10 @@ multi method ACCEPTS ( ::?CLASS:D: %h --> Bool:D ) {
 
   # disable match by name to allow match for %provides
   # do return False unless %h<name> ~~ $!name;
-  do return False unless Version.new( %h<ver> // %h<version> ) ~~ Version.new( $!ver )  if defined $!ver;
-  do return False unless %h<auth> ~~ $!auth if defined $!auth;
-  do return False unless %h<api>  ~~ $!api  if defined $!api;
-  #do return False unless %h<from> ~~ $!from if defined $!from;
+  do return False unless Version.new( %h<ver> // %h<version> ) ~~ Version.new( $!ver )  if $!ver;
+  do return False unless %h<auth> ~~ $!auth if $!auth;
+  do return False unless %h<api>  ~~ $!api  if $!api;
+# do return False unless %h<from> ~~ $!from if $!from;
 
   True;
 
@@ -113,8 +115,12 @@ class SpecActions {
 
 submethod TWEAK ( ) {
 
-  $!ver //= $!version;
+  use nqp;
+
+  $!ver  //= $!version;
   $!from //= 'raku';
+
+	$!id = nqp::sha1( self.Str );
 
 }
 

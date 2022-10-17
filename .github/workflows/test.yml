@@ -16,15 +16,16 @@ jobs:
         os:
           - ubuntu-latest
           - macOS-latest
+          - windows-latest
         raku-version:
           - 'latest'
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
       - name: Add Pakku
         run: raku -I. bin/pakku add .
       - name: Add Distribution
-        run: pakku add App::Mi6
+        run: pakku async add App::Mi6

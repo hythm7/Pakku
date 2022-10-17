@@ -9,9 +9,7 @@ BEGIN my $version = v13;
 
 constant LIB = (
   $*VM.platform-library-name( $lib.IO, :$version ).Str,
-  |( $*VM.platform-library-name( 'archiveint'.IO ).Str if     $*DISTRO.is-win ),
-  |( %?RESOURCES<lib/archive.dll>                      if     $*DISTRO.is-win ),
-  |( $*VM.platform-library-name( $lib.IO).Str,         if not $*DISTRO.is-win ),
+  $*VM.platform-library-name( $lib.IO            ).Str, 
 ).first( -> \lib { Pakku::Native.can-load: lib } );
 
 
@@ -105,7 +103,8 @@ sub extract( Str:D :$archive!, Str:D :$dest! --> Bool ) is export {
     archive_write_disk_set_standard_lookup $e;
   
   
-    my $root = %entries.keys.first( { .ends-with( 'META6.json' ) and $*SPEC.splitdir( .IO.dirname ) == 1 } ).IO.dirname;
+		# get root dir from META file path
+    my $root = %entries.keys.first( { .ends-with( any <META6.json META.info> ) and $*SPEC.splitdir( .IO.dirname ) == 1 } ).IO.dirname;
   
     for %entries.kv -> $pathname,  ( $entry, $data ) {
   

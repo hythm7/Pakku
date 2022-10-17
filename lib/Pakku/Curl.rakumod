@@ -9,8 +9,7 @@ BEGIN my $version = v4;
 
 constant  LIB = (
   $*VM.platform-library-name( $lib.IO, :$version ).Str,
-  |( %?RESOURCES<lib/curl.dll>                 if     $*DISTRO.is-win ),
-  |( $*VM.platform-library-name( $lib.IO).Str, if not $*DISTRO.is-win ),
+  $*VM.platform-library-name( $lib.IO            ).Str,
 ).first( -> \lib { Pakku::Native.can-load: lib } );
 
 constant CURLE_OK = 0;

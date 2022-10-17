@@ -13,7 +13,7 @@ method help ( Str:D :$cmd ) {
     when 'upgrade'  { out self!upgrade-help  }
     when 'build'    { out self!build-help    }
     when 'test'     { out self!test-help     }
-    when 'checkout' { out self!checkout-help }
+    when 'download' { out self!download-help }
     when 'help'     { out self!help-help     }
 
 
@@ -26,7 +26,7 @@ method help ( Str:D :$cmd ) {
         self!upgrade-help,
         self!build-help,
         self!test-help,
-        self!checkout-help,
+        self!download-help,
         self!pakku-help,
         self!help-help,
       ).join: "\n";
@@ -56,6 +56,8 @@ submethod !add-help ( ) {
   %add<opt>.push: ( 'nobuild'         => 'bypass build' );
   %add<opt>.push: ( 'test'            => 'test distribution' );
   %add<opt>.push: ( 'notest'          => 'bypass test' );
+  %add<opt>.push: ( 'xtest'           => 'xtest distribution' );
+  %add<opt>.push: ( 'noxtest'         => 'bypass xtest' );
   %add<opt>.push: ( 'force'           => 'force add distribution even if installed' );
   %add<opt>.push: ( 'noforce'         => 'no force' );
   %add<opt>.push: ( 'precomp'         => 'precomp distribution' );
@@ -141,6 +143,8 @@ submethod !upgrade-help ( ) {
   %upgrade<opt>.push: ( 'nobuild'         => 'bypass build' );
   %upgrade<opt>.push: ( 'test'            => 'test distribution' );
   %upgrade<opt>.push: ( 'notest'          => 'bypass test' );
+  %upgrade<opt>.push: ( 'xtest'           => 'xtest distribution' );
+  %upgrade<opt>.push: ( 'noxtest'         => 'bypass xtest' );
   %upgrade<opt>.push: ( 'force'           => 'force upgrade' );
   %upgrade<opt>.push: ( 'noforce'         => 'no force' );
   %upgrade<opt>.push: ( 'precomp'         => 'precomp distribution' );
@@ -177,8 +181,11 @@ submethod !test-help ( ) {
 
   %test<example>.push: 'pakku test MyModule';
   %test<example>.push: 'pakku test ./MyModule';
+  %test<example>.push: 'pakku test xtest ./MyModule';
   %test<example>.push: 'pakku test nobuild ./MyModule';
 
+  %test<opt>.push: ( 'xtest'   => 'xtest distribution' );
+  %test<opt>.push: ( 'noxtest' => 'bypass xtest' );
   %test<opt>.push: ( 'build'   => 'build distribution' );
   %test<opt>.push: ( 'nobuild' => 'dont build distribution' );
 
@@ -186,16 +193,16 @@ submethod !test-help ( ) {
 
 }
 
-submethod !checkout-help ( ) {
+submethod !download-help ( ) {
 
-  my %checkout;
+  my %download;
 
-  %checkout<cmd>     = 'Checkout';
-  %checkout<desc>    = 'Download distribution';
+  %download<cmd>     = 'Download';
+  %download<desc>    = 'Download distribution';
 
-  %checkout<example>.push: 'pakku checkout MyModule';
+  %download<example>.push: 'pakku download MyModule';
 
-  help %checkout;
+  help %download;
 
 }
 
@@ -225,6 +232,7 @@ submethod !pakku-help ( ) {
   %pakku<desc>    = 'Pakku Options';
 
   %pakku<example>.push: 'pakku dont     add MyModule';
+  %pakku<example>.push: 'pakku async    add MyModule';
   %pakku<example>.push: 'pakku nocache  add MyModule';
   %pakku<example>.push: 'pakku norecman add MyModule';
   %pakku<example>.push: 'pakku nopretty add MyModule';
@@ -236,6 +244,7 @@ submethod !pakku-help ( ) {
   %pakku<opt>.push: ( 'nocache'         => 'disable cache' );
   %pakku<opt>.push: ( 'norecman'        => 'disable recman' );
   %pakku<opt>.push: ( 'dont'            => 'do everything but dont do it' );
+  %pakku<opt>.push: ( 'async'           => 'run asynchronously when possible' );
   %pakku<opt>.push: ( 'yolo'            => 'dont stop on Pakku exceptions' );
   %pakku<opt>.push: ( 'please'          => 'be nice to butterflies' );
   %pakku<opt>.push: ( 'verbose <level>' => 'verbose level <silent debug now info warn error>' );

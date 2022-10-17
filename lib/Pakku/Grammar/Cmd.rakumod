@@ -23,7 +23,7 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <what>     }
   rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <what>     }
   rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>    }
-  rule TOP:sym<checkout> { <pakkuopt>* % <.space> <checkout>  <checkoutopt>* % <.space> <whats>    }
+  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <whats>    }
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>    }
   rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>?   }
   rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>?     <cmd>?                    <anything> }
@@ -35,7 +35,7 @@ grammar Pakku::Grammar::Cmd {
   token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
   token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
-  token cmd:sym<checkout> { <!before <.space>> ~ <!after <.space>> <checkout> }
+  token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
   token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
   token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
   token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
@@ -113,14 +113,14 @@ class Pakku::Grammar::CmdActions {
 
   }
 
-  method TOP:sym<checkout> ( $/ ) {
+  method TOP:sym<download> ( $/ ) {
 
     my %cmd;
 
-    %cmd<cmd>            = 'checkout';
+    %cmd<cmd>            = 'download';
     %cmd<pakku>          = $<pakkuopt>».made.hash     if defined $<pakkuopt>;
-    %cmd<checkout>       = $<checkoutopt>».made.hash  if defined $<checkoutopt>;
-    %cmd<checkout><spec> = $<whats>.made;
+    %cmd<download>       = $<downloadopt>».made.hash  if defined $<downloadopt>;
+    %cmd<download><spec> = $<whats>.made;
 
     make %cmd;
 
@@ -172,7 +172,7 @@ class Pakku::Grammar::CmdActions {
   method cmd:sym<build>    ( $/ ) { make 'build'    }
   method cmd:sym<test>     ( $/ ) { make 'test'     }
   method cmd:sym<remove>   ( $/ ) { make 'remove'   }
-  method cmd:sym<checkout> ( $/ ) { make 'checkout' }
+  method cmd:sym<download> ( $/ ) { make 'download' }
   method cmd:sym<list>     ( $/ ) { make 'list'     }
   method cmd:sym<search>   ( $/ ) { make 'search'     }
   method cmd:sym<help>     ( $/ ) { make 'help'     }
