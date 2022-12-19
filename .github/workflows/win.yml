@@ -1,0 +1,29 @@
+name: test
+
+on:
+  push:
+    branches:
+      - 'main'
+      - 'dev'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  raku:
+    strategy:
+      matrix:
+        os:
+          - windows-latest
+        raku-version:
+          - 'latest'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: Raku/setup-raku@v1
+        with:
+          raku-version: ${{ matrix.raku-version }}
+      - name: Add Pakku
+        run: raku -I. bin/pakku add .
+      - name: Add Distribution
+        run: pakku async add App::Mi6
