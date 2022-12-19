@@ -1,6 +1,6 @@
 use NativeCall;
 
-### stolen from NativeLibs:ver<0.0.9>:auth<github:salortiz>
+### Borrowed from NativeLibs:ver<0.0.9>:auth<github:salortiz>
 ### to avoid a dependency
 
 use X::Pakku;

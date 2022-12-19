@@ -2,15 +2,9 @@ use NativeCall;
 
 use Pakku::Native;
 
-### Stolen from LibCurl:auth<github:CurtTilmes> 
+### Borrowed from LibCurl:auth<github:CurtTilmes> 
 
-BEGIN my $lib     = 'curl';
-BEGIN my $version = v4;
-
-constant  LIB = (
-  $*VM.platform-library-name( $lib.IO, :$version ).Str,
-  $*VM.platform-library-name( $lib.IO            ).Str,
-).first( -> \lib { Pakku::Native.can-load: lib } );
+constant  LIB = 'curl';
 
 constant CURLE_OK = 0;
 
