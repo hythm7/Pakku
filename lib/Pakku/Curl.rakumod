@@ -10,6 +10,7 @@ BEGIN my $version = v4;
 constant  LIB = (
   $*VM.platform-library-name( $lib.IO, :$version ).Str,
   $*VM.platform-library-name( $lib.IO            ).Str,
+	'libcurl.dll',
 ).first( -> \lib { Pakku::Native.can-load: lib } );
 
 constant CURLE_OK = 0;
