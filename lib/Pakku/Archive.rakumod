@@ -4,7 +4,13 @@ use Pakku::Native;
 
 unit module Pakku::Archive;
 
-constant LIB = 'archive';
+BEGIN my $lib     = 'archive';
+BEGIN my $version = v13;
+
+constant LIB = (
+  $*VM.platform-library-name( $lib.IO, :$version ).Str,
+  $*VM.platform-library-name( $lib.IO            ).Str, 
+).first( -> \lib { Pakku::Native.can-load: lib } );
 
 
 constant ARCHIVE_OK  = 0;
