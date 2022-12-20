@@ -240,7 +240,7 @@ method download ( :@spec! ) {
     ==> map( -> $spec { Spec.new:      $spec               } )
     ==> map( -> $spec { self.satisfy: :$spec               } )
     ==> map( -> $meta { self.fetch:   :$meta unless $!dont } )
-    ==> map( -> $path { 🧚 "CHK: ｢$path｣"                  } );
+    ==> map( -> $path { 🧚 "DWN: ｢$path｣"                  } );
 
   ofun;
 

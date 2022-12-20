@@ -281,7 +281,7 @@ method get-deps ( Pakku::Meta:D $meta, :$deps, :$exclude ) {
 
   $meta.deps: :$deps
 
-    ==> grep( -> $spec { not ( %visited{ $spec.?id // any @$spec.map( *.id ) } or self.satisfied: :$spec )   } )
+    ==> grep( -> $spec { not ( %visited{ $spec.?id // any @$spec.map( *.id ) } or self.satisfied( :$spec ) or not $spec.name )   } )
 
     ==> map(  -> $spec { self.satisfy: :$spec } )
 
@@ -345,11 +345,11 @@ method clear-stage ( ) { clear-stage $!stage if $!stage.d }
 
 method fly ( ) {
 
-  LEAVE try self.clear-stage;
+  END try self.clear-stage;
 
 	CATCH {
-		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun }
-		default       { 🦗 .gist;                       nofun }
+		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun; exit 1 }
+		default       { 🦗 .gist;                       nofun; exit 1 }
 	}
 
   my $cmd = %!cnf<cmd>;

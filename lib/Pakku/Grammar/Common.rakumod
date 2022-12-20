@@ -388,7 +388,7 @@ role Pakku::Grammar::CommonActions {
   method recman:sym<nr>       ( $/ )  { make ( :!recman ) }
 
   method cache:sym<cache>   ( $/ )  { make ( :cache  ) }
-  method cache:sym<r>       ( $/ )  { make ( :cache  ) }
+  method cache:sym<c>       ( $/ )  { make ( :cache  ) }
   method cache:sym<nocache> ( $/ )  { make ( :!cache ) }
   method cache:sym<nc>      ( $/ )  { make ( :!cache ) }
 
