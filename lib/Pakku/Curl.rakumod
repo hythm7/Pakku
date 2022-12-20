@@ -2,7 +2,7 @@ use NativeCall;
 
 use Pakku::Native;
 
-### Stolen from LibCurl:auth<github:CurtTilmes> 
+### Borrowed from LibCurl:auth<github:CurtTilmes> 
 
 BEGIN my $lib     = 'curl';
 BEGIN my $version = v4;
