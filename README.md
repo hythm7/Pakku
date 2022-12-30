@@ -9,7 +9,7 @@ Installation
 # Pakku depends on libarchive and libcurl,
 # should be installed already on most systems
 
-# Requires Raku 2022.04 version or later
+# Requires Raku 2022.12 version or later
 
 # Install using Pakku
 
