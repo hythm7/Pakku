@@ -11,13 +11,16 @@ Installation
 
 # Requires Raku 2022.12 version or later
 
-# Install using Pakku
+# Install
 
 git clone https://github.com/hythm7/Pakku.git
 cd Pakku
 raku -I. bin/pakku add .
 
-# Install using zef
+# Install using Pakku
+pakku add Pakku:ver&ltava-1&gt
+
+# Install using Zef
 zef install Pakku:ver&ltava-1&gt
 </pre>
 
@@ -26,8 +29,8 @@ Overview
 * `Pakku` is a simple package manager for `Raku`.
 
 * `Pakku` command result is either:
-  - `-Ofun` - On success
-  - `Nofun` - On failure
+  - `-Ofun` - Success
+  - `Nofun` - Failure
 
 * `Pakku` verbosity levels:
 	- 1 `｢debug｣` 🐛 → Everything
