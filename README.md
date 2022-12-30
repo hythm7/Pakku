@@ -312,6 +312,9 @@ http://recman.pakku.org
 
 </pre>
 
+CAVEATS
+=======
+Doesn't play nice with libcurl.dll on some windows systems, need to investigate more.
 
 Credits
 =======
