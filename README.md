@@ -314,7 +314,7 @@ http://recman.pakku.org
 
 Caveats
 =======
-Doesn't play nice with libcurl.dll on some windows systems, need to investigate more.
+Doesn't play nice with `libcurl.dll` on some windows systems, need to investigate more.
 
 Credits
 =======
