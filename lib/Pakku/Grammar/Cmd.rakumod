@@ -157,7 +157,6 @@ class Pakku::Grammar::CmdActions {
 
   method TOP:sym<help> ( $/ ) {
 
-    say $/;
     my %cmd;
 
     %cmd<cmd>       = 'help';
