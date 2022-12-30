@@ -1,0 +1,8 @@
+#!/usr/bin/env raku
+
+# needed otherwise get 'SC not yet resolved error'
+use CompUnit::Repository::Staging;
+
+use Pakku;
+
+Pakku.new.fly;

@@ -1,4 +1,4 @@
-use Grammar::Pakku::Common;
+use Pakku::Grammar::Common;
 
 class X::Pakku::Cmd {
   also is Exception;
@@ -13,17 +13,17 @@ class X::Pakku::Cmd {
 
 }
 
-grammar Grammar::Pakku::Cmd {
-  also does Grammar::Pakku::Common;
+grammar Pakku::Grammar::Cmd {
+  also does Pakku::Grammar::Common;
 
 
   proto rule TOP { * }
   rule TOP:sym<add>      { <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>    }
-  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <whats>    }
-  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <whats>    }
+  rule TOP:sym<upgrade>  { <pakkuopt>* % <.space> <upgrade>   <upgradeopt>*  % <.space> <whats>    }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <what>     }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <what>     }
   rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>    }
-  rule TOP:sym<checkout> { <pakkuopt>* % <.space> <checkout>  <checkoutopt>* % <.space> <whats>    }
-  rule TOP:sym<pack>     { <pakkuopt>* % <.space> <pack>      <packopt>*     % <.space> <whats>    }
+  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <whats>    }
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>    }
   rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>?   }
   rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>?     <cmd>?                    <anything> }
@@ -31,19 +31,19 @@ grammar Grammar::Pakku::Cmd {
 
   proto token cmd { * }
   token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
+  token cmd:sym<upgrade>  { <!before <.space>> ~ <!after <.space>> <upgrade>  }
   token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
   token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
-  token cmd:sym<checkout> { <!before <.space>> ~ <!after <.space>> <checkout> }
-  token cmd:sym<pack>     { <!before <.space>> ~ <!after <.space>> <pack>     }
+  token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
   token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
   token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
   token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
 
 }
 
-class Grammar::Pakku::CmdActions {
-  also does Grammar::Pakku::CommonActions;
+class Pakku::Grammar::CmdActions {
+  also does Pakku::Grammar::CommonActions;
 
 
   method TOP:sym<add> ( $/ ) {
@@ -60,6 +60,19 @@ class Grammar::Pakku::CmdActions {
   }
 
 
+  method TOP:sym<upgrade> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>           = 'upgrade';
+    %cmd<pakku>         = $<pakkuopt>».made.hash   if defined $<pakkuopt>;
+    %cmd<upgrade>       = $<upgradeopt>».made.hash if defined $<upgradeopt>;
+    %cmd<upgrade><spec> = $<whats>.made;
+
+    make %cmd;
+
+  }
+
   method TOP:sym<build> ( $/ ) {
 
     my %cmd;
@@ -67,7 +80,7 @@ class Grammar::Pakku::CmdActions {
     %cmd<cmd>         = 'build';
     %cmd<pakku>       = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<build>       = $<buildopt>».made.hash if defined $<buildopt>;
-    %cmd<build><spec> = $<whats>.made;
+    %cmd<build><spec> = $<what>.made;
 
     make %cmd;
 
@@ -80,7 +93,7 @@ class Grammar::Pakku::CmdActions {
     %cmd<cmd>        = 'test';
     %cmd<pakku>      = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<test>       = $<testopt>».made.hash  if defined $<testopt>;
-    %cmd<test><spec> = $<whats>.made;
+    %cmd<test><spec> = $<what>.made;
 
     make %cmd;
 
@@ -100,28 +113,14 @@ class Grammar::Pakku::CmdActions {
 
   }
 
-  method TOP:sym<checkout> ( $/ ) {
+  method TOP:sym<download> ( $/ ) {
 
     my %cmd;
 
-    %cmd<cmd>            = 'checkout';
+    %cmd<cmd>            = 'download';
     %cmd<pakku>          = $<pakkuopt>».made.hash     if defined $<pakkuopt>;
-    %cmd<checkout>       = $<checkoutopt>».made.hash  if defined $<checkoutopt>;
-    %cmd<checkout><spec> = $<whats>.made;
-
-    make %cmd;
-
-  }
-
-
-  method TOP:sym<pack> ( $/ ) {
-
-    my %cmd;
-
-    %cmd<cmd>        = 'pack';
-    %cmd<pakku>      = $<pakkuopt>».made.hash if defined $<pakkuopt>;
-    %cmd<pack>       = $<packopt>».made.hash  if defined $<packopt>;
-    %cmd<pack><spec> = $<whats>.made;
+    %cmd<download>       = $<downloadopt>».made.hash  if defined $<downloadopt>;
+    %cmd<download><spec> = $<whats>.made;
 
     make %cmd;
 
@@ -169,11 +168,11 @@ class Grammar::Pakku::CmdActions {
   }
 
   method cmd:sym<add>      ( $/ ) { make 'add'      }
+  method cmd:sym<upgrade>  ( $/ ) { make 'upgrade'      }
   method cmd:sym<build>    ( $/ ) { make 'build'    }
   method cmd:sym<test>     ( $/ ) { make 'test'     }
   method cmd:sym<remove>   ( $/ ) { make 'remove'   }
-  method cmd:sym<checkout> ( $/ ) { make 'checkout' }
-  method cmd:sym<pack>     ( $/ ) { make 'pack'      }
+  method cmd:sym<download> ( $/ ) { make 'download' }
   method cmd:sym<list>     ( $/ ) { make 'list'     }
   method cmd:sym<search>   ( $/ ) { make 'search'     }
   method cmd:sym<help>     ( $/ ) { make 'help'     }

@@ -1,8 +1,8 @@
 ### pakku Config
 
 # < pakku >
-  # pretty           # colors
-  # verbose info     # < 0 1 2 3 4 5 6 >
+  # pretty           # colorize
+  # verbose info     # < 0 1 2 3 4 5 >
   # dont             # dont do it (dry run)
 
 # < add >
@@ -20,19 +20,17 @@
   # details # list   details
 
 # < log >
-  # trace prefix T:
   # debug prefix D:
+  # now   prefix N:
   # info  prefix I:
   # warn  prefix W:
   # error prefix E:
-  # fatal prefix F:
 
-  # trace color reset
-  # debug color green
+  # debug color white
+  # now   color green
   # info  color blue
   # warn  color yellow
   # error color magenta
-  # fatal color red
 
 < recman >
-http://recman.pakku.org
+  http://recman.pakku.org

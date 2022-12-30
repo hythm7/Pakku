@@ -1,0 +1,45 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use Pakku::Spec;
+
+
+my @spec = (
+
+  'Spec',
+  'Spec::Spec',
+  'Spec::Spec:ver<0.42>',
+  'Spec::Spec:ver<0.42>:auth<github:jojo>',
+  'Spec::Spec:auth<github:jojo>:ver<0.42>',
+  'Spec::Spec:ver<0.1>:auth<github:jojo>:api<42>',
+  { :from<bin>, :name<bin> },
+  { :from<lib>, :name<lib>, :ver<42> },
+  { any => [ 'spec:ver<1>:from<native>', 'spec:from<native>' ] },
+
+);
+
+for @spec -> $spec {
+
+  lives-ok { Pakku::Spec.new( $spec ) }, "{ $spec.gist } is valid";
+
+}
+
+@spec = (
+
+  'Spec:',
+  'Spec::',
+  'Spec::Spec:ver',
+  'Spec::Spec:ver<',
+  'Spec::Spec:ver<0.1>:auth<github:jojo>:api42>',
+
+);
+
+
+for @spec -> $spec {
+
+  dies-ok { Pakku::Spec.new( $spec ) }, "{ $spec.gist } is not valid";
+
+}
+
+done-testing;

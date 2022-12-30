@@ -1,0 +1,51 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use Pakku::Core;
+
+my $core;
+
+lives-ok {
+  $core =
+  class {
+    also does Pakku::Core;
+
+    submethod BUILD( :%!cnf ) {
+
+      my $stage = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
+      my @url  = %!cnf<recman>.flat;
+
+      $!log    = Pakku::Log.new: :0verbose;
+      $!recman = Pakku::Recman.new: :@url;
+      $!cached = $stage.add( 'cached' );
+      @!repo   = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
+    }
+  } .new
+}, 'Compose Pakku::Core';
+
+ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "curl:ver<4>:from<native>", "curl:from<native>" ] } ) ), 'Native dependency exists' if $*KERNEL ~~ 'linux';
+nok $core.satisfied( spec => Pakku::Spec.new( { :from<native>, :name<missing> } ) ), 'Native dependency missing';
+
+ok  $core.satisfied( spec => Pakku::Spec.new( { :from<bin>, :name<raku>    } ) ), 'Binary dependency exists';
+nok $core.satisfied( spec => Pakku::Spec.new( { :from<bin>, :name<missing> } ) ), 'Binary dependency missing';
+
+ok  $core.satisfied( spec => Pakku::Spec.new( 'rakudo'          ) ), 'Raku dependency exists';
+nok $core.satisfied( spec => Pakku::Spec.new( 'rakudo:ver<-42>' ) ), 'Raku dependency missing';
+
+dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<native>, :name<archive> } ) ) }, 'Native dependency no satisfy';
+dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku>    } ) ) }, 'Binary dependency no satisfy';
+
+
+lives-ok {
+
+my $meta = $core.satisfy( spec => Pakku::Spec.new( 'Pakku' ) );
+
+my $prefix = $core.fetch( :$meta ); 
+
+my $dist = $meta.to-dist( :$prefix );
+
+}, 'Can satisfy and fetch dependency';
+
+done-testing;

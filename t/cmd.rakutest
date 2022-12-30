@@ -1,10 +1,8 @@
 use Test;
 use Pakku::Spec;
-use Grammar::Pakku::Cmd;
+use Pakku::Grammar::Cmd;
 
 my @tests = (
-  "" =>
-    ${:cmd("help"), :help(${:cmd("")})},
   "add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add")},
   "add nodeps" =>
@@ -49,10 +47,10 @@ my @tests = (
     ${:cmd("search"), :search(${:spec($["Spec"])})},
   "search details Spec" =>
     ${:cmd("search"), :search(${:details, :spec($["Spec"])})},
-  "checkout Spec" =>
-    ${:cmd("checkout"), :checkout(${:spec($["Spec"])})},
-  "check Spec" =>
-    ${:cmd("checkout"), :checkout(${:spec($["Spec"])})},
+  "download Spec" =>
+    ${:cmd("download"), :download(${:spec($["Spec"])})},
+  "down Spec" =>
+    ${:cmd("download"), :download(${:spec($["Spec"])})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
   "help" =>
@@ -61,13 +59,11 @@ my @tests = (
     ${:cmd("help"), :help(${:cmd("add")})},
   "a" =>
     ${:cmd("help"), :help(${:cmd("add")})},
-  "notcmd" =>
+  "no cmd" =>
     ${:cmd("help"), :help(${:cmd("")})},
-  "help notcmd" =>
+  "help no cmd" =>
     ${:cmd("help"), :help(${:cmd("")})},
 );
-
-#plan 30;
 
 
 for @tests {
@@ -75,8 +71,8 @@ for @tests {
   my $cmd      = .key;
   my $expected = .value;
 
-  my $parser  = Grammar::Pakku::Cmd;
-  my $actions = Grammar::Pakku::CmdActions;
+  my $parser  = Pakku::Grammar::Cmd;
+  my $actions = Pakku::Grammar::CmdActions;
   my $got     = $parser.parse( $cmd, :$actions ).made;
 
 

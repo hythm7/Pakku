@@ -1,77 +1,69 @@
-WHAT?
+Pakku
 =====
-`Pakku` - A Package Manager for `Raku`.
+Package Manager for `Raku`
 
-WHY?
-====
-TMTOWTDI
-
-WHEN?
-=====
-`Pakku` is now at version `pupa` and growing towards version `adult`. Currently `Pakku` can do many things like adding, removing, listing and downloading distributions.
-
-INSTALLATION
+Installation
 ============
-Requires `git`, `curl` and `tar` be available in `$PATH`
 <pre>
+
+# Pakku depends on libarchive and libcurl,
+# should be installed already on most systems
+
+# Requires Raku 2022.12 version or later
+
+# Install
+
 git clone https://github.com/hythm7/Pakku.git
-
 cd Pakku
+raku -I. bin/pakku add .
 
-# install to home directory
-./tools/install-pakku.raku
+# Install using Pakku
+pakku add Pakku:ver&ltava-1&gt
 
-# --dest=/path/to/pakku     # Install to a different directory
-# --verbose=<0 1 2 3 4 5 6> # verbosity level
-# --pretty                  # colors
+# Install using Zef
+zef install Pakku:ver&ltava-1&gt
 </pre>
 
 Overview
 ========
-* `Pakku` is a simple package manager for `Raku`, with many options and customizations that can be configured in `pakku.cnf` file or via command line options.
+* `Pakku` is a simple package manager for `Raku`.
 
 * `Pakku` command result is either:
-  - `-Ofun` - Desired operation completed successfully
-  - `Nofun` - Desired operation did not complete successfully
+  - `-Ofun` - Success
+  - `Nofun` - Failure
 
 * `Pakku` verbosity levels:
-  - `0 (silent)`   - No output what so ever 
-  - `1 (trace)` 🤓 - If you want to see everything
-  - `2 (debug)` 🐞 - To debug some issue
-  - `3 (info )` 🦋 - Camelia delivers important things
-  - `4 (warn )` 🔔 - Only when some warnings happen
-  - `5 (error)` ❌ - When errors are what you care about
-  - `6 (fatal)` 💀 - You probably don't like to see that when running Pakku, me neither!
+	- 1 `｢debug｣` 🐛 → Everything
+	- 2 `｢ now ｣` 🦋 → What is happenning now
+	- 3 `｢info ｣` 🧚 → Important things only
+	- 4 `｢warn ｣` 🐞 → Warnings only
+	- 5 `｢error｣` 🦗 → Errors only
+	- 0 `｢silent｣`   → Nothing
 
 
-* `Pakku` output meaning:
+* `Pakku` log meaning:
 ```
-🦋 PRC: ｢ ... ｣ → Start processing
-🐞 SPC: ｢ ... ｣ → Spec
-🐞 MTA: ｢ ... ｣ → Meta
-🐞 FTC: ｢ ... ｣ → Fetch
-🐞 BLD: ｢ ... ｣ → Building dist
-🐞 TST: ｢ ... ｣ → Testing dist
-🐞 ADD: ｢ ... ｣ → Adding dist
-🦋 BLD: ｢ ... ｣ → Built dist
-🦋 TST: ｢ ... ｣ → Tested dist
-🦋 RES: ｢ ... ｣ → Resource
-🦋 BIN: ｢ ... ｣ → Binary
-🦋 ADD: ｢ ... ｣ → Added dist
-🐞 PAC: ｢ ... ｣ → Packing rakudo and dist 
-🦋 PAC: ｢ ... ｣ → Pack location
-🐞 WAI: ｢ ... ｣ → Waiting
-🔔 TOT: ｢ ... ｣ → Timed out
-💀 MTA: ｢ ... ｣ → Meta error
-💀 BLD: ｢ ... ｣ → Build failed
-💀 TST: ｢ ... ｣ → Test failed
-💀 CNF: ｢ ... ｣ → Config error
-💀 CMD: ｢ ... ｣ → Command error
+🧚 PRC → Start processing
+🦋 SPC → Processing Spec
+🦋 MTA → Processing Meta
+🦋 FTC → Fetching
+🦋 BLD → Building
+🦋 STG → Staging
+🦋 TST → Testing
+🧚 BLD → Build success
+🧚 TST → Test success
+🧚 BIN → Binary added
+🐞 WAI → Waiting
+🐞 TOT → Timed out
+🦗 SPC → Error processing Spec
+🦗 MTA → Error processing Meta
+🦗 BLD → Build failure
+🦗 TST → Test failure
+🦗 CNF → Config error
+🦗 CMD → Command error
 ```
 
-* `Pakku` uses [Pakku::RecMan](https://github.com/hythm7/Pakku-RecMan) recommendation manager to obtain distributions `META` info and archives.
-
-USAGE
+Usage
 =====
 **Add distribution**
 
@@ -80,37 +72,37 @@ USAGE
 <b>pakku add nodeps  MyModule</b>
 <b>pakku add notest  MyModule</b>
 <b>pakku add exclude Dep1 MyModule</b>
+<b>pakku add noprecomp notest  MyModule</b>
 <b>pakku add to      /opt/MyApp MyModule</b>
-<b>pakku add force   to   home  MyModule1 MyModule2</b>
+<b>pakku add force   to   vendor  MyModule1 MyModule2</b>
 
 <b>Options:</b> Specific to <b>add</b> command
 
-deps            → add dependencies
-nodeps          → no dependencies
-exclude Dep1    → exclude Dep1 dependency
-deps runtime    → add runtime dependencies
-deps test       → add test    dependencies
-deps build      → add build dependencies
-deps requires   → only required dependencies
-deps recommends → required and recommended dependencies as well
-deps suggests   → required, recommended and suggested dependencies
-deps only       → dont add the distribution, only it's dependencies
-build           → build distribution
-nobuild         → bypass build
-test            → test distribution
-notest          → bypass test
-force           → force add distribution even if installed
-noforce         → no force
-to < repo >     → add distribution to repo < home site vendor core /path/to/MyApp >
+deps            → Add dependencies
+nodeps          → No dependencies
+exclude Dep1    → Exclude Dep1
+deps only       → Dependencies only
+build           → Build distribution
+nobuild         → Bypass build
+test            → Test distribution
+notest          → Bypass test
+xtest           → XTest distribution
+noxtest         → Bypass xtest
+force           → Force add distribution even if installed
+noforce         → No force
+precomp         → Precompile distribution 
+noprecomp       → No precompile
+to < repo >     → Add distribution to repo < home site vendor core /path/to/MyApp >
 </pre>
 
 **Remove distribution**
 <pre>
 <b>pakku remove MyModule</b>
+<b>pakku remove from site MyModule</b>
 
 <b>Options:</b> Specific to <b>remove</b> command
 
-from < repo > → remove distribution from provided repo only
+from < repo > → Remove distribution from provided repo only
 </pre>
 
 
@@ -124,35 +116,21 @@ from < repo > → remove distribution from provided repo only
 
 <b>Options:</b> Specific to <b>list</b> command
 
-details               → list details of dist
-repo < name-or-path > → list dists installed in specific repo
+details               → Details
+repo < name-or-path > → List specific repo
 </pre>
 
 
 **Search distribution on RecMan**
 <pre>
 <b>pakku Search MyModule</b>
+<b>pakku Search count 4 MyModule</b>
 <b>pakku Search details MyModule</b>
 
 <b>Options:</b> Specific to <b>search</b> command
 
-count < number > → return how many dists
-details          → list details of dist
-</pre>
-
-
-**Pack rakudo and distribution**
-<pre>
-<b>pakku pack MyModule</b>
-<b>pakku pack notest MyModule</b>
-<b>pakku pack rakudo 2020.10 MyModule</b>
-<b>pakku pack to     /opt/MyApp MyModule</b>
-
-<b>Options:</b> Specific to <b>pack</b> command
-
-to < path > → pack to path /path/to/MyApp>
-rakudo ver  → package rakudo specific version
-< addopts > → add command options are available here as well
+count < number > → Number of dists to be returned
+details          → Details of dist
 </pre>
 
 
@@ -167,13 +145,48 @@ rakudo ver  → package rakudo specific version
 <pre>
 <b>pakku test MyModule</b>
 <b>pakku test ./MyModule</b>
+<b>pakku test xtest ./MyModule</b>
+<b>pakku test nobuild ./MyModule</b>
+
+<b>Options:</b> Specific to <b>add</b> command
+
+xtest           → XTest distribution
+noxtest         → Bypass xtest
+build           → Build distribution
+nobuild         → Bypass build
+</pre>
+
+**Upgrade distribution**
+
+<pre>
+<b>pakku upgrade MyModule</b>
+<b>pakku upgrade nodeps  MyModule</b>
+<b>pakku upgrade force   in   vendor  MyModule1 MyModule2</b>
+
+<b>Options:</b> Specific to <b>upgrade</b> command
+
+deps            → Upgrade dependencies
+nodeps          → No dependencies
+exclude Dep1    → Exclude Dep1
+deps only       → Dependencies only
+build           → Build distribution
+nobuild         → Bypass build
+test            → Test distribution
+notest          → Bypass test
+xtest           → XTest distribution
+noxtest         → Bypass xtest
+force           → Force upgrade
+noforce         → No force
+precomp         → Precompile distribution 
+noprecomp       → No precompile
+in < repo >     → Upgrade distribution in repo < home site vendor core /path/to/MyApp >
 </pre>
 
 
-**Checkout (download) distribution**
+**Download distribution**
 
 <pre>
-<b>pakku checkout MyModule</b>
+<b>pakku download MyModule</b>
 </pre>
 
 
@@ -181,22 +194,26 @@ rakudo ver  → package rakudo specific version
 
 <pre>
 <b>pakku dont     add MyModule</b>
+<b>pakku async    add MyModule</b>
 <b>pakku nocache  add MyModule</b>
 <b>pakku norecman add MyModule</b>
 <b>pakku nopretty add MyModule</b>
 <b>pakku yolo     add MyFailedModule MyModule</b>
 <b>pakku pretty   please remove MyModule</b>
 
-<b>Options:</b> Global options control general Pakku behavior and placed before Pakku commands < add remove ... >
+<b>Options:</b> Global options control general Pakku behavior
 
-pretty            → colors
-nopretty          → no colors
-nocache           → disable cache
-norecman          → disable remote recommendation manager
-dont              → do everything but dont do it (dry run)
-verbose < level > → verbosity < silent trace debug info warn error fatal >
-please            → be nice to butterflies
-yolo              → dont stop on errors, useful when need to proceed after error (e.g. Test Faliure)
+pretty            → Colors
+nopretty          → No colors
+async             → Run asynchronously (disabled by default because some dists tests will fail if run asynchronously)
+noasync           → Dont run asynchronously
+nocache           → Disable cache
+norecman          → Disable remote recommendation manager
+dont              → Do everything but dont do it (dry run)
+verbose < level > → Verbosity < debug now info warn error silent >
+config  < path >  → Specify config file
+please            → Be nice to butterflies
+yolo              → Dont stop on errors (e.g. proceed after Test Faliure)
 </pre>
 
 
@@ -215,34 +232,35 @@ yolo              → dont stop on errors, useful when need to proceed after err
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add       → a     verbose → v     nopretty → np     silent → «S 0»
-remove    → r     pretty  → p     nodeps   → nd     trace  → «T 1»
-list      → l     only    → o     noforce  → nf     debug  → «D 2»
-search    → s     deps    → d     notest   → nt     info   → «I 3»
-build     → b     force   → f     nobuild  → nb     warn   → «W 4»
-test      → t     details → d     nocache  → nc     error  → «E 5»
-checkout  → c     yolo    → y     norecman → nr     fatal  → «F 6»
-help      → h     exclude → x
+add    → a  upgrade  → u  yolo     → y  nopretty → np  silent → «S 0»
+remove → r  download → d  exclude  → x  nodeps   → nd  debug  → «D 1»
+list   → l  help     → h  deps     → d  noforce  → nf  now    → «N 2»
+search → s  verbose  → v  force    → f  notest   → nt  info   → «I 3»
+build  → b  pretty   → p  details  → d  nobuild  → nb  warn   → «W 4»
+test   → t  only     → o  norecman → nr nocache  → nc  error  → «E 5»
+									     
+									
 </pre>
 
 Did I mention that the below are `Pakku` commands as well?
 <pre>
 <b>pakku 𝛒 ↓ 🔗 🔨 MyModule</b>
-<b>pakku 👓 🦋 ↑   MyModule</b>
+<b>pakku 👓 🧚 ↑   MyModule</b>
 <b>pakku 🌎        MyModule</b>
 <b>pakku ↪</b>
 <b>pakku ❓</b>
 </pre>
 
 
-CONFIGURATION
+Configuration
 =============
-* All options can be set in command line or in the config file <b>pakku.cnf</b> ｢`~/.pakku/pakku.cnf`｣. The only needed config is `<recman>` source, otherwise you will be able to install local distributions only.
+* All options can be set in command line or in config file <b>pakku.cnf</b>.
+Config file will be loaded from command line if specified, or from home directory `｢$*HOME/.pakku/pakku.cnf｣`, if doesn't exist `Pakku` will use default config file from `%?RESOURCES`.
+The only needed config is the recommendation manager `<recman>`, otherwise `Pakku` will be able to install local distributions only.
 
-* In case your terminal font does not support emojis, you can replace them by changing `prefix` values in the `< log >` section of your config file (usually `~/.pakku/pakku.cnf`):
+* In case your terminal font does not support emojis, you can replace them by changing `prefix` values in the `< log >` section of your config file `~/.pakku/pakku.cnf`:
 ```
 < log >
-  trace prefix TRACE:
   debug prefix DEBUG:
 ```
 
@@ -251,11 +269,14 @@ Config file example:
 <pre>
 ### pakku Config
 
+# global options
 # < pakku >
   # pretty           # colors
-  # verbose info     # < 0 1 2 3 4 5 6 >
+  # verbose info     # < 0 1 2 3 4 5 >
   # dont             # dont do it (dry run)
+  # async            # run asynchronously when possible
 
+# add command options
 # < add >
   # deps       # add deps as well < deps nodeps >
   # build      # build            < build nobuild >
@@ -263,55 +284,53 @@ Config file example:
   # force      # force install    < force noforce >
   # to  home   # add to specific repo < home site vendor core /custom/repo/path >
 
+# remove command options
 # < remove >
   # from home  # remove from specific repo
 
+# list command options
 # < list >
   # details # list   details of dists
 
 ## Customize log levels prefixes and colors
 # < log >
-  # trace prefix T:
   # debug prefix D:
+  # now   prefix N:
   # info  prefix I:
   # warn  prefix W:
   # error prefix E:
-  # fatal prefix F:
 
-  # trace color reset
   # debug color green
+  # now   color cyan
   # info  color blue
   # warn  color yellow
   # error color magenta
-  # fatal color red
 
+# Recommendation Manager
 < recman >
 http://recman.pakku.org
 
 </pre>
 
-
-CAVEATS
+Caveats
 =======
-Currently `Pakku` runs on Linux, more operating systems will be supported in the future.
+Doesn't play nice with `libcurl.dll` on some windows systems, need to investigate more.
 
-
-CREDITS
+Credits
 =======
 Thanks to `Panda` and `Zef` for `Pakku` inspiration.
 also Thanks to the nice `#raku` community.
 
-MOTTO
-===========
-Light like a 🦋, Colorful like a 🦋
+Motto
+=====
+Light like a 🧚, Colorful like a 🧚
 
-AUTHOR
+Author
 ======
 Haytham Elganiny `elganiny.haytham at gmail.com`
 
-COPYRIGHT AND LICENSE
+Copyright and License
 =====================
-Copyright 2019 Haytham Elganiny
+Copyright 2022 Haytham Elganiny
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
-

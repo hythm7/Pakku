@@ -1,26 +1,24 @@
-role Grammar::Pakku::Common {
+role Pakku::Grammar::Common {
 
   proto token add { * }
   token add:sym<add> { <sym> }
   token add:sym<a>   { <sym> }
   token add:sym<↓>   { <sym>  }
 
+  proto token upgrade { * }
+  token upgrade:sym<upgrade> { <sym> }
+  token upgrade:sym<up>      { <sym> }
+  token upgrade:sym<u>       { <sym> }
+  token upgrade:sym<↑>       { <sym> }
+
   proto token remove { * }
   token remove:sym<remove> { <sym> }
   token remove:sym<r>      { <sym> }
-  token remove:sym<↑>      { <sym> }
 
-  proto token pack { * }
-  token pack:sym<pack> { <sym> }
-  token pack:sym<pak>  { <sym> }
-  token pack:sym<p>    { <sym> }
-  token pack:sym<📦>   { <sym>  }
-
-
-  proto token checkout { * }
-  token checkout:sym<checkout> { <sym> }
-  token checkout:sym<check>    { <sym> }
-  token checkout:sym<c>        { <sym> }
+  proto token download { * }
+  token download:sym<download> { <sym> }
+  token download:sym<down>     { <sym> }
+  token download:sym<d>        { <sym> }
 
 
   proto token list { * }
@@ -39,46 +37,54 @@ role Grammar::Pakku::Common {
   token help:sym<h>    { <sym> }
   token help:sym<ℍ>    { <sym> }
   token help:sym<?>    { <sym> }
-  token help:sym<❓>    { <sym> }
+  token help:sym<❓>   { <sym> }
 
 
   proto token pakkuopt { * }
   token pakkuopt:sym<pretty>  { <pretty> }
+  token pakkuopt:sym<async>   { <async> }
   token pakkuopt:sym<recman>  { <recman> }
   token pakkuopt:sym<cache>   { <cache> }
   token pakkuopt:sym<yolo>    { <yolo> }
   token pakkuopt:sym<please>  { <sym>    }
   token pakkuopt:sym<dont>    { <sym>    }
   token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
+  token pakkuopt:sym<config>  { <config>  <.space>* <path> }
 
   proto token addopt { * }
-  token addopt:sym<deps-run>  { <deps> <.space>* <run>    }
-  token addopt:sym<deps-tst>  { <deps> <.space>* <tst>        }
-  token addopt:sym<deps-bld>  { <deps> <.space>* <bld>        }
-  token addopt:sym<deps-req>  { <deps> <.space>* <requires>   }
-  token addopt:sym<deps-rec>  { <deps> <.space>* <recommends> }
-  token addopt:sym<deps-sug>  { <deps> <.space>* <suggests>   }
-  token addopt:sym<deps-only> { <deps> <.space>* <only>       }
-  token addopt:sym<deps>      { <deps>                        }
-  token addopt:sym<nodeps>    { <nodeps>                      }
-  token addopt:sym<build>     { <build>                       }
-  token addopt:sym<test>      { <test>                        }
-  token addopt:sym<force>     { <force>                       }
-  token addopt:sym<to>        { <sym>     <.space>* <repo>    }
-  token addopt:sym<exclude>   { <exclude> <.space>* <spec>    }
+  token addopt:sym<deps-only>  { <deps> <.space>* <only>    } # needed before <deps> (LTM)
+  token addopt:sym<deps>       { <deps>       }
+  token addopt:sym<nodeps>     { <nodeps>     }
+  token addopt:sym<build>      { <build>      }
+  token addopt:sym<test>       { <test>       }
+  token addopt:sym<xtest>      { <xtest>      }
+  token addopt:sym<force>      { <force>      }
+  token addopt:sym<precompile> { <precompile> }
+  token addopt:sym<to>         { <sym>     <.space>* <repo> }
+  token addopt:sym<exclude>    { <exclude> <.space>* <spec> }
 
+  proto token upgradeopt { * }
+  token upgradeopt:sym<deps>       { <deps>       }
+  token upgradeopt:sym<nodeps>     { <nodeps>     }
+  token upgradeopt:sym<build>      { <build>      }
+  token upgradeopt:sym<test>       { <test>       }
+  token upgradeopt:sym<xtest>      { <xtest>      }
+  token upgradeopt:sym<force>      { <force>      }
+  token upgradeopt:sym<precompile> { <precompile> }
+  token upgradeopt:sym<deps-only>  { <deps> <.space>* <only>    }
+  token upgradeopt:sym<in>         { <sym>     <.space>* <repo> }
+  token upgradeopt:sym<exclude>    { <exclude> <.space>* <spec> }
+
+
+  proto token downloadopt { * }
   proto token buildopt    { * }
-  proto token testopt     { * }
-  proto token checkoutopt { * }
+
+  proto token testopt { * }
+  token testopt:sym<build> { <build> }
+  token testopt:sym<xtest> { <xtest> }
 
   proto token removeopt { * }
   token removeopt:sym<from> { <from> <.space>* <repo> }
-
-
-  proto token packopt { * }
-  token packopt:sym<rakudo> { <sym> <.space>* <ver>  }
-  token packopt:sym<to>     { <sym> <.space>* <path> }
-  token packopt:sym<addopt> { <addopt>               }
 
 
   proto token listopt { * }
@@ -99,6 +105,13 @@ role Grammar::Pakku::Common {
   token pretty:sym<𝛒>        { <sym> }
   token pretty:sym<nopretty> { <sym> }
   token pretty:sym<np>       { <sym> }
+
+
+  proto token async { * }
+  token async:sym<async>   { <sym> }
+  token async:sym<noasync> { <sym> }
+  token async:sym<sync>    { <sym> }
+
 
   proto token recman { * }
   token recman:sym<recman>   { <sym> }
@@ -125,6 +138,16 @@ role Grammar::Pakku::Common {
   token verbose:sym<👀>      { <sym> }
   token verbose:sym<👓>      { <sym> }
 
+  proto token config { * }
+  token config:sym<config> { <sym> }
+  token config:sym<conf>   { <sym> }
+  token config:sym<cnf>    { <sym> }
+
+  proto token xtest { * }
+  token xtest:sym<xtest>   { <sym> }
+  token xtest:sym<xt>      { <sym> }
+  token xtest:sym<noxtest> { <sym> }
+  token xtest:sym<nxt>     { <sym> }
 
   proto token deps { * }
   token deps:sym<deps>   { <sym> }
@@ -139,13 +162,13 @@ role Grammar::Pakku::Common {
   token run:sym<runtime> { <sym> }
   token run:sym<run>     { <sym> }
 
-  proto token tst { * }
-  token tst:sym<test> { <sym> }
-  token tst:sym<tst>  { <sym> }
+  #proto token tst { * }
+  #token tst:sym<test> { <sym> }
+  #token tst:sym<tst>  { <sym> }
 
-  proto token bld { * }
-  token bld:sym<build> { <sym> }
-  token bld:sym<bld>   { <sym> }
+  #proto token bld { * }
+  #token bld:sym<build> { <sym> }
+  #token bld:sym<bld>   { <sym> }
 
   proto token requires { * }
   token requires:sym<requires> { <sym> }
@@ -187,6 +210,14 @@ role Grammar::Pakku::Common {
   token force:sym<noforce> { <sym> }
   token force:sym<nf>      { <sym> }
 
+  proto token precompile { * }
+  token precompile:sym<precompile>   { <sym> }
+  token precompile:sym<precomp>      { <sym> }
+  token precompile:sym<p>            { <sym> }
+  token precompile:sym<noprecompile> { <sym> }
+  token precompile:sym<noprecomp>    { <sym> }
+  token precompile:sym<np>           { <sym> }
+
   proto token exclude { * }
   token exclude:sym<exclude> { <sym> }
   token exclude:sym<x>       { <sym> }
@@ -217,16 +248,11 @@ role Grammar::Pakku::Common {
   token count:sym<c>       { <sym> }
 
   proto token repo { * }
-  token repo:sym<repo-name>   { <repo-name> }
-  token repo:sym<repo-path>   { <repo-path> }
-
-  proto token repo-name { * }
-  token repo-name:sym<home>   { <sym> }
-  token repo-name:sym<site>   { <sym> }
-  token repo-name:sym<vendor> { <sym> }
-  token repo-name:sym<core>   { <sym> }
-
-  token repo-path   { <path> }
+  token repo:sym<home>   { <sym>    }
+  token repo:sym<site>   { <sym>    }
+  token repo:sym<vendor> { <sym>    }
+  token repo:sym<core>   { <sym>    }
+  token repo:sym<spec>   { <-[\s]>+ }
 
   token ver { <-[\s]>+ }
    
@@ -234,40 +260,36 @@ role Grammar::Pakku::Common {
 
   proto token level { * }
   token level:sym<SILENT> { <sym> }
-  token level:sym<TRACE>  { <sym> }
   token level:sym<DEBUG>  { <sym> }
+  token level:sym<NOW>    { <sym> }
   token level:sym<INFO>   { <sym> }
   token level:sym<WARN>   { <sym> }
   token level:sym<ERROR>  { <sym> }
-  token level:sym<FATAL>  { <sym> }
   token level:sym<silent> { <sym> }
-  token level:sym<trace>  { <sym> }
   token level:sym<debug>  { <sym> }
+  token level:sym<now>    { <sym> }
   token level:sym<info>   { <sym> }
   token level:sym<warn>   { <sym> }
   token level:sym<error>  { <sym> }
   token level:sym<fatal>  { <sym> }
   token level:sym<S>      { <sym> }
-  token level:sym<T>      { <sym> }
   token level:sym<D>      { <sym> }
+  token level:sym<N>      { <sym> }
   token level:sym<I>      { <sym> }
   token level:sym<W>      { <sym> }
   token level:sym<E>      { <sym> }
-  token level:sym<F>      { <sym> }
   token level:sym<0>      { <sym> }
   token level:sym<1>      { <sym> }
   token level:sym<2>      { <sym> }
   token level:sym<3>      { <sym> }
   token level:sym<4>      { <sym> }
   token level:sym<5>      { <sym> }
-  token level:sym<6>      { <sym> }
   token level:sym<42>     { <sym> }
-  token level:sym<🤓>     { <sym> }
-  token level:sym<🐞>     { <sym> }
+  token level:sym<🐛>     { <sym> }
   token level:sym<🦋>     { <sym> }
-  token level:sym<🔔>     { <sym> }
-  token level:sym<❌>     { <sym> }
-  token level:sym<💀>     { <sym> }
+  token level:sym<🧚>     { <sym> }
+  token level:sym<🐞>     { <sym> }
+  token level:sym<🦗>     { <sym> }
 
 
   token whats { <what>+ % \h }
@@ -276,19 +298,19 @@ role Grammar::Pakku::Common {
   token what:sym<spec> {    <spec> }
   token what:sym<path> { {} <path> }
 
-  token spec { <name> <pair>* }
+  token spec { <name> <spec-pair>* }
   token path { <[ a..z A..Z 0..9 \-_.!~*'<>():@&=+$,/ ]>+ }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
 
-  token pair { ':' <key> <value> }
+  token spec-pair { ':' <spec-key> <value> }
 
-  proto token key { * }
-  token key:sym<ver>     { <sym> }
-  token key:sym<auth>    { <sym> }
-  token key:sym<api>     { <sym> }
-  token key:sym<from>    { <sym> }
-  token key:sym<version> { <sym> }
+  proto token spec-key { * }
+  token spec-key:sym<ver>     { <sym> }
+  token spec-key:sym<auth>    { <sym> }
+  token spec-key:sym<api>     { <sym> }
+  token spec-key:sym<from>    { <sym> }
+  token spec-key:sym<version> { <sym> }
 
   proto token value { * }
   token value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>? ] }
@@ -300,50 +322,50 @@ role Grammar::Pakku::Common {
   token gt  { '>' }
 }
 
-role Grammar::Pakku::CommonActions {
+role Pakku::Grammar::CommonActions {
 
-  method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made }
-  method pakkuopt:sym<recman>  ( $/ ) { make $<recman>.made }
-  method pakkuopt:sym<cache>   ( $/ ) { make $<cache>.made  }
-  method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )      }
-  method pakkuopt:sym<please>  ( $/ ) { make ( :please )    }
-  method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )      }
+  method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made               }
+  method pakkuopt:sym<async>   ( $/ ) { make $<async>.made                }
+  method pakkuopt:sym<recman>  ( $/ ) { make $<recman>.made               }
+  method pakkuopt:sym<cache>   ( $/ ) { make $<cache>.made                }
+  method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )                    }
+  method pakkuopt:sym<please>  ( $/ ) { make ( :please )                  }
+  method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )                    }
   method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.made ) }
+  method pakkuopt:sym<config>  ( $/ ) { make ( config  => $<path>.made  ) }
 
-  method addopt:sym<deps>      ( $/ ) { make ( :deps             ) }
-  method addopt:sym<nodeps>    ( $/ ) { make ( :!deps            ) }
-  method addopt:sym<deps-run>  ( $/ ) { make ( :deps<runtime>    ) }
-  method addopt:sym<deps-tst>  ( $/ ) { make ( :deps<test>       ) }
-  method addopt:sym<deps-bld>  ( $/ ) { make ( :deps<build>      ) }
-  method addopt:sym<deps-sug>  ( $/ ) { make ( :deps<suggests>   ) }
-  method addopt:sym<deps-rec>  ( $/ ) { make ( :deps<recommends> ) }
-  method addopt:sym<deps-req>  ( $/ ) { make ( :deps<requires>   ) }
-  method addopt:sym<deps-only> ( $/ ) { make ( :deps<only>       ) }
+  method addopt:sym<deps>       ( $/ ) { make ( :deps       )    }
+  method addopt:sym<nodeps>     ( $/ ) { make ( :!deps      )    }
+  method addopt:sym<deps-only>  ( $/ ) { make ( :deps<only> )    }
+  method addopt:sym<build>      ( $/ ) { make $<build>.made      }
+  method addopt:sym<test>       ( $/ ) { make $<test>.made       }
+  method addopt:sym<xtest>      ( $/ ) { make $<xtest>.made      }
+  method addopt:sym<force>      ( $/ ) { make $<force>.made      }
+  method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
+  method addopt:sym<to>         ( $/ ) { make ( repo => $<repo>.made ) }
+  method addopt:sym<exclude>    ( $/ ) { make ( exclude => $<spec>.made ) }
 
-  method addopt:sym<build>     ( $/ ) { make $<build>.made }
-  method addopt:sym<test>      ( $/ ) { make $<test>.made  }
-  method addopt:sym<force>     ( $/ ) { make $<force>.made }
 
-  method addopt:sym<to>        ( $/ ) { make ( repo => $<repo>.made ) }
-
-  method addopt:sym<exclude>   ( $/ ) { make ( exclude => $<spec>.made ) }
+  method upgradeopt:sym<deps>      ( $/ )  { make ( :deps       ) }
+  method upgradeopt:sym<nodeps>    ( $/ )  { make ( :!deps      ) }
+  method upgradeopt:sym<deps-only> ( $/ )  { make ( :deps<only> ) }
+  method upgradeopt:sym<build>     ( $/ )  { make $<build>.made }
+  method upgradeopt:sym<test>      ( $/ )  { make $<test>.made  }
+  method upgradeopt:sym<xtest>     ( $/ )  { make $<xtest>.made }
+  method upgradeopt:sym<force>     ( $/ )  { make $<force>.made }
+  method upgradeopt:sym<precompile> ( $/ ) { make $<precompile>.made }
+  method upgradeopt:sym<in>        ( $/ )  { make ( repo => $<repo>.made ) }
+  method upgradeopt:sym<exclude>   ( $/ )  { make ( exclude => $<spec>.made ) }
 
 
   method removeopt:sym<from> ( $/ ) { make ( repo => $<repo>.made ) }
 
-
-  method packopt:sym<rakudo> ( $/ ) { make ( $<sym> => Version.new: $<ver> ) }
-  method packopt:sym<addopt> ( $/ ) { make $<addopt>.made                }
-  method packopt:sym<to>     ( $/ ) { make ( $<sym> => $<path>.IO ) }
-
+  method testopt:sym<build> ( $/ ) { make $<build>.made }
+  method testopt:sym<xtest> ( $/ ) { make $<xtest>.made }
 
   method listopt:sym<details> ( $/ ) { make $<details>.made }
 
-  method listopt:sym<repo> ( $/ ) {
-
-    make ( repo => $<repo>.made );
-
-  }
+  method listopt:sym<repo> ( $/ ) { make ( repo => $<repo>.made ) }
 
   method searchopt:sym<details> ( $/ ) { make $<details>.made }
   method searchopt:sym<count>   ( $/ ) { make ( count => +$<number> ) }
@@ -356,13 +378,17 @@ role Grammar::Pakku::CommonActions {
   method pretty:sym<nopretty> ( $/ )  { make ( :!pretty ) }
   method pretty:sym<np>       ( $/ )  { make ( :!pretty ) }
 
+  method async:sym<async>   ( $/ )  { make ( :async  ) }
+  method async:sym<noasync> ( $/ )  { make ( :!async ) }
+  method async:sym<sync>    ( $/ )  { make ( :!async ) }
+
   method recman:sym<recman>   ( $/ )  { make ( :recman  ) }
   method recman:sym<r>        ( $/ )  { make ( :recman  ) }
   method recman:sym<norecman> ( $/ )  { make ( :!recman ) }
   method recman:sym<nr>       ( $/ )  { make ( :!recman ) }
 
   method cache:sym<cache>   ( $/ )  { make ( :cache  ) }
-  method cache:sym<r>       ( $/ )  { make ( :cache  ) }
+  method cache:sym<c>       ( $/ )  { make ( :cache  ) }
   method cache:sym<nocache> ( $/ )  { make ( :!cache ) }
   method cache:sym<nc>      ( $/ )  { make ( :!cache ) }
 
@@ -376,6 +402,11 @@ role Grammar::Pakku::CommonActions {
   method test:sym<notest> ( $/ )  { make ( :!test ) }
   method test:sym<nt>     ( $/ )  { make ( :!test ) }
 
+  method xtest:sym<xtest>   ( $/ )  { make ( :xtest  ) }
+  method xtest:sym<xt>      ( $/ )  { make ( :xtest  ) }
+  method xtest:sym<noxtest> ( $/ )  { make ( :!xtest ) }
+  method xtest:sym<nxt>     ( $/ )  { make ( :!xtest ) }
+
   method force:sym<force>   ( $/ )  { make ( :force  ) }
   method force:sym<f>       ( $/ )  { make ( :force  ) }
   method force:sym<𝙁>       ( $/ )  { make ( :force  ) }
@@ -383,6 +414,12 @@ role Grammar::Pakku::CommonActions {
   method force:sym<➟>       ( $/ )  { make ( :force  ) }
   method force:sym<noforce> ( $/ )  { make ( :!force ) }
   method force:sym<nf>      ( $/ )  { make ( :!force ) }
+
+  method precompile:sym<precompile>   ( $/ )  { make ( :precompile  ) }
+  method precompile:sym<precomp>      ( $/ )  { make ( :precompile  ) }
+  method precompile:sym<noprecompile> ( $/ )  { make ( :!precompile ) }
+  method precompile:sym<noprecomp>    ( $/ )  { make ( :!precompile ) }
+  method precompile:sym<np>           ( $/ )  { make ( :!precompile ) }
 
   method remote:sym<remote>   ( $/ )  { make ( :remote  ) }
   method remote:sym<r>        ( $/ )  { make ( :remote  ) }
@@ -400,53 +437,52 @@ role Grammar::Pakku::CommonActions {
   method details:sym<nodetails> ( $/ ) { make ( :!details ) }
   method details:sym<nd>        ( $/ ) { make ( :!details ) }
 
-  method repo:sym<repo-name> ( $/ ) {
+  method repo:sym<home>   ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
+  method repo:sym<site>   ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
+  method repo:sym<vendor> ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
+  method repo:sym<core>   ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
+  method repo:sym<spec>   ( $/ ) {
 
-    make ~$/;
+	  my $spec = CompUnit::Repository::Spec.from-string( ~$/, 'inst' );
+		# CURS requires name
+		my $name = $spec.options<name> // 'custom-lib';
+		my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $spec );
 
-  }
+		CompUnit::RepositoryRegistry.register-name( $name, $repo );
 
-  method repo:sym<repo-path> ( $/ ) {
-
-    make $/.IO;
-
-  }
+		make $repo;
+	}
 
   method level:sym<SILENT> ( $/ ) { make 0 }
-  method level:sym<TRACE>  ( $/ ) { make 1 }
-  method level:sym<DEBUG>  ( $/ ) { make 2 }
+  method level:sym<DEBUG>  ( $/ ) { make 1 }
+  method level:sym<NOW>    ( $/ ) { make 2 }
   method level:sym<INFO>   ( $/ ) { make 3 }
   method level:sym<WARN>   ( $/ ) { make 4 }
   method level:sym<ERROR>  ( $/ ) { make 5 }
-  method level:sym<FATAL>  ( $/ ) { make 6 }
   method level:sym<silent> ( $/ ) { make 0 }
-  method level:sym<trace>  ( $/ ) { make 1 }
-  method level:sym<debug>  ( $/ ) { make 2 }
+  method level:sym<debug>  ( $/ ) { make 1 }
+  method level:sym<now>    ( $/ ) { make 2 }
   method level:sym<info>   ( $/ ) { make 3 }
   method level:sym<warn>   ( $/ ) { make 4 }
   method level:sym<error>  ( $/ ) { make 5 }
-  method level:sym<fatal>  ( $/ ) { make 6 }
   method level:sym<S>      ( $/ ) { make 0 }
-  method level:sym<T>      ( $/ ) { make 1 }
-  method level:sym<D>      ( $/ ) { make 2 }
+  method level:sym<D>      ( $/ ) { make 1 }
+  method level:sym<N>      ( $/ ) { make 2 }
   method level:sym<I>      ( $/ ) { make 3 }
   method level:sym<W>      ( $/ ) { make 4 }
   method level:sym<E>      ( $/ ) { make 5 }
-  method level:sym<F>      ( $/ ) { make 6 }
   method level:sym<0>      ( $/ ) { make 0 }
   method level:sym<1>      ( $/ ) { make 1 }
   method level:sym<2>      ( $/ ) { make 2 }
   method level:sym<3>      ( $/ ) { make 3 }
   method level:sym<4>      ( $/ ) { make 4 }
   method level:sym<5>      ( $/ ) { make 5 }
-  method level:sym<6>      ( $/ ) { make 6 }
   method level:sym<42>     ( $/ ) { make 1 }
-  method level:sym<🤓>     ( $/ ) { make 1 }
-  method level:sym<🐞>     ( $/ ) { make 2 }
-  method level:sym<🦋>     ( $/ ) { make 3 }
-  method level:sym<🔔>     ( $/ ) { make 4 }
-  method level:sym<❌>     ( $/ ) { make 5 }
-  method level:sym<💀>     ( $/ ) { make 5 }
+  method level:sym<🐛>     ( $/ ) { make 1 }
+  method level:sym<🦋>     ( $/ ) { make 2 }
+  method level:sym<🧚>     ( $/ ) { make 3 }
+  method level:sym<🐞>     ( $/ ) { make 4 }
+  method level:sym<🦗>     ( $/ ) { make 5 }
 
   method whats ( $/ ) { make $<what>».made }
 

@@ -19,13 +19,11 @@ jobs:
           - 'latest'
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - uses: Raku/setup-raku@v1
         with:
           raku-version: ${{ matrix.raku-version }}
-      - name: Clone Pakku
-        run: git clone https://github.com/hythm7/Pakku.git /tmp/Pakku 
-      - name: Install Pakku
-        run: /tmp/Pakku/tools/install-pakku.raku
-      - name: Test Installing a module
-        run: /home/runner/.pakku/bin/pakku verbose debug add App::Mi6
+      - name: Add Pakku
+        run: raku -I. bin/pakku add .
+      - name: Add Distribution
+        run: pakku async add App::Mi6

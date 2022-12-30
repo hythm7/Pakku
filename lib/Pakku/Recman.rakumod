@@ -1,64 +1,56 @@
-use URI::Encode;
-use LibCurl::Easy;
-
+use Pakku::Log;
+use Pakku::Curl;
 use Pakku::Spec;
 
 
 unit class Pakku::Recman;
 
-has $!curl = LibCurl::Easy.new;
+has $!curl = Pakku::Curl.new;
 
 has @!url is required is built;
 
-method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec!, :$count ) {
+method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
+
+	my $name = $spec.name;
+	my $ver  = $spec.ver;
+	my $auth = $spec.auth;
+	my $api  = $spec.api;
 
   my $query = '/recommend';
 
-  $query ~= '?name='  ~ $spec.name;
-  $query ~= '&ver='   ~ $_  with $spec.ver;
-  $query ~= '&auth='  ~ $_  with $spec.auth;
-  $query ~= '&api='   ~ $_  with $spec.api;
-  $query ~= '&count=' ~ $_  with $count;
-
-  $query = uri_encode $query;
+  $query ~= '?name='  ~ $!curl.escape: $name;
+  $query ~= '&ver='   ~ $!curl.escape: $ver  if $ver;
+  $query ~= '&auth='  ~ $!curl.escape: $auth if $auth;
+  $query ~= '&api='   ~ $!curl.escape: $api  if $api;
 
   my $meta;
  
-  @!url.map( -> $url {
-
-    $!curl.setopt: URL => $url ~ $query;
-
-    last if $meta = try retry { $!curl.perform.content };
-
-  } );
+  @!url.map( -> $url { last if $meta = try retry { $!curl.content: URL => $url ~ $query } } );
 
   return Empty unless $meta;
 
-  Rakudo::Internals::JSON.from-json: $meta;
+  $meta;
   
 }
 
-method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, :$count = ∞ ) {
+method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
+
+  my $name = $spec.name;
+	my $ver  = $spec.ver;
+	my $auth = $spec.auth;
+	my $api  = $spec.api;
 
   my $query = '/search';
 
-  $query ~= '?name='  ~ $spec.name;
-  $query ~= '&count=' ~ $count;
-  $query ~= '&ver='   ~ $_  with $spec.ver;
-  $query ~= '&auth='  ~ $_  with $spec.auth;
-  $query ~= '&api='   ~ $_  with $spec.api;
-
-  $query = uri_encode $query;
+  $query ~= '?name='  ~ $!curl.escape: $name;
+  $query ~= '&ver='   ~ $!curl.escape: $ver   if $ver;
+  $query ~= '&auth='  ~ $!curl.escape: $auth  if $auth;
+  $query ~= '&api='   ~ $!curl.escape: $api   if $api;
+  $query ~= '&count=' ~                $count if $count;
 
   my $meta;
  
-  @!url.map( -> $url {
-
-    $!curl.setopt: URL => $url ~ $query;
-
-    last if $meta = try retry { $!curl.perform.content };
-
-  } );
+  @!url.map( -> $url { last if $meta = try retry { $!curl.content: URL => $url ~ $query } } );
 
   return Empty unless $meta;
 
@@ -69,13 +61,7 @@ method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, :$count = ∞ ) {
 
 method fetch ( Str:D :url( :$URL )!, Str:D :$download! ) {
 
-  retry {
-
-    $!curl.setopt: :$URL :$download :followlocation;
-
-    $!curl.perform;
-
-  }
+  retry { $!curl.download: :$URL :$download }
 
 }
 
@@ -92,8 +78,10 @@ sub retry (
     my $result = try action();
 
     return $result unless $!;
-
+    
     $!.rethrow if $max == 0;
+
+    🐞 "REC: ｢$!.message()｣";
 
     sleep $delay;
 

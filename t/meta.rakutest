@@ -1,0 +1,87 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use Pakku::Meta;
+
+my %meta := 
+{
+  'auth'     => 'github:jojo',
+  'authors'  => [ 'Jojo Jojo' ],
+  'build'    => {
+    'makefile-variables' => {
+      'p5helper' => {
+        'resource' => 'libraries/p5helper'
+      },
+      'perlopts' => {
+        'run' => [
+          'perl',
+          '-MExtUtils::Embed',
+          '-e',
+          'ccopts',
+          '-e',
+          'ldopts'
+        ]
+      }
+    }
+  },
+  'builder'  => 'Distribution::Builder::MakeFromJSON',
+  'depends'  => {
+    'build' => {
+      'requires' => [
+        'soso:from<lib>',
+        { 'from' => 'bin', 'name' => 'koko' }
+      ]
+    },
+    'runtime' => {
+      'requires' => [
+        { 'from' => 'lib', 'name' => 'soso' }
+      ]
+    },
+    'test' => {
+      'requires' => [
+        'Dodo::Xoxo'
+      ]
+    }
+  },
+  'description'  => 'Jojo jojo jojo jojo',
+  'dist'         => 'Jojo::Lolo:ver<0.1>:auth<github:jojo>',
+  'license'      => 'Artistic-2.0',
+  'meta-version' => 1,
+  'name'         => 'Jojo::Lolo',
+  'perl'         => '6.c',
+  'provides' => {
+    'Jojo::Lolo'             => 'lib/Jojo/Lolo.rakumod',
+    'Jojo::Lolo::Koko'       => 'lib/Jojo/Lolo/Koko.rakumod',
+    'Jojo::Lolo::Koko::Soso' => 'lib/Jojo/Lolo/Koko/Soso.rakumod'
+  },
+  'release-date' => '2042-02-21',
+  'repo-type'    => 'git',
+  'resources'    => [ 'libraries/p5helper' ],
+  'source-url'   => 'https://dummy.tar.gz',
+  'support'      => { irc => 'irc://irc.freenode.org/#raku' },
+  'version'      => '0.1',
+  'api'          => '42',
+};
+
+my $meta;
+
+lives-ok { $meta = Pakku::Meta.new: %meta }, 'Create Meta object' ;
+
+isa-ok Pakku::Meta, $meta, 'Meta object is correct type';
+
+my $dist = "%meta<name>:ver<%meta<version>>:auth<%meta<auth>>:api<%meta<api>>";
+
+ok $meta.Str  ~~ $dist, 'Stringfy';
+ok $meta.dist ~~ $dist, 'dist is correct';
+ok $meta.name ~~ %meta<name>, 'name is correct';
+
+
+todo 'Build   dependencies';
+todo 'Test    dependencies';
+todo 'Runtime dependencies';
+#ok $meta.deps( :deps<runtime> ).map( *.Str ) ~~ 'soso:from<lib>',                'Runtime dependencies';
+#ok $meta.deps( :deps<test>    ).map( *.Str ) ~~ 'Dodo::Xoxo',                    'Test dependencies';
+#ok $meta.deps( :deps<build>   ).map( *.Str ) ~~ 'soso:from<lib> koko:from<bin>', 'Build dependencies';
+
+done-testing;

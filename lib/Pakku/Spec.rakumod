@@ -1,13 +1,16 @@
+use X::Pakku;
 
 unit class Pakku::Spec;
 
 has $.name      is required;
 has $.ver;
+has $.version;
 has $.auth;
 has $.api;
 has $.from;
-has $.hints;
 has $.prefix;
+
+has Str $.id is built( False );
 
 
 method spec ( ) {
@@ -15,10 +18,10 @@ method spec ( ) {
   my %h;
 
   %h<name>    = $!name;
-  %h<ver>     = $!ver   if defined $!ver;
-  %h<auth>    = $!auth  if defined $!auth;
-  %h<api>     = $!api   if defined $!api;
-  %h<from>    = $!from  if defined $!from;
+  %h<ver>     = $!ver   if $!ver;
+  %h<auth>    = $!auth  if $!auth;
+  %h<api>     = $!api   if $!api;
+  %h<from>    = $!from  if $!from;
 
   %h;
 }
@@ -37,14 +40,12 @@ method Str ( ) { self.gist }
 
 multi method ACCEPTS ( ::?CLASS:D: %h --> Bool:D ) {
 
-  # disable match by name to allow
-  # match for %provides
-  #do return False unless %h<name> ~~ $!name;
-  #
-  do return False unless Version.new( %h<ver> // %h<version> ) ~~ Version.new( $!ver )  if defined $!ver;
-  do return False unless %h<auth> ~~ $!auth if defined $!auth;
-  do return False unless %h<api>  ~~ $!api  if defined $!api;
-  #do return False unless %h<from> ~~ $!from if defined $!from;
+  # disable match by name to allow match for %provides
+  # do return False unless %h<name> ~~ $!name;
+  do return False unless Version.new( %h<ver> // %h<version> ) ~~ Version.new( $!ver )  if $!ver;
+  do return False unless %h<auth> ~~ $!auth if $!auth;
+  do return False unless %h<api>  ~~ $!api  if $!api;
+# do return False unless %h<from> ~~ $!from if $!from;
 
   True;
 
@@ -56,66 +57,10 @@ multi method ACCEPTS ( ::?CLASS:D: Pakku::Spec:D $spec! --> Bool:D ) {
 
 }
 
+multi sub infix:<cmp>( Pakku::Spec:D \a, Pakku::Spec:D \b --> Order:D ) is export {
 
-my class Hints {
-
-  my class Source {
-
-    has Str $.builder;
-    has     %.build;
-
-  }
-
-  my class Checksum {
-
-    has Str $.type;
-    has Str $.hash;
-
-    method new( $type, $hash ) { 
-
-      self.bless: :$type :$hash;
-
-    }
-
-  }
-
-
-  has        $.url;
-  has        $.target;
-  has        $.checksum;
-  has Source $.source;
-
-  submethod BUILD ( :$!url, :$!target, :$checksum, :%source,) {
-
-    $!source   = Source.new:   | %source      if %source;
-    $!checksum = Checksum.new: | $checksum.kv if $checksum;
-
-  }
-
-  method new ( %hints ) {
-
-    my $url;
-    my $target;
-    my $checksum;
-    my %source;
-
-    given %hints {
-    
-      %source = %hints<source> if %hints<source>; 
-
-      when so .<by-kernel.name> {
-
-        $url      = .<by-kernel.name>{ $*KERNEL.name }<url>      // .<by-kernel.name>{''}<url>;
-
-        $target   = .<by-kernel.name>{ $*KERNEL.name }<target>   // .<by-kernel.name>{''}<target>;
-        $checksum = .<by-kernel.name>{ $*KERNEL.name }<checksum> // .<by-kernel.name>{''}<checksum>;
-
-      }
-    }
-
-  self.bless: :%source :$url :$target :$checksum;
-
-  }
+  ( Version.new( a.ver ) cmp Version.new( b.ver ) ) or quietly
+  ( Version.new( a.api ) cmp Version.new( b.api ) );
 
 }
 
@@ -170,9 +115,12 @@ class SpecActions {
 
 submethod TWEAK ( ) {
 
-  $!hints = Hints.new: $!hints if $!hints;
+  use nqp;
 
+  $!ver  //= $!version;
   $!from //= 'raku';
+
+	$!id = nqp::sha1( self.Str );
 
 }
 
@@ -182,7 +130,7 @@ multi method new ( Str:D $spec ) {
 
     self.bless: |$_;
 
-  } else { die 'Invalid Spec' }
+  } else { die X::Pakku::Spec.new: :$spec }
 
 }
 
@@ -200,7 +148,7 @@ multi method new ( IO $prefix! ) {
   my $meta-file = @meta.map( -> $file { $prefix.add: $file } ).first( *.f );
 
 
-  die 'No META file' unless $meta-file;
+  die X::Pakku::Spec.new: spec => $prefix unless $meta-file;
 
   my %meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
 
@@ -213,24 +161,6 @@ multi method new ( IO $prefix! ) {
 multi method new ( %spec! ) {
 
   return self.new: %spec<any> if %spec<any>;
-
-  die 'Invalid Spec' unless %spec<name>;
-
-  given %spec<name> {
-
-    when Str {
-
-      my %h = Pakku::Spec::SpecGrammar.parse( %spec<name>, actions => Pakku::Spec::SpecActions ).made;
-
-      %spec ,= %h;
-    }
-
-    when Associative {
-
-      %spec<name> = .<by-distro.name>{ $*DISTRO.name } // .<by-distro.name>{''};
-    }
-
-  }
 
   self.bless: |%spec;
 
