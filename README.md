@@ -1,32 +1,28 @@
 Pakku
 =====
-Package Manager for `Raku`
-
-Installation
-============
-<pre>
-
-# Pakku depends on libarchive and libcurl,
-# should be installed already on most systems
-
-# Requires Raku 2022.12 version or later
-
-# Install
-
-git clone https://github.com/hythm7/Pakku.git
-cd Pakku
-raku -I. bin/pakku add .
-
-# Install using Pakku
-pakku add Pakku:ver&ltava-1&gt
-
-# Install using Zef
-zef install Pakku:ver&ltava-1&gt
-</pre>
+A Package Manager for `Raku`.
 
 Overview
 ========
-* `Pakku` is a simple package manager for `Raku`.
+Pakku is a simple package manager for Raku.
+
+Pakku commands allows you to `add`, `remove`, `upgrade`, `list`, `search` or `download` Raku distributions.
+
+There are two types of options:
+
+**General options**
+
+These are the options that control the general behavior of Pakku, like specify the configuration file, change the verbosity level or disable colors. The general options are valid for all commands, and  must be placed before a command (e.g. `add`, `remove`...).
+
+**Specific command options**
+
+These are the options that control the specified command, for example when installing a distributions one can specify `notest` option to disable testing the distribution. these options must be placed after the command.
+
+
+Pakku full command is similar to:
+
+`pakku [general options] [command] [specific command options] [distributions to install]`
+
 
 * `Pakku` command result is either:
   - `-Ofun` - Success
@@ -190,7 +186,7 @@ in < repo >     → Upgrade distribution in repo < home site vendor core /path/t
 </pre>
 
 
-**Pakku Options**
+**General Options**
 
 <pre>
 <b>pakku dont     add MyModule</b>
@@ -213,7 +209,7 @@ dont              → Do everything but dont do it (dry run)
 verbose < level > → Verbosity < debug now info warn error silent >
 config  < path >  → Specify config file
 please            → Be nice to butterflies
-yolo              → Dont stop on errors (e.g. proceed after Test Faliure)
+yolo              → Dont stop on errors (e.g. proceed after Test Failure)
 </pre>
 
 
@@ -312,9 +308,48 @@ http://recman.pakku.org
 
 </pre>
 
+
+Gotchas
+=======
+**Caching downloaded distributions**
+
+When one installs a distribution via `pakku add MyDist`, Pakku first looks in the local cache to see if there is a downloaded distribution matches `MyDist` specification, if nothing found in the cache, Pakku then searches the configured `RecMan` and obtain the latest version of `MyDist` (e.g. `MyDist:ver<0.4.1>`), download, cache, and install it.
+
+After sometime when a new version `MyDist:ver<0.4.2>` is released and available in `RecMan`, if one try to install `MyDist` via `pakku add MyDist`, what happens is Pakku will find `MyDist:ver<0.4.1>` available in local cache and will install that version because it matches `MyDist` specification. so one will not get the latest version `MyDist:ver<0.4.2>`.
+
+There are two ways to avoid this and get the latest version, either specify the version e.g. `pakku add  MyDist:ver<0.4.2>` or disable cache lookup e.g. `pakku nocache add MyDist` (also, one can permenantly disable cache in config file).
+
+**Pakku installs to _site_ repo by default**
+
+If the user doesn't have `rw` permision to `site` repo, one can change the default repo in the config file, or specify the repo in the command e.g. `pakku add to home MyDist`
+
+**Installing already installed distribution**
+
+When trying to install an already installed distribution, Pakku will appear not doing anything and give almost instant `-Ofun` response signaling a success. May be its better to add a debug message informing the user that the distribution is already installed, but that is not yet there.
+
 Caveats
 =======
 Doesn't play nice with `libcurl.dll` on some windows systems, need to investigate more.
+
+Installation
+============
+<pre>
+
+# Pakku depends on <b>libarchive</b> and <b>libcurl</b>
+
+# Requires <b>Rakudo 2022.12 </b> version or later
+
+# <b>Install</b>
+git clone https://github.com/hythm7/Pakku.git
+cd Pakku
+raku -I. bin/pakku add .
+
+# <b>Install using Pakku</b>
+pakku add Pakku:ver&ltava-1&gt
+
+# <b>Install using Zef</b>
+zef install Pakku:ver&ltava-1&gt
+</pre>
 
 Credits
 =======
