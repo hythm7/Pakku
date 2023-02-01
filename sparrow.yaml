@@ -10,6 +10,7 @@ tasks:
         name: add-dist
     language: Bash
     code: |
+      set -e
       sudo apt-get install -y libarchive13 libcurl4-openssl-dev > /dev/null
       cd source
       raku -I. bin/pakku add to home .
@@ -17,4 +18,5 @@ tasks:
     name: add-dist
     language: Bash
     code: |
+      set -e
       pakku verbose debug async add to home App::Mi6
