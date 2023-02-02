@@ -1,6 +1,7 @@
 Pakku
 =====
 [![SparrowCI](https://ci.sparrowhub.io/project/git-hythm7-Pakku/badge)](https://ci.sparrowhub.io)
+
 A Package Manager for Raku.
 
 Overview
