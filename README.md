@@ -1,24 +1,21 @@
-[![SparrowCI](https://ci.sparrowhub.io/project/git-hythm7-Pakku/badge)](https://ci.sparrowhub.io)
-
 Pakku
 =====
+[![SparrowCI](https://ci.sparrowhub.io/project/git-hythm7-Pakku/badge)](https://ci.sparrowhub.io)
 A Package Manager for Raku.
 
 Overview
 ========
-Pakku is a simple package manager for Raku.
-
 Pakku commands allows one to `add`, `remove`, `upgrade`, `list`, `search` or `download` Raku distributions.
 
 There are two types of options:
 
 **General options**
 
-These are the options that control the general behavior of Pakku, like specify the configuration file, change the verbosity level or disable colors. The general options are valid for all commands, and  must be placed before a command (e.g. `add`, `remove`...).
+These are the options that control the general behavior of Pakku, like specify the configuration file, run asynchronously or disable colors. The general options are valid for all commands, and  must be placed before the desired command (`add`, `remove`...).
 
 **Specific command options**
 
-These are the options that control the specified command, for example when installing a distributions one can specify `notest` option to disable testing the distribution. these options must be placed after the command.
+These are the options that control the specified command, for example when installing a distributions one can specify `notest` option to disable testing. these options must be placed after the command.
 
 
 Pakku full command is similar to:
@@ -39,7 +36,24 @@ Pakku full command is similar to:
 	- 0 `｢silent｣`   → Nothing
 
 
-* Pakku logs meaning:
+**Pakku Output**
+
+Pakku output aims to be tidy and concise, uses emojis, colors and three letters key words to convey messages.
+
+For example, the `🦋` emoji indicates that Pakku is starting a task, while `🧚` means Pakku successfully completed a task.
+
+An output line like:
+
+`🦋 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`
+
+means Pakku is starting to build `Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>`, based on the result another output line would be:
+
+`🧚 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`  # successful build
+
+`🦗 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`  # failed build
+
+Below is a list of expected output lines and its meaning:
+
 ```
 🧚 PRC → Start processing
 🦋 SPC → Processing Spec
