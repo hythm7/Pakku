@@ -30,7 +30,6 @@
     "Pakku::Recman"          : "lib/Pakku/Recman.rakumod",
     "Pakku::Archive"         : "lib/Pakku/Archive.rakumod",
     "Pakku::Grammar::Cmd"    : "lib/Pakku/Grammar/Cmd.rakumod",
-    "Pakku::Grammar::Common" : "lib/Pakku/Grammar/Common.rakumod",
     "X::Pakku"               : "lib/X/Pakku.rakumod"
   },
   "resources" : [ "config.json" ],
