@@ -6,7 +6,7 @@ use Pakku::Log;
 
 my $log;
 
-lives-ok { $log = Pakku::Log.new: :!pretty :1verbose }, 'Create Pakku::Log';
+lives-ok { $log = Pakku::Log.new: :!pretty :verbose<debug> }, 'Create Pakku::Log';
 
 isa-ok $log, Pakku::Log, 'Pakku::Log type';
 

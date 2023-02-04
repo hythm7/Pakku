@@ -16,7 +16,7 @@ lives-ok {
       my $stage = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
       my @url  = %!cnf<recman>.flat;
 
-      $!log    = Pakku::Log.new: :0verbose;
+      $!log    = Pakku::Log.new: :verbose<silent>;
       $!recman = Pakku::Recman.new: :@url;
       $!cached = $stage.add( 'cached' );
       @!repo   = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );

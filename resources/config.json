@@ -1,0 +1,94 @@
+{
+  "add": {
+    "deps": true,
+    "nodeps": true,
+    "depsonly": false,
+    "exclude": false,
+    "build": true,
+    "nobuild": false,
+    "test": true,
+    "notest": false,
+    "xtest": false,
+    "noxtest": true,
+    "force": false,
+    "noforce": true,
+    "precomp": true,
+    "noprecomp": false,
+    "to": "site"
+  },
+  "upgrade": {
+    "deps": true,
+    "nodeps": true,
+    "depsonly": false,
+    "exclude": false,
+    "build": true,
+    "nobuild": false,
+    "test": true,
+    "notest": false,
+    "xtest": false,
+    "noxtest": true,
+    "force": false,
+    "noforce": true,
+    "precomp": true,
+    "noprecomp": false,
+    "in": false
+  },
+  "search": {
+    "count": false,
+    "details": false,
+    "nodetails": true
+  },
+  "list": {
+    "repo": false,
+    "details": false,
+    "nodetails": true
+  },
+  "test": {
+    "xtest": false,
+    "noxtest": true,
+    "build": true,
+    "nobuild": false
+  },
+  "recman": [
+    "http://recman.pakku.org"
+  ],
+  "remove": {
+    "from": false
+  },
+  "log": {
+    "warn": {
+      "color": 33,
+      "prefix": "🐞"
+    },
+    "info": {
+      "color": 35,
+      "prefix": "🧚"
+    },
+    "debug": {
+      "prefix": "🐛",
+      "color": 32
+    },
+    "error": {
+      "prefix": "🦗",
+      "color": 31
+    },
+    "now": {
+      "color": 36,
+      "prefix": "🦋"
+    }
+  },
+  "pakku": {
+    "pretty": true,
+    "async": false,
+    "cache": true,
+    "recman": true,
+    "dont": false,
+    "yolo": false,
+    "please": true,
+    "nopretty": false,
+    "noasync": true,
+    "nocache": false,
+    "norecman": false,
+    "verbose": "now"
+  }
+}

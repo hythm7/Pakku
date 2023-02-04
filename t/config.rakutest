@@ -1,0 +1,63 @@
+#!/usr/bin/env raku
+
+use Test;
+
+plan 1;
+
+my $config = q:to/CNF/;
+  {
+    "add": {
+      "force": true,
+      "test": true,
+      "exclude": "Dep1",
+      "deps": true,
+      "build": true
+    },
+    "list": {
+      "details": true
+    },
+    "recman": [
+      "http://recman.my-company.com",
+      "http://recman.pakku.org"
+    ],
+    "remove": {
+    },
+    "log": {
+      "warn": {
+        "color": 33,
+        "prefix": "W:"
+      },
+      "info": {
+        "color": 34,
+        "prefix": "I:"
+      },
+      "debug": {
+        "prefix": "D:",
+        "color": 37
+      },
+      "error": {
+        "prefix": "E:",
+        "color": 35
+      },
+      "now": {
+        "color": null,
+        "prefix": "N:"
+      }
+    },
+    "pakku": {
+      "dont": true,
+      "pretty": true,
+      "verbose": "info"
+    }
+  }
+  CNF
+
+my $expected = 
+{:add(${:build(Bool::True), :deps(Bool::True), :exclude("Dep1"), :force(Bool::True), :test(Bool::True)}), :list(${:details(Bool::True)}), :log(${"debug" => ${:color(37), :prefix("D:")}, "now" => ${:color(Any), :prefix("N:")}, "info" => ${:color(34), :prefix("I:")}, "warn" => ${:color(33), :prefix("W:")}, "error" => ${:color(35), :prefix("E:")}}), :pakku(${:dont(Bool::True), :pretty(Bool::True), :verbose("info")}), :recman($["http://recman.my-company.com", "http://recman.pakku.org"]), :remove({})};
+
+my $got =  Rakudo::Internals::JSON.from-json: $config;
+
+is-deeply $got, $expected, 'Can parse config';
+
+done-testing;
+

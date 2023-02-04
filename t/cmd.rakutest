@@ -28,11 +28,11 @@ my @tests = (
   "add nodeps force Spec" =>
     ${:add(${:!deps, :force, :spec($["Spec"])}), :cmd("add")},
   "v3 add force Spec" =>
-    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "v 3 add nodeps Spec" =>
-    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "pretty v3 add force Spec" =>
-    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose(3)})},
+    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose("info")})},
   "remove Spec1 Spec2" =>
     ${:cmd("remove"), :remove(${:spec($["Spec1", "Spec2"])})},
   "l" =>

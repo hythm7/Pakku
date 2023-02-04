@@ -1,6 +1,6 @@
 unit class Pakku::Log;
 
-class Level {
+my class Level {
 
   has Str   $!reset;
   has Str:D $!color  is required;
@@ -31,6 +31,7 @@ has Level $.warn;
 has Level $.error;
 
 has Bool $!pretty;
+has $!verbose;
 
 
 method out ( Str:D $msg ) {
@@ -41,27 +42,29 @@ method out ( Str:D $msg ) {
 
 my Pakku::Log $logger;
 
-my enum LogLevel <SILENT DEBUG NOW INFO WARN ERROR>;
+my enum LogLevel <silent debug now info warn error>;
 
 submethod BUILD (
 
-  Int:D  :$verbose = INFO,
   Bool:D :$!pretty = True,
+         :$!verbose = now,
          :%level,
 
 ) {
 
   $logger = self;
 
-  return $logger if $verbose == SILENT;
+  $!verbose = LogLevel::{$!verbose};  
+
+  return $logger if $!verbose == silent;
 
   my $color = '' unless $!pretty;
 
-  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<1><prefix> // '🐛 ' ) :color( $color // %level<1><color> // '32' ) if  DEBUG ≥ $verbose;
-  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<2><prefix> // '🦋 ' ) :color( $color // %level<2><color> // '36' ) if  NOW   ≥ $verbose;
-  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🧚 ' ) :color( $color // %level<3><color> // '35' ) if  INFO  ≥ $verbose;
-  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🐞 ' ) :color( $color // %level<4><color> // '33' ) if  WARN  ≥ $verbose;
-  $!error = Level.new: :fh( $*ERR ) :prefix( %level<5><prefix> // '🦗 ' ) :color( $color // %level<5><color> // '31' ) if  ERROR ≥ $verbose;
+  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<1><prefix> // '🐛 ' ) :color( $color // %level<1><color> // '32' ) if  debug ≥ $!verbose;
+  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<2><prefix> // '🦋 ' ) :color( $color // %level<2><color> // '36' ) if  now   ≥ $!verbose;
+  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🧚 ' ) :color( $color // %level<3><color> // '35' ) if  info  ≥ $!verbose;
+  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🐞 ' ) :color( $color // %level<4><color> // '33' ) if  warn  ≥ $!verbose;
+  $!error = Level.new: :fh( $*ERR ) :prefix( %level<5><prefix> // '🦗 ' ) :color( $color // %level<5><color> // '31' ) if  error ≥ $!verbose;
 
 }
 

@@ -29,12 +29,11 @@
     "Pakku::Native"          : "lib/Pakku/Native.rakumod",
     "Pakku::Recman"          : "lib/Pakku/Recman.rakumod",
     "Pakku::Archive"         : "lib/Pakku/Archive.rakumod",
-    "Pakku::Grammar::Cnf"    : "lib/Pakku/Grammar/Cnf.rakumod",
     "Pakku::Grammar::Cmd"    : "lib/Pakku/Grammar/Cmd.rakumod",
     "Pakku::Grammar::Common" : "lib/Pakku/Grammar/Common.rakumod",
     "X::Pakku"               : "lib/X/Pakku.rakumod"
   },
-  "resources" : [ "pakku.cnf" ],
+  "resources" : [ "config.json" ],
   "source-url" : "https://github.com/hythm7/Pakku.git",
   "tags" : [
     "repo",

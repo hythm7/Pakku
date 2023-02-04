@@ -453,36 +453,36 @@ role Pakku::Grammar::CommonActions {
 		make $repo;
 	}
 
-  method level:sym<SILENT> ( $/ ) { make 0 }
-  method level:sym<DEBUG>  ( $/ ) { make 1 }
-  method level:sym<NOW>    ( $/ ) { make 2 }
-  method level:sym<INFO>   ( $/ ) { make 3 }
-  method level:sym<WARN>   ( $/ ) { make 4 }
-  method level:sym<ERROR>  ( $/ ) { make 5 }
-  method level:sym<silent> ( $/ ) { make 0 }
-  method level:sym<debug>  ( $/ ) { make 1 }
-  method level:sym<now>    ( $/ ) { make 2 }
-  method level:sym<info>   ( $/ ) { make 3 }
-  method level:sym<warn>   ( $/ ) { make 4 }
-  method level:sym<error>  ( $/ ) { make 5 }
-  method level:sym<S>      ( $/ ) { make 0 }
-  method level:sym<D>      ( $/ ) { make 1 }
-  method level:sym<N>      ( $/ ) { make 2 }
-  method level:sym<I>      ( $/ ) { make 3 }
-  method level:sym<W>      ( $/ ) { make 4 }
-  method level:sym<E>      ( $/ ) { make 5 }
-  method level:sym<0>      ( $/ ) { make 0 }
-  method level:sym<1>      ( $/ ) { make 1 }
-  method level:sym<2>      ( $/ ) { make 2 }
-  method level:sym<3>      ( $/ ) { make 3 }
-  method level:sym<4>      ( $/ ) { make 4 }
-  method level:sym<5>      ( $/ ) { make 5 }
-  method level:sym<42>     ( $/ ) { make 1 }
-  method level:sym<🐛>     ( $/ ) { make 1 }
-  method level:sym<🦋>     ( $/ ) { make 2 }
-  method level:sym<🧚>     ( $/ ) { make 3 }
-  method level:sym<🐞>     ( $/ ) { make 4 }
-  method level:sym<🦗>     ( $/ ) { make 5 }
+  method level:sym<SILENT> ( $/ ) { make 'silent' }
+  method level:sym<DEBUG>  ( $/ ) { make 'debug'  }
+  method level:sym<NOW>    ( $/ ) { make 'now'    }
+  method level:sym<INFO>   ( $/ ) { make 'info'   }
+  method level:sym<WARN>   ( $/ ) { make 'warn'   }
+  method level:sym<ERROR>  ( $/ ) { make 'error'  }
+  method level:sym<silent> ( $/ ) { make 'silent' }
+  method level:sym<debug>  ( $/ ) { make 'debug'  }
+  method level:sym<now>    ( $/ ) { make 'now'    }
+  method level:sym<info>   ( $/ ) { make 'info'   }
+  method level:sym<warn>   ( $/ ) { make 'warn'   }
+  method level:sym<error>  ( $/ ) { make 'error'  }
+  method level:sym<S>      ( $/ ) { make 'silent' }
+  method level:sym<D>      ( $/ ) { make 'debug'  }
+  method level:sym<N>      ( $/ ) { make 'now'    }
+  method level:sym<I>      ( $/ ) { make 'info'   }
+  method level:sym<W>      ( $/ ) { make 'warn'   }
+  method level:sym<E>      ( $/ ) { make 'error'  }
+  method level:sym<0>      ( $/ ) { make 'silent' }
+  method level:sym<1>      ( $/ ) { make 'debug'  }
+  method level:sym<2>      ( $/ ) { make 'now'    }
+  method level:sym<3>      ( $/ ) { make 'info'   }
+  method level:sym<4>      ( $/ ) { make 'warn'   }
+  method level:sym<5>      ( $/ ) { make 'error'  }
+  method level:sym<42>     ( $/ ) { make 'debug'  }
+  method level:sym<🐛>     ( $/ ) { make 'debug'  }
+  method level:sym<🦋>     ( $/ ) { make 'now'    }
+  method level:sym<🧚>     ( $/ ) { make 'info'   }
+  method level:sym<🐞>     ( $/ ) { make 'warn'   }
+  method level:sym<🦗>     ( $/ ) { make 'error'  }
 
   method whats ( $/ ) { make $<what>».made }
 

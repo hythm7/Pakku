@@ -7,7 +7,6 @@ use Pakku::Cache;
 use Pakku::Native;
 use Pakku::Recman;
 use Pakku::Archive;
-use Pakku::Grammar::Cnf;
 use Pakku::Grammar::Cmd;
 
 unit role Pakku::Core;
@@ -361,7 +360,7 @@ method fly ( ) {
 submethod BUILD ( :%!cnf! ) {
 
   my $pretty  = %!cnf<pakku><pretty>  // True;
-  my $verbose = %!cnf<pakku><verbose> // 2;
+  my $verbose = %!cnf<pakku><verbose> // 'now';
   my %level   = %!cnf<log><level>     // {};
   my $cache   = %!cnf<pakku><cache>   // True;
   my $recman  = %!cnf<pakku><recman>  // True;
@@ -403,15 +402,13 @@ method new ( ) {
 
   my %cmd = $cmd.made;
 
-  my $user-config = $*HOME.add( '.pakku' ).add( 'pakku.cnf' );
+  my $config-file = %cmd<pakku><config> // %?RESOURCES<config.json>;
 
-  my $config-file = %cmd<pakku><config> // ( $user-config.e ?? $user-config !! %?RESOURCES<pakku.cnf> );
-
-  my $cnf = Pakku::Grammar::Cnf.parsefile( $config-file.IO, actions => Pakku::Grammar::CnfActions.new );
+  my $cnf = try Rakudo::Internals::JSON.from-json: slurp $config-file.IO;
 
   die X::Pakku::Cnf.new( cnf => $config-file ) unless $cnf;
 
-  my %cnf =  hashmerge $cnf.made, %cmd;
+  my %cnf =  hashmerge $cnf, %cmd;
 
   self.bless: :%cnf;
 
