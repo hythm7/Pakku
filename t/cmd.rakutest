@@ -9,6 +9,16 @@ my @tests = (
     ${:add(${:spec($["nodeps"])}), :cmd("add")},
   "add nodeps Spec" =>
     ${:add(${:!deps, :spec($["Spec"])}), :cmd("add")},
+  "add deps Spec" =>
+    ${:add(${:deps, :spec($["Spec"])}), :cmd("add")},
+  "add deps only Spec" =>
+    ${:add(${:deps("only"), :spec($["Spec"])}), :cmd("add")},
+  "add deps runtime Spec" =>
+    ${:add(${:deps("runtime"), :spec($["Spec"])}), :cmd("add")},
+  "add deps test Spec" =>
+    ${:add(${:deps("test"), :spec($["Spec"])}), :cmd("add")},
+  "add deps build Spec" =>
+    ${:add(${:deps("build"), :spec($["Spec"])}), :cmd("add")},
   "add build Spec" =>
     ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
   "add test Spec" =>
@@ -17,6 +27,10 @@ my @tests = (
     ${:add(${:force, :spec($["Spec"])}), :cmd("add")},
   "add nobuild Spec" =>
     ${:add(${:!build, :spec($["Spec"])}), :cmd("add")},
+  "add build Spec" =>
+    ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
+  "add test Spec" =>
+    ${:add(${:test, :spec($["Spec"])}), :cmd("add")},
   "add notest Spec" =>
     ${:add(${:spec($["Spec"]), :!test}), :cmd("add")},
   "add Spec1 Spec2" =>

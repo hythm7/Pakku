@@ -25,6 +25,24 @@ multi method deps ( Bool:D :$deps where *.so ) {
 
 }
 
+multi method deps ( Str:D :$deps where 'runtime' ) {
+
+  %!deps<runtime>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
+
+}
+
+multi method deps ( Str:D :$deps where 'test' ) {
+
+  %!deps<test>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
+
+}
+
+multi method deps ( Str:D :$deps where 'build' ) {
+
+  %!deps<build>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
+
+}
+
 multi method deps ( Str:D :$deps where 'only' ) { samewith :deps }
 
 multi method deps ( Bool:D :$deps where not *.so ) { Empty }
