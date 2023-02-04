@@ -23,6 +23,10 @@ my @tests = (
     ${:add(${:spec($["Spec1", "Spec2"])}), :cmd("add")},
   "add noforce Spec" =>
     ${:add(${:!force, :spec($["Spec"])}), :cmd("add")},
+  "add exclude Dep1 Spec" =>
+    ${:add(${:exclude($["Dep1"]), :spec($["Spec"])}), :cmd("add")},
+  "add exclude Dep1 exclude Dep2 Spec" =>
+    ${:add(${:exclude($["Dep1", "Dep2"]), :spec($["Spec"])}), :cmd("add")},
   "add depsforce Spec" =>
     ${:add(${:spec($["depsforce", "Spec"])}), :cmd("add")},
   "add nodeps force Spec" =>
