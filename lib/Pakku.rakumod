@@ -15,7 +15,7 @@ method add (
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
   Bool:D :$force      = False,
-         :$exclude,
+         :@exclude,
 
   CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
 
@@ -31,7 +31,7 @@ method add (
     ==> map(  -> $spec { self.satisfy: :$spec } )
     ==> map(  -> $dep {
 
-      my @dep = self.get-deps: $dep, :$deps, |( exclude => Spec.new( $exclude )  if $exclude );
+      my @dep = self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Spec.new( $exclude ) } )  if @exclude );
 
       @dep.append: $dep unless $deps ~~ <only>;
 
@@ -103,7 +103,7 @@ method upgrade (
   Bool:D :$test   = True,
   Bool:D :$xtest  = False,
   Bool:D :$force  = False,
-         :$exclude,
+         :@exclude,
 
   CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
 
@@ -117,7 +117,7 @@ method upgrade (
 
   @spec .= map( *.Str );
 
-  self.add: :@spec :$deps :$build :$test :$force :$exclude :$repo;
+  self.add: :@spec :$deps :$build :$test :$force :@exclude :$repo;
 
 }
 
@@ -244,4 +244,8 @@ method download ( :@spec! ) {
 
   ofun;
 
+}
+
+method config (  ) {
+  say %!cnf<config>.raku;
 }

@@ -269,14 +269,14 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
 }
 
-method get-deps ( Pakku::Meta:D $meta, :$deps, :$exclude ) {
+method get-deps ( Pakku::Meta:D $meta, :$deps, :@exclude ) {
 
 	# cannot use .name instead of .id (that will save a few calls)
 	# because dists that depends on two different versions of
 	# same dependency, will fail. 
   state %visited;
   
-  once %visited{ .id } = True with $exclude;
+  once for @exclude { %visited{ .id } = True } if @exclude;
 
   $meta.deps: :$deps
 

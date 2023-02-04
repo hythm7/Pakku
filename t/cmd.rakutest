@@ -33,6 +33,8 @@ my @tests = (
     ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "pretty v3 add force Spec" =>
     ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose("info")})},
+  "upgrade Dist" =>
+    ${:upgrade(${:spec($["Dist"])}), :cmd("upgrade")},
   "remove Spec1 Spec2" =>
     ${:cmd("remove"), :remove(${:spec($["Spec1", "Spec2"])})},
   "l" =>
@@ -47,6 +49,8 @@ my @tests = (
     ${:cmd("search"), :search(${:spec($["Spec"])})},
   "search details Spec" =>
     ${:cmd("search"), :search(${:details, :spec($["Spec"])})},
+  "config" =>
+    ${:cmd("config")},
   "download Spec" =>
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "down Spec" =>

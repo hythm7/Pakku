@@ -14,14 +14,17 @@ class X::Pakku::Cmd {
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>      { <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>    }
-  rule TOP:sym<upgrade>  { <pakkuopt>* % <.space> <upgrade>   <upgradeopt>*  % <.space> <whats>    }
+  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>    }
+  rule TOP:sym<upgrade>  { :my @*exclude; <pakkuopt>* % <.space> <upgrade>   <upgradeopt>*  % <.space> <whats>    }
+
   rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <what>     }
   rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <what>     }
   rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>    }
   rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <whats>    }
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>    }
   rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>?   }
+
+  rule TOP:sym<config>   { <pakkuopt>* % <.space> <config> <config-section>?   <configopt>?   % <.space> <option>?   }
   rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>?     <cmd>?                    <anything> }
 
 
@@ -34,7 +37,31 @@ grammar Pakku::Grammar::Cmd {
   token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
   token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
   token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
+  token cmd:sym<config>   { <!before <.space>> ~ <!after <.space>> <config>   }
   token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
+
+  proto token config-section { * }
+  token config-section:sym<pakku>   { <sym> }
+  token config-section:sym<add>     { <sym> }
+  token config-section:sym<remove>  { <sym> }
+  token config-section:sym<list>    { <sym> }
+  token config-section:sym<upgrade> { <sym> }
+  token config-section:sym<test>    { <sym> }
+  token config-section:sym<build>   { <sym> }
+  token config-section:sym<search>  { <sym> }
+
+  proto token configopt { * }
+  token configopt:sym<set>   { <sym> }
+  token configopt:sym<unset> { <sym> }
+
+  proto token option { * }
+  token option:sym<key>    { <key> }
+  token option:sym<key-value> { <key> \h+ <value>+ % \h }
+
+  token key   { <anything-but-space> }
+  token value { <anything-but-space> }
+
+  token anything-but-space { <-[\s]>+ }
 
   proto token add { * }
   token add:sym<add> { <sym> }
@@ -339,7 +366,7 @@ grammar Pakku::Grammar::Cmd {
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
 
-  token spec-pair { ':' <spec-key> <value> }
+  token spec-pair { ':' <spec-key> <spec-value> }
 
   proto token spec-key { * }
   token spec-key:sym<ver>     { <sym> }
@@ -348,9 +375,9 @@ grammar Pakku::Grammar::Cmd {
   token spec-key:sym<from>    { <sym> }
   token spec-key:sym<version> { <sym> }
 
-  proto token value { * }
-  token value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>? ] }
-  token value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>? ] }
+  proto token spec-value { * }
+  token spec-value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>? ] }
+  token spec-value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>? ] }
 
   token anything { {} .* }
 
@@ -456,6 +483,21 @@ class Pakku::Grammar::CmdActions {
   }
 
 
+  method TOP:sym<config> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>             = 'config';
+    %cmd<pakku>           = $<pakkuopt>».made.hash if defined $<pakkuopt>;
+    %cmd<config>          = $<configopt>.Str       if defined $<configopt>;
+    %cmd<config><section> = $<config-section>.Str  if defined $<config-section>;
+    %cmd<config><option>  = $<option>.made         if defined $<option>;
+
+    make %cmd;
+
+  }
+
+
   method TOP:sym<search> ( $/ ) {
 
     my %cmd;
@@ -482,6 +524,12 @@ class Pakku::Grammar::CmdActions {
 
   }
 
+  method configopt:sym<set>   ( $/ ) { make 'set'   }
+  method configopt:sym<unset> ( $/ ) { make 'unset' }
+
+  method option:sym<key> ( $/ ) { make ( ~$<key> => True ) }
+  method option:sym<key-value> ( $/ ) { make ( ~$<key> => $<value>».Str ) }
+
   method cmd:sym<add>      ( $/ ) { make 'add'      }
   method cmd:sym<upgrade>  ( $/ ) { make 'upgrade'      }
   method cmd:sym<build>    ( $/ ) { make 'build'    }
@@ -489,6 +537,7 @@ class Pakku::Grammar::CmdActions {
   method cmd:sym<remove>   ( $/ ) { make 'remove'   }
   method cmd:sym<download> ( $/ ) { make 'download' }
   method cmd:sym<list>     ( $/ ) { make 'list'     }
+  method cmd:sym<config>   ( $/ ) { make 'config'     }
   method cmd:sym<search>   ( $/ ) { make 'search'     }
   method cmd:sym<help>     ( $/ ) { make 'help'     }
 
@@ -511,7 +560,7 @@ class Pakku::Grammar::CmdActions {
   method addopt:sym<force>      ( $/ ) { make $<force>.made      }
   method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
   method addopt:sym<to>         ( $/ ) { make ( repo => $<repo>.made ) }
-  method addopt:sym<exclude>    ( $/ ) { make ( exclude => $<spec>.made ) }
+  method addopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
 
 
   method upgradeopt:sym<deps>      ( $/ )  { make ( :deps       ) }
@@ -522,8 +571,8 @@ class Pakku::Grammar::CmdActions {
   method upgradeopt:sym<xtest>     ( $/ )  { make $<xtest>.made }
   method upgradeopt:sym<force>     ( $/ )  { make $<force>.made }
   method upgradeopt:sym<precompile> ( $/ ) { make $<precompile>.made }
-  method upgradeopt:sym<in>        ( $/ )  { make ( repo => $<repo>.made ) }
-  method upgradeopt:sym<exclude>   ( $/ )  { make ( exclude => $<spec>.made ) }
+  method upgradeopt:sym<in>         ( $/ ) { make ( repo => $<repo>.made ) }
+  method upgradeopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
 
 
   method removeopt:sym<from> ( $/ ) { make ( repo => $<repo>.made ) }
