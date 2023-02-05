@@ -245,7 +245,3 @@ method download ( :@spec! ) {
   ofun;
 
 }
-
-method config (  ) {
-  say %!cnf<config>.raku;
-}

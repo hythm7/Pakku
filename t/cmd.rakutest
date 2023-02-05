@@ -67,8 +67,6 @@ my @tests = (
     ${:cmd("search"), :search(${:spec($["Spec"])})},
   "search details Spec" =>
     ${:cmd("search"), :search(${:details, :spec($["Spec"])})},
-  "config" =>
-    ${:cmd("config")},
   "download Spec" =>
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "down Spec" =>
