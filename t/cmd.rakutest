@@ -73,6 +73,48 @@ my @tests = (
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
+  #"config" =>
+  #  ${:cmd("config"), :config({})},
+  #"config new" =>
+  #  ${:cmd("config"), :config(${:new})},
+  #"config reset" =>
+  #  ${:cmd("config"), :config(${:operation("reset")})},
+  #"config add reset" =>
+  #  ${:cmd("config"), :config(${:module("add"), :operation("reset")})},
+  #"config add enable test" =>
+  #  ${:cmd("config"), :config(${:module("add"), :operation("enable"),  :option($["test"])})},
+  #"config add disable test" =>
+  #  ${:cmd("config"), :config(${:module("add"), :operation("disable"), :option($["test"])})},
+  #"config add set to home" =>
+  #  ${:cmd("config"), :config(${:module("add"), :operation("disable"), :option($["test"])})},
+  #"config add unset to" =>
+  #  ${:cmd("config"), :config(${:module("add"), :operation("unset"), :option($["to"])})},
+  #"config search set count 7" =>
+  #  ${:cmd("config"), :config(${:module("search"), :operation("set"), :option($[:count(7)])})},
+  #"config search unset count" =>
+  #  ${:cmd("config"), :config(${:module("search"), :operation("unset"), :option($["count"])})},
+  #"config pakku enable dont" =>
+  #  ${:cmd("config"), :config(${:module("pakku"), :operation("enable"), :option($["dont"])})},
+  #"config pakku enable pretty please" =>
+  #  ${:cmd("config"), :config(${:module("pakku"), :operation("enable"), :option($["pretty", "please"])})},
+  #"config pakku set verbose debug " =>
+  #  ${:cmd("config"), :config(${:module("pakku"), :operation("set"), :option($[:verbose("debug")])})},
+  #"config pakku unset dont verbose async " =>
+  #  ${:cmd("config"), :config(${:module("pakku"), :operation("unset"), :option($["dont", "verbose", "async"])})},
+  #"config recman default disable" =>
+  #  ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("disable")})},
+  #"config recman default enable" =>
+  #  ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("enable")})},
+  #"config recman default unset" =>
+  #  ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("unset")})},
+  #"config recman rea set priority 1 url http://my-recman.com" =>
+  #  ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("enable"), :option($[:priority(1), :url("http://my-recman.com")])})},
+  #"config log debug unset" =>
+  #  ${:cmd("config"), :config(${:module("log"), :log-level("debug"), :operation("unset")})},
+  #"config log info set prefix INFO: color green" =>
+  #  ${:cmd("config"), :config(${:module("log"), :log-level("default"), :operation("set"), :option($[:prefix("INFO:"), :color("green")])})},
+  #"pretty config /tmp/config.json config pakku enable dont" =>
+  #  ${:config(${:module("pakku"), :operation("enable"), :option($["dont"])}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json")})},
   "help" =>
     ${:cmd("help"), :help(${:cmd("")})},
   "help add" =>
