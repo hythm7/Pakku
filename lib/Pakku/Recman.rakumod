@@ -7,7 +7,14 @@ unit class Pakku::Recman;
 
 has $!curl = Pakku::Curl.new;
 
-has @!url is required is built;
+has @!url  = 'http://recman.pakku.org';
+
+
+submethod BUILD ( :@recman ) {
+
+  @!url = @recman.grep( *.value.<enabled> ).sort( *.value.<priority> ) if @recman; 
+  
+}
 
 method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 

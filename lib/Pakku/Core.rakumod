@@ -389,26 +389,36 @@ method new ( ) {
 
   CATCH {
 
-    Pakku::Log.new: :pretty :2verbose;
+    Pakku::Log.new: :pretty :verbose<debug>;
 
-    🦗 .message;
-    
-    nofun;
+      when X::Pakku::Cmd { 🦗 .message; nofun; }
+      when X::Pakku::Cnf { 🦗 .message; nofun; }
+      when JSONException { 🦗 .message; .resume; }
+			default { 🦗 .gist }
   }
 
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::CmdActions );
 
   die X::Pakku::Cmd.new( cmd => @*ARGS ) unless $cmd;
 
-  my %cmd = $cmd.made;
+  my %cnf = $cmd.made;
 
-  my $config-file = %cmd<pakku><config> // %?RESOURCES<config.json>;
+	%cnf<pakku><config> //= $*HOME.add( '.pakku' ).add( 'config.json' );
 
-  my $cnf = try Rakudo::Internals::JSON.from-json: slurp $config-file.IO;
+	my $config-file = %cnf<pakku><config>;
 
-  die X::Pakku::Cnf.new( cnf => $config-file ) unless $cnf;
+  if $config-file.e {
 
-  my %cnf =  hashmerge $cnf, %cmd;
+    my $cnf = Rakudo::Internals::JSON.from-json: slurp $config-file.IO;
+
+    die X::Pakku::Cnf.new( cnf => $config-file ) unless $cnf;
+
+    %cnf =  hashmerge $cnf, %cnf;
+
+	}
+
+
+
 
   self.bless: :%cnf;
 

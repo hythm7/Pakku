@@ -1,16 +1,3 @@
-class X::Pakku::Cmd {
-  also is Exception;
-
-  has $.cmd;
-
-  method message ( --> Str:D ) {
-
-    "CMD: ｢$!cmd｣";
-
-  }
-
-}
-
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }

@@ -78,3 +78,28 @@ class X::Pakku::Native is X::Pakku {
 
 }
 
+class X::Pakku::Cmd {
+  also is Exception;
+
+  has $.cmd;
+
+  method message ( --> Str:D ) {
+
+    "CMD: ｢$!cmd｣";
+
+  }
+
+}
+
+class X::Pakku::Cnf {
+  also is Exception;
+
+  has $.cnf;
+
+  method message ( --> Str:D ) {
+
+    "CNF: ｢$!cnf｣";
+
+  }
+
+}

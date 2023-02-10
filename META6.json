@@ -32,7 +32,7 @@
     "Pakku::Grammar::Cmd"    : "lib/Pakku/Grammar/Cmd.rakumod",
     "X::Pakku"               : "lib/X/Pakku.rakumod"
   },
-  "resources" : [ "config.json" ],
+  "resources" : [ "default-config.json" ],
   "source-url" : "https://github.com/hythm7/Pakku.git",
   "tags" : [
     "repo",
