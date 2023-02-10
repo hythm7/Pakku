@@ -24,10 +24,77 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>    }
   rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>?   }
 
+  rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd>                                     }
+
   rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>?     <cmd>?                    <anything> }
 
 
-  proto token cmd { * }
+  proto token config-cmd { * } 
+  token config-cmd:sym<config-module-enable> { <config> <.space> <config-module> <.space>+ <enable> <.space>+ <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-disable> { <config> <.space> <config-module> <.space>+ <disable> <.space>+ <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-set>    { <config> <.space> <config-module> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
+  token config-cmd:sym<config-module-unset>  { <config> <.space> <config-module> <.space>+ <unset> <.space>+ <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-reset>  { <config> <.space>+ <config-module> <.space>+ <reset> }
+  token config-cmd:sym<config-module-recman-set> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
+  token config-cmd:sym<config-module-recman-enable> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <enable> }
+  token config-cmd:sym<config-module-recman-disable> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <disable> }
+  token config-cmd:sym<config-module-recman-unset> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <unset> }
+  token config-cmd:sym<config-module-log-set> { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <set> <.space>+ <log-level-option>+ % <.space> }
+  token config-cmd:sym<config-module-log-unset> { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <unset> }
+  token config-cmd:sym<config-reset>         { <config> <.space>+ <reset> }
+  token config-cmd:sym<config-new>           { <config> <.space>+ <config-new> }
+  token config-cmd:sym<config>               { <config> }
+
+  proto token config-module { * } 
+  token config-module:sym<pakku>    { <sym> }
+  token config-module:sym<add>      { <sym> }
+  token config-module:sym<upgrade>  { <sym> }
+  token config-module:sym<build>    { <sym> }
+  token config-module:sym<test>     { <sym> }
+  token config-module:sym<remove>   { <sym> }
+  token config-module:sym<list>     { <sym> }
+  token config-module:sym<search>   { <sym> }
+  token config-module:sym<download> { <sym> }
+
+  token config-module-recman { <module-recman> }
+  token config-module-log    { <module-log>    }
+
+#  token module-add      { 'add'      }
+#  token module-upgrade  { 'upgrade'  }
+#  token module-remove   { 'remove'   }
+#  token module-build    { 'build'    }
+#  token module-test     { 'test'     }
+#  token module-list     { 'list'     }
+#  token module-search   { 'search'   }
+#  token module-download { 'download' }
+
+  token module-recman   { 'recman'   }
+  token module-log      { 'log'      }
+
+  token enable     { 'enable'  }
+  token disable    { 'disable' }
+  token set        { 'set'     }
+  token unset      { 'unset'   }
+  token reset      { 'reset'   }
+  token config-new { 'new'     } # looks like token new is reserved
+
+  token recman-name   { <key> }
+
+  proto token log-level { * } 
+  token log-level:sym<debug> { <sym> }
+  token log-level:sym<now>   { <sym> }
+  token log-level:sym<info>  { <sym> }
+  token log-level:sym<warn>  { <sym> }
+  token log-level:sym<error> { <sym> }
+
+  proto token log-level-option { * } 
+  token log-level-option:sym<prefix> { <sym> <.space>+ <value> }
+  token log-level-option:sym<color>  { <sym> <.space>+ <value> }
+
+  token key-option    { <key> }
+  token keyval-option { <key> <.space>+ <value> }
+
+  proto token cmd { * } 
   token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
   token cmd:sym<upgrade>  { <!before <.space>> ~ <!after <.space>> <upgrade>  }
   token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
@@ -36,6 +103,7 @@ grammar Pakku::Grammar::Cmd {
   token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
   token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
   token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
+  token cmd:sym<config>   { <!before <.space>> ~ <!after <.space>> <config>   }
   token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
 
   token key   { <-[\s]>+ }
@@ -480,6 +548,18 @@ class Pakku::Grammar::CmdActions {
 
   }
 
+  method TOP:sym<config> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>          = 'config';
+    %cmd<pakku>        = $<pakkuopt>».made.hash   if defined $<pakkuopt>;
+    %cmd<config>       = $<config-cmd>.made.hash  if defined $<config-cmd>;
+
+    make %cmd;
+
+  }
+
 
   method TOP:sym<help> ( $/ ) {
 
@@ -494,14 +574,122 @@ class Pakku::Grammar::CmdActions {
   }
 
   method cmd:sym<add>      ( $/ ) { make 'add'      }
-  method cmd:sym<upgrade>  ( $/ ) { make 'upgrade'      }
+  method cmd:sym<upgrade>  ( $/ ) { make 'upgrade'  }
   method cmd:sym<build>    ( $/ ) { make 'build'    }
   method cmd:sym<test>     ( $/ ) { make 'test'     }
   method cmd:sym<remove>   ( $/ ) { make 'remove'   }
   method cmd:sym<download> ( $/ ) { make 'download' }
   method cmd:sym<list>     ( $/ ) { make 'list'     }
-  method cmd:sym<search>   ( $/ ) { make 'search'     }
+  method cmd:sym<search>   ( $/ ) { make 'search'   }
+  method cmd:sym<config>   ( $/ ) { make 'config'   }
   method cmd:sym<help>     ( $/ ) { make 'help'     }
+
+
+  method config-cmd:sym<config>( $/ ) { make %() }
+
+  method config-cmd:sym<config-new>( $/ ) {
+	  make  %( operation =>  ~$<config-new> )
+	}
+
+  method config-cmd:sym<config-reset>( $/ ) {
+	  make %( operation => ~$<reset> )
+	}
+
+  method config-cmd:sym<config-module-reset>( $/ ) {
+	  make %(
+		  module    => ~$<config-module>,
+			operation => ~$<reset>,
+		)
+	}
+
+  method config-cmd:sym<config-module-unset>( $/ ) {
+	  make %(
+      module    => ~$<config-module>,
+			operation => ~$<unset>, 
+			option    => $<key-option>».made, 
+		)
+	}
+
+  method config-cmd:sym<config-module-disable>( $/ ) {
+	  make %(
+      module    => ~$<config-module>,
+			operation => ~$<disable>, 
+			option    => $<key-option>».made, 
+		)
+	}
+
+  method config-cmd:sym<config-module-enable>( $/ ) {
+	  make %(
+      module    => ~$<config-module>,
+			operation => ~$<enable>, 
+			option    => $<key-option>».made, 
+		)
+	}
+
+  method config-cmd:sym<config-module-set>( $/ ) {
+	  make %(
+      module    => ~$<config-module>,
+			operation => ~$<set>, 
+			option    => $<keyval-option>».made, 
+		)
+	}
+
+  method config-cmd:sym<config-module-recman-set>( $/ ) {
+	  make %(
+      module    => ~$<config-module-recman>,
+			operation => ~$<set>, 
+			recman-name => ~$<recman-name>, 
+			option    => $<keyval-option>».made, 
+		)
+	}
+
+
+  method config-cmd:sym<config-module-recman-enable>( $/ ) {
+	  make %(
+      module    => ~$<config-module-recman>,
+			operation => ~$<enable>, 
+			recman-name => ~$<recman-name>, 
+		)
+	}
+
+  method config-cmd:sym<config-module-recman-disable>( $/ ) {
+	  make %(
+      module    => ~$<config-module-recman>,
+			operation => ~$<disable>, 
+			recman-name => ~$<recman-name>, 
+		)
+	}
+
+  method config-cmd:sym<config-module-recman-unset>( $/ ) {
+	  make %(
+      module    => ~$<config-module-recman>,
+			operation => ~$<unset>, 
+			recman-name => ~$<recman-name>, 
+		)
+	}
+
+  method config-cmd:sym<config-module-log-set>( $/ ) {
+	  make %(
+      module    => ~$<config-module-log>,
+			operation => ~$<set>, 
+			log-level => ~$<log-level>, 
+			option => $<log-level-option>».made, 
+		)
+	}
+
+  method config-cmd:sym<config-module-log-unset>( $/ ) {
+	  make %(
+      module    => ~$<config-module-log>,
+			operation => ~$<unset>, 
+			log-level => ~$<log-level>, 
+		)
+	}
+
+  method log-level-option:sym<prefix>( $/ ) { make ( ~$<sym> => ~$<value> ) }
+  method log-level-option:sym<color>( $/ )  { make ( ~$<sym> => ~$<value> ) }
+
+  method key-option( $/ )    { make ~$<key> }
+  method keyval-option( $/ ) { make ( ~$<key> => ~$<value> ) }
 
   method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made               }
   method pakkuopt:sym<async>   ( $/ ) { make $<async>.made                }
