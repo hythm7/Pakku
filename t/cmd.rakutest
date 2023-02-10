@@ -74,11 +74,13 @@ my @tests = (
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
   "config" =>
-    ${:cmd("config"), :config({})},
+    ${:cmd("config"), :config(${:operation("view")})},
   "config new" =>
     ${:cmd("config"), :config(${:operation("new")})},
   "config reset" =>
     ${:cmd("config"), :config(${:operation("reset")})},
+  "config add" =>
+    ${:cmd("config"), :config(${:operation("view"), :module("add")})},
   "config add reset" =>
     ${:cmd("config"), :config(${:module("add"), :operation("reset")})},
   "config add enable test" =>
@@ -107,12 +109,16 @@ my @tests = (
     ${:cmd("config"), :config(${:module("recman"), :recman-name("pakku"), :operation("enable")})},
   "config recman default unset" =>
     ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("unset")})},
+  "config recman reset" =>
+    ${:cmd("config"), :config(${:module("recman"), :operation("reset")})},
   "config recman rea set priority 1 url http://my-recman.com" =>
     ${:cmd("config"), :config(${:module("recman"), :recman-name("rea"), :operation("set"), :option($[:priority("1"), :url("http://my-recman.com")])})},
   "config log debug unset" =>
     ${:cmd("config"), :config(${:module("log"), :log-level("debug"), :operation("unset")})},
   "config log info set prefix INFO: color green" =>
     ${:cmd("config"), :config(${:module("log"), :log-level("info"), :operation("set"), :option($[:prefix("INFO:"), :color("green")])})},
+  "config log reset" =>
+    ${:cmd("config"), :config(${:module("log"), :operation("reset")})},
   "pretty config /tmp/config.json config pakku enable dont" =>
     ${:config(${:module("pakku"), :operation("enable"), :option($["dont"])}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
   "help" =>

@@ -7,6 +7,7 @@ use Pakku::Cache;
 use Pakku::Native;
 use Pakku::Recman;
 use Pakku::Archive;
+use Pakku::Config;
 use Pakku::Grammar::Cmd;
 
 unit role Pakku::Core;
@@ -416,9 +417,6 @@ method new ( ) {
     %cnf =  hashmerge $cnf, %cnf;
 
 	}
-
-
-
 
   self.bless: :%cnf;
 
