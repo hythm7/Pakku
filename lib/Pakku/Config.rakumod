@@ -1,4 +1,5 @@
-#use Pakku::Log;
+use X::Pakku;
+use Pakku::Log;
 
 unit class Pakku::Config;
 
@@ -8,16 +9,35 @@ has $!config-file is built;
 has %!default-config;
 has %!config;
 
+my class Pakku {
 
-multi method configure ( 'new' )   { say 'new';   }
-multi method configure ( 'view' )  { say 'view';  }
-multi method configure ( 'reset' ) { say 'reset'; }
+  has Bool $.pretty;
+  has Bool $.async;
+  has Bool $.recman;
+  has Bool $.cache;
+  has Bool $.yolo;
+  has Bool $.please;
+  has Bool $.dont;
+	has Str()  $.verbose;
 
-multi method configure ( $module, 'view' )  { say "$module view"; }
+}
 
-multi method configure ( $module, 'reset' )  { say "$module reset"; }
+multi method configure ( 'pakku', 'enable', :@option! ) {
 
-multi method configure ( 'pakku',    'enable', :@option! )      { say 'pakku enable';  }
+	self!check-config-file-exists;
+
+	@option
+		==> map( -> $option {  say Pakku.new: |Pair.new( $option, True )."$option"() });
+
+  
+}
+
+
+
+
+# I dont need enable, disable, set, unset here
+# if :opt enable, :!opt disable, opt => 'val', set, "opt" unset
+
 multi method configure ( 'add',      'enable', :@option! )      { say 'add enable';  }
 multi method configure ( 'upgrade',  'enable', :@option! )      { say 'upgrade enable';  }
 multi method configure ( 'remove',   'enable', :@option! )      { say 'remove enable';  }
@@ -63,18 +83,7 @@ multi method configure ( 'download', 'unset', :@option! )      { say 'download u
 multi method configure ( 'recman',   'unset', :$recman-name!, :@option! ) { say "recman $recman-name unset";  }
 multi method configure ( 'log',      'unset', :$log-level!, :@option! ) { say "log $log-level unset";  }
 
-my class Pakku {
 
-  has Bool $.pretty;
-  has Bool $.async;
-  has Bool $.recman;
-  has Bool $.cache;
-  has Bool $.yolo;
-  has Bool $.please;
-  has Bool $.dont;
-	has Str  $.verbose;
-
-}
 
 my class Add {
 
@@ -145,10 +154,106 @@ my class Log {
   has Any $.color;
 }
 
+multi method configure ( $module, 'view' )  {
+
+ 🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+	my $module-json = hash-to-json %!config{ $module };
+
+	out $module-json;
+  
+}
+
+
+multi method configure ( $module, 'reset' )  {
+
+ 🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+	%!config{ $module } = %!default-config{ $module };
+
+	my $module-json = hash-to-json %!config{ $module };
+
+	🐛 CNF ~ "\n" ~ $module-json;
+
+  my Str:D $json = hash-to-json %!config;
+
+	$!config-file.spurt: $json;
+	
+	🧚 CNF ~ "｢$!config-file｣";
+}
+
+multi method configure ( 'reset' ) {
+
+	🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+  my Str:D $json = hash-to-json %!default-config;
+
+	$!config-file.spurt: $json;
+	
+	🐛 CNF ~ "\n" ~ $json;
+
+	🧚 CNF ~ "｢$!config-file｣";
+}
+
+multi method configure ( 'view' )  {
+
+	🐛 CNF ~ "｢$!config-file｣";
+
+	self!check-config-file-exists;
+
+  my Str:D $json = hash-to-json %!config;
+
+  out $json;
+
+}
+
+multi method configure ( 'new' ) {
+
+  🐛 CNF ~ "｢$!config-file｣";
+	
+	if $!config-file.e {
+
+		🐞 CNF ~ "$!config-file Already Exists!";
+
+    die X::Pakku::Cnf.new: cnf => $!config-file; 
+
+  }
+
+  my Str:D $json = hash-to-json %!default-config;
+
+	$!config-file.spurt: $json;
+	
+	🐛 CNF ~ "\n" ~ $json;
+
+	🧚 CNF ~ "｢$!config-file｣";
+}
+
+method !check-config-file-exists ( ) {
+
+	unless $!config-file.e {
+
+		🐞 CNF ~ "$!config-file Does Not Exist!";
+
+    die X::Pakku::Cnf.new: cnf => $!config-file; 
+
+  }
+
+}
+
 
 submethod TWEAK ( ) {
 
-  %!default-config = Rakudo::Internals::JSON.from-json: slurp %?RESOURCES<default-config.json>;
+  %!default-config = json-to-hash slurp %?RESOURCES<default-config.json>;
 
-  %!config = Rakudo::Internals::JSON.from-json: slurp $!config-file if $!config-file.e;
+  %!config = json-to-hash slurp $!config-file if $!config-file.e;
+
 }
+
+sub json-to-hash ( Str:D  $json --> Hash:D ) {  Rakudo::Internals::JSON.from-json: $json;                        }
+sub hash-to-json (        \obj  --> Str:D  ) {  Rakudo::Internals::JSON.to-json:   obj, :pretty, :sorted-keys; }
