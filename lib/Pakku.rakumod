@@ -251,7 +251,7 @@ method config ( *%config ) {
   my @arg;
   my %arg;
 
-	my $module      = %config<module>      if %config<operation>;
+	my $module      = %config<module>      if %config<module>;
 	my $operation   = %config<operation>   if %config<operation>;
 	my $recman-name = %config<recman-name> if %config<recman-name>;
 	my $log-level   = %config<log-level>   if %config<log-level>;

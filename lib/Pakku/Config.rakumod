@@ -18,18 +18,18 @@ my class Pakku {
   has Bool $.yolo;
   has Bool $.please;
   has Bool $.dont;
-	has Str()  $.verbose;
+	has Str  $.verbose;
 
 }
 
-multi method configure ( 'pakku', 'enable', :@option! ) {
+multi method configure ( 'pakku', :@option! ) {
 
 	self!check-config-file-exists;
 
-	@option
-		==> map( -> $option {  say Pakku.new: |Pair.new( $option, True )."$option"() });
+	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless try Pakku.new( |$option ) ~~ $option } );
 
-  
+	@option.map( -> $option { say $option } );
+
 }
 
 
@@ -38,50 +38,50 @@ multi method configure ( 'pakku', 'enable', :@option! ) {
 # I dont need enable, disable, set, unset here
 # if :opt enable, :!opt disable, opt => 'val', set, "opt" unset
 
-multi method configure ( 'add',      'enable', :@option! )      { say 'add enable';  }
-multi method configure ( 'upgrade',  'enable', :@option! )      { say 'upgrade enable';  }
-multi method configure ( 'remove',   'enable', :@option! )      { say 'remove enable';  }
-multi method configure ( 'build',    'enable', :@option! )      { say 'build enable';  }
-multi method configure ( 'test',     'enable', :@option! )      { say 'test enable';  }
-multi method configure ( 'list',     'enable', :@option! )      { say 'list enable';  }
-multi method configure ( 'search',   'enable', :@option! )      { say 'search enable';  }
-multi method configure ( 'download', 'enable', :@option! )      { say 'download enable';  }
-multi method configure ( 'recman',   'enable', :$recman-name! ) { say "recman $recman-name enable";  }
-
-multi method configure ( 'pakku',    'disable', :@option! )      { say 'pakku disable';  }
-multi method configure ( 'add',      'disable', :@option! )      { say 'add disable';  }
-multi method configure ( 'upgrade',  'disable', :@option! )      { say 'upgrade disable';  }
-multi method configure ( 'remove',   'disable', :@option! )      { say 'remove disable';  }
-multi method configure ( 'build',    'disable', :@option! )      { say 'build disable';  }
-multi method configure ( 'test',     'disable', :@option! )      { say 'test disable';  }
-multi method configure ( 'list',     'disable', :@option! )      { say 'list disable';  }
-multi method configure ( 'search',   'disable', :@option! )      { say 'search disable';  }
-multi method configure ( 'download', 'disable', :@option! )      { say 'download disable';  }
-multi method configure ( 'recman',   'disable', :$recman-name! ) { say "recman $recman-name disable";  }
-
-multi method configure ( 'pakku',    'set', :@option! )      { say 'pakku set';  }
-multi method configure ( 'add',      'set', :@option! )      { say 'add set';  }
-multi method configure ( 'upgrade',  'set', :@option! )      { say 'upgrade set';  }
-multi method configure ( 'remove',   'set', :@option! )      { say 'remove set';  }
-multi method configure ( 'build',    'set', :@option! )      { say 'build set';  }
-multi method configure ( 'test',     'set', :@option! )      { say 'test set';  }
-multi method configure ( 'list',     'set', :@option! )      { say 'list set';  }
-multi method configure ( 'search',   'set', :@option! )      { say 'search set';  }
-multi method configure ( 'download', 'set', :@option! )      { say 'download set';  }
-multi method configure ( 'recman',   'set', :$recman-name!, :@option! ) { say "recman $recman-name set";  }
-multi method configure ( 'log',      'set', :$log-level!, :@option! ) { say "log $log-level set";  }
-
-multi method configure ( 'pakku',    'unset', :@option! )      { say 'pakku unset';  }
-multi method configure ( 'add',      'unset', :@option! )      { say 'add unset';  }
-multi method configure ( 'upgrade',  'unset', :@option! )      { say 'upgrade unset';  }
-multi method configure ( 'remove',   'unset', :@option! )      { say 'remove unset';  }
-multi method configure ( 'build',    'unset', :@option! )      { say 'build unset';  }
-multi method configure ( 'test',     'unset', :@option! )      { say 'test unset';  }
-multi method configure ( 'list',     'unset', :@option! )      { say 'list unset';  }
-multi method configure ( 'search',   'unset', :@option! )      { say 'search unset';  }
-multi method configure ( 'download', 'unset', :@option! )      { say 'download unset';  }
-multi method configure ( 'recman',   'unset', :$recman-name!, :@option! ) { say "recman $recman-name unset";  }
-multi method configure ( 'log',      'unset', :$log-level!, :@option! ) { say "log $log-level unset";  }
+#multi method configure ( 'add',      :@option! )      { say 'add enable';  }
+#multi method configure ( 'upgrade',  'enable', :@option! )      { say 'upgrade enable';  }
+#multi method configure ( 'remove',   'enable', :@option! )      { say 'remove enable';  }
+#multi method configure ( 'build',    'enable', :@option! )      { say 'build enable';  }
+#multi method configure ( 'test',     'enable', :@option! )      { say 'test enable';  }
+#multi method configure ( 'list',     'enable', :@option! )      { say 'list enable';  }
+#multi method configure ( 'search',   'enable', :@option! )      { say 'search enable';  }
+#multi method configure ( 'download', 'enable', :@option! )      { say 'download enable';  }
+#multi method configure ( 'recman',   'enable', :$recman-name! ) { say "recman $recman-name enable";  }
+#
+#multi method configure ( 'pakku',    'disable', :@option! )      { say 'pakku disable';  }
+#multi method configure ( 'add',      'disable', :@option! )      { say 'add disable';  }
+#multi method configure ( 'upgrade',  'disable', :@option! )      { say 'upgrade disable';  }
+#multi method configure ( 'remove',   'disable', :@option! )      { say 'remove disable';  }
+#multi method configure ( 'build',    'disable', :@option! )      { say 'build disable';  }
+#multi method configure ( 'test',     'disable', :@option! )      { say 'test disable';  }
+#multi method configure ( 'list',     'disable', :@option! )      { say 'list disable';  }
+#multi method configure ( 'search',   'disable', :@option! )      { say 'search disable';  }
+#multi method configure ( 'download', 'disable', :@option! )      { say 'download disable';  }
+#multi method configure ( 'recman',   'disable', :$recman-name! ) { say "recman $recman-name disable";  }
+#
+#multi method configure ( 'pakku',    'set', :@option! )      { say 'pakku set';  }
+#multi method configure ( 'add',      'set', :@option! )      { say 'add set';  }
+#multi method configure ( 'upgrade',  'set', :@option! )      { say 'upgrade set';  }
+#multi method configure ( 'remove',   'set', :@option! )      { say 'remove set';  }
+#multi method configure ( 'build',    'set', :@option! )      { say 'build set';  }
+#multi method configure ( 'test',     'set', :@option! )      { say 'test set';  }
+#multi method configure ( 'list',     'set', :@option! )      { say 'list set';  }
+#multi method configure ( 'search',   'set', :@option! )      { say 'search set';  }
+#multi method configure ( 'download', 'set', :@option! )      { say 'download set';  }
+#multi method configure ( 'recman',   'set', :$recman-name!, :@option! ) { say "recman $recman-name set";  }
+#multi method configure ( 'log',      'set', :$log-level!, :@option! ) { say "log $log-level set";  }
+#
+#multi method configure ( 'pakku',    'unset', :@option! )      { say 'pakku unset';  }
+#multi method configure ( 'add',      'unset', :@option! )      { say 'add unset';  }
+#multi method configure ( 'upgrade',  'unset', :@option! )      { say 'upgrade unset';  }
+#multi method configure ( 'remove',   'unset', :@option! )      { say 'remove unset';  }
+#multi method configure ( 'build',    'unset', :@option! )      { say 'build unset';  }
+#multi method configure ( 'test',     'unset', :@option! )      { say 'test unset';  }
+#multi method configure ( 'list',     'unset', :@option! )      { say 'list unset';  }
+#multi method configure ( 'search',   'unset', :@option! )      { say 'search unset';  }
+#multi method configure ( 'download', 'unset', :@option! )      { say 'download unset';  }
+#multi method configure ( 'recman',   'unset', :$recman-name!, :@option! ) { say "recman $recman-name unset";  }
+#multi method configure ( 'log',      'unset', :$log-level!, :@option! ) { say "log $log-level unset";  }
 
 
 
@@ -152,6 +152,16 @@ my class Log {
 
   has Str $.level;
   has Any $.color;
+}
+
+multi method configure ( $module, 'view', :@option! )  {
+
+ 🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+	@option.map( -> $option { out hash-to-json %!config{ $module }{ $option } } );
+
 }
 
 multi method configure ( $module, 'view' )  {

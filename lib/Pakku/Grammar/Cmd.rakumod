@@ -21,17 +21,18 @@ grammar Pakku::Grammar::Cmd {
   token config-cmd:sym<config-module-disable>        { <config> <.space> <config-module> <.space>+ <disable> <.space>+ <key-option>+ % <.space> }
   token config-cmd:sym<config-module-set>            { <config> <.space> <config-module> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
   token config-cmd:sym<config-module-unset>          { <config> <.space> <config-module> <.space>+ <unset> <.space>+ <key-option>+ % <.space> }
-  token config-cmd:sym<config-module-reset>          { <config> <.space>+ <config-module-any> <.space>+ <reset> }
   token config-cmd:sym<config-module-recman-set>     { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
   token config-cmd:sym<config-module-recman-enable>  { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <enable> }
   token config-cmd:sym<config-module-recman-disable> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <disable> }
   token config-cmd:sym<config-module-recman-unset>   { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <unset> }
   token config-cmd:sym<config-module-log-set>        { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <set> <.space>+ <log-level-option>+ % <.space> }
   token config-cmd:sym<config-module-log-unset>      { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <unset> }
+  token config-cmd:sym<config-module-reset>          { <config> <.space>+ <config-module-any> <.space>+ <reset> }
+  token config-cmd:sym<config-module-view-option>    { <config> <.space>+ <config-module-any> [ <.space>+ <view> ]? <.space>+  <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-view>           { <config> <.space>+ <config-module-any> [ <.space>+ <view> ]? }
   token config-cmd:sym<config-reset>                 { <config> <.space>+ <reset> }
-  token config-cmd:sym<config-module>                { <config> <.space>+  <config-module-any> }
   token config-cmd:sym<config-new>                   { <config> <.space>+ <config-new> }
-  token config-cmd:sym<config>                       { <config> }
+  token config-cmd:sym<config-view>                  { <config> [ <.space>+  <view> ]? }
 
   proto token config-module { * } 
   token config-module:sym<pakku>    { <sym> }
@@ -69,6 +70,7 @@ grammar Pakku::Grammar::Cmd {
   token set        { 'set'     }
   token unset      { 'unset'   }
   token reset      { 'reset'   }
+  token view       { 'view'   }
   token config-new { 'new'     } # looks like token new is reserved
 
   token recman-name   { <key> }
@@ -578,7 +580,7 @@ class Pakku::Grammar::CmdActions {
   method cmd:sym<help>     ( $/ ) { make 'help'     }
 
 
-  method config-cmd:sym<config>( $/ ) { 
+  method config-cmd:sym<config-view>( $/ ) { 
 	  make %( :operation<view> )
 	}
 
@@ -590,7 +592,7 @@ class Pakku::Grammar::CmdActions {
 	  make %( operation => ~$<reset> )
 	}
 
-  method config-cmd:sym<config-module>( $/ ) {
+  method config-cmd:sym<config-module-view>( $/ ) {
 	  make %( :operation<view>, module => ~$<config-module-any> )
 	}
 
@@ -601,44 +603,48 @@ class Pakku::Grammar::CmdActions {
 		)
 	}
 
+  method config-cmd:sym<config-module-view-option>( $/ ) {
+	  make %(
+      module    => ~$<config-module-any>,
+			operation => 'view',
+			option    => @<key-option>.map( ~* ).Array, 
+		)
+	}
+
   method config-cmd:sym<config-module-unset>( $/ ) {
 	  make %(
       module    => ~$<config-module>,
-			operation => ~$<unset>, 
-			option    => $<key-option>».made, 
+			option    => @<key-option>.map( ~* => Empty ).Array, 
 		)
 	}
 
   method config-cmd:sym<config-module-disable>( $/ ) {
 	  make %(
       module    => ~$<config-module>,
-			operation => ~$<disable>, 
-			option    => $<key-option>».made, 
+			option    => @<key-option>.map( ~* => False ).Array, 
 		)
 	}
 
   method config-cmd:sym<config-module-enable>( $/ ) {
 	  make %(
       module    => ~$<config-module>,
-			operation => ~$<enable>, 
-			option    => $<key-option>».made, 
+			option    => @<key-option>.map( ~* => True ).Array, 
 		)
 	}
 
   method config-cmd:sym<config-module-set>( $/ ) {
 	  make %(
       module    => ~$<config-module>,
-			operation => ~$<set>, 
-			option    => $<keyval-option>».made, 
+			option    => @<keyval-option>.map( { ~.<key> => ~.<value> } ).Array, 
 		)
 	}
 
   method config-cmd:sym<config-module-recman-set>( $/ ) {
 	  make %(
-      module    => ~$<config-module-recman>,
-			operation => ~$<set>, 
+      module      => ~$<config-module-recman>,
+			operation   => ~$<set>, 
 			recman-name => ~$<recman-name>, 
-			option    => $<keyval-option>».made, 
+			option      => @<keyval-option>.map( { ~.<key> => ~.<value> } ).Array, 
 		)
 	}
 
@@ -672,7 +678,7 @@ class Pakku::Grammar::CmdActions {
       module    => ~$<config-module-log>,
 			operation => ~$<set>, 
 			log-level => ~$<log-level>, 
-			option => $<log-level-option>».made, 
+			option    => @<log-level-option>.map( { ~.<sym> => ~.<value> } ).Array, 
 		)
 	}
 
@@ -683,12 +689,6 @@ class Pakku::Grammar::CmdActions {
 			log-level => ~$<log-level>, 
 		)
 	}
-
-  method log-level-option:sym<prefix>( $/ ) { make ( ~$<sym> => ~$<value> ) }
-  method log-level-option:sym<color>( $/ )  { make ( ~$<sym> => ~$<value> ) }
-
-  method key-option( $/ )    { make ~$<key> }
-  method keyval-option( $/ ) { make ( ~$<key> => ~$<value> ) }
 
   method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made               }
   method pakkuopt:sym<async>   ( $/ ) { make $<async>.made                }

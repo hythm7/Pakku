@@ -80,29 +80,33 @@ my @tests = (
   "config reset" =>
     ${:cmd("config"), :config(${:operation("reset")})},
   "config add" =>
-    ${:cmd("config"), :config(${:operation("view"), :module("add")})},
+    ${:cmd("config"), :config(${:module("add"), :operation("view")})},
+  "config add force" =>
+    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option($["force"])})},
+  "config add view reset" =>
+    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option($["reset"])})},
   "config add reset" =>
     ${:cmd("config"), :config(${:module("add"), :operation("reset")})},
   "config add enable test" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("enable"),  :option($["test"])})},
+    ${:cmd("config"), :config(${:module("add"), :option($[:test])})},
   "config add disable test" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("disable"), :option($["test"])})},
+    ${:cmd("config"), :config(${:module("add"), :option($[:!test])})},
   "config add set to home" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("set"), :option($[:to("home")])})},
+    ${:cmd("config"), :config(${:module("add"), :option($[:to("home")])})},
   "config add unset to" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("unset"), :option($["to"])})},
+    ${:cmd("config"), :config(${:module("add"), :option($[:to(Empty)])})},
   "config search set count 7" =>
-    ${:cmd("config"), :config(${:module("search"), :operation("set"), :option($[:count("7")])})},
+    ${:cmd("config"), :config(${:module("search"), :option($[:count("7")])})},
   "config search unset count" =>
-    ${:cmd("config"), :config(${:module("search"), :operation("unset"), :option($["count"])})},
+    ${:cmd("config"), :config(${:module("search"), :option($[:count(Empty)])})},
   "config pakku enable dont" =>
-    ${:cmd("config"), :config(${:module("pakku"), :operation("enable"), :option($["dont"])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option($[:dont])})},
   "config pakku enable pretty please" =>
-    ${:cmd("config"), :config(${:module("pakku"), :operation("enable"), :option($["pretty", "please"])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option($[:pretty, :please])})},
   "config pakku set verbose debug " =>
-    ${:cmd("config"), :config(${:module("pakku"), :operation("set"), :option($[:verbose("debug")])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option($[:verbose("debug")])})},
   "config pakku unset dont verbose async " =>
-    ${:cmd("config"), :config(${:module("pakku"), :operation("unset"), :option($["dont", "verbose", "async"])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option($[:dont(Empty), :verbose(Empty), :async(Empty)])})},
   "config recman default disable" =>
     ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("disable")})},
   "config recman pakku enable" =>
@@ -120,7 +124,7 @@ my @tests = (
   "config log reset" =>
     ${:cmd("config"), :config(${:module("log"), :operation("reset")})},
   "pretty config /tmp/config.json config pakku enable dont" =>
-    ${:config(${:module("pakku"), :operation("enable"), :option($["dont"])}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
+    ${:config(${:module("pakku"), :option($[:dont])}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
   "help" =>
     ${:cmd("help"), :help(${:cmd("")})},
   "help add" =>
