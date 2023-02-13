@@ -41,7 +41,11 @@
   "remove": {
   },
   "recman": [
-    "http://recman.pakku.org"
+		{
+      "name": "pakku",
+      "priority": 1,
+      "url": "http://recman.pakku.org"
+		}
   ],
   "log": {
     "warn": {

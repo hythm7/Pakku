@@ -73,9 +73,9 @@ my class Search {
 
 my class Recman {
 
-  has Str $.name;
-  has Int $.priority;
-  has Str $.url;
+  has Str   $.name;
+  has Str   $.url;
+  has Int() $.priority;
 
 }
 
@@ -102,7 +102,32 @@ has $!config-file is built;
 has %!default-config;
 has %!config;
 
-multi method configure ( $module, :@option! ) {
+multi method configure ( $module, :$recman-name!, Pair:D :@option! ) {
+
+	self!check-config-file-exists;
+
+	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless self."$module"().new( |$option ) ~~ $option } );
+
+	my $index = quietly %!config{ $module }.first( *.<name> eq $recman-name, :k );
+
+	if defined $index {
+
+	  @option.map( -> $option {
+	    %!config{ $module }[ $index ]{ $option.key } = $option.value;
+	  } );
+
+	} else {
+
+	   @option.prepend: ( name => $recman-name );
+
+	   %!config{ $module }.unshift: @option.map( *.Pair ).hash;
+	}
+
+	self!write-config;
+
+}
+
+multi method configure ( $module, Pair:D :@option! ) {
 
 	self!check-config-file-exists;
 
@@ -152,9 +177,7 @@ multi method configure ( $module, 'reset' )  {
 
 	🐛 CNF ~ "\n" ~ $module-json;
 
-  my Str:D $json = hash-to-json %!config;
-
-	$!config-file.spurt: $json;
+	self!write-config;
 	
 	🧚 CNF ~ "｢$!config-file｣";
 }
@@ -166,13 +189,8 @@ multi method configure ( 'reset' ) {
 	self!check-config-file-exists;
 
 	%!config = %!default-config;
-
-  my Str:D $json = hash-to-json %!config;
-
-	$!config-file.spurt: $json;
+	self!write-config;
 	
-	🐛 CNF ~ "\n" ~ $json;
-
 	🧚 CNF ~ "｢$!config-file｣";
 }
 

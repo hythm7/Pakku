@@ -10,13 +10,14 @@ Pakku::Log.new: verbose => 'silent';
 
 my $config-file = $*TMPDIR.add( 'pakku-config.json' ~ now.Num );
 
-my $config = Pakku::Config.new: :$config-file;
-
+my $config = Pakku::Config.new( :$config-file );
+#
 lives-ok { $config.configure( 'new' ) }, 'create new config';
-
+#
 is-deeply json-to-hash(slurp $config-file ), $config.config, 'confirm new config file content';
-
-my @option = :async, :dont;
+#
+$config = Pakku::Config.new( :$config-file );
+my Pair @option = :async, :dont;
 lives-ok { $config.configure( 'pakku', :@option ) }, 'enable option';
 is-deeply json-to-hash(slurp $config-file )<pakku><async dont>, (True, True), 'confirm enable option in config file';
 
@@ -44,14 +45,27 @@ ok json-to-hash(slurp $config-file )<search><count> ~~ 42, 'confirm set Int opti
 
 @option = exclude => ["Dep1", "Dep2"];
 lives-ok { $config.configure( 'add', :@option ) }, 'set Array option';
-ok json-to-hash(slurp $config-file )<add><exclude> ~~ ["Dep1", "Dep2"], 'confirm set Array option in config file';
+is-deeply json-to-hash(slurp $config-file )<add><exclude>, ["Dep1", "Dep2"], 'confirm set Array option in config file';
+
+my $recman-name = 'my-recman';
+@option = priority => 7, url => 'http://my-recman.com';
+lives-ok { $config.configure( 'recman', :$recman-name, :@option ) }, 'add new recman';
+
+@option = priority => 42;
+lives-ok { $config.configure( 'recman', :$recman-name, :@option ) }, 'set recman option';
+ok json-to-hash(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority> ~~ 42, 'confirm set recman option in config file';
+
+$config = Pakku::Config.new( :$config-file );
 
 lives-ok { $config.configure( 'pakku', 'reset' ) }, 'reset config module';
 is-deeply json-to-hash(slurp $config-file )<pakku>, $config.config<pakku>, 'confirm reset module in config file';
+
+$config = Pakku::Config.new( :$config-file );
+
 lives-ok { $config.configure( 'reset' ) }, 'reset config';
 is-deeply json-to-hash(slurp $config-file ), $config.config, 'confirm reset in config file';
 
-#unlink $config-file;
+unlink $config-file;
 
 done-testing;
 
