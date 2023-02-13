@@ -3,12 +3,6 @@ use Pakku::Log;
 
 unit class Pakku::Config;
 
-
-has $!config-file is built;
-
-has %!default-config;
-has %!config;
-
 my class Pakku {
 
   has Bool $.pretty;
@@ -22,90 +16,27 @@ my class Pakku {
 
 }
 
-multi method configure ( 'pakku', :@option! ) {
-
-	self!check-config-file-exists;
-
-	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless try Pakku.new( |$option ) ~~ $option } );
-
-	@option.map( -> $option { say $option } );
-
-}
-
-
-
-
-# I dont need enable, disable, set, unset here
-# if :opt enable, :!opt disable, opt => 'val', set, "opt" unset
-
-#multi method configure ( 'add',      :@option! )      { say 'add enable';  }
-#multi method configure ( 'upgrade',  'enable', :@option! )      { say 'upgrade enable';  }
-#multi method configure ( 'remove',   'enable', :@option! )      { say 'remove enable';  }
-#multi method configure ( 'build',    'enable', :@option! )      { say 'build enable';  }
-#multi method configure ( 'test',     'enable', :@option! )      { say 'test enable';  }
-#multi method configure ( 'list',     'enable', :@option! )      { say 'list enable';  }
-#multi method configure ( 'search',   'enable', :@option! )      { say 'search enable';  }
-#multi method configure ( 'download', 'enable', :@option! )      { say 'download enable';  }
-#multi method configure ( 'recman',   'enable', :$recman-name! ) { say "recman $recman-name enable";  }
-#
-#multi method configure ( 'pakku',    'disable', :@option! )      { say 'pakku disable';  }
-#multi method configure ( 'add',      'disable', :@option! )      { say 'add disable';  }
-#multi method configure ( 'upgrade',  'disable', :@option! )      { say 'upgrade disable';  }
-#multi method configure ( 'remove',   'disable', :@option! )      { say 'remove disable';  }
-#multi method configure ( 'build',    'disable', :@option! )      { say 'build disable';  }
-#multi method configure ( 'test',     'disable', :@option! )      { say 'test disable';  }
-#multi method configure ( 'list',     'disable', :@option! )      { say 'list disable';  }
-#multi method configure ( 'search',   'disable', :@option! )      { say 'search disable';  }
-#multi method configure ( 'download', 'disable', :@option! )      { say 'download disable';  }
-#multi method configure ( 'recman',   'disable', :$recman-name! ) { say "recman $recman-name disable";  }
-#
-#multi method configure ( 'pakku',    'set', :@option! )      { say 'pakku set';  }
-#multi method configure ( 'add',      'set', :@option! )      { say 'add set';  }
-#multi method configure ( 'upgrade',  'set', :@option! )      { say 'upgrade set';  }
-#multi method configure ( 'remove',   'set', :@option! )      { say 'remove set';  }
-#multi method configure ( 'build',    'set', :@option! )      { say 'build set';  }
-#multi method configure ( 'test',     'set', :@option! )      { say 'test set';  }
-#multi method configure ( 'list',     'set', :@option! )      { say 'list set';  }
-#multi method configure ( 'search',   'set', :@option! )      { say 'search set';  }
-#multi method configure ( 'download', 'set', :@option! )      { say 'download set';  }
-#multi method configure ( 'recman',   'set', :$recman-name!, :@option! ) { say "recman $recman-name set";  }
-#multi method configure ( 'log',      'set', :$log-level!, :@option! ) { say "log $log-level set";  }
-#
-#multi method configure ( 'pakku',    'unset', :@option! )      { say 'pakku unset';  }
-#multi method configure ( 'add',      'unset', :@option! )      { say 'add unset';  }
-#multi method configure ( 'upgrade',  'unset', :@option! )      { say 'upgrade unset';  }
-#multi method configure ( 'remove',   'unset', :@option! )      { say 'remove unset';  }
-#multi method configure ( 'build',    'unset', :@option! )      { say 'build unset';  }
-#multi method configure ( 'test',     'unset', :@option! )      { say 'test unset';  }
-#multi method configure ( 'list',     'unset', :@option! )      { say 'list unset';  }
-#multi method configure ( 'search',   'unset', :@option! )      { say 'search unset';  }
-#multi method configure ( 'download', 'unset', :@option! )      { say 'download unset';  }
-#multi method configure ( 'recman',   'unset', :$recman-name!, :@option! ) { say "recman $recman-name unset";  }
-#multi method configure ( 'log',      'unset', :$log-level!, :@option! ) { say "log $log-level unset";  }
-
-
-
 my class Add {
 
-  has Any  $.deps;
   has Bool $.build;
   has Bool $.test;
   has Bool $.xtest;
   has Bool $.force;
   has Bool $.precompile;
-	has Str  $.to;
+  has Any  $.deps;
+  has Str  $.to;
 	has Str  @.exclude;
 
 }
 
 my class Upgrade {
 
-  has Any  $.deps;
   has Bool $.build;
   has Bool $.test;
   has Bool $.xtest;
   has Bool $.force;
   has Bool $.precompile;
+  has Any  $.deps;
 	has Str  $.in;
 	has Str  @.exclude;
 
@@ -135,8 +66,8 @@ my class List {
 
 my class Search {
 
-  has Bool $.details;
-  has Int  $.count;
+  has Bool  $.details;
+  has Int() $.count;
 
 }
 
@@ -152,6 +83,38 @@ my class Log {
 
   has Str $.level;
   has Any $.color;
+}
+
+has Pakku    $.pakku;
+has Add      $.add;
+has Upgrade  $.upgrade;
+has Search   $.search;
+has Remove   $.remove;
+has Build    $.build;
+has Test     $.test;
+has List     $.list;
+has Download $.download;
+has Recman   $.recman;
+has Log      $.log;
+
+has $!config-file is built;
+
+has %!default-config;
+has %!config;
+
+multi method configure ( $module, :@option! ) {
+
+	self!check-config-file-exists;
+
+	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless self."$module"().new( |$option ) ~~ $option } );
+
+	@option.map( -> $option {
+	    %!config{ $module }{ $option.key } = $option.value;
+	  }
+	);
+
+	self!write-config;
+
 }
 
 multi method configure ( $module, 'view', :@option! )  {
@@ -202,7 +165,9 @@ multi method configure ( 'reset' ) {
 	
 	self!check-config-file-exists;
 
-  my Str:D $json = hash-to-json %!default-config;
+	%!config = %!default-config;
+
+  my Str:D $json = hash-to-json %!config;
 
 	$!config-file.spurt: $json;
 	
@@ -235,13 +200,20 @@ multi method configure ( 'new' ) {
 
   }
 
-  my Str:D $json = hash-to-json %!default-config;
+	%!config = %!default-config;
+
+	self!write-config;
+	
+	🧚 CNF ~ "｢$!config-file｣";
+}
+
+method !write-config ( ) {
+
+  my Str:D $json = hash-to-json %!config;
 
 	$!config-file.spurt: $json;
-	
-	🐛 CNF ~ "\n" ~ $json;
 
-	🧚 CNF ~ "｢$!config-file｣";
+	🐛 CNF ~ "\n" ~ $json;
 }
 
 method !check-config-file-exists ( ) {
@@ -256,6 +228,7 @@ method !check-config-file-exists ( ) {
 
 }
 
+method config ( ) { %!config }
 
 submethod TWEAK ( ) {
 
