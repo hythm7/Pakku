@@ -8,7 +8,7 @@ use Pakku::Config;
 Pakku::Log.new: verbose => 'silent';
 #plan 1;
 
-my $config-file = $*TMPDIR.add( 'pakku-config.json' ~ now.Num );
+my $config-file = $*TMPDIR.add( 'pakku-config.json.' ~ now.Num );
 
 my $config = Pakku::Config.new( :$config-file );
 #
@@ -25,7 +25,6 @@ is-deeply json-to-hash(slurp $config-file )<pakku><async dont>, (True, True), 'c
 lives-ok { $config.configure( 'add', :@option ) }, 'disable option';
 ok json-to-hash(slurp $config-file )<add><test> === False, 'confirm disable option in config file';
 
-
 @option = :!deps;
 lives-ok { $config.configure( 'add', :@option ) }, 'disable Bool & Str option';
 ok json-to-hash(slurp $config-file )<add><deps> === False , 'confirm disable Bool & Str option in config file';
@@ -38,8 +37,11 @@ ok json-to-hash(slurp $config-file )<add><deps> ~~ 'test' , 'confirm set Bool & 
 lives-ok { $config.configure( 'add', :@option ) }, 'set option';
 ok json-to-hash(slurp $config-file )<add><to> ~~ 'home', 'confirm set option in config file';
 
+@option = to => Nil;
+lives-ok { $config.configure( 'add', :@option ) }, 'unset option';
+is-deeply json-to-hash(slurp $config-file )<add><to>, Any, 'confirm unset option in config file';
 
-@option = count => 42;
+@option = count => '42';
 lives-ok { $config.configure( 'search', :@option ) }, 'set Int option';
 ok json-to-hash(slurp $config-file )<search><count> ~~ 42, 'confirm set Int option in config file';
 
@@ -49,11 +51,32 @@ is-deeply json-to-hash(slurp $config-file )<add><exclude>, ["Dep1", "Dep2"], 'co
 
 my $recman-name = 'my-recman';
 @option = priority => 7, url => 'http://my-recman.com';
-lives-ok { $config.configure( 'recman', :$recman-name, :@option ) }, 'add new recman';
+lives-ok { $config.configure( 'recman', :$recman-name, :@option ) }, 'set new recman';
 
 @option = priority => 42;
 lives-ok { $config.configure( 'recman', :$recman-name, :@option ) }, 'set recman option';
-ok json-to-hash(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority> ~~ 42, 'confirm set recman option in config file';
+is-deeply json-to-hash(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority>, 42, 'confirm set recman option in config file';
+@option = priority => Nil;
+lives-ok { $config.configure( 'recman', :$recman-name, :@option ) }, 'unset recman option';
+is-deeply json-to-hash(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority>, Any, 'confirm unset recman option in config file';
+
+lives-ok { $config.configure( 'recman', 'unset', :$recman-name ) }, 'unset recman';
+quietly is-deeply json-to-hash(slurp $config-file )<recman>.first(  *.<name> eq $recman-name ), Nil, 'confirm unset recman in config file';
+
+my $log-level = 'debug';
+@option = prefix => 'DEBUG: ', color => 'blue';
+lives-ok { $config.configure( 'log', :$log-level, :@option ) }, 'set new log level';
+
+@option = color => 42;
+lives-ok { $config.configure( 'log', :$log-level, :@option ) }, 'set log level option';
+is-deeply json-to-hash(slurp $config-file )<log>{ $log-level }<color>, 42, 'confirm set log level option in config file';
+
+@option = color => Nil;
+lives-ok { $config.configure( 'log', :$log-level, :@option ) }, 'unset log level option';
+is-deeply json-to-hash(slurp $config-file )<log>{ $log-level }<color>, Any, 'confirm unset log level option in config file';
+
+lives-ok { $config.configure( 'log', 'unset', :$log-level ) }, 'unset log level';
+quietly is-deeply json-to-hash(slurp $config-file )<log>{ $log-level }, Any, 'confirm unset log level in config file';
 
 $config = Pakku::Config.new( :$config-file );
 

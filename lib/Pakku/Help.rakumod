@@ -273,8 +273,8 @@ sub help ( %cmd --> Str:D ) {
 
 sub desc ( $cmd, $desc ) {
 
-  color( "$cmd: \n", MAGENTA ) ~
-  color( $desc, CYAN ) ~ "\n";
+  color( "$cmd: \n", magenta ) ~
+  color( $desc, cyan ) ~ "\n";
 
 }
 
@@ -282,8 +282,8 @@ sub example ( @example ) {
 
   return '' unless any @example;
   "\n" ~
-  color( "Examples:\n", YELLOW ) ~
-  color( @example.join( "\n" ), MAGENTA ) ~ "\n";
+  color( "Examples:\n", yellow ) ~
+  color( @example.join( "\n" ), magenta ) ~ "\n";
 
 }
 
@@ -292,11 +292,11 @@ sub opt ( @opt ) {
   return '' unless any @opt;
   my $indent  = @opt.map( *.key.chars ).max if @opt;
   "\n" ~
-  color( "Options:\n", YELLOW ) ~ 
+  color( "Options:\n", yellow ) ~ 
   @opt.map( {
-    color( .key, GREEN )  ~
-    color( ' → ', YELLOW ).indent( $indent - .key.chars ) ~
-    color( .value, CYAN )
+    color( .key, green )  ~
+    color( ' → ', yellow ).indent( $indent - .key.chars ) ~
+    color( .value, cyan )
   } ).join( "\n" ) ~ "\n";
  
 }

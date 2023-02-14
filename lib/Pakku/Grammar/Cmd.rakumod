@@ -24,9 +24,9 @@ grammar Pakku::Grammar::Cmd {
   token config-cmd:sym<config-module-recman-set>     { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
   token config-cmd:sym<config-module-recman-enable>  { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <enable> }
   token config-cmd:sym<config-module-recman-disable> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <disable> }
-  token config-cmd:sym<config-module-recman-unset>   { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <unset> }
+  token config-cmd:sym<config-module-recman-unset>   { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <unset> [ <.space>+ <key-option>+ % <.space> ]? }
   token config-cmd:sym<config-module-log-set>        { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <set> <.space>+ <log-level-option>+ % <.space> }
-  token config-cmd:sym<config-module-log-unset>      { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <unset> }
+  token config-cmd:sym<config-module-log-unset>      { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <unset> [ <.space>+ <key-option>+ % <.space> ]? }
   token config-cmd:sym<config-module-reset>          { <config> <.space>+ <config-module-any> <.space>+ <reset> }
   token config-cmd:sym<config-module-view-option>    { <config> <.space>+ <config-module-any> [ <.space>+ <view> ]? <.space>+  <key-option>+ % <.space> }
   token config-cmd:sym<config-module-view>           { <config> <.space>+ <config-module-any> [ <.space>+ <view> ]? }
@@ -614,7 +614,7 @@ class Pakku::Grammar::CmdActions {
   method config-cmd:sym<config-module-unset>( $/ ) {
 	  make %(
       module    => ~$<config-module>,
-			option    => @<key-option>.map( ~* => Empty ).Array, 
+			option    => @<key-option>.map( ~* => Nil ).Array, 
 		)
 	}
 
@@ -667,9 +667,10 @@ class Pakku::Grammar::CmdActions {
 
   method config-cmd:sym<config-module-recman-unset>( $/ ) {
 	  make %(
-      module    => ~$<config-module-recman>,
-			operation => ~$<unset>, 
+      module      => ~$<config-module-recman>,
+			operation   => ~$<unset>, 
 			recman-name => ~$<recman-name>, 
+			option      => @<keyval-option>.map( { ~.<key> => Nil } ).Array, 
 		)
 	}
 
@@ -687,6 +688,7 @@ class Pakku::Grammar::CmdActions {
       module    => ~$<config-module-log>,
 			operation => ~$<unset>, 
 			log-level => ~$<log-level>, 
+			option    => @<keyval-option>.map( { ~.<key> => Nil } ).Array, 
 		)
 	}
 

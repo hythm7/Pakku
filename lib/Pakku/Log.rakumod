@@ -93,6 +93,8 @@ enum PRF is export (
   WAI => 'WAI: ',
   TOT => 'TOT: ',
   OLO => 'OLO: ',
+  REC => 'REC: ',
+  LOG => 'LOG: ',
   CNF => 'CNF: ',
   CMD => 'CMD: ',
 
@@ -100,15 +102,15 @@ enum PRF is export (
 
 enum Color is export (
 
-  RESET   =>  0,
-  BLACK   => 30,
-  RED     => 31,
-  GREEN   => 32,
-  YELLOW  => 33,
-  BLUE    => 34,
-  MAGENTA => 35,
-  CYAN    => 36,
-  WHITE   => 37,
+  reset   =>  0,
+  black   => 30,
+  red     => 31,
+  green   => 32,
+  yellow  => 33,
+  blue    => 34,
+  magenta => 35,
+  cyan    => 36,
+  white   => 37,
 
 );
 

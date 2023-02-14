@@ -81,7 +81,7 @@ my class Recman {
 
 my class Log {
 
-  has Str $.level;
+  has Str $.prefix;
   has Any $.color;
 }
 
@@ -102,49 +102,104 @@ has $!config-file is built;
 has %!default-config;
 has %!config;
 
-multi method configure ( $module, :$recman-name!, Pair:D :@option! ) {
+
+multi method configure ( $module, Pair:D :@option!, Str :$recman-name, Str :$log-level ) {
 
 	self!check-config-file-exists;
 
-	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless self."$module"().new( |$option ) ~~ $option } );
+	# smart match against pair
+	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless try self."$module"().new( |$option ) ~~ $option } );
 
-	my $index = quietly %!config{ $module }.first( *.<name> eq $recman-name, :k );
+	my %config-key;
 
-	if defined $index {
+	given $module {
 
-	  @option.map( -> $option {
-	    %!config{ $module }[ $index ]{ $option.key } = $option.value;
-	  } );
+	  when 'recman' {
 
-	} else {
+	    my $index = quietly %!config{ $module }.first( *.<name> eq $recman-name, :k );
 
-	   @option.prepend: ( name => $recman-name );
+	  	if defined $index {
 
-	   %!config{ $module }.unshift: @option.map( *.Pair ).hash;
+        %config-key := %!config{ $module }[ $index ];
+
+	  	} else {
+
+        %!config{ $module }.unshift( { name => $recman-name } ); 
+
+        %config-key := %!config{ $module }[ 0 ];
+
+	  	}
+	  }
+
+		when 'log' { %config-key := %!config{ $module }{ $log-level } }
+
+		default { %config-key := %!config{ $module } }
+
 	}
+
+	@option.map( -> $option {
+
+    my $key   = $option.key;
+    my $value = $option.value; 
+
+    %config-key{ $key } = $value;
+
+    %config-key{ $key }:delete without $value; # remove null values
+
+	} );
 
 	self!write-config;
 
 }
 
-multi method configure ( $module, Pair:D :@option! ) {
+multi method configure ( $module, 'unset', :$recman-name! ) {
+
+  🐛 CNF ~ "｢$!config-file｣";
 
 	self!check-config-file-exists;
 
-	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless self."$module"().new( |$option ) ~~ $option } );
+	my $recman = quietly %!config{ $module }.first( *.<name> eq $recman-name );
 
-	@option.map( -> $option {
-	    %!config{ $module }{ $option.key } = $option.value;
-	  }
-	);
+	unless $recman {
+
+	  🐞 REC ~ "$recman-name Does Not Exist!";
+
+    die X::Pakku::Cnf.new: cnf => $recman-name; 
+
+	}
+
+  %!config{ $module } .= grep( not *.<name> eq $recman-name );
 
 	self!write-config;
 
+	quietly 🐛 CNF ~ $recman;
+
+}
+
+multi method configure ( $module, 'unset', :$log-level! ) {
+
+  🐛 CNF ~ "｢$!config-file｣";
+
+	self!check-config-file-exists;
+
+	unless %!config{ $module }{ $log-level }:exists {
+
+	  🐞 LOG ~ "$log-level Does Not Exist!";
+
+    die X::Pakku::Cnf.new: cnf => $log-level; 
+
+	}
+
+	my $level = %!config{ $module }{ $log-level }:delete;
+
+	self!write-config;
+
+	quietly 🐛 CNF ~ $level;
 }
 
 multi method configure ( $module, 'view', :@option! )  {
 
- 🐛 CNF ~ "｢$!config-file｣";
+  🐛 CNF ~ "｢$!config-file｣";
 	
 	self!check-config-file-exists;
 
@@ -154,11 +209,11 @@ multi method configure ( $module, 'view', :@option! )  {
 
 multi method configure ( $module, 'view' )  {
 
- 🐛 CNF ~ "｢$!config-file｣";
+  🐛 CNF ~ "｢$!config-file｣";
 	
-	self!check-config-file-exists;
+  self!check-config-file-exists;
 
-	my $module-json = hash-to-json %!config{ $module };
+  my $module-json = hash-to-json %!config{ $module };
 
 	out $module-json;
   
