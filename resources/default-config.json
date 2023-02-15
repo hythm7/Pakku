@@ -1,72 +1,70 @@
 {
-  "pakku": {
-    "pretty": true,
-    "async": false,
-    "cache": true,
-    "recman": true,
-    "dont": false,
-    "yolo": false,
-    "please": true,
-    "verbose": "now"
-  },
   "add": {
-    "deps": true,
     "build": true,
-    "test": true,
-    "xtest": false,
-    "force": false,
-    "precomp": true,
-    "to": "site"
-  },
-  "upgrade": {
     "deps": true,
-    "build": true,
-    "test": true,
-    "xtest": false,
     "force": false,
-    "precomp": true,
-    "in": false
-  },
-  "search": {
-    "count": 7,
-    "details": false
+    "precompile": true,
+    "test": true,
+    "to": "site",
+    "xtest": false
   },
   "list": {
+    "details": false
+  },
+  "log": {
+    "debug": {
+      "color": "green",
+      "prefix": "🐛"
+    },
+    "error": {
+      "color": "red",
+      "prefix": "🦗"
+    },
+    "info": {
+      "color": "magenta",
+      "prefix": "🧚"
+    },
+    "now": {
+      "color": "cyan",
+      "prefix": "🦋"
+    },
+    "warn": {
+      "color": "yellow",
+      "prefix": "🦋"
+    }
+  },
+  "pakku": {
+    "async": false,
+    "cache": true,
+    "dont": false,
+    "please": true,
+    "pretty": true,
+    "recman": true,
+    "verbose": "now",
+    "yolo": false
+  },
+  "recman": [
+    {
+      "active": true,
+      "name": "pakku",
+      "priority": 1,
+      "url": "http://recman.pakku.org"
+    }
+  ],
+  "search": {
+    "count": 42,
     "details": false
   },
   "test": {
     "build": true,
     "xtest": false
   },
-  "remove": {
-  },
-  "recman": [
-		{
-      "name": "pakku",
-      "priority": 1,
-      "url": "http://recman.pakku.org"
-		}
-  ],
-  "log": {
-    "warn": {
-      "color": 33,
-      "prefix": "🐞"
-    },
-    "info": {
-      "color": 35,
-      "prefix": "🧚"
-    },
-    "debug": {
-      "prefix": "🐛",
-      "color": 32
-    },
-    "error": {
-      "prefix": "🦗",
-      "color": 31
-    },
-    "now": {
-      "color": 36,
-      "prefix": "🦋"
-    }
+  "upgrade": {
+    "build": true,
+    "deps": true,
+    "force": false,
+    "precompile": true,
+    "test": true,
+    "xtest": false
   }
 }

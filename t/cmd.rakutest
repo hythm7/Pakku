@@ -82,31 +82,31 @@ my @tests = (
   "config add" =>
     ${:cmd("config"), :config(${:module("add"), :operation("view")})},
   "config add force" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option($["force"])})},
+    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option(Array[Str].new("force"))})},
   "config add view reset" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option($["reset"])})},
+    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option(Array[Str].new("reset"))})},
   "config add reset" =>
     ${:cmd("config"), :config(${:module("add"), :operation("reset")})},
   "config add enable test" =>
-    ${:cmd("config"), :config(${:module("add"), :option($[:test])})},
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("test" => Bool::True))})},
   "config add disable test" =>
-    ${:cmd("config"), :config(${:module("add"), :option($[:!test])})},
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("test" => Bool::False))})},
   "config add set to home" =>
-    ${:cmd("config"), :config(${:module("add"), :option($[:to("home")])})},
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("to" => "home"))})},
   "config add unset to" =>
-    ${:cmd("config"), :config(${:module("add"), :option($[:to(Empty)])})},
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("to" => Nil))})},
   "config search set count 7" =>
-    ${:cmd("config"), :config(${:module("search"), :option($[:count("7")])})},
+    ${:cmd("config"), :config(${:module("search"), :option(Array[Pair].new("count" => "7"))})},
   "config search unset count" =>
-    ${:cmd("config"), :config(${:module("search"), :option($[:count(Empty)])})},
+    ${:cmd("config"), :config(${:module("search"), :option(Array[Pair].new("count" => Nil))})},
   "config pakku enable dont" =>
-    ${:cmd("config"), :config(${:module("pakku"),  :option($[:dont])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("dont" => Bool::True))})},
   "config pakku enable pretty please" =>
-    ${:cmd("config"), :config(${:module("pakku"),  :option($[:pretty, :please])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("pretty" => Bool::True, "please" => Bool::True))})},
   "config pakku set verbose debug " =>
-    ${:cmd("config"), :config(${:module("pakku"),  :option($[:verbose("debug")])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("verbose" => "debug"))})},
   "config pakku unset dont verbose async " =>
-    ${:cmd("config"), :config(${:module("pakku"),  :option($[:dont(Empty), :verbose(Empty), :async(Empty)])})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("dont" => Nil, "verbose" => Nil, "async" => Nil))})},
   "config recman default disable" =>
     ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("disable")})},
   "config recman pakku enable" =>
@@ -116,7 +116,7 @@ my @tests = (
   "config recman reset" =>
     ${:cmd("config"), :config(${:module("recman"), :operation("reset")})},
   "config recman rea set priority 1 url http://my-recman.com" =>
-    ${:cmd("config"), :config(${:module("recman"), :recman-name("rea"), :operation("set"), :option($[:priority("1"), :url("http://my-recman.com")])})},
+    ${:cmd("config"), :config(${:module("recman"), :recman-name("rea"), :option(Array[Pair].new("priority" => "1", "url" => "http://my-recman.com")), :recman-name("rea")})},
   "config log debug unset" =>
     ${:cmd("config"), :config(${:module("log"), :log-level("debug"), :operation("unset")})},
   "config log info set prefix INFO: color green" =>
@@ -124,7 +124,7 @@ my @tests = (
   "config log reset" =>
     ${:cmd("config"), :config(${:module("log"), :operation("reset")})},
   "pretty config /tmp/config.json config pakku enable dont" =>
-    ${:config(${:module("pakku"), :option($[:dont])}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
+    ${:config(${:module("pakku"), :option(Array[Pair].new("dont" => Bool::True))}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
   "help" =>
     ${:cmd("help"), :help(${:cmd("")})},
   "help add" =>

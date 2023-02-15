@@ -12,7 +12,7 @@ has @!url  = 'http://recman.pakku.org';
 
 submethod BUILD ( :@recman ) {
 
-  @!url = @recman.grep( *.value.<enabled> ).sort( *.value.<priority> ) if @recman; 
+  @!url = @recman.grep( *.value.<active> ).sort( *.value.<priority> ) if @recman; 
   
 }
 

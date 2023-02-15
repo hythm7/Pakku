@@ -17,22 +17,28 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token config-cmd { * } 
-  token config-cmd:sym<config-module-enable>         { <config> <.space> <config-module> <.space>+ <enable> <.space>+ <key-option>+ % <.space> }
-  token config-cmd:sym<config-module-disable>        { <config> <.space> <config-module> <.space>+ <disable> <.space>+ <key-option>+ % <.space> }
-  token config-cmd:sym<config-module-set>            { <config> <.space> <config-module> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
-  token config-cmd:sym<config-module-unset>          { <config> <.space> <config-module> <.space>+ <unset> <.space>+ <key-option>+ % <.space> }
-  token config-cmd:sym<config-module-recman-set>     { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
-  token config-cmd:sym<config-module-recman-enable>  { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <enable> }
-  token config-cmd:sym<config-module-recman-disable> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <disable> }
-  token config-cmd:sym<config-module-recman-unset>   { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <unset> [ <.space>+ <key-option>+ % <.space> ]? }
-  token config-cmd:sym<config-module-log-set>        { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <set> <.space>+ <log-level-option>+ % <.space> }
-  token config-cmd:sym<config-module-log-unset>      { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <unset> [ <.space>+ <key-option>+ % <.space> ]? }
-  token config-cmd:sym<config-module-reset>          { <config> <.space>+ <config-module-any> <.space>+ <reset> }
-  token config-cmd:sym<config-module-view-option>    { <config> <.space>+ <config-module-any> [ <.space>+ <view> ]? <.space>+  <key-option>+ % <.space> }
-  token config-cmd:sym<config-module-view>           { <config> <.space>+ <config-module-any> [ <.space>+ <view> ]? }
-  token config-cmd:sym<config-reset>                 { <config> <.space>+ <reset> }
-  token config-cmd:sym<config-new>                   { <config> <.space>+ <config-new> }
-  token config-cmd:sym<config-view>                  { <config> [ <.space>+  <view> ]? }
+  token config-cmd:sym<config-module-enable>           { <config> <.space> <config-module> <.space>+ <enable> <.space>+ <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-disable>          { <config> <.space> <config-module> <.space>+ <disable> <.space>+ <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-set>              { <config> <.space> <config-module> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
+  token config-cmd:sym<config-module-unset-option>     { <config> <.space> <config-module> <.space>+ <unset> <.space>+ <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-recman-set>       { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <set> <.space>+ <keyval-option>+ % <.space> }
+  token config-cmd:sym<config-module-recman-enable>    { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <enable> }
+  token config-cmd:sym<config-module-recman-disable>   { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <disable> }
+  token config-cmd:sym<config-module-recman-unset>     { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> <.space>+ <unset> }
+  token config-cmd:sym<config-module-log-set>          { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <set> <.space>+ <log-level-option>+ % <.space> }
+  token config-cmd:sym<config-module-log-unset>        { <config> <.space>+ <config-module-log> <.space>+ <log-level> <.space>+ <unset> }
+  token config-cmd:sym<config-module-reset>            { <config> <.space>+ <config-module-any> <.space>+ <reset> }
+  token config-cmd:sym<config-module-unset>            { <config> <.space>+ <config-module-any> <.space>+ <unset> }
+
+  token config-cmd:sym<config-recman-name-view-option> { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> [ <.space>+ <view> ]? <.space>+  <key-option>+ % <.space> }
+  token config-cmd:sym<config-log-level-view-option>   { <config> <.space>+ <config-module-log> <.space>+ <log-level> [ <.space>+ <view> ]? <.space>+  <key-option>+ % <.space> }
+  token config-cmd:sym<config-recman-name-view>        { <config> <.space>+ <config-module-recman> <.space>+ <recman-name> [ <.space>+ <view> ]? }
+  token config-cmd:sym<config-log-level-view>          { <config> <.space>+ <config-module-log> <.space>+ <log-level> [ <.space>+ <view> ]? }
+  token config-cmd:sym<config-module-view-option>      { <config> <.space>+ <config-module> [ <.space>+ <view> ]? <.space>+  <key-option>+ % <.space> }
+  token config-cmd:sym<config-module-view>             { <config> <.space>+ <config-module-any> [ <.space>+ <view> ]? }
+  token config-cmd:sym<config-reset>                   { <config> <.space>+ <reset> }
+  token config-cmd:sym<config-new>                     { <config> <.space>+ <config-new> }
+  token config-cmd:sym<config-view>                    { <config> [ <.space>+  <view> ]? }
 
   proto token config-module { * } 
   token config-module:sym<pakku>    { <sym> }
@@ -53,14 +59,6 @@ grammar Pakku::Grammar::Cmd {
   token config-module-any:sym<recman> { <config-module-recman> }
   token config-module-any:sym<log>    { <config-module-log> }
 
-#  token module-add      { 'add'      }
-#  token module-upgrade  { 'upgrade'  }
-#  token module-remove   { 'remove'   }
-#  token module-build    { 'build'    }
-#  token module-test     { 'test'     }
-#  token module-list     { 'list'     }
-#  token module-search   { 'search'   }
-#  token module-download { 'download' }
 
   token module-recman   { 'recman'   }
   token module-log      { 'log'      }
@@ -603,64 +601,132 @@ class Pakku::Grammar::CmdActions {
 		)
 	}
 
-  method config-cmd:sym<config-module-view-option>( $/ ) {
+  method config-cmd:sym<config-module-unset>( $/ ) {
 	  make %(
-      module    => ~$<config-module-any>,
-			operation => 'view',
-			option    => @<key-option>.map( ~* ).Array, 
+		  module    => ~$<config-module-any>,
+			operation => ~$<unset>,
 		)
 	}
 
-  method config-cmd:sym<config-module-unset>( $/ ) {
+  method config-cmd:sym<config-recman-name-view-option>( $/ ) {
+
+		my Str @option = @<key-option>.map( ~* ); 
+
+	  make %(
+      module    => ~$<config-module-recman>,
+			operation => 'view',
+			recman-name => ~$<recman-name>,
+		  :@option,
+		)
+	}
+
+  method config-cmd:sym<config-log-level-view-option>( $/ ) {
+
+		my Str @option = @<key-option>.map( ~* ); 
+
+	  make %(
+      module    => ~$<config-module-log>,
+			operation => 'view',
+			log-level => ~$<log-level>,
+		  :@option,
+		)
+	}
+
+  method config-cmd:sym<config-recman-name-view>( $/ ) {
+
+	  make %(
+      module    => ~$<config-module-recman>,
+			operation => 'view',
+			recman-name => ~$<recman-name>,
+		)
+	}
+
+  method config-cmd:sym<config-log-level-view>( $/ ) {
+
+	  make %(
+      module    => ~$<config-module-log>,
+			operation => 'view',
+			log-level => ~$<log-level>,
+		)
+	}
+
+
+
+  method config-cmd:sym<config-module-view-option>( $/ ) {
+
+		my Str @option = @<key-option>.map( ~* ); 
+
 	  make %(
       module    => ~$<config-module>,
-			option    => @<key-option>.map( ~* => Nil ).Array, 
+			operation => 'view',
+		  :@option,
+		)
+	}
+
+  method config-cmd:sym<config-module-unset-option>( $/ ) {
+
+		my Pair @option = @<key-option>.map( ~* => Nil ); 
+
+	  make %(
+      module    => ~$<config-module>,
+			:@option,
 		)
 	}
 
   method config-cmd:sym<config-module-disable>( $/ ) {
+
+		my Pair @option = @<key-option>.map( ~* => False ); 
+
 	  make %(
       module    => ~$<config-module>,
-			option    => @<key-option>.map( ~* => False ).Array, 
+			:@option,
 		)
 	}
 
   method config-cmd:sym<config-module-enable>( $/ ) {
+
+		my Pair @option = @<key-option>.map( ~* => True ); 
+
 	  make %(
       module    => ~$<config-module>,
-			option    => @<key-option>.map( ~* => True ).Array, 
+			:@option,
 		)
 	}
 
   method config-cmd:sym<config-module-set>( $/ ) {
+
+		my Pair @option = @<keyval-option>.map( { ~.<key> => ~.<value> } ); 
+
 	  make %(
       module    => ~$<config-module>,
-			option    => @<keyval-option>.map( { ~.<key> => ~.<value> } ).Array, 
+			:@option,
 		)
 	}
 
   method config-cmd:sym<config-module-recman-set>( $/ ) {
+
+		my Pair @option = @<keyval-option>.map( { ~.<key> => ~.<value> } ); 
+
 	  make %(
       module      => ~$<config-module-recman>,
-			operation   => ~$<set>, 
 			recman-name => ~$<recman-name>, 
-			option      => @<keyval-option>.map( { ~.<key> => ~.<value> } ).Array, 
+			:@option,
 		)
 	}
 
 
   method config-cmd:sym<config-module-recman-enable>( $/ ) {
 	  make %(
-      module    => ~$<config-module-recman>,
-			operation => ~$<enable>, 
+      module      => ~$<config-module-recman>,
+			operation   => ~$<enable>, 
 			recman-name => ~$<recman-name>, 
 		)
 	}
 
   method config-cmd:sym<config-module-recman-disable>( $/ ) {
 	  make %(
-      module    => ~$<config-module-recman>,
-			operation => ~$<disable>, 
+      module      => ~$<config-module-recman>,
+			operation   => ~$<disable>, 
 			recman-name => ~$<recman-name>, 
 		)
 	}
@@ -670,7 +736,6 @@ class Pakku::Grammar::CmdActions {
       module      => ~$<config-module-recman>,
 			operation   => ~$<unset>, 
 			recman-name => ~$<recman-name>, 
-			option      => @<keyval-option>.map( { ~.<key> => Nil } ).Array, 
 		)
 	}
 
@@ -688,7 +753,6 @@ class Pakku::Grammar::CmdActions {
       module    => ~$<config-module-log>,
 			operation => ~$<unset>, 
 			log-level => ~$<log-level>, 
-			option    => @<keyval-option>.map( { ~.<key> => Nil } ).Array, 
 		)
 	}
 

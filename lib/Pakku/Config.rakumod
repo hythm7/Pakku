@@ -56,12 +56,14 @@ my class Test {
 
   has Bool $.build;
   has Bool $.xtest;
+
 }
 
 my class List {
 
   has Bool $.details;
   has Str  $.repo;
+
 }
 
 my class Search {
@@ -76,6 +78,7 @@ my class Recman {
   has Str   $.name;
   has Str   $.url;
   has Int() $.priority;
+  has Bool  $.active;
 
 }
 
@@ -83,6 +86,7 @@ my class Log {
 
   has Str $.prefix;
   has Any $.color;
+
 }
 
 has Pakku    $.pakku;
@@ -97,43 +101,64 @@ has Download $.download;
 has Recman   $.recman;
 has Log      $.log;
 
-has $!config-file is built;
+has $!config-file;
 
-has %!default-config;
-has %!config;
+has %!default-configuration;
+has %!configuration;
 
 
-multi method configure ( $module, Pair:D :@option!, Str :$recman-name, Str :$log-level ) {
+multi method config ( Str:D $module, Pair:D :@option!, Str :$recman-name, Str :$log-level ) {
+
+  🐛 CNF ~ "｢$!config-file｣";
 
 	self!check-config-file-exists;
 
 	# smart match against pair
-	@option.map( -> $option { die X::Pakku::Cnf.new( cnf => $option ) unless try self."$module"().new( |$option ) ~~ $option } );
+	@option.map( -> $option {
+
+	  unless try self."$module"().new( |$option ) ~~ $option {
+
+		🐞 CNF ~ "｢{ hash-to-json $option, :!pretty }｣ invalid option";
+
+	    die X::Pakku::Cnf.new( cnf => "$module" );
+	  }
+
+	} );
 
 	my %config-key;
+
+	🦋 CNF ~ "｢$module｣";
 
 	given $module {
 
 	  when 'recman' {
 
-	    my $index = quietly %!config{ $module }.first( *.<name> eq $recman-name, :k );
+      🦋 REC  ~ "｢$recman-name｣";
+
+	    my $index = quietly %!configuration{ $module }.first( *.<name> eq $recman-name, :k );
 
 	  	if defined $index {
 
-        %config-key := %!config{ $module }[ $index ];
+        %config-key := %!configuration{ $module }[ $index ];
 
 	  	} else {
 
-        %!config{ $module }.unshift( { name => $recman-name } ); 
+        %!configuration{ $module }.unshift( { name => $recman-name, :active } ); 
 
-        %config-key := %!config{ $module }[ 0 ];
+        %config-key := %!configuration{ $module }[ 0 ];
 
 	  	}
 	  }
 
-		when 'log' { %config-key := %!config{ $module }{ $log-level } }
+		when 'log' {
 
-		default { %config-key := %!config{ $module } }
+      🦋 LOG  ~ "｢$log-level｣";
+
+		  %config-key := %!configuration{ $module }{ $log-level }
+
+		}
+
+		default { %config-key := %!configuration{ $module } }
 
 	}
 
@@ -146,134 +171,259 @@ multi method configure ( $module, Pair:D :@option!, Str :$recman-name, Str :$log
 
     %config-key{ $key }:delete without $value; # remove null values
 
+    🦋 CNF ~ "｢{ hash-to-json $option, :!pretty }｣";
+
 	} );
 
 	self!write-config;
 
 }
 
-multi method configure ( $module, 'unset', :$recman-name! ) {
+multi method config ( Str:D $module, 'unset', :$recman-name! ) {
 
   🐛 CNF ~ "｢$!config-file｣";
 
 	self!check-config-file-exists;
 
-	my $recman = quietly %!config{ $module }.first( *.<name> eq $recman-name );
+	my $recman = quietly %!configuration{ $module }.first( *.<name> eq $recman-name );
 
-	unless $recman {
+	🐞 LOG ~ "｢$recman-name｣ does not exist!" unless $recman;
 
-	  🐞 REC ~ "$recman-name Does Not Exist!";
+	quietly 🦋 CNF ~ "｢$recman-name｣" ~ "\n" ~ hash-to-json $recman with $recman;
 
-    die X::Pakku::Cnf.new: cnf => $recman-name; 
-
-	}
-
-  %!config{ $module } .= grep( not *.<name> eq $recman-name );
+  %!configuration{ $module } .= grep( not *.<name> eq $recman-name );
 
 	self!write-config;
 
-	quietly 🐛 CNF ~ $recman;
+}
+
+multi method config ( Str:D $module, 'enable', :$recman-name! ) {
+
+  my Pair @option = :active;
+
+	samewith $module, :@option, :$recman-name;
 
 }
 
-multi method configure ( $module, 'unset', :$log-level! ) {
+multi method config ( Str:D $module, 'disable', :$recman-name! ) {
+
+  my Pair @option = :!active;
+
+	samewith $module, :$recman-name, :@option;
+
+}
+
+
+multi method config ( Str:D $module, 'unset', :$log-level! ) {
 
   🐛 CNF ~ "｢$!config-file｣";
 
 	self!check-config-file-exists;
 
-	unless %!config{ $module }{ $log-level }:exists {
 
-	  🐞 LOG ~ "$log-level Does Not Exist!";
+	🐞 LOG ~ "｢$log-level｣ does not exist!" unless %!configuration{ $module }{ $log-level }:exists;
 
-    die X::Pakku::Cnf.new: cnf => $log-level; 
+  my $level = %!configuration{ $module }{ $log-level }:delete;
 
-	}
-
-	my $level = %!config{ $module }{ $log-level }:delete;
+	quietly 🦋 CNF ~ "｢$log-level｣" ~ "\n" ~ hash-to-json $level with $level;
 
 	self!write-config;
-
-	quietly 🐛 CNF ~ $level;
 }
 
-multi method configure ( $module, 'view', :@option! )  {
+multi method config ( Str:D $module, 'view', Str :$recman-name!, Str :@option! )  {
 
   🐛 CNF ~ "｢$!config-file｣";
 	
 	self!check-config-file-exists;
 
-	@option.map( -> $option { out hash-to-json %!config{ $module }{ $option } } );
+	🦋 CNF ~ "｢$module｣";
+
+	my $recman = quietly %!configuration{ $module }.first( *.<name> eq $recman-name );
+
+  if $recman {
+
+	  🦋 REC ~ "｢$recman-name｣";
+
+	  @option.map( -> $option { out hash-to-json $recman{ $option }:p } );
+
+  } else {
+
+	  🐞 REC ~ "｢$recman-name｣ does not exist!";
+
+  }
 
 }
 
-multi method configure ( $module, 'view' )  {
+multi method config ( Str:D $module, 'view', Str :$recman-name! )  {
 
   🐛 CNF ~ "｢$!config-file｣";
 	
+	self!check-config-file-exists;
+
+	🦋 CNF ~ "｢$module｣";
+
+	my $recman = quietly %!configuration{ $module }.first( *.<name> eq $recman-name );
+
+  if $recman {
+
+	  🦋 REC ~ "｢$recman-name｣";
+
+    my Str $json = hash-to-json $recman;
+
+    out $json;
+
+  } else {
+
+	  🐞 REC ~ "｢$recman-name｣ does not exist!";
+
+  }
+
+}
+
+multi method config ( Str:D $module, 'view', Str :$log-level!, Str :@option! )  {
+
+  🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+	🦋 CNF ~ "｢$module｣";
+
+	my $level = quietly %!configuration{ $module }{ $log-level };
+
+  if $level {
+
+	  🦋 LOG ~ "｢$level｣";
+
+	  @option.map( -> $option { out hash-to-json $level{ $option }:p } );
+
+  } else {
+
+	  🐞 LOG ~ "｢$log-level｣ does not exist!";
+
+  }
+
+}
+
+multi method config ( Str:D $module, 'view', Str :$log-level! )  {
+
+  🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+	🦋 CNF ~ "｢$module｣";
+
+	my $level = quietly %!configuration{ $module }{ $log-level };
+
+  if $level {
+
+	  🦋 LOG ~ "｢$log-level｣";
+
+    my Str $json = hash-to-json $level;
+
+    out $json;
+
+  } else {
+
+	  🐞 LOG ~ "｢$log-level｣ does not exist!";
+
+  }
+
+}
+
+multi method config ( Str:D $module, 'view', Str :@option! )  {
+
+  🐛 CNF ~ "｢$!config-file｣";
+
   self!check-config-file-exists;
 
-  my $module-json = hash-to-json %!config{ $module };
+  🦋 CNF ~ "｢$module｣";
 
-	out $module-json;
-  
+	@option.map( -> $option { out hash-to-json %!configuration{ $module }{ $option }:p } );
+
 }
 
+multi method config ( Str:D $module, 'view'  )  {
 
-multi method configure ( $module, 'reset' )  {
+  🐛 CNF ~ "｢$!config-file｣";
 
- 🐛 CNF ~ "｢$!config-file｣";
-	
-	self!check-config-file-exists;
+  self!check-config-file-exists;
 
-	%!config{ $module } = %!default-config{ $module };
+  🦋 CNF ~ "｢$module｣";
 
-	my $module-json = hash-to-json %!config{ $module };
-
-	🐛 CNF ~ "\n" ~ $module-json;
-
-	self!write-config;
-	
-	🧚 CNF ~ "｢$!config-file｣";
-}
-
-multi method configure ( 'reset' ) {
-
-	🐛 CNF ~ "｢$!config-file｣";
-	
-	self!check-config-file-exists;
-
-	%!config = %!default-config;
-	self!write-config;
-	
-	🧚 CNF ~ "｢$!config-file｣";
-}
-
-multi method configure ( 'view' )  {
-
-	🐛 CNF ~ "｢$!config-file｣";
-
-	self!check-config-file-exists;
-
-  my Str:D $json = hash-to-json %!config;
+  my Str $json = hash-to-json %!configuration{ $module };
 
   out $json;
 
 }
 
-multi method configure ( 'new' ) {
+
+multi method config ( Str:D $module, 'reset' )  {
+
+ 🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+	%!configuration{ $module } = %!default-configuration{ $module };
+
+	my Str $json = hash-to-json %!configuration{ $module };
+
+	🦋 CNF ~ "｢$module｣" ~ "\n" ~ $json;
+
+	self!write-config;
+	
+}
+
+multi method config ( Str:D $module, 'unset' )  {
+
+ 🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+  my Str $json = hash-to-json %!configuration{ $module }:delete;
+
+	🦋 CNF ~ "｢$module｣" ~ "\n" ~ $json;
+
+	self!write-config;
+	
+}
+
+multi method config ( 'reset' ) {
+
+	🐛 CNF ~ "｢$!config-file｣";
+	
+	self!check-config-file-exists;
+
+	%!configuration = %!default-configuration;
+
+	self!write-config;
+	
+}
+
+multi method config ( 'view' )  {
+
+	🐛 CNF ~ "｢$!config-file｣";
+
+	self!check-config-file-exists;
+
+  my Str $json = hash-to-json %!configuration;
+
+  out $json;
+
+}
+
+multi method config ( 'new' ) {
 
   🐛 CNF ~ "｢$!config-file｣";
 	
 	if $!config-file.e {
 
-		🐞 CNF ~ "$!config-file Already Exists!";
+		🐞 CNF ~ "｢$!config-file｣ already exists!";
 
     die X::Pakku::Cnf.new: cnf => $!config-file; 
 
   }
 
-	%!config = %!default-config;
+	%!configuration = %!default-configuration;
 
 	self!write-config;
 	
@@ -282,7 +432,7 @@ multi method configure ( 'new' ) {
 
 method !write-config ( ) {
 
-  my Str:D $json = hash-to-json %!config;
+  my Str:D $json = hash-to-json %!configuration;
 
 	$!config-file.spurt: $json;
 
@@ -293,7 +443,7 @@ method !check-config-file-exists ( ) {
 
 	unless $!config-file.e {
 
-		🐞 CNF ~ "$!config-file Does Not Exist!";
+		🐞 CNF ~ "｢$!config-file｣ does not exist!";
 
     die X::Pakku::Cnf.new: cnf => $!config-file; 
 
@@ -301,15 +451,16 @@ method !check-config-file-exists ( ) {
 
 }
 
-method config ( ) { %!config }
+method configuration ( ) { %!configuration }
 
-submethod TWEAK ( ) {
+submethod BUILD ( IO :$!config-file! ) {
 
-  %!default-config = json-to-hash slurp %?RESOURCES<default-config.json>;
+  %!default-configuration = json-to-hash slurp %?RESOURCES<default-config.json>;
 
-  %!config = json-to-hash slurp $!config-file if $!config-file.e;
+  %!configuration = json-to-hash slurp $!config-file if $!config-file.e;
 
 }
 
-sub json-to-hash ( Str:D  $json --> Hash:D ) {  Rakudo::Internals::JSON.from-json: $json;                        }
-sub hash-to-json (        \obj  --> Str:D  ) {  Rakudo::Internals::JSON.to-json:   obj, :pretty, :sorted-keys; }
+sub json-to-hash ( Str $json --> Hash:D ) { Rakudo::Internals::JSON.from-json: $json }
+
+sub hash-to-json ( \obj, :$pretty = True  --> Str:D ) { Rakudo::Internals::JSON.to-json: obj, :$pretty, :sorted-keys; }

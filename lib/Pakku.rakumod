@@ -264,7 +264,7 @@ method config ( *%config ) {
 	%arg<log-level>   =  $log-level   if $log-level; 
 	%arg<option>      =  $option      if $option; 
 
-	Pakku::Config.new( config-file => %!cnf<pakku><config> ).configure( |@arg, |%arg );
+	Pakku::Config.new( config-file => %!cnf<pakku><config> ).config( |@arg, |%arg );
 
   ofun;
 
