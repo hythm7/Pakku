@@ -118,7 +118,7 @@ multi method config ( Str:D $module, Pair:D :@option!, Str :$recman-name, Str :$
 
 	  unless try self."$module"().new( |$option ) ~~ $option {
 
-		🐞 CNF ~ "｢{ hash-to-json $option, :!pretty }｣ invalid option";
+		🐞 CNF ~ "｢{ to-json $option, :!pretty }｣ invalid option";
 
 	    die X::Pakku::Cnf.new( cnf => "$module" );
 	  }
@@ -171,7 +171,7 @@ multi method config ( Str:D $module, Pair:D :@option!, Str :$recman-name, Str :$
 
     %config-key{ $key }:delete without $value; # remove null values
 
-    🦋 CNF ~ "｢{ hash-to-json $option, :!pretty }｣";
+    🦋 CNF ~ "｢{ to-json $option, :!pretty }｣";
 
 	} );
 
@@ -189,7 +189,7 @@ multi method config ( Str:D $module, 'unset', :$recman-name! ) {
 
 	🐞 LOG ~ "｢$recman-name｣ does not exist!" unless $recman;
 
-	quietly 🦋 CNF ~ "｢$recman-name｣" ~ "\n" ~ hash-to-json $recman with $recman;
+	quietly 🦋 CNF ~ "｢$recman-name｣" ~ "\n" ~ to-json $recman with $recman;
 
   %!configuration{ $module } .= grep( not *.<name> eq $recman-name );
 
@@ -225,7 +225,7 @@ multi method config ( Str:D $module, 'unset', :$log-level! ) {
 
   my $level = %!configuration{ $module }{ $log-level }:delete;
 
-	quietly 🦋 CNF ~ "｢$log-level｣" ~ "\n" ~ hash-to-json $level with $level;
+	quietly 🦋 CNF ~ "｢$log-level｣" ~ "\n" ~ to-json $level with $level;
 
 	self!write-config;
 }
@@ -244,7 +244,7 @@ multi method config ( Str:D $module, 'view', Str :$recman-name!, Str :@option! )
 
 	  🦋 REC ~ "｢$recman-name｣";
 
-	  @option.map( -> $option { out hash-to-json $recman{ $option }:p } );
+	  @option.map( -> $option { out to-json $recman{ $option }:p } );
 
   } else {
 
@@ -268,7 +268,7 @@ multi method config ( Str:D $module, 'view', Str :$recman-name! )  {
 
 	  🦋 REC ~ "｢$recman-name｣";
 
-    my Str $json = hash-to-json $recman;
+    my Str $json = to-json $recman;
 
     out $json;
 
@@ -294,7 +294,7 @@ multi method config ( Str:D $module, 'view', Str :$log-level!, Str :@option! )  
 
 	  🦋 LOG ~ "｢$level｣";
 
-	  @option.map( -> $option { out hash-to-json $level{ $option }:p } );
+	  @option.map( -> $option { out to-json $level{ $option }:p } );
 
   } else {
 
@@ -318,7 +318,7 @@ multi method config ( Str:D $module, 'view', Str :$log-level! )  {
 
 	  🦋 LOG ~ "｢$log-level｣";
 
-    my Str $json = hash-to-json $level;
+    my Str $json = to-json $level;
 
     out $json;
 
@@ -338,7 +338,7 @@ multi method config ( Str:D $module, 'view', Str :@option! )  {
 
   🦋 CNF ~ "｢$module｣";
 
-	@option.map( -> $option { out hash-to-json %!configuration{ $module }{ $option }:p } );
+	@option.map( -> $option { out to-json %!configuration{ $module }{ $option }:p } );
 
 }
 
@@ -350,7 +350,7 @@ multi method config ( Str:D $module, 'view'  )  {
 
   🦋 CNF ~ "｢$module｣";
 
-  my Str $json = hash-to-json %!configuration{ $module };
+  my Str $json = to-json %!configuration{ $module };
 
   out $json;
 
@@ -365,7 +365,7 @@ multi method config ( Str:D $module, 'reset' )  {
 
 	%!configuration{ $module } = %!default-configuration{ $module };
 
-	my Str $json = hash-to-json %!configuration{ $module };
+	my Str $json = to-json %!configuration{ $module };
 
 	🦋 CNF ~ "｢$module｣" ~ "\n" ~ $json;
 
@@ -379,7 +379,7 @@ multi method config ( Str:D $module, 'unset' )  {
 	
 	self!check-config-file-exists;
 
-  my Str $json = hash-to-json %!configuration{ $module }:delete;
+  my Str $json = to-json %!configuration{ $module }:delete;
 
 	🦋 CNF ~ "｢$module｣" ~ "\n" ~ $json;
 
@@ -405,7 +405,7 @@ multi method config ( 'view' )  {
 
 	self!check-config-file-exists;
 
-  my Str $json = hash-to-json %!configuration;
+  my Str $json = to-json %!configuration;
 
   out $json;
 
@@ -432,7 +432,7 @@ multi method config ( 'new' ) {
 
 method !write-config ( ) {
 
-  my Str:D $json = hash-to-json %!configuration;
+  my Str:D $json = to-json %!configuration;
 
 	$!config-file.spurt: $json;
 
@@ -455,12 +455,12 @@ method configuration ( ) { %!configuration }
 
 submethod BUILD ( IO :$!config-file! ) {
 
-  %!default-configuration = json-to-hash slurp %?RESOURCES<default-config.json>;
+  %!default-configuration = from-json slurp %?RESOURCES<default-config.json>;
 
-  %!configuration = json-to-hash slurp $!config-file if $!config-file.e;
+  %!configuration = from-json slurp $!config-file if $!config-file.e;
 
 }
 
-sub json-to-hash ( Str $json --> Hash:D ) { Rakudo::Internals::JSON.from-json: $json }
+sub from-json ( Str $json --> Hash:D ) { Rakudo::Internals::JSON.from-json: $json }
 
-sub hash-to-json ( \obj, :$pretty = True  --> Str:D ) { Rakudo::Internals::JSON.to-json: obj, :$pretty, :sorted-keys; }
+sub to-json ( \obj, :$pretty = True  --> Str:D ) { Rakudo::Internals::JSON.to-json: obj, :$pretty, :sorted-keys; }

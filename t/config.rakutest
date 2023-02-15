@@ -14,40 +14,40 @@ my $config = Pakku::Config.new( :$config-file );
 #
 lives-ok { $config.config( 'new' ) }, 'create new config';
 #
-is-deeply json-to-hash(slurp $config-file ), $config.configuration, 'confirm new config file content';
+is-deeply from-json(slurp $config-file ), $config.configuration, 'confirm new config file content';
 #
 $config = Pakku::Config.new( :$config-file );
 my Pair @option = :async, :dont;
 lives-ok { $config.config( 'pakku', :@option ) }, 'enable option';
-is-deeply json-to-hash(slurp $config-file )<pakku><async dont>, (True, True), 'confirm enable option in config file';
+is-deeply from-json(slurp $config-file )<pakku><async dont>, (True, True), 'confirm enable option in config file';
 
 @option = :!test;
 lives-ok { $config.config( 'add', :@option ) }, 'disable option';
-ok json-to-hash(slurp $config-file )<add><test> === False, 'confirm disable option in config file';
+ok from-json(slurp $config-file )<add><test> === False, 'confirm disable option in config file';
 
 @option = :!deps;
 lives-ok { $config.config( 'add', :@option ) }, 'disable Bool & Str option';
-ok json-to-hash(slurp $config-file )<add><deps> === False , 'confirm disable Bool & Str option in config file';
+ok from-json(slurp $config-file )<add><deps> === False , 'confirm disable Bool & Str option in config file';
 
 @option = deps => 'test';
 lives-ok { $config.config( 'add', :@option ) }, 'set Bool & Str option';
-ok json-to-hash(slurp $config-file )<add><deps> ~~ 'test' , 'confirm set Bool & Str option in config file';
+ok from-json(slurp $config-file )<add><deps> ~~ 'test' , 'confirm set Bool & Str option in config file';
 
 @option = to => 'home';
 lives-ok { $config.config( 'add', :@option ) }, 'set option';
-ok json-to-hash(slurp $config-file )<add><to> ~~ 'home', 'confirm set option in config file';
+ok from-json(slurp $config-file )<add><to> ~~ 'home', 'confirm set option in config file';
 
 @option = to => Nil;
 lives-ok { $config.config( 'add', :@option ) }, 'unset option';
-is-deeply json-to-hash(slurp $config-file )<add><to>, Any, 'confirm unset option in config file';
+is-deeply from-json(slurp $config-file )<add><to>, Any, 'confirm unset option in config file';
 
 @option = count => '42';
 lives-ok { $config.config( 'search', :@option ) }, 'set Int option';
-ok json-to-hash(slurp $config-file )<search><count> ~~ 42, 'confirm set Int option in config file';
+ok from-json(slurp $config-file )<search><count> ~~ 42, 'confirm set Int option in config file';
 
 @option = exclude => ["Dep1", "Dep2"];
 lives-ok { $config.config( 'add', :@option ) }, 'set Array option';
-is-deeply json-to-hash(slurp $config-file )<add><exclude>, ["Dep1", "Dep2"], 'confirm set Array option in config file';
+is-deeply from-json(slurp $config-file )<add><exclude>, ["Dep1", "Dep2"], 'confirm set Array option in config file';
 
 my $recman-name = 'my-recman';
 @option = priority => 7, url => 'http://my-recman.com';
@@ -55,20 +55,20 @@ lives-ok { $config.config( 'recman', :$recman-name, :@option ) }, 'set new recma
 
 lives-ok { $config.config( 'recman', 'disable', :$recman-name ) }, 'recman disable';
 lives-ok { $config.config( 'recman', 'enable',  :$recman-name ) }, 'recman enable';
-is-deeply json-to-hash(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<active>, True, 'confirm recman active in config file';
+is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<active>, True, 'confirm recman active in config file';
 
 @option = priority => 42;
 lives-ok { $config.config( 'recman', :$recman-name, :@option ) }, 'set recman option';
-is-deeply json-to-hash(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority>, 42, 'confirm set recman option in config file';
+is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority>, 42, 'confirm set recman option in config file';
 @option = priority => Nil;
 lives-ok { $config.config( 'recman', :$recman-name, :@option ) }, 'unset recman option';
-is-deeply json-to-hash(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority>, Any, 'confirm unset recman option in config file';
+is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority>, Any, 'confirm unset recman option in config file';
 
 lives-ok { $config.config( 'recman', 'unset', :$recman-name ) }, 'unset recman name';
-quietly is-deeply json-to-hash(slurp $config-file )<recman>.first(  *.<name> eq $recman-name ), Nil, 'confirm unset recman name in config file';
+quietly is-deeply from-json(slurp $config-file )<recman>.first(  *.<name> eq $recman-name ), Nil, 'confirm unset recman name in config file';
 
 lives-ok { $config.config( 'recman', 'unset' ) }, 'unset recman';
-is-deeply json-to-hash(slurp $config-file )<recman>, Any, 'confirm unset recman in config file';
+is-deeply from-json(slurp $config-file )<recman>, Any, 'confirm unset recman in config file';
 
 my $log-level = 'debug';
 @option = prefix => 'DEBUG: ', color => 'blue';
@@ -76,28 +76,28 @@ lives-ok { $config.config( 'log', :$log-level, :@option ) }, 'set new log level'
 
 @option = color => 42;
 lives-ok { $config.config( 'log', :$log-level, :@option ) }, 'set log level option';
-is-deeply json-to-hash(slurp $config-file )<log>{ $log-level }<color>, 42, 'confirm set log level option in config file';
+is-deeply from-json(slurp $config-file )<log>{ $log-level }<color>, 42, 'confirm set log level option in config file';
 
 @option = color => Nil;
 lives-ok { $config.config( 'log', :$log-level, :@option ) }, 'unset log level option';
-is-deeply json-to-hash(slurp $config-file )<log>{ $log-level }<color>, Any, 'confirm unset log level option in config file';
+is-deeply from-json(slurp $config-file )<log>{ $log-level }<color>, Any, 'confirm unset log level option in config file';
 
 lives-ok { $config.config( 'log', 'unset', :$log-level ) }, 'unset log level';
-quietly is-deeply json-to-hash(slurp $config-file )<log>{ $log-level }, Any, 'confirm unset log level in config file';
+quietly is-deeply from-json(slurp $config-file )<log>{ $log-level }, Any, 'confirm unset log level in config file';
 
 $config = Pakku::Config.new( :$config-file );
 
 lives-ok { $config.config( 'pakku', 'reset' ) }, 'reset config module';
-is-deeply json-to-hash(slurp $config-file )<pakku>, $config.configuration<pakku>, 'confirm reset module in config file';
+is-deeply from-json(slurp $config-file )<pakku>, $config.configuration<pakku>, 'confirm reset module in config file';
 
 $config = Pakku::Config.new( :$config-file );
 
 lives-ok { $config.config( 'reset' ) }, 'reset config';
-is-deeply json-to-hash(slurp $config-file ), $config.configuration, 'confirm reset in config file';
+is-deeply from-json(slurp $config-file ), $config.configuration, 'confirm reset in config file';
 
 unlink $config-file;
 
 done-testing;
 
-sub json-to-hash ( Str:D  $json --> Hash:D ) { Rakudo::Internals::JSON.from-json: $json; }
-sub hash-to-json ( \obj --> Str:D ) { Rakudo::Internals::JSON.to-json: obj; }
+sub from-json ( Str:D  $json --> Hash:D ) { Rakudo::Internals::JSON.from-json: $json; }
+sub to-json ( \obj --> Str:D ) { Rakudo::Internals::JSON.to-json: obj; }
