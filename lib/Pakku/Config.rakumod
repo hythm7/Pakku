@@ -423,6 +423,8 @@ multi method config ( 'new' ) {
 
   }
 
+  $!config-file.dirname.IO.mkdir unless $!config-file.dirname.IO.e;
+
 	%!configuration = %!default-configuration;
 
 	self!write-config;
