@@ -76,8 +76,8 @@ sub prefix:<🦗> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.err
 
 sub out  ( Str:D $msg ) is export { $logger.out: $msg }
 
-sub ofun  ( ) is export { 🧚 '-Ofun' }
-sub nofun ( ) is export { 🦗 'Nofun' }
+sub ofun  ( ) is export { 🧚 '-Ofun'         }
+sub nofun ( ) is export { 🦗 'Nofun'; exit 1 }
 
 enum PRF is export (
 

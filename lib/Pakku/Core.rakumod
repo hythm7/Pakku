@@ -343,20 +343,8 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
 method clear-stage ( ) { clear-stage $!stage if $!stage.d }
 
-method fly ( ) {
 
-  END try self.clear-stage;
-
-	CATCH {
-		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun; exit 1 }
-		default       { 🦗 .gist;                       nofun; exit 1 }
-	}
-
-  my $cmd = %!cnf<cmd>;
-
-  self."$cmd"( |%!cnf{ $cmd } );
-
-}
+method cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
 
@@ -383,18 +371,22 @@ submethod BUILD ( :%!cnf! ) {
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
 }
 
 
 method new ( ) {
 
+  END try self.clear-stage;
+
   CATCH {
 
     Pakku::Log.new: :pretty :verbose<debug>;
 
-      when X::Pakku::Cmd { 🦗 .message; nofun; }
-      when X::Pakku::Cnf { 🦗 .message; nofun; }
-      when JSONException { 🦗 .message; .resume; }
+      when X::Pakku::Cmd { 🦗 .message; nofun   }
+      when X::Pakku::Cnf { 🦗 .message; nofun   }
+      when JSONException { 🦗 .message; .resume }
+
 			default { 🦗 .gist }
   }
 
@@ -418,7 +410,11 @@ method new ( ) {
 
 	}
 
-  self.bless: :%cnf;
+  #my $command = %cnf<cmd>;
+
+  #self.bless( :%cnf ).fly: $command, |%cnf{ $command };
+
+  self.bless( :%cnf );
 
 }
 

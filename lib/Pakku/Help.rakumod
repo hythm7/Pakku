@@ -2,38 +2,6 @@ use Pakku::Log;
 
 unit role Pakku::Help;
 
-method help ( Str:D :$cmd ) {
-
-  given $cmd {
-
-    when 'add'      { out self!add-help      }
-    when 'remove'   { out self!remove-help   }
-    when 'list'     { out self!list-help     }
-    when 'search'   { out self!search-help   }
-    when 'upgrade'  { out self!upgrade-help  }
-    when 'build'    { out self!build-help    }
-    when 'test'     { out self!test-help     }
-    when 'download' { out self!download-help }
-    when 'help'     { out self!help-help     }
-
-
-    default {
-      out (
-        self!add-help,
-        self!remove-help,
-        self!list-help,
-        self!search-help,
-        self!upgrade-help,
-        self!build-help,
-        self!test-help,
-        self!download-help,
-        self!pakku-help,
-        self!help-help,
-      ).join: "\n";
-    }
-  }
-}
-
 submethod !add-help ( ) {
 
   my %add;
@@ -168,7 +136,6 @@ submethod !build-help ( ) {
   %build<example>.push: 'pakku build .';
 
   help %build;
-
 
 }
 

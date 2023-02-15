@@ -6,8 +6,10 @@ use Pakku::Core;
 unit class Pakku;
   also does Pakku::Core;
 
-method add (
 
+multi method fly (
+
+         'add',
          :@spec!,
          :$deps       = True,
   Bool:D :$build      = True,
@@ -52,10 +54,6 @@ method add (
     } )
     ==> my @dist;
 
-  #my $target = CompUnit::RepositoryRegistry.repository-for-name: $to.name ~~ Str ?? $to !! 'custom';
-
-  #$target.upgrade-repository unless $target.prefix.add( 'version' ).e;
-
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage,
     name      => $repo.name // 'custom',
@@ -95,8 +93,9 @@ method add (
 
 }
 
-method upgrade (
+multi method fly (
 
+         'upgrade',
          :@spec!,
          :$deps   = True,
   Bool:D :$build  = True,
@@ -121,7 +120,7 @@ method upgrade (
 
 }
 
-method test ( :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
+multi method fly ( 'test', :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
   
 
   my $*stage := CompUnit::Repository::Staging.new:
@@ -145,7 +144,7 @@ method test ( :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
 
 }
 
-method build ( :$spec! ) {
+multi method fly ( 'build', :$spec! ) {
 
   my $meta = self.satisfy: spec => Spec.new: $spec;
 
@@ -159,7 +158,7 @@ method build ( :$spec! ) {
 
 }
 
-method remove ( :@spec!, CompUnit::Repository :$repo ) {
+multi method fly ( 'remove', :@spec!, CompUnit::Repository :$repo ) {
 
 	@!repo
 	  ==> grep( $repo )
@@ -177,8 +176,7 @@ method remove ( :@spec!, CompUnit::Repository :$repo ) {
 
 }
 
-method list ( :@spec, CompUnit::Repository :$repo, Bool:D :$details = False ) {
-
+multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details = False ) { 
 	if @spec {
 	  
 		@spec .= map( -> $spec { Pakku::Spec.new: $spec } );
@@ -216,13 +214,7 @@ method list ( :@spec, CompUnit::Repository :$repo, Bool:D :$details = False ) {
 
 }
 
-method search (
-
-         :@spec,
-  Int    :$count,
-  Bool:D :$details = False,
-
-) {
+multi method fly ( 'search', :@spec, Int :$count, Bool:D :$details = False ) {
 
   @spec
     ==> map( -> $spec { Spec.new: $spec                        } )
@@ -234,7 +226,7 @@ method search (
 
 }
 
-method download ( :@spec! ) {
+multi method fly ( 'download', :@spec! ) {
 
   @spec
     ==> map( -> $spec { Spec.new:      $spec               } )
@@ -246,7 +238,7 @@ method download ( :@spec! ) {
 
 }
 
-method config ( *%config ) {
+multi method fly ( 'config', *%config ) {
 
   my @arg;
   my %arg;
@@ -269,3 +261,48 @@ method config ( *%config ) {
   ofun;
 
 }
+
+multi method fly ( 'help',  Str:D :$cmd ) {
+
+  given $cmd {
+
+    when 'add'      { out self!add-help      }
+    when 'remove'   { out self!remove-help   }
+    when 'list'     { out self!list-help     }
+    when 'search'   { out self!search-help   }
+    when 'upgrade'  { out self!upgrade-help  }
+    when 'build'    { out self!build-help    }
+    when 'test'     { out self!test-help     }
+    when 'download' { out self!download-help }
+    when 'help'     { out self!help-help     }
+
+
+    default {
+      out (
+        self!add-help,
+        self!remove-help,
+        self!list-help,
+        self!search-help,
+        self!upgrade-help,
+        self!build-help,
+        self!test-help,
+        self!download-help,
+        self!pakku-help,
+        self!help-help,
+      ).join: "\n";
+    }
+  }
+}
+
+multi method fly ( ) { samewith %!cnf<cmd>, |%!cnf{ %!cnf<cmd> } }
+
+proto method fly ( | ) {
+
+  {*}
+
+  CATCH {
+    when X::Pakku { 🦗 .message; .resume if $!yolo; nofun }
+    default       { 🦗 .gist;                       nofun }
+  }
+}
+
