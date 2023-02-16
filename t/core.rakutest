@@ -13,11 +13,10 @@ lives-ok {
 
     submethod BUILD( :%!cnf ) {
 
-      my $stage = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
-      my @url  = %!cnf<recman>.flat;
+      my $stage  = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
 
       $!log    = Pakku::Log.new: :verbose<silent>;
-      $!recman = Pakku::Recman.new: :@url;
+      $!recman = Pakku::Recman.new;
       $!cached = $stage.add( 'cached' );
       @!repo   = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 

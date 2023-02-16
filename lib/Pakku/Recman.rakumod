@@ -7,13 +7,13 @@ unit class Pakku::Recman;
 
 has $!curl = Pakku::Curl.new;
 
-has @!url  = 'http://recman.pakku.org';
+has @!recman;
+ 
 
+submethod BUILD ( :@recman = ( %( :name<pakku>, :url<http://recman.pakku.org>, :1priority, :active ), ) ) {
 
-submethod BUILD ( :@recman ) {
+  @!recman = @recman.grep( *.<active> ).sort( *.<priority> ); 
 
-  @!url = @recman.grep( *.value.<active> ).sort( *.value.<priority> ) if @recman; 
-  
 }
 
 method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
@@ -32,7 +32,15 @@ method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
   my $meta;
  
-  @!url.map( -> $url { last if $meta = try retry { $!curl.content: URL => $url ~ $query } } );
+  @!recman.map( -> $recman {
+
+    🐛 REC ~ "｢$recman<name>｣";
+
+	  last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query };
+
+    🐞 REC ~ "｢$recman<name>｣ $!.message()";
+
+	} );
 
   return Empty unless $meta;
 
@@ -57,7 +65,15 @@ method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
 
   my $meta;
  
-  @!url.map( -> $url { last if $meta = try retry { $!curl.content: URL => $url ~ $query } } );
+  @!recman.map( -> $recman {
+
+    🐛 REC ~ "｢$recman<name>｣";
+
+	  last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query }
+
+    🐞 REC ~ "｢$recman<name>｣ $!.message";
+
+	} );
 
   return Empty unless $meta;
 
@@ -82,13 +98,13 @@ sub retry (
 
   loop {
 
-    my $result = try action();
+    my $result = quietly try action();
 
     return $result unless $!;
     
-    $!.rethrow if $max == 0;
+    🐞 CRL ~ $!;
 
-    🐞 "REC: ｢$!.message()｣";
+    $!.rethrow if $max == 0;
 
     sleep $delay;
 

@@ -353,7 +353,6 @@ submethod BUILD ( :%!cnf! ) {
   my %level   = %!cnf<log><level>     // {};
   my $cache   = %!cnf<pakku><cache>   // True;
   my $recman  = %!cnf<pakku><recman>  // True;
-  my @url     = %!cnf<recman>.flat;
 
   $!dont  = %!cnf<pakku><dont>    // False;
   $!yolo  = %!cnf<pakku><yolo>    // False;
@@ -366,7 +365,7 @@ submethod BUILD ( :%!cnf! ) {
   $!stage  = $*HOME.add( '.pakku' ).add( 'stage' ).add( now.Num );
 
   $!cache  = Pakku::Cache.new:  :$!cached if $cache;
-  $!recman = Pakku::Recman.new: :@url     if $recman;
+  $!recman = Pakku::Recman.new: |( recman => %!cnf<recman> if %!cnf<recman> ) if $recman;
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
@@ -409,10 +408,6 @@ method new ( ) {
     %cnf =  hashmerge $cnf, %cnf;
 
 	}
-
-  #my $command = %cnf<cmd>;
-
-  #self.bless( :%cnf ).fly: $command, |%cnf{ $command };
 
   self.bless( :%cnf );
 

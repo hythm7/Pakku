@@ -118,7 +118,7 @@ multi method config ( Str:D $module, Pair:D :@option!, Str :$recman-name, Str :$
 
 	  unless try self."$module"().new( |$option ) ~~ $option {
 
-		🐞 CNF ~ "｢{ to-json $option, :!pretty }｣ invalid option";
+		  🐞 CNF ~ "｢{ to-json $option, :!pretty }｣ invalid option";
 
 	    die X::Pakku::Cnf.new( cnf => "$module" );
 	  }
@@ -143,7 +143,7 @@ multi method config ( Str:D $module, Pair:D :@option!, Str :$recman-name, Str :$
 
 	  	} else {
 
-        %!configuration{ $module }.unshift( { name => $recman-name, :active } ); 
+        %!configuration{ $module }.unshift( { name => $recman-name, :1priority, :active } ); 
 
         %config-key := %!configuration{ $module }[ 0 ];
 

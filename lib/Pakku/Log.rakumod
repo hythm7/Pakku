@@ -94,6 +94,7 @@ enum PRF is export (
   TOT => 'TOT: ',
   OLO => 'OLO: ',
   REC => 'REC: ',
+  CRL => 'CRL: ',
   LOG => 'LOG: ',
   CNF => 'CNF: ',
   CMD => 'CMD: ',
