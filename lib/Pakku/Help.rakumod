@@ -173,6 +173,32 @@ submethod !download-help ( ) {
 
 }
 
+submethod !config-help ( ) {
+
+  my %config;
+
+  %config<cmd>     = 'config';
+  %config<desc>    = 'change configurations in config file';
+
+  %config<example>.push: 'pakku config';
+  %config<example>.push: 'pakku config new';
+  %config<example>.push: 'pakku config add';
+  %config<example>.push: 'pakku config add precompile';
+  %config<example>.push: 'pakku config add disable precompile';
+  %config<example>.push: 'pakku config add set to home';
+  %config<example>.push: 'pakku config pakku unset verbose';
+  %config<example>.push: 'pakku config recman MyRec disable';
+  %config<example>.push: 'pakku config add reset';
+
+  %config<opt>.push: ( 'enable'      => 'enable option' );
+  %config<opt>.push: ( 'disable'     => 'disable option' );
+  %config<opt>.push: ( 'set <value>' => 'set option to value' );
+  %config<opt>.push: ( 'unset'       => 'unset option' );
+
+  help %config;
+
+}
+
 submethod !help-help ( ) {
 
   my %help;

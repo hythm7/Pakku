@@ -274,6 +274,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
     when 'build'    { out self!build-help    }
     when 'test'     { out self!test-help     }
     when 'download' { out self!download-help }
+    when 'config'   { out self!config-help }
     when 'help'     { out self!help-help     }
 
 
@@ -287,6 +288,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
         self!build-help,
         self!test-help,
         self!download-help,
+        self!config-help,
         self!pakku-help,
         self!help-help,
       ).join: "\n";
