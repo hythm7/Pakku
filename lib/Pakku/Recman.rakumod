@@ -71,7 +71,7 @@ method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
 
 	  last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query }
 
-    🐞 REC ~ "｢$recman<name>｣ $!.message";
+    🐞 REC ~ "｢$recman<name>｣ .message()" with $!;
 
 	} );
 
