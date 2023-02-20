@@ -374,7 +374,7 @@ submethod BUILD ( :%!cnf! ) {
 }
 
 
-method new ( ) {
+method metamorph ( ) {
 
   END try self.clear-stage;
 
