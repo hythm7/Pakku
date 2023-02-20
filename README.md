@@ -345,10 +345,6 @@ If the user doesn't have `rw` permision to `site` repo, one can change the defau
 
 or specify the repo in the command e.g. `pakku add to home MyDist`
 
-**Installing already installed distribution**
-
-When trying to install an already installed distribution, Pakku will appear not doing anything and give almost instant `-Ofun` response signaling a success. May be its better to add a debug message informing the user that the distribution is already installed, but that is not yet there.
-
 Caveats
 =======
 Doesn't play nice with `libcurl.dll` on some windows systems, need to investigate more.

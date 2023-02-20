@@ -230,7 +230,15 @@ multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new:
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 
-multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) { so flat @!repo.map( *.candidates: $spec.name, |$spec.spec ); }
+multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
+
+  return False unless @!repo.first( *.candidates: $spec.name, |$spec.spec );
+
+  🐛 SPC ~ "｢$spec｣ satisfied!";
+
+	True;
+}
+
 multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) { return False unless find-bin $spec.name; True }
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
