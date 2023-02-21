@@ -7,11 +7,12 @@ my class Pakku {
 
   has Bool $.pretty;
   has Bool $.async;
-  has Bool $.recman;
   has Bool $.cache;
   has Bool $.yolo;
   has Bool $.please;
   has Bool $.dont;
+  has Any  $.recman;
+  has Any  $.norecman;
 	has Str  $.verbose;
 
 }

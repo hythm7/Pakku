@@ -356,11 +356,12 @@ method cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
 
-  my $pretty  = %!cnf<pakku><pretty>  // True;
-  my $verbose = %!cnf<pakku><verbose> // 'now';
-  my %level   = %!cnf<log><level>     // {};
-  my $cache   = %!cnf<pakku><cache>   // True;
-  my $recman  = %!cnf<pakku><recman>  // True;
+  my $pretty   = %!cnf<pakku><pretty>   // True;
+  my $verbose  = %!cnf<pakku><verbose>  // 'now';
+  my %level    = %!cnf<log><level>      // {};
+  my $cache    = %!cnf<pakku><cache>    // True;
+
+  $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
   $!dont  = %!cnf<pakku><dont>    // False;
   $!yolo  = %!cnf<pakku><yolo>    // False;
@@ -373,11 +374,18 @@ submethod BUILD ( :%!cnf! ) {
   $!stage  = $*HOME.add( '.pakku' ).add( 'stage' ).add( now.Num );
 
   $!cache  = Pakku::Cache.new:  :$!cached if $cache;
-  $!recman = Pakku::Recman.new: |( recman => %!cnf<recman> if %!cnf<recman> ) if $recman;
-
-  $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
+  my $recman   = %!cnf<pakku><recman>;
+  my $norecman = %!cnf<pakku><norecman>;
+
+	my @recman = %!cnf<recman> ?? %!cnf<recman>.flat !! ( %( :name<pakku>, :url<http://recman.pakku.org>, :1priority, :active ), );
+
+  @recman .= grep: { .<name> !~~ $norecman } if $norecman;
+  @recman .= grep: { .<name>  ~~ $recman   } if $recman;
+
+	$!recman = Pakku::Recman.new: :@recman;
 
 }
 

@@ -15,6 +15,10 @@ my @tests = (
     ${:add(${:deps("only"), :spec($["Spec"])}), :cmd("add")},
   "add deps runtime Spec" =>
     ${:add(${:deps("runtime"), :spec($["Spec"])}), :cmd("add")},
+  "add deps notest Spec" =>
+    ${:add(${:deps, :!test, :spec($["Spec"])}), :cmd("add")},
+  "add nodeps test Spec" =>
+    ${:add(${:!deps, :test, :spec($["Spec"])}), :cmd("add")},
   "add deps test Spec" =>
     ${:add(${:deps("test"), :spec($["Spec"])}), :cmd("add")},
   "add deps build Spec" =>
@@ -45,6 +49,20 @@ my @tests = (
     ${:add(${:spec($["depsforce", "Spec"])}), :cmd("add")},
   "add nodeps force Spec" =>
     ${:add(${:!deps, :force, :spec($["Spec"])}), :cmd("add")},
+  "recman add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman})},
+  "recman pretty add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman, :pretty})},
+  "recman rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman("rea")})},
+  "rec rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman("rea")})},
+  "norecman rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
+  "norec rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
+  "nrec rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
   "v3 add force Spec" =>
     ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "v 3 add nodeps Spec" =>

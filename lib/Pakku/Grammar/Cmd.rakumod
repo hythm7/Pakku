@@ -143,15 +143,16 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token pakkuopt { * }
-  token pakkuopt:sym<pretty>  { <pretty> }
-  token pakkuopt:sym<async>   { <async> }
-  token pakkuopt:sym<recman>  { <recman> }
-  token pakkuopt:sym<cache>   { <cache> }
-  token pakkuopt:sym<yolo>    { <yolo> }
-  token pakkuopt:sym<please>  { <sym>    }
-  token pakkuopt:sym<dont>    { <sym>    }
-  token pakkuopt:sym<verbose> { <verbose> <.space>* <level> }
-  token pakkuopt:sym<config>  { <config>  <.space>* <path> }
+  token pakkuopt:sym<pretty>   { <pretty> }
+  token pakkuopt:sym<async>    { <async> }
+  regex pakkuopt:sym<recman>   { <recman> }
+  regex pakkuopt:sym<norecman> { <norecman> }
+  token pakkuopt:sym<cache>    { <cache> }
+  token pakkuopt:sym<yolo>     { <yolo> }
+  token pakkuopt:sym<please>   { <sym>    }
+  token pakkuopt:sym<dont>     { <sym>    }
+  token pakkuopt:sym<verbose>  { <verbose> <.space>* <level> }
+  token pakkuopt:sym<config>   { <config>  <.space>* <path> }
 
   proto token addopt { * }
   token addopt:sym<deps>       { <deps>       }
@@ -211,11 +212,20 @@ grammar Pakku::Grammar::Cmd {
   token async:sym<sync>    { <sym> }
 
 
-  proto token recman { * }
-  token recman:sym<recman>   { <sym> }
-  token recman:sym<r>        { <sym> }
-  token recman:sym<norecman> { <sym> }
-  token recman:sym<nr>       { <sym> }
+	regex recman   { <rec>   | <rec>   <.space>* <recman-name> }
+	regex norecman { <norec> | <norec> <.space>* <recman-name> }
+  #proto regex recman { * }
+  #regex recman:sym<recman>     { <rec> }
+  #regex recman:sym<recman-name> { <rec> <.space>* <recman-name> }
+
+  proto token rec { * }
+  token rec:sym<recman>   { <sym> }
+  token rec:sym<rec>      { <sym> }
+
+  proto token norec { * }
+  token norec:sym<norecman> { <sym> }
+  token norec:sym<norec>    { <sym> }
+  token norec:sym<nrec>     { <sym> }
 
   proto token cache { * }
   token cache:sym<cache>   { <sym> }
@@ -251,7 +261,7 @@ grammar Pakku::Grammar::Cmd {
   proto token deps { * }
   token deps:sym<only>    { <dep> <.space>* <only>    }
   token deps:sym<runtime> { <dep> <.space>* <runtime> }
-  token deps:sym<test>    { <dep> <.space>* <test>    }
+  token deps:sym<test>    { <dep> <.space>* <tst>    }
   token deps:sym<build>   { <dep> <.space>* <build>   }
   token deps:sym<deps>    { <sym>                     }
   token deps:sym<nodeps>  { <nodeps>                  }
@@ -270,9 +280,9 @@ grammar Pakku::Grammar::Cmd {
   token runtime:sym<run>     { <sym> }
   token runtime:sym<rt>      { <sym> }
 
-  #proto token tst { * }
-  #token tst:sym<test> { <sym> }
-  #token tst:sym<tst>  { <sym> }
+  proto token tst { * }
+  token tst:sym<test> { <sym> }
+  token tst:sym<t>    { <sym> }
 
   #proto token bld { * }
   #token bld:sym<build> { <sym> }
@@ -756,15 +766,16 @@ class Pakku::Grammar::CmdActions {
 		)
 	}
 
-  method pakkuopt:sym<pretty>  ( $/ ) { make $<pretty>.made               }
-  method pakkuopt:sym<async>   ( $/ ) { make $<async>.made                }
-  method pakkuopt:sym<recman>  ( $/ ) { make $<recman>.made               }
-  method pakkuopt:sym<cache>   ( $/ ) { make $<cache>.made                }
-  method pakkuopt:sym<yolo>    ( $/ ) { make ( :yolo )                    }
-  method pakkuopt:sym<please>  ( $/ ) { make ( :please )                  }
-  method pakkuopt:sym<dont>    ( $/ ) { make ( :dont )                    }
-  method pakkuopt:sym<verbose> ( $/ ) { make ( verbose => $<level>.made ) }
-  method pakkuopt:sym<config>  ( $/ ) { make ( config  => $<path>.made  ) }
+  method pakkuopt:sym<pretty>   ( $/ ) { make $<pretty>.made               }
+  method pakkuopt:sym<async>    ( $/ ) { make $<async>.made                }
+  method pakkuopt:sym<recman>   ( $/ ) { make $<recman>.made               }
+  method pakkuopt:sym<norecman> ( $/ ) { make $<norecman>.made               }
+  method pakkuopt:sym<cache>    ( $/ ) { make $<cache>.made                }
+  method pakkuopt:sym<yolo>     ( $/ ) { make ( :yolo )                    }
+  method pakkuopt:sym<please>   ( $/ ) { make ( :please )                  }
+  method pakkuopt:sym<dont>     ( $/ ) { make ( :dont )                    }
+  method pakkuopt:sym<verbose>  ( $/ ) { make ( verbose => $<level>.made ) }
+  method pakkuopt:sym<config>   ( $/ ) { make ( config  => $<path>.made  ) }
 
   method addopt:sym<deps>       ( $/ ) { make $<deps>.made       }
   method addopt:sym<build>      ( $/ ) { make $<build>.made      }
@@ -817,8 +828,9 @@ class Pakku::Grammar::CmdActions {
   method async:sym<noasync> ( $/ )  { make ( :!async ) }
   method async:sym<sync>    ( $/ )  { make ( :!async ) }
 
-  method recman:sym<recman>   ( $/ )  { make ( :recman  ) }
-  method recman:sym<r>        ( $/ )  { make ( :recman  ) }
+  method recman   ( $/ )  { make ( $<recman-name> ?? :recman(   ~$<recman-name> ) !! :recman   ) }
+  method norecman ( $/ )  { make ( $<recman-name> ?? :norecman( ~$<recman-name> ) !! :norecman ) }
+
   method recman:sym<norecman> ( $/ )  { make ( :!recman ) }
   method recman:sym<nr>       ( $/ )  { make ( :!recman ) }
 

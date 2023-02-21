@@ -10,7 +10,7 @@ has $!curl = Pakku::Curl.new;
 has @!recman;
  
 
-submethod BUILD ( :@recman = ( %( :name<pakku>, :url<http://recman.pakku.org>, :1priority, :active ), ) ) {
+submethod BUILD ( :@recman! ) {
 
   @!recman = @recman.grep( *.<active> ).sort( *.<priority> ); 
 
