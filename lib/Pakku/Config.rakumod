@@ -446,7 +446,7 @@ method !check-config-file-exists ( ) {
 
   unless $!config-file.e {
 
-    🐞 CNF ~ "｢$!config-file｣ does not exist!";
+    🐞 CNF ~ "｢$!config-file｣ does not exist! to create run: pakku config new";
 
     die X::Pakku::Cnf.new: cnf => $!config-file; 
 
