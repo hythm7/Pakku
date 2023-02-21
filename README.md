@@ -341,7 +341,7 @@ There are two ways to avoid this and get the latest version, either specify the 
 
 If the user doesn't have `rw` permision to `site` repo, one can change the default repo to `home` in config file using:
 
-```pakku config add to home```
+```pakku config add set to home```
 
 or specify the repo in the command e.g. `pakku add to home MyDist`
 
