@@ -18,10 +18,10 @@ submethod BUILD ( :@recman! ) {
 
 method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
-	my $name = $spec.name;
-	my $ver  = $spec.ver;
-	my $auth = $spec.auth;
-	my $api  = $spec.api;
+  my $name = $spec.name;
+  my $ver  = $spec.ver;
+  my $auth = $spec.auth;
+  my $api  = $spec.api;
 
   my $query = '/recommend';
 
@@ -36,11 +36,11 @@ method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
     🐛 REC ~ "｢$recman<name>｣";
 
-	  last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query };
+    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query };
 
     🐞 REC ~ "｢$recman<name>｣ $!.message()";
 
-	} );
+  } );
 
   return Empty unless $meta;
 
@@ -51,9 +51,9 @@ method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
 
   my $name = $spec.name;
-	my $ver  = $spec.ver;
-	my $auth = $spec.auth;
-	my $api  = $spec.api;
+  my $ver  = $spec.ver;
+  my $auth = $spec.auth;
+  my $api  = $spec.api;
 
   my $query = '/search';
 
@@ -69,11 +69,11 @@ method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
 
     🐛 REC ~ "｢$recman<name>｣";
 
-	  last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query }
+    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query }
 
     🐞 REC ~ "｢$recman<name>｣ .message()" with $!;
 
-	} );
+  } );
 
   return Empty unless $meta;
 

@@ -78,7 +78,7 @@ method to-dist ( ::?CLASS:D: IO :$prefix! ) {
 
 submethod TWEAK ( ) {
 
-	use nqp;
+  use nqp;
 
   my $ver = %!meta<version> // %!meta<ver>;
 
@@ -86,7 +86,7 @@ submethod TWEAK ( ) {
 
   $!dist = quietly "{$!name}:ver<$ver>:auth<%!meta<auth>>:api<%!meta<api>>";
 
-	$!id = nqp::sha1( $!dist );
+  $!id = nqp::sha1( $!dist );
 
   $!source-url = %!meta<source-url>;
 

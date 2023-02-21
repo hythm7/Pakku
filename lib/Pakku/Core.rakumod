@@ -32,16 +32,16 @@ has CompUnit::Repository @!repo;
 
 method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
-	my @dir =  <tests t>;
+  my @dir =  <tests t>;
 
-	@dir.append: <xtest xt> if $xtest;
+  @dir.append: <xtest xt> if $xtest;
 
-	@dir
+  @dir
     ==> map( -> $dir { $dist.prefix.add: $dir } )
     ==> grep( *.d )
     ==> map( -> $dir { Rakudo::Internals.DIR-RECURSE: ~$dir, file => *.ends-with: any <.rakutest .t> } )
     ==> flat( )
-		==> sort( )
+    ==> sort( )
     ==> map( *.IO )
     ==> my @test;
 
@@ -98,9 +98,9 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
   if $exitcode {
 
-		die X::Pakku::Test.new: :$dist;
+    die X::Pakku::Test.new: :$dist;
 
-		🐞 OLO ~ "｢$dist｣";
+    🐞 OLO ~ "｢$dist｣";
 
   }
 
@@ -121,17 +121,17 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   my @cmd; 
 
-	if $builder {
+  if $builder {
 
     @cmd =
-		  $*EXECUTABLE.absolute,
-			'-I', $prefix,
-			'-e', "require $builder; my %meta := { $dist.meta.raku }; ::( '$builder' ).new( :%meta ).build( '$prefix' );"
-	} else {
+      $*EXECUTABLE.absolute,
+      '-I', $prefix,
+      '-e', "require $builder; my %meta := { $dist.meta.raku }; ::( '$builder' ).new( :%meta ).build( '$prefix' );"
+  } else {
     @cmd =
-		  $*EXECUTABLE.absolute,
-			'-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
-	}
+      $*EXECUTABLE.absolute,
+      '-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
+  }
 
   %*ENV<RAKULIB> = "$*stage.path-spec()";
 
@@ -171,9 +171,9 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   if $exitcode { 
 
-		die X::Pakku::Build.new: :$dist;
+    die X::Pakku::Build.new: :$dist;
 
-		🐞 OLO ~ "｢$dist｣";
+    🐞 OLO ~ "｢$dist｣";
 
   }
 
@@ -236,7 +236,7 @@ multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
 
   🐛 SPC ~ "｢$spec｣ satisfied!";
 
-	True;
+  True;
 }
 
 multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) { return False unless find-bin $spec.name; True }
@@ -280,9 +280,9 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
 method get-deps ( Pakku::Meta:D $meta, :$deps, :@exclude ) {
 
-	# cannot use .name instead of .id (that will save a few calls)
-	# because dists that depends on two different versions of
-	# same dependency, will fail. 
+  # cannot use .name instead of .id (that will save a few calls)
+  # because dists that depends on two different versions of
+  # same dependency, will fail. 
   state %visited;
   
   once for @exclude { %visited{ .id } = True } if @exclude;
@@ -380,12 +380,12 @@ submethod BUILD ( :%!cnf! ) {
   my $recman   = %!cnf<pakku><recman>;
   my $norecman = %!cnf<pakku><norecman>;
 
-	my @recman = %!cnf<recman> ?? %!cnf<recman>.flat !! ( %( :name<pakku>, :url<http://recman.pakku.org>, :1priority, :active ), );
+  my @recman = %!cnf<recman> ?? %!cnf<recman>.flat !! ( %( :name<pakku>, :url<http://recman.pakku.org>, :1priority, :active ), );
 
   @recman .= grep: { .<name> !~~ $norecman } if $norecman;
   @recman .= grep: { .<name>  ~~ $recman   } if $recman;
 
-	$!recman = Pakku::Recman.new: :@recman;
+  $!recman = Pakku::Recman.new: :@recman;
 
 }
 
@@ -402,7 +402,7 @@ method metamorph ( ) {
       when X::Pakku::Cnf { 🦗 .message; nofun   }
       when JSONException { 🦗 .message; .resume }
 
-			default { 🦗 .gist }
+      default { 🦗 .gist }
   }
 
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::CmdActions );
@@ -411,9 +411,9 @@ method metamorph ( ) {
 
   my %cnf = $cmd.made;
 
-	%cnf<pakku><config> //= $*HOME.add( '.pakku' ).add( 'config.json' );
+  %cnf<pakku><config> //= $*HOME.add( '.pakku' ).add( 'config.json' );
 
-	my $config-file = %cnf<pakku><config>;
+  my $config-file = %cnf<pakku><config>;
 
   if $config-file.e {
 
@@ -423,7 +423,7 @@ method metamorph ( ) {
 
     %cnf =  hashmerge $cnf, %cnf;
 
-	}
+  }
 
   self.bless( :%cnf );
 
@@ -457,7 +457,7 @@ sub find-perl-module ( Str:D $name --> Bool:D ) {
 
   return True if run('perl', "-M$name", '-e 1', :err).exitcode == 0;
 
-	return False;
+  return False;
 }
 
 sub clear-stage(IO::Path:D $io --> Nil) {

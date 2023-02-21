@@ -160,55 +160,55 @@ multi method fly ( 'build', :$spec! ) {
 
 multi method fly ( 'remove', :@spec!, CompUnit::Repository :$repo ) {
 
-	@!repo
-	  ==> grep( $repo )
-		==> map( -> $repo {
-		  sink @spec.map( -> $str {
-				my $spec = Pakku::Spec.new: $str;
-				my @dist = $repo.candidates( $spec.name, |$spec.spec );
+  @!repo
+    ==> grep( $repo )
+    ==> map( -> $repo {
+      sink @spec.map( -> $str {
+        my $spec = Pakku::Spec.new: $str;
+        my @dist = $repo.candidates( $spec.name, |$spec.spec );
 
-				sink @dist.map( -> $dist { $repo.uninstall: $dist } )
+        sink @dist.map( -> $dist { $repo.uninstall: $dist } )
 
-			} ) unless $!dont
-		} );
+      } ) unless $!dont
+    } );
 
   ofun;
 
 }
 
 multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details = False ) { 
-	if @spec {
-	  
-		@spec .= map( -> $spec { Pakku::Spec.new: $spec } );
+  if @spec {
+    
+    @spec .= map( -> $spec { Pakku::Spec.new: $spec } );
 
     @spec.map( -> $spec {
 
-			@!repo
-				==> grep( $repo )
-				==> map( -> $repo {
-					$repo.candidates( $spec.name, |$spec.spec )
-						==> map( -> $dist { $dist.id } )
-						==> map( -> $id   { $repo.distribution: $id } )
-						==> map( -> $dist { $dist.meta.item } )
-						==> flat( );
-					} )
-				==> flat( );
+      @!repo
+        ==> grep( $repo )
+        ==> map( -> $repo {
+          $repo.candidates( $spec.name, |$spec.spec )
+            ==> map( -> $dist { $dist.id } )
+            ==> map( -> $id   { $repo.distribution: $id } )
+            ==> map( -> $dist { $dist.meta.item } )
+            ==> flat( );
+          } )
+        ==> flat( );
     } )
     ==> flat( )
-		==> map( -> $meta { Meta.new: $meta } )
-		==> map( -> $meta { out $meta.gist: :$details } );
+    ==> map( -> $meta { Meta.new: $meta } )
+    ==> map( -> $meta { out $meta.gist: :$details } );
 
 
-	} else {
+  } else {
 
-	@!repo
-	  ==> grep( $repo )
-		==> map( *.installed.map( *.meta.item ) )
-		==> flat( )
-		==> grep( *.defined )
-		==> map( -> $meta { Meta.new: $meta } )
-		==> map( -> $meta { out $meta.gist: :$details } );
-	}
+  @!repo
+    ==> grep( $repo )
+    ==> map( *.installed.map( *.meta.item ) )
+    ==> flat( )
+    ==> grep( *.defined )
+    ==> map( -> $meta { Meta.new: $meta } )
+    ==> map( -> $meta { out $meta.gist: :$details } );
+  }
 
   return;
 
@@ -243,20 +243,20 @@ multi method fly ( 'config', *%config ) {
   my @arg;
   my %arg;
 
-	my $module      = %config<module>      if %config<module>;
-	my $operation   = %config<operation>   if %config<operation>;
-	my $recman-name = %config<recman-name> if %config<recman-name>;
-	my $log-level   = %config<log-level>   if %config<log-level>;
-	my $option      = %config<option>      if %config<option>;
+  my $module      = %config<module>      if %config<module>;
+  my $operation   = %config<operation>   if %config<operation>;
+  my $recman-name = %config<recman-name> if %config<recman-name>;
+  my $log-level   = %config<log-level>   if %config<log-level>;
+  my $option      = %config<option>      if %config<option>;
 
-	@arg.push( $module    ) if $module; 
-	@arg.push( $operation ) if $operation; 
+  @arg.push( $module    ) if $module; 
+  @arg.push( $operation ) if $operation; 
 
-	%arg<recman-name> =  $recman-name if $recman-name; 
-	%arg<log-level>   =  $log-level   if $log-level; 
-	%arg<option>      =  $option      if $option; 
+  %arg<recman-name> =  $recman-name if $recman-name; 
+  %arg<log-level>   =  $log-level   if $log-level; 
+  %arg<option>      =  $option      if $option; 
 
-	Pakku::Config.new( config-file => %!cnf<pakku><config> ).config( |@arg, |%arg );
+  Pakku::Config.new( config-file => %!cnf<pakku><config> ).config( |@arg, |%arg );
 
   ofun;
 

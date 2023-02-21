@@ -212,8 +212,8 @@ grammar Pakku::Grammar::Cmd {
   token async:sym<sync>    { <sym> }
 
 
-	regex recman   { <rec>   | <rec>   <.space>* <recman-name> }
-	regex norecman { <norec> | <norec> <.space>* <recman-name> }
+  regex recman   { <rec>   | <rec>   <.space>* <recman-name> }
+  regex norecman { <norec> | <norec> <.space>* <recman-name> }
   #proto regex recman { * }
   #regex recman:sym<recman>     { <rec> }
   #regex recman:sym<recman-name> { <rec> <.space>* <recman-name> }
@@ -589,182 +589,182 @@ class Pakku::Grammar::CmdActions {
 
 
   method config-cmd:sym<config-view>( $/ ) { 
-	  make %( :operation<view> )
-	}
+    make %( :operation<view> )
+  }
 
   method config-cmd:sym<config-new>( $/ ) {
-	  make  %( operation =>  ~$<config-new> )
-	}
+    make  %( operation =>  ~$<config-new> )
+  }
 
   method config-cmd:sym<config-reset>( $/ ) {
-	  make %( operation => ~$<reset> )
-	}
+    make %( operation => ~$<reset> )
+  }
 
   method config-cmd:sym<config-module-view>( $/ ) {
-	  make %( :operation<view>, module => ~$<config-module-any> )
-	}
+    make %( :operation<view>, module => ~$<config-module-any> )
+  }
 
   method config-cmd:sym<config-module-reset>( $/ ) {
-	  make %(
-		  module    => ~$<config-module-any>,
-			operation => ~$<reset>,
-		)
-	}
+    make %(
+      module    => ~$<config-module-any>,
+      operation => ~$<reset>,
+    )
+  }
 
   method config-cmd:sym<config-module-unset>( $/ ) {
-	  make %(
-		  module    => ~$<config-module-any>,
-			operation => ~$<unset>,
-		)
-	}
+    make %(
+      module    => ~$<config-module-any>,
+      operation => ~$<unset>,
+    )
+  }
 
   method config-cmd:sym<config-recman-name-view-option>( $/ ) {
 
-		my Str @option = @<key-option>.map( ~* ); 
+    my Str @option = @<key-option>.map( ~* ); 
 
-	  make %(
+    make %(
       module    => ~$<config-module-recman>,
-			operation => 'view',
-			recman-name => ~$<recman-name>,
-		  :@option,
-		)
-	}
+      operation => 'view',
+      recman-name => ~$<recman-name>,
+      :@option,
+    )
+  }
 
   method config-cmd:sym<config-log-level-view-option>( $/ ) {
 
-		my Str @option = @<key-option>.map( ~* ); 
+    my Str @option = @<key-option>.map( ~* ); 
 
-	  make %(
+    make %(
       module    => ~$<config-module-log>,
-			operation => 'view',
-			log-level => ~$<log-level>,
-		  :@option,
-		)
-	}
+      operation => 'view',
+      log-level => ~$<log-level>,
+      :@option,
+    )
+  }
 
   method config-cmd:sym<config-recman-name-view>( $/ ) {
 
-	  make %(
+    make %(
       module    => ~$<config-module-recman>,
-			operation => 'view',
-			recman-name => ~$<recman-name>,
-		)
-	}
+      operation => 'view',
+      recman-name => ~$<recman-name>,
+    )
+  }
 
   method config-cmd:sym<config-log-level-view>( $/ ) {
 
-	  make %(
+    make %(
       module    => ~$<config-module-log>,
-			operation => 'view',
-			log-level => ~$<log-level>,
-		)
-	}
+      operation => 'view',
+      log-level => ~$<log-level>,
+    )
+  }
 
 
 
   method config-cmd:sym<config-module-view-option>( $/ ) {
 
-		my Str @option = @<key-option>.map( ~* ); 
+    my Str @option = @<key-option>.map( ~* ); 
 
-	  make %(
+    make %(
       module    => ~$<config-module>,
-			operation => 'view',
-		  :@option,
-		)
-	}
+      operation => 'view',
+      :@option,
+    )
+  }
 
   method config-cmd:sym<config-module-unset-option>( $/ ) {
 
-		my Pair @option = @<key-option>.map( ~* => Nil ); 
+    my Pair @option = @<key-option>.map( ~* => Nil ); 
 
-	  make %(
+    make %(
       module    => ~$<config-module>,
-			:@option,
-		)
-	}
+      :@option,
+    )
+  }
 
   method config-cmd:sym<config-module-disable>( $/ ) {
 
-		my Pair @option = @<key-option>.map( ~* => False ); 
+    my Pair @option = @<key-option>.map( ~* => False ); 
 
-	  make %(
+    make %(
       module    => ~$<config-module>,
-			:@option,
-		)
-	}
+      :@option,
+    )
+  }
 
   method config-cmd:sym<config-module-enable>( $/ ) {
 
-		my Pair @option = @<key-option>.map( ~* => True ); 
+    my Pair @option = @<key-option>.map( ~* => True ); 
 
-	  make %(
+    make %(
       module    => ~$<config-module>,
-			:@option,
-		)
-	}
+      :@option,
+    )
+  }
 
   method config-cmd:sym<config-module-set>( $/ ) {
 
-		my Pair @option = @<keyval-option>.map( { ~.<key> => ~.<value> } ); 
+    my Pair @option = @<keyval-option>.map( { ~.<key> => ~.<value> } ); 
 
-	  make %(
+    make %(
       module    => ~$<config-module>,
-			:@option,
-		)
-	}
+      :@option,
+    )
+  }
 
   method config-cmd:sym<config-module-recman-set>( $/ ) {
 
-		my Pair @option = @<keyval-option>.map( { ~.<key> => ~.<value> } ); 
+    my Pair @option = @<keyval-option>.map( { ~.<key> => ~.<value> } ); 
 
-	  make %(
+    make %(
       module      => ~$<config-module-recman>,
-			recman-name => ~$<recman-name>, 
-			:@option,
-		)
-	}
+      recman-name => ~$<recman-name>, 
+      :@option,
+    )
+  }
 
 
   method config-cmd:sym<config-module-recman-enable>( $/ ) {
-	  make %(
+    make %(
       module      => ~$<config-module-recman>,
-			operation   => ~$<enable>, 
-			recman-name => ~$<recman-name>, 
-		)
-	}
+      operation   => ~$<enable>, 
+      recman-name => ~$<recman-name>, 
+    )
+  }
 
   method config-cmd:sym<config-module-recman-disable>( $/ ) {
-	  make %(
+    make %(
       module      => ~$<config-module-recman>,
-			operation   => ~$<disable>, 
-			recman-name => ~$<recman-name>, 
-		)
-	}
+      operation   => ~$<disable>, 
+      recman-name => ~$<recman-name>, 
+    )
+  }
 
   method config-cmd:sym<config-module-recman-unset>( $/ ) {
-	  make %(
+    make %(
       module      => ~$<config-module-recman>,
-			operation   => ~$<unset>, 
-			recman-name => ~$<recman-name>, 
-		)
-	}
+      operation   => ~$<unset>, 
+      recman-name => ~$<recman-name>, 
+    )
+  }
 
   method config-cmd:sym<config-module-log-set>( $/ ) {
-	  make %(
+    make %(
       module    => ~$<config-module-log>,
-			operation => ~$<set>, 
-			log-level => ~$<log-level>, 
-			option    => @<log-level-option>.map( { ~.<sym> => ~.<value> } ).Array, 
-		)
-	}
+      operation => ~$<set>, 
+      log-level => ~$<log-level>, 
+      option    => @<log-level-option>.map( { ~.<sym> => ~.<value> } ).Array, 
+    )
+  }
 
   method config-cmd:sym<config-module-log-unset>( $/ ) {
-	  make %(
+    make %(
       module    => ~$<config-module-log>,
-			operation => ~$<unset>, 
-			log-level => ~$<log-level>, 
-		)
-	}
+      operation => ~$<unset>, 
+      log-level => ~$<log-level>, 
+    )
+  }
 
   method pakkuopt:sym<pretty>   ( $/ ) { make $<pretty>.made               }
   method pakkuopt:sym<async>    ( $/ ) { make $<async>.made                }
@@ -890,15 +890,15 @@ class Pakku::Grammar::CmdActions {
   method repo:sym<core>   ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
   method repo:sym<spec>   ( $/ ) {
 
-	  my $spec = CompUnit::Repository::Spec.from-string( ~$/, 'inst' );
-		# CURS requires name
-		my $name = $spec.options<name> // 'custom-lib';
-		my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $spec );
+    my $spec = CompUnit::Repository::Spec.from-string( ~$/, 'inst' );
+    # CURS requires name
+    my $name = $spec.options<name> // 'custom-lib';
+    my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $spec );
 
-		CompUnit::RepositoryRegistry.register-name( $name, $repo );
+    CompUnit::RepositoryRegistry.register-name( $name, $repo );
 
-		make $repo;
-	}
+    make $repo;
+  }
 
   method level:sym<SILENT> ( $/ ) { make 'silent' }
   method level:sym<DEBUG>  ( $/ ) { make 'debug'  }
