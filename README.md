@@ -1,4 +1,5 @@
 [![SparrowCI](https://ci.sparrowhub.io/project/git-hythm7-Pakku/badge)](https://ci.sparrowhub.io)
+
 Pakku
 =====
 A Package Manager for Raku.
@@ -60,25 +61,29 @@ Options to control general Pakku behavior.
 <b>Options:</b>
 
 <pre>
-pretty            → use colors
-nopretty          → no colors
-async             → run asynchronously (disabled by default because some dists tests are not async safe) 
-noasync           → dont run asynchronously
-nocache           → disable cache
-norecman          → disable remote recommendation manager
-dont              → do everything but dont do it (dry run)
-verbose < level > → verbosity < debug now info warn error silent >
-config  < path >  → specify config file
-please            → be nice to butterflies
-yolo              → dont stop on errors (eg. proceed after test failure)
+pretty             → use colors
+nopretty           → no colors
+async              → run asynchronously (disabled by default because some dists tests are not async safe) 
+noasync            → dont run asynchronously
+nocache            → disable cache
+dont               → do everything but dont do it (dry run)
+verbose  < level > → verbosity < debug now info warn error silent >
+config   < path >  → specify config file
+recman   < MyRec > → use MyRec recommendation manager only
+norecman < MyRec > → use all recommendation managers excepts MyRec
+recman             → enable all remote recommendation manager
+norecman           → disable all remote recommendation manager
+please             → be nice to butterflies
+yolo               → dont stop on errors (eg. proceed after test failure)
 </pre>
 
 
 **add**
 <pre>
 <b>pakku add Dist</b>                                # add Dist
-<b>pakku add nodeps  Dist</b>                        # add Dist but dont add dependencies
 <b>pakku add notest  Dist</b>                        # add Dist without testing
+<b>pakku add nodeps  Dist</b>                        # add Dist but dont add dependencies
+<b>pakku add deps only Dist</b>                      # add Dist dependencies but dont add Dist
 <b>pakku add exclude Dep1 Dist</b>                   # add Dist and exclude Dep1 from dependenncies
 <b>pakku add noprecomp notest  Dist</b>              # add Dist without testing and no precompilation
 <b>pakku add to      /opt/MyApp Dist</b>             # add Dist to custom repo
@@ -88,21 +93,24 @@ yolo              → dont stop on errors (eg. proceed after test failure)
 **options:**
 
 <pre>
-deps            → add dependencies
-nodeps          → no dependencies
-exclude Dep1    → exclude Dep1
-deps only       → dependencies only
-build           → build distribution
-nobuild         → bypass build
-test            → test distribution
-notest          → bypass test
-xtest           → xTest distribution
-noxtest         → bypass xtest
-force           → force add distribution even if installed
-noforce         → no force
-precomp         → precompile distribution 
-noprecomp       → no precompile
-to < repo >     → add distribution to repo < home site vendor core /path/to/MyApp >
+deps                → all dependencies
+nodeps              → no dependencies
+exclude < Dep1 >    → exclude Dep1
+deps    < only >    → only dependencies
+deps    < build >   → build dependencies only
+deps    < test >    → test dependencies only
+deps    < runtime > → runtime dependencies only
+build               → build distribution
+nobuild             → bypass build
+test                → test distribution
+notest              → bypass test
+xtest               → xTest distribution
+noxtest             → bypass xtest
+force               → force add distribution even if installed
+noforce             → no force
+precomp             → precompile distribution 
+noprecomp           → no precompile
+to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
 </pre>
 
 **remove**
