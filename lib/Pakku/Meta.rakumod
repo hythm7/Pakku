@@ -25,6 +25,24 @@ multi method deps ( Bool:D :$deps where *.so ) {
 
 }
 
+multi method deps ( Str:D :$deps where 'runtime' ) {
+
+  %!deps<runtime>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
+
+}
+
+multi method deps ( Str:D :$deps where 'test' ) {
+
+  %!deps<test>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
+
+}
+
+multi method deps ( Str:D :$deps where 'build' ) {
+
+  %!deps<build>.map( *.values.Slip ).map( *.Slip ).map( -> $spec { Pakku::Spec.new: $spec } );
+
+}
+
 multi method deps ( Str:D :$deps where 'only' ) { samewith :deps }
 
 multi method deps ( Bool:D :$deps where not *.so ) { Empty }
@@ -60,7 +78,7 @@ method to-dist ( ::?CLASS:D: IO :$prefix! ) {
 
 submethod TWEAK ( ) {
 
-	use nqp;
+  use nqp;
 
   my $ver = %!meta<version> // %!meta<ver>;
 
@@ -68,7 +86,7 @@ submethod TWEAK ( ) {
 
   $!dist = quietly "{$!name}:ver<$ver>:auth<%!meta<auth>>:api<%!meta<api>>";
 
-	$!id = nqp::sha1( $!dist );
+  $!id = nqp::sha1( $!dist );
 
   $!source-url = %!meta<source-url>;
 

@@ -9,6 +9,20 @@ my @tests = (
     ${:add(${:spec($["nodeps"])}), :cmd("add")},
   "add nodeps Spec" =>
     ${:add(${:!deps, :spec($["Spec"])}), :cmd("add")},
+  "add deps Spec" =>
+    ${:add(${:deps, :spec($["Spec"])}), :cmd("add")},
+  "add deps only Spec" =>
+    ${:add(${:deps("only"), :spec($["Spec"])}), :cmd("add")},
+  "add deps runtime Spec" =>
+    ${:add(${:deps("runtime"), :spec($["Spec"])}), :cmd("add")},
+  "add deps notest Spec" =>
+    ${:add(${:deps, :!test, :spec($["Spec"])}), :cmd("add")},
+  "add nodeps test Spec" =>
+    ${:add(${:!deps, :test, :spec($["Spec"])}), :cmd("add")},
+  "add deps test Spec" =>
+    ${:add(${:deps("test"), :spec($["Spec"])}), :cmd("add")},
+  "add deps build Spec" =>
+    ${:add(${:deps("build"), :spec($["Spec"])}), :cmd("add")},
   "add build Spec" =>
     ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
   "add test Spec" =>
@@ -17,22 +31,46 @@ my @tests = (
     ${:add(${:force, :spec($["Spec"])}), :cmd("add")},
   "add nobuild Spec" =>
     ${:add(${:!build, :spec($["Spec"])}), :cmd("add")},
+  "add build Spec" =>
+    ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
+  "add test Spec" =>
+    ${:add(${:test, :spec($["Spec"])}), :cmd("add")},
   "add notest Spec" =>
     ${:add(${:spec($["Spec"]), :!test}), :cmd("add")},
   "add Spec1 Spec2" =>
     ${:add(${:spec($["Spec1", "Spec2"])}), :cmd("add")},
   "add noforce Spec" =>
     ${:add(${:!force, :spec($["Spec"])}), :cmd("add")},
+  "add exclude Dep1 Spec" =>
+    ${:add(${:exclude($["Dep1"]), :spec($["Spec"])}), :cmd("add")},
+  "add exclude Dep1 exclude Dep2 Spec" =>
+    ${:add(${:exclude($["Dep1", "Dep2"]), :spec($["Spec"])}), :cmd("add")},
   "add depsforce Spec" =>
     ${:add(${:spec($["depsforce", "Spec"])}), :cmd("add")},
   "add nodeps force Spec" =>
     ${:add(${:!deps, :force, :spec($["Spec"])}), :cmd("add")},
+  "recman add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman})},
+  "recman pretty add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman, :pretty})},
+  "recman rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman("rea")})},
+  "rec rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman("rea")})},
+  "norecman rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
+  "norec rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
+  "nrec rea add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
   "v3 add force Spec" =>
-    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "v 3 add nodeps Spec" =>
-    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose(3)})},
+    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "pretty v3 add force Spec" =>
-    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose(3)})},
+    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose("info")})},
+  "upgrade Dist" =>
+    ${:upgrade(${:spec($["Dist"])}), :cmd("upgrade")},
   "remove Spec1 Spec2" =>
     ${:cmd("remove"), :remove(${:spec($["Spec1", "Spec2"])})},
   "l" =>
@@ -53,6 +91,58 @@ my @tests = (
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
+  "config" =>
+    ${:cmd("config"), :config(${:operation("view")})},
+  "config new" =>
+    ${:cmd("config"), :config(${:operation("new")})},
+  "config reset" =>
+    ${:cmd("config"), :config(${:operation("reset")})},
+  "config add" =>
+    ${:cmd("config"), :config(${:module("add"), :operation("view")})},
+  "config add force" =>
+    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option(Array[Str].new("force"))})},
+  "config add view reset" =>
+    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option(Array[Str].new("reset"))})},
+  "config add reset" =>
+    ${:cmd("config"), :config(${:module("add"), :operation("reset")})},
+  "config add enable test" =>
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("test" => Bool::True))})},
+  "config add disable test" =>
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("test" => Bool::False))})},
+  "config add set to home" =>
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("to" => "home"))})},
+  "config add unset to" =>
+    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("to" => Nil))})},
+  "config search set count 7" =>
+    ${:cmd("config"), :config(${:module("search"), :option(Array[Pair].new("count" => "7"))})},
+  "config search unset count" =>
+    ${:cmd("config"), :config(${:module("search"), :option(Array[Pair].new("count" => Nil))})},
+  "config pakku enable dont" =>
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("dont" => Bool::True))})},
+  "config pakku enable pretty please" =>
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("pretty" => Bool::True, "please" => Bool::True))})},
+  "config pakku set verbose debug " =>
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("verbose" => "debug"))})},
+  "config pakku unset dont verbose async " =>
+    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("dont" => Nil, "verbose" => Nil, "async" => Nil))})},
+  "config recman default disable" =>
+    ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("disable")})},
+  "config recman pakku enable" =>
+    ${:cmd("config"), :config(${:module("recman"), :recman-name("pakku"), :operation("enable")})},
+  "config recman default unset" =>
+    ${:cmd("config"), :config(${:module("recman"), :recman-name("default"), :operation("unset")})},
+  "config recman reset" =>
+    ${:cmd("config"), :config(${:module("recman"), :operation("reset")})},
+  "config recman rea set priority 1 url http://my-recman.com" =>
+    ${:cmd("config"), :config(${:module("recman"), :recman-name("rea"), :option(Array[Pair].new("priority" => "1", "url" => "http://my-recman.com")), :recman-name("rea")})},
+  "config log debug unset" =>
+    ${:cmd("config"), :config(${:module("log"), :log-level("debug"), :operation("unset")})},
+  "config log info set prefix INFO: color green" =>
+    ${:cmd("config"), :config(${:module("log"), :log-level("info"), :operation("set"), :option($[:prefix("INFO:"), :color("green")])})},
+  "config log reset" =>
+    ${:cmd("config"), :config(${:module("log"), :operation("reset")})},
+  "pretty config /tmp/config.json config pakku enable dont" =>
+    ${:config(${:module("pakku"), :option(Array[Pair].new("dont" => Bool::True))}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
   "help" =>
     ${:cmd("help"), :help(${:cmd("")})},
   "help add" =>
@@ -82,6 +172,35 @@ for @tests {
   $got .= deepmap( -> $_ { $_ ~~ Pakku::Spec::Raku ?? .name !! $_ } );
 
   is-deeply  $got, $expected, $cmd;
+}
+
+my @repo = (
+  'home',
+  'site',
+  'vendor',
+  'core',
+  'some-unknown-repo-name',
+  '/abs/repo/path',
+  'rel/repo/path',
+  './rel/repo/path',
+  'inst#/abs/repo',
+  'inst#rel/repo',
+  'inst#name<foo>#rel/repo',
+  'inst#name(foo)#/abs/repo',
+  'inst#name(foo)#next-repo<bar>#/abs/repo',
+  'inst#name<foo>#next-repo(bar)#/abs/repo',
+  'inst#name<foo>#unknown-opt(baz)#/abs/repo',
+  'uknown-shortname#name<foo>#unknown-opt(baz)#/abs/repo',
+);
+
+for @repo -> $repo {
+
+  my $parser  = Pakku::Grammar::Cmd;
+  my $actions = Pakku::Grammar::CmdActions;
+  my $got     = $parser.parse( $repo, :$actions, :rule<repo> ).made;
+
+  ok $got, $repo;
+
 }
 
 done-testing;

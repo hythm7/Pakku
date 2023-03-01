@@ -1,0 +1,70 @@
+{
+  "add": {
+    "build": true,
+    "deps": true,
+    "force": false,
+    "precompile": true,
+    "test": true,
+    "to": "site",
+    "xtest": false
+  },
+  "list": {
+    "details": false
+  },
+  "log": {
+    "debug": {
+      "color": "green",
+      "prefix": "🐛"
+    },
+    "error": {
+      "color": "red",
+      "prefix": "🦗"
+    },
+    "info": {
+      "color": "magenta",
+      "prefix": "🧚"
+    },
+    "now": {
+      "color": "cyan",
+      "prefix": "🦋"
+    },
+    "warn": {
+      "color": "yellow",
+      "prefix": "🦋"
+    }
+  },
+  "pakku": {
+    "async": false,
+    "cache": true,
+    "dont": false,
+    "please": true,
+    "pretty": true,
+    "recman": true,
+    "verbose": "now",
+    "yolo": false
+  },
+  "recman": [
+    {
+      "active": true,
+      "name": "pakku",
+      "priority": 1,
+      "url": "http://recman.pakku.org"
+    }
+  ],
+  "search": {
+    "count": 42,
+    "details": false
+  },
+  "test": {
+    "build": true,
+    "xtest": false
+  },
+  "upgrade": {
+    "build": true,
+    "deps": true,
+    "force": false,
+    "precompile": true,
+    "test": true,
+    "xtest": false
+  }
+}

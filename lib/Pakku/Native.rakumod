@@ -22,13 +22,13 @@ sub LoadLibraryA(  Str         --> DLLib ) is native( k32 ) { * }
 
 method !dlLoadLibrary( Str $libname --> DLLib ) {
 
-	IS-WIN ?? LoadLibraryA( $libname ) !!  dyncall ?? dlLoadLibrary( $libname ) !!  dlopen( $libname, 0x102 );
+  IS-WIN ?? LoadLibraryA( $libname ) !!  dyncall ?? dlLoadLibrary( $libname ) !!  dlopen( $libname, 0x102 );
 
 }
 
 method can-load( ::?CLASS:U: Str:D( ) $libname --> Bool:D ) {
 
-	my \lib = self!dlLoadLibrary( $libname );
+  my \lib = self!dlLoadLibrary( $libname );
 
   return False unless lib;
 

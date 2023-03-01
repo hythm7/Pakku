@@ -120,7 +120,7 @@ submethod TWEAK ( ) {
   $!ver  //= $!version;
   $!from //= 'raku';
 
-	$!id = nqp::sha1( self.Str );
+  $!id = nqp::sha1( self.Str );
 
 }
 

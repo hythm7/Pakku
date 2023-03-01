@@ -1,6 +1,6 @@
 unit class Pakku::Log;
 
-class Level {
+my class Level {
 
   has Str   $!reset;
   has Str:D $!color  is required;
@@ -31,6 +31,7 @@ has Level $.warn;
 has Level $.error;
 
 has Bool $!pretty;
+has $!verbose;
 
 
 method out ( Str:D $msg ) {
@@ -41,27 +42,29 @@ method out ( Str:D $msg ) {
 
 my Pakku::Log $logger;
 
-my enum LogLevel <SILENT DEBUG NOW INFO WARN ERROR>;
+my enum LogLevel <silent debug now info warn error>;
 
 submethod BUILD (
 
-  Int:D  :$verbose = INFO,
   Bool:D :$!pretty = True,
+         :$!verbose = now,
          :%level,
 
 ) {
 
   $logger = self;
 
-  return $logger if $verbose == SILENT;
+  $!verbose = LogLevel::{$!verbose};  
+
+  return $logger if $!verbose == silent;
 
   my $color = '' unless $!pretty;
 
-  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<1><prefix> // '🐛 ' ) :color( $color // %level<1><color> // '32' ) if  DEBUG ≥ $verbose;
-  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<2><prefix> // '🦋 ' ) :color( $color // %level<2><color> // '36' ) if  NOW   ≥ $verbose;
-  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🧚 ' ) :color( $color // %level<3><color> // '35' ) if  INFO  ≥ $verbose;
-  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🐞 ' ) :color( $color // %level<4><color> // '33' ) if  WARN  ≥ $verbose;
-  $!error = Level.new: :fh( $*ERR ) :prefix( %level<5><prefix> // '🦗 ' ) :color( $color // %level<5><color> // '31' ) if  ERROR ≥ $verbose;
+  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<1><prefix> // '🐛 ' ) :color( $color // %level<1><color> // '32' ) if  debug ≥ $!verbose;
+  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<2><prefix> // '🦋 ' ) :color( $color // %level<2><color> // '36' ) if  now   ≥ $!verbose;
+  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🧚 ' ) :color( $color // %level<3><color> // '35' ) if  info  ≥ $!verbose;
+  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🐞 ' ) :color( $color // %level<4><color> // '33' ) if  warn  ≥ $!verbose;
+  $!error = Level.new: :fh( $*ERR ) :prefix( %level<5><prefix> // '🦗 ' ) :color( $color // %level<5><color> // '31' ) if  error ≥ $!verbose;
 
 }
 
@@ -73,8 +76,8 @@ sub prefix:<🦗> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.err
 
 sub out  ( Str:D $msg ) is export { $logger.out: $msg }
 
-sub ofun  ( ) is export { 🧚 '-Ofun' }
-sub nofun ( ) is export { 🦗 'Nofun' }
+sub ofun  ( ) is export { 🧚 '-Ofun'         }
+sub nofun ( ) is export { 🦗 'Nofun'; exit 1 }
 
 enum PRF is export (
 
@@ -90,6 +93,9 @@ enum PRF is export (
   WAI => 'WAI: ',
   TOT => 'TOT: ',
   OLO => 'OLO: ',
+  REC => 'REC: ',
+  CRL => 'CRL: ',
+  LOG => 'LOG: ',
   CNF => 'CNF: ',
   CMD => 'CMD: ',
 
@@ -97,15 +103,15 @@ enum PRF is export (
 
 enum Color is export (
 
-  RESET   =>  0,
-  BLACK   => 30,
-  RED     => 31,
-  GREEN   => 32,
-  YELLOW  => 33,
-  BLUE    => 34,
-  MAGENTA => 35,
-  CYAN    => 36,
-  WHITE   => 37,
+  reset   =>  0,
+  black   => 30,
+  red     => 31,
+  green   => 32,
+  yellow  => 33,
+  blue    => 34,
+  magenta => 35,
+  cyan    => 36,
+  white   => 37,
 
 );
 

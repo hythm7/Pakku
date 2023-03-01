@@ -103,7 +103,7 @@ sub extract( Str:D :$archive!, Str:D :$dest! --> Bool ) is export {
     archive_write_disk_set_standard_lookup $e;
   
   
-		# get root dir from META file path
+    # get root dir from META file path
     my $root = %entries.keys.first( { .ends-with( any <META6.json META.info> ) and $*SPEC.splitdir( .IO.dirname ) == 1 } ).IO.dirname;
   
     for %entries.kv -> $pathname,  ( $entry, $data ) {

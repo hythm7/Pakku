@@ -7,7 +7,7 @@ use Pakku::Cache;
 use Pakku::Native;
 use Pakku::Recman;
 use Pakku::Archive;
-use Pakku::Grammar::Cnf;
+use Pakku::Config;
 use Pakku::Grammar::Cmd;
 
 unit role Pakku::Core;
@@ -32,16 +32,16 @@ has CompUnit::Repository @!repo;
 
 method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
-	my @dir =  <tests t>;
+  my @dir =  <tests t>;
 
-	@dir.append: <xtest xt> if $xtest;
+  @dir.append: <xtest xt> if $xtest;
 
-	@dir
+  @dir
     ==> map( -> $dir { $dist.prefix.add: $dir } )
     ==> grep( *.d )
     ==> map( -> $dir { Rakudo::Internals.DIR-RECURSE: ~$dir, file => *.ends-with: any <.rakutest .t> } )
     ==> flat( )
-		==> sort( )
+    ==> sort( )
     ==> map( *.IO )
     ==> my @test;
 
@@ -98,9 +98,9 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
   if $exitcode {
 
-		die X::Pakku::Test.new: :$dist;
+    die X::Pakku::Test.new: :$dist;
 
-		🐞 OLO ~ "｢$dist｣";
+    🐞 OLO ~ "｢$dist｣";
 
   }
 
@@ -121,17 +121,17 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   my @cmd; 
 
-	if $builder {
+  if $builder {
 
     @cmd =
-		  $*EXECUTABLE.absolute,
-			'-I', $prefix,
-			'-e', "require $builder; my %meta := { $dist.meta.raku }; ::( '$builder' ).new( :%meta ).build( '$prefix' );"
-	} else {
+      $*EXECUTABLE.absolute,
+      '-I', $prefix,
+      '-e', "require $builder; my %meta := { $dist.meta.raku }; ::( '$builder' ).new( :%meta ).build( '$prefix' );"
+  } else {
     @cmd =
-		  $*EXECUTABLE.absolute,
-			'-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
-	}
+      $*EXECUTABLE.absolute,
+      '-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
+  }
 
   %*ENV<RAKULIB> = "$*stage.path-spec()";
 
@@ -171,9 +171,9 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   if $exitcode { 
 
-		die X::Pakku::Build.new: :$dist;
+    die X::Pakku::Build.new: :$dist;
 
-		🐞 OLO ~ "｢$dist｣";
+    🐞 OLO ~ "｢$dist｣";
 
   }
 
@@ -230,7 +230,15 @@ multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new:
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 
-multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) { so flat @!repo.map( *.candidates: $spec.name, |$spec.spec ); }
+multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
+
+  return False unless @!repo.first( *.candidates: $spec.name, |$spec.spec );
+
+  🐛 SPC ~ "｢$spec｣ satisfied!";
+
+  True;
+}
+
 multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) { return False unless find-bin $spec.name; True }
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
@@ -270,14 +278,14 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
 }
 
-method get-deps ( Pakku::Meta:D $meta, :$deps, :$exclude ) {
+method get-deps ( Pakku::Meta:D $meta, :$deps, :@exclude ) {
 
-	# cannot use .name instead of .id (that will save a few calls)
-	# because dists that depends on two different versions of
-	# same dependency, will fail. 
+  # cannot use .name instead of .id (that will save a few calls)
+  # because dists that depends on two different versions of
+  # same dependency, will fail. 
   state %visited;
   
-  once %visited{ .id } = True with $exclude;
+  once for @exclude { %visited{ .id } = True } if @exclude;
 
   $meta.deps: :$deps
 
@@ -343,29 +351,17 @@ method fetch ( Pakku::Meta:D :$meta! ) {
 
 method clear-stage ( ) { clear-stage $!stage if $!stage.d }
 
-method fly ( ) {
 
-  END try self.clear-stage;
-
-	CATCH {
-		when X::Pakku { 🦗 .message; .resume if $!yolo; nofun; exit 1 }
-		default       { 🦗 .gist;                       nofun; exit 1 }
-	}
-
-  my $cmd = %!cnf<cmd>;
-
-  self."$cmd"( |%!cnf{ $cmd } );
-
-}
+method cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
 
-  my $pretty  = %!cnf<pakku><pretty>  // True;
-  my $verbose = %!cnf<pakku><verbose> // 2;
-  my %level   = %!cnf<log><level>     // {};
-  my $cache   = %!cnf<pakku><cache>   // True;
-  my $recman  = %!cnf<pakku><recman>  // True;
-  my @url     = %!cnf<recman>.flat;
+  my $pretty   = %!cnf<pakku><pretty>   // True;
+  my $verbose  = %!cnf<pakku><verbose>  // 'now';
+  my %level    = %!cnf<log><level>      // {};
+  my $cache    = %!cnf<pakku><cache>    // True;
+
+  $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
   $!dont  = %!cnf<pakku><dont>    // False;
   $!yolo  = %!cnf<pakku><yolo>    // False;
@@ -378,42 +374,58 @@ submethod BUILD ( :%!cnf! ) {
   $!stage  = $*HOME.add( '.pakku' ).add( 'stage' ).add( now.Num );
 
   $!cache  = Pakku::Cache.new:  :$!cached if $cache;
-  $!recman = Pakku::Recman.new: :@url     if $recman;
-
-  $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
+  my $recman   = %!cnf<pakku><recman>;
+  my $norecman = %!cnf<pakku><norecman>;
+
+  my @recman = %!cnf<recman> ?? %!cnf<recman>.flat !! ( %( :name<pakku>, :url<http://recman.pakku.org>, :1priority, :active ), );
+
+  @recman .= grep: { .<name> !~~ $norecman } if $norecman;
+  @recman .= grep: { .<name>  ~~ $recman   } if $recman;
+
+  $!recman = Pakku::Recman.new: :@recman;
+
 }
 
 
-method new ( ) {
+method metamorph ( ) {
+
+  END try self.clear-stage;
 
   CATCH {
 
-    Pakku::Log.new: :pretty :2verbose;
+    Pakku::Log.new: :pretty :verbose<debug>;
 
-    🦗 .message;
-    
-    nofun;
+      when X::Pakku::Cmd { 🦗 .message; nofun   }
+      when X::Pakku::Cnf { 🦗 .message; nofun   }
+      when JSONException { 🦗 .message; .resume }
+
+      default { 🦗 .gist }
   }
 
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::CmdActions );
 
   die X::Pakku::Cmd.new( cmd => @*ARGS ) unless $cmd;
 
-  my %cmd = $cmd.made;
+  my %cnf = $cmd.made;
 
-  my $user-config = $*HOME.add( '.pakku' ).add( 'pakku.cnf' );
+  %cnf<pakku><config> //= $*HOME.add( '.pakku' ).add( 'config.json' );
 
-  my $config-file = %cmd<pakku><config> // ( $user-config.e ?? $user-config !! %?RESOURCES<pakku.cnf> );
+  my $config-file = %cnf<pakku><config>;
 
-  my $cnf = Pakku::Grammar::Cnf.parsefile( $config-file.IO, actions => Pakku::Grammar::CnfActions.new );
+  if $config-file.e {
 
-  die X::Pakku::Cnf.new( cnf => $config-file ) unless $cnf;
+    my $cnf = Rakudo::Internals::JSON.from-json: slurp $config-file.IO;
 
-  my %cnf =  hashmerge $cnf.made, %cmd;
+    die X::Pakku::Cnf.new( cnf => $config-file ) unless $cnf;
 
-  self.bless: :%cnf;
+    %cnf =  hashmerge $cnf, %cnf;
+
+  }
+
+  self.bless( :%cnf );
 
 }
 
@@ -445,7 +457,7 @@ sub find-perl-module ( Str:D $name --> Bool:D ) {
 
   return True if run('perl', "-M$name", '-e 1', :err).exitcode == 0;
 
-	return False;
+  return False;
 }
 
 sub clear-stage(IO::Path:D $io --> Nil) {

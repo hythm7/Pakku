@@ -7,14 +7,21 @@ unit class Pakku::Recman;
 
 has $!curl = Pakku::Curl.new;
 
-has @!url is required is built;
+has @!recman;
+ 
+
+submethod BUILD ( :@recman! ) {
+
+  @!recman = @recman.grep( *.<active> ).sort( *.<priority> ); 
+
+}
 
 method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
-	my $name = $spec.name;
-	my $ver  = $spec.ver;
-	my $auth = $spec.auth;
-	my $api  = $spec.api;
+  my $name = $spec.name;
+  my $ver  = $spec.ver;
+  my $auth = $spec.auth;
+  my $api  = $spec.api;
 
   my $query = '/recommend';
 
@@ -25,7 +32,15 @@ method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 
   my $meta;
  
-  @!url.map( -> $url { last if $meta = try retry { $!curl.content: URL => $url ~ $query } } );
+  @!recman.map( -> $recman {
+
+    🐛 REC ~ "｢$recman<name>｣";
+
+    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query };
+
+    🐞 REC ~ "｢$recman<name>｣ $!.message()";
+
+  } );
 
   return Empty unless $meta;
 
@@ -36,9 +51,9 @@ method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
 method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
 
   my $name = $spec.name;
-	my $ver  = $spec.ver;
-	my $auth = $spec.auth;
-	my $api  = $spec.api;
+  my $ver  = $spec.ver;
+  my $auth = $spec.auth;
+  my $api  = $spec.api;
 
   my $query = '/search';
 
@@ -50,7 +65,15 @@ method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
 
   my $meta;
  
-  @!url.map( -> $url { last if $meta = try retry { $!curl.content: URL => $url ~ $query } } );
+  @!recman.map( -> $recman {
+
+    🐛 REC ~ "｢$recman<name>｣";
+
+    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query }
+
+    🐞 REC ~ "｢$recman<name>｣ .message()" with $!;
+
+  } );
 
   return Empty unless $meta;
 
@@ -75,13 +98,13 @@ sub retry (
 
   loop {
 
-    my $result = try action();
+    my $result = quietly try action();
 
     return $result unless $!;
     
-    $!.rethrow if $max == 0;
+    🐞 CRL ~ $!;
 
-    🐞 "REC: ｢$!.message()｣";
+    $!.rethrow if $max == 0;
 
     sleep $delay;
 

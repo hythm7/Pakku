@@ -5,4 +5,4 @@ use CompUnit::Repository::Staging;
 
 use Pakku;
 
-Pakku.new.fly;
+Pakku.metamorph.fly;
