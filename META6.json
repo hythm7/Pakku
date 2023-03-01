@@ -47,5 +47,5 @@
     "raku"
     ],
   "test-depends" : [ ],
-  "version" : "ava-1"
+  "version" : "bellona"
 }
