@@ -56,7 +56,7 @@ multi method fly (
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage,
-    name      => $repo.name // 'custom',
+    name      => $repo.name // 'custom', # TODO revisit custom repositories
     next-repo => $*REPO;
 
 
@@ -88,9 +88,6 @@ multi method fly (
     }
   }
    
-  
-  ofun;
-
 }
 
 multi method fly (
@@ -112,7 +109,7 @@ multi method fly (
 
   @spec .= map(  -> $spec { self.upgradable: spec => Pakku::Spec.new: $spec } );
 
-  return ofun unless so @spec;
+  return unless so @spec;
 
   @spec .= map( *.Str );
 
@@ -140,8 +137,6 @@ multi method fly ( 'test', :$spec!, Bool:D :$xtest  = False, Bool:D :$build = Tr
 
   self!test: :$dist :$xtest unless $!dont;
 
-  ofun;
-
 }
 
 multi method fly ( 'build', :$spec! ) {
@@ -154,13 +149,11 @@ multi method fly ( 'build', :$spec! ) {
 
   self!build: :$dist unless $!dont;
 
-  ofun;
-
 }
 
 multi method fly ( 'remove', :@spec!, CompUnit::Repository :$repo ) {
 
-  @!repo
+  sink @!repo
     ==> grep( $repo )
     ==> map( -> $repo {
       sink @spec.map( -> $str {
@@ -171,8 +164,6 @@ multi method fly ( 'remove', :@spec!, CompUnit::Repository :$repo ) {
 
       } ) unless $!dont
     } );
-
-  ofun;
 
 }
 
@@ -214,7 +205,7 @@ multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details
 
 }
 
-multi method fly ( 'search', :@spec, Int :$count, Bool:D :$details = False ) {
+multi method fly ( 'search', :@spec!, Int :$count, Bool:D :$details = False ) {
 
   @spec
     ==> map( -> $spec { Spec.new: $spec                        } )
@@ -233,8 +224,6 @@ multi method fly ( 'download', :@spec! ) {
     ==> map( -> $spec { self.satisfy: :$spec               } )
     ==> map( -> $meta { self.fetch:   :$meta unless $!dont } )
     ==> map( -> $path { 🧚 "DWN: ｢$path｣"                  } );
-
-  ofun;
 
 }
 
@@ -257,8 +246,6 @@ multi method fly ( 'config', *%config ) {
   %arg<option>      =  $option      if $option; 
 
   Pakku::Config.new( config-file => %!cnf<pakku><config> ).config( |@arg, |%arg );
-
-  ofun;
 
 }
 
@@ -296,7 +283,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
   }
 }
 
-multi method fly ( ) { samewith %!cnf<cmd>, |%!cnf{ %!cnf<cmd> } }
+multi method fly ( ) { samewith %!cnf<cmd>, |%!cnf{ %!cnf<cmd> }; ofun }
 
 proto method fly ( | ) {
 

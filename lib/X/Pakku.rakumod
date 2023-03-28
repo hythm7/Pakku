@@ -79,7 +79,6 @@ class X::Pakku::Native is X::Pakku {
 }
 
 class X::Pakku::Cmd is X::Pakku {
-  also is Exception;
 
   has $.cmd;
 
@@ -92,7 +91,6 @@ class X::Pakku::Cmd is X::Pakku {
 }
 
 class X::Pakku::Cnf is X::Pakku {
-  also is Exception;
 
   has $.cnf;
 
