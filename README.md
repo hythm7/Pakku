@@ -49,15 +49,6 @@ A Pakku command result is either:
 
 Options to control general Pakku behavior.
 
-<b>Examples:</b>
-<pre>
-<b>pakku async   add Dist</b>                # run in async mode while adding Dist
-<b>pakku nocache add Dist</b>                # dont use local cache
-<b>pakku dont    add Dist</b>                # dont add Dist (dry run)
-<b>pakku pretty  please remove Dist</b>
-
-</pre>
-
 <b>Options:</b>
 
 <pre>
@@ -69,26 +60,26 @@ nocache            → disable cache
 dont               → do everything but dont do it (dry run)
 verbose  < level > → verbosity < debug now info warn error silent >
 config   < path >  → specify config file
-recman   < MyRec > → use MyRec recommendation manager only
-norecman < MyRec > → use all recommendation managers excepts MyRec
 recman             → enable all remote recommendation manager
 norecman           → disable all remote recommendation manager
+recman   < MyRec > → use MyRec recommendation manager only
+norecman < MyRec > → use all recommendation managers excepts MyRec
 please             → be nice to butterflies
 yolo               → dont stop on errors (eg. proceed after test failure)
 </pre>
 
-
-**add**
+<b>Examples:</b>
 <pre>
-<b>pakku add Dist</b>                                # add Dist
-<b>pakku add notest  Dist</b>                        # add Dist without testing
-<b>pakku add nodeps  Dist</b>                        # add Dist but dont add dependencies
-<b>pakku add deps only Dist</b>                      # add Dist dependencies but dont add Dist
-<b>pakku add exclude Dep1 Dist</b>                   # add Dist and exclude Dep1 from dependenncies
-<b>pakku add noprecomp notest  Dist</b>              # add Dist without testing and no precompilation
-<b>pakku add to      /opt/MyApp Dist</b>             # add Dist to custom repo
-<b>pakku add force   to   vendor  Dist1 Dist2</b>    # add Dist1 and Dist2 to vendor repo even if they are installed
+<b>pakku async   add Dist</b>                # run in async mode while adding Dist
+<b>pakku nocache add Dist</b>                # dont use local cache
+<b>pakku dont    add Dist</b>                # dont add Dist (dry run)
+<b>pakku pretty  please remove Dist</b>
+
 </pre>
+
+
+
+**add command**
 
 **options:**
 
@@ -113,11 +104,20 @@ noprecomp           → no precompile
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
 </pre>
 
-**remove**
+<b>Examples:</b>
 <pre>
-<b>pakku remove Dist</b>            # remove Dist from all repos
-<b>pakku remove from site Dist</b>  # remove Dist from site repo only
+<b>pakku add Dist</b>                                # add Dist
+<b>pakku add notest  Dist</b>                        # add Dist without testing
+<b>pakku add nodeps  Dist</b>                        # add Dist but dont add dependencies
+<b>pakku add deps only Dist</b>                      # add Dist dependencies but dont add Dist
+<b>pakku add exclude Dep1 Dist</b>                   # add Dist and exclude Dep1 from dependenncies
+<b>pakku add noprecomp notest  Dist</b>              # add Dist without testing and no precompilation
+<b>pakku add to      /opt/MyApp Dist</b>             # add Dist to custom repo
+<b>pakku add force   to   vendor  Dist1 Dist2</b>    # add Dist1 and Dist2 to vendor repo even if they are installed
 </pre>
+
+
+**remove command**
 
 **options:**
 
@@ -125,16 +125,15 @@ to < repo >         → add distribution to repo < home site vendor core /path/t
 from < repo > → remove distribution from provided repo only
 </pre>
 
-
-**list**
-
+<b>Examples:</b>
 <pre>
-<b>pakku list</b>                         # list all installed dists
-<b>pakku list Dist</b>                    # list installed Dist
-<b>pakku list details Dist</b>            # list installed Dist details
-<b>pakku list repo home</b>               # list all dists installed to home repo
-<b>pakku list repo /opt/MyApp Dist</b>    # list installed Dist in custom repo
+<b>pakku remove Dist</b>            # remove Dist from all repos
+<b>pakku remove from site Dist</b>  # remove Dist from site repo only
 </pre>
+
+
+
+**list command**
 
 **options:**
 
@@ -143,30 +142,56 @@ details               → details
 repo < name-or-path > → list specific repo
 </pre>
 
-
-**search**
+<b>Examples:</b>
 <pre>
-<b>pakku Search dist</b>               # search distributions matching dist (ignored case) on online recman
-<b>pakku Search count 4 Dist</b>       # search dist and return the lates 4 versions only
-<b>pakku Search details Dist</b>       # search dist and list all details
+<b>pakku list</b>                         # list all installed dists
+<b>pakku list Dist</b>                    # list installed Dist
+<b>pakku list details Dist</b>            # list installed Dist details
+<b>pakku list repo home</b>               # list all dists installed to home repo
+<b>pakku list repo /opt/MyApp Dist</b>    # list installed Dist in custom repo
 </pre>
+
+
+
+**search command**
 
 **options:**
 
 <pre>
-count < number > → number of dists to be returned
-details          → details of dist
+details            → details of dist
+count   < number > → number of dists to be returned
+</pre>
+
+<b>Examples:</b>
+<pre>
+<b>pakku search dist</b>               # search distributions matching dist (ignored case) on online recman
+<b>pakku search count 4 Dist</b>       # search dist and return the lates 4 versions only
+<b>pakku search details Dist</b>       # search dist and list all details
 </pre>
 
 
-**build**
+
+**build command**
+
+<b>Examples:</b>
 <pre>
 <b>pakku build Dist</b>
 <b>pakku build .</b>
 </pre>
 
 
-**test**
+**test command**
+
+**options:**
+
+<pre>
+xtest   → XTest distribution
+noxtest → Bypass xtest
+build   → Build distribution
+nobuild → Bypass build
+</pre>
+
+<b>Examples:</b>
 <pre>
 <b>pakku test Dist</b>
 <b>pakku test ./Dist</b>
@@ -174,46 +199,40 @@ details          → details of dist
 <b>pakku test nobuild ./Dist</b>
 </pre>
 
+
+**upgrade command**
+
 **options:**
 
 <pre>
-xtest           → XTest distribution
-noxtest         → Bypass xtest
-build           → Build distribution
-nobuild         → Bypass build
+deps         → upgrade dependencies
+nodeps       → no dependencies
+exclude Dep1 → exclude Dep1
+deps only    → dependencies only
+build        → build distribution
+nobuild      → bypass build
+test         → test distribution
+notest       → bypass test
+xtest        → xTest distribution
+noxtest      → bypass xtest
+force        → force upgrade
+noforce      → no force
+precomp      → precompile distribution 
+noprecomp    → no precompile
+in < repo >  → upgrade distribution in repo < home site vendor core /path/to/MyApp >
 </pre>
 
-**upgrade**
-
+<b>Examples:</b>
 <pre>
 <b>pakku upgrade Dist</b>
 <b>pakku upgrade nodeps  Dist</b>
 <b>pakku upgrade force   in   vendor  Dist1 Dist2</b>
 </pre>
 
-**options:**
 
-<pre>
-deps            → upgrade dependencies
-nodeps          → no dependencies
-exclude Dep1    → exclude Dep1
-deps only       → dependencies only
-build           → build distribution
-nobuild         → bypass build
-test            → test distribution
-notest          → bypass test
-xtest           → xTest distribution
-noxtest         → bypass xtest
-force           → force upgrade
-noforce         → no force
-precomp         → precompile distribution 
-noprecomp       → no precompile
-in < repo >     → upgrade distribution in repo < home site vendor core /path/to/MyApp >
-</pre>
+**download command**
 
-
-**download**
-
+<b>Examples:</b>
 <pre>
 <b>pakku download Dist</b>     # download source code od Dist
 </pre>
@@ -243,10 +262,10 @@ one can use config command to `enable`, `disable`, `set`, `unset` an option in t
 **options:**
 
 <pre>
-enable          → enable option
-disable         → disable option
-set < value >   → set option to value 
-unset           → unset option
+enable        → enable option
+disable       → disable option
+set < value > → set option to value 
+unset         → unset option
 </pre>
 
 
@@ -277,9 +296,7 @@ test   → t  only     → o  norecman → nr nocache  → nc  error  → «E 5�
 
 The below are `Pakku` commands as well!
 <pre>
-<b>pakku 𝛒 ↓ 🔗 🔨 Dist</b>
-<b>pakku 👓 🧚 ↑   Dist</b>
-<b>pakku 🌎        Dist</b>
+<b>pakku 👓 🧚 ↓   Dist</b>
 <b>pakku ↪</b>
 <b>pakku ❓</b>
 </pre>
@@ -296,33 +313,33 @@ An output line like:
 
 `🦋 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`
 
-means Pakku is starting to build `Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>`, based on the result another output line would be:
+means Pakku is starting to build `Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>`, and based on the result another output line could be:
 
-`🧚 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`  # successful build
+`🧚 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`  # build success
 
-`🦗 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`  # failed build
+`🦗 BLD: ｢Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>｣`  # build failure
 
 Below is a list of output lines that one can see and their meaning:
 
 ```
-🧚 PRC → Start processing
-🦋 SPC → Processing Spec
-🦋 MTA → Processing Meta
-🦋 FTC → Fetching
-🦋 BLD → Building
-🦋 STG → Staging
-🦋 TST → Testing
-🧚 BLD → Build success
-🧚 TST → Test success
-🧚 BIN → Binary added
-🐞 WAI → Waiting
-🐞 TOT → Timed out
-🦗 SPC → Error processing Spec
-🦗 MTA → Error processing Meta
-🦗 BLD → Build failure
-🦗 TST → Test failure
-🦗 CNF → Config error
-🦗 CMD → Command error
+🧚 PRC → started successfully and processing
+🦋 SPC → processing Spec
+🦋 MTA → processing Meta
+🦋 FTC → fetching
+🦋 BLD → building
+🦋 STG → staging
+🦋 TST → testing
+🧚 BLD → build success
+🧚 TST → test success
+🧚 BIN → binary added
+🐞 WAI → waiting
+🐞 TOT → timed out
+🦗 SPC → error processing Spec
+🦗 MTA → error processing Meta
+🦗 BLD → build failure
+🦗 TST → test failure
+🦗 CNF → config error
+🦗 CMD → command error
 ```
 
 **Pakku verbosity levels:**
@@ -372,6 +389,6 @@ Haytham Elganiny `elganiny.haytham at gmail.com`
 
 Copyright and License
 =====================
-Copyright 2022 Haytham Elganiny
+Copyright 2023 Haytham Elganiny
 
 This library is free software; you can redistribute it and/or modify it under the Artistic License 2.0.
