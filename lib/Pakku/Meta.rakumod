@@ -8,7 +8,7 @@ has Str $.dist   is built( False );
 has Str $.id     is built( False );
 has Str $.name   is built( False );
 
-has $.source-location is built( False );
+has $.source is built( False );
 
 has %!deps;
 
@@ -88,7 +88,7 @@ submethod TWEAK ( ) {
 
   $!id = nqp::sha1( $!dist );
 
-  $!source-location = %!meta<source-location> // %!meta<source-url>;
+  $!source = %!meta<source> // %!meta<source-url>;
 
   %!deps<build><requires>.append: flat %!meta<build-depends> if %!meta<build-depends>;
   %!deps<test><requires>.append:  flat %!meta<test-depends>  if %!meta<test-depends>;

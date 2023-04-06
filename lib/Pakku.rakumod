@@ -60,9 +60,9 @@ multi method fly (
 
     } else {
 
-      my $src = $meta.source-location;
+      my $src = $meta.source;
 
-      self.fetch: src => $meta.source-location, dst => $path;
+      self.fetch: src => $meta.source, dst => $path;
 
       $!cache.cache: :$path if $!cache;
     }
@@ -153,9 +153,9 @@ multi method fly (
 
     } else {
 
-      my $src = $meta.source-location;
+      my $src = $meta.source;
 
-      self.fetch: src => $meta.source-location, dst => $path;
+      self.fetch: src => $meta.source, dst => $path;
 
       $!cache.cache: :$path if $!cache;
     }
@@ -259,9 +259,9 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
     } else {
 
-      my $src = $meta.source-location;
+      my $src = $meta.source;
 
-      self.fetch: src => $meta.source-location, dst => $path;
+      self.fetch: src => $meta.source, dst => $path;
 
       $!cache.cache: :$path if $!cache;
     }
@@ -324,9 +324,9 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
     } else {
 
-      my $src = $meta.source-location;
+      my $src = $meta.source;
 
-      self.fetch: src => $meta.source-location, dst => $path;
+      self.fetch: src => $meta.source, dst => $path;
 
       $!cache.cache: :$path if $!cache;
     }
@@ -389,9 +389,9 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
     } else {
 
-      my $src = $meta.source-location;
+      my $src = $meta.source;
 
-      self.fetch: src => $meta.source-location, dst => $path;
+      self.fetch: src => $meta.source, dst => $path;
 
       $!cache.cache: :$path if $!cache;
     }
@@ -453,9 +453,9 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
     } else {
 
-      my $src = $meta.source-location;
+      my $src = $meta.source;
 
-      self.fetch: src => $meta.source-location, dst => $path;
+      self.fetch: src => $meta.source, dst => $path;
 
       $!cache.cache: :$path if $!cache;
     }
@@ -573,9 +573,9 @@ multi method fly ( 'download', :@spec! ) {
 
         } else {
 
-          my $src = $meta.source-location;
+          my $src = $meta.source;
 
-          self.fetch: src => $meta.source-location, dst => $path;
+          self.fetch: src => $meta.source, dst => $path;
 
           $!cache.cache: :$path if $!cache;
         }
