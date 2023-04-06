@@ -7,7 +7,7 @@ my class Pakku {
 
   has Bool $.pretty;
   has Bool $.async;
-  has Bool $.cache;
+  has Any  $.cache;
   has Bool $.yolo;
   has Bool $.please;
   has Bool $.dont;

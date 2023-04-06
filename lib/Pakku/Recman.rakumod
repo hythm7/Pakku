@@ -16,7 +16,7 @@ submethod BUILD ( :@recman! ) {
 
 }
 
-method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
+method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
   my $name = $spec.name;
   my $ver  = $spec.ver;
@@ -48,7 +48,7 @@ method recommend ( ::?CLASS:D: Pakku::Spec:D :$spec! ) {
   
 }
 
-method search ( ::?CLASS:D: Pakku::Spec:D :$spec!, Int :$count ) {
+method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count ) {
 
   my $name = $spec.name;
   my $ver  = $spec.ver;

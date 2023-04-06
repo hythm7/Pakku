@@ -5,6 +5,12 @@ use Pakku::Grammar::Cmd;
 my @tests = (
   "add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add")},
+  "add ./dist" =>
+    ${:add(${:path("./dist".IO)}), :cmd("add")},
+  "add /path/to/dist" =>
+    ${:add(${:path("/path/to/dist".IO)}), :cmd("add")},
+  "add force /path/to/dist" =>
+    ${:add(${:force, :path("/path/to/dist".IO)}), :cmd("add")},
   "add nodeps" =>
     ${:add(${:spec($["nodeps"])}), :cmd("add")},
   "add nodeps Spec" =>
@@ -91,6 +97,12 @@ my @tests = (
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
+  "cache add Spec" =>
+    ${:cmd("add"), :pakku(${:cache(True)}), :add(${:spec($["Spec"])})},
+  "nocache add Spec" =>
+    ${:cmd("add"), :pakku(${:cache(False)}), :add(${:spec($["Spec"])})},
+  "cache /tmp/pakku-cache add Spec" =>
+    ${:cmd("add"), :pakku(${:cache('/tmp/pakku-cache'.IO)}), :add(${:spec($["Spec"])})},
   "config" =>
     ${:cmd("config"), :config(${:operation("view")})},
   "config new" =>

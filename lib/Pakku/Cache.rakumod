@@ -1,35 +1,92 @@
+use nqp;
+
+use Pakku::Log;
+
 use Pakku::Spec;
+use Pakku::Meta;
 
 unit class Pakku::Cache;
 
-has IO::Path $!cached is built;
+has IO::Path() $!cache is built;
 
-method recommend ( Pakku::Spec:D :$spec! ) {
+method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
-  my $spec-dir = $!cached.add: $spec.name.subst: '::', '-', :g;
+  my $name-hash = nqp::sha1( $spec.name );
 
-  return Empty unless $spec-dir.d;
+  my $spec-dir = $!cache.add: $name-hash;
+
+  return unless $spec-dir.d;
 
   dir $spec-dir
     ==> grep( *.IO.d )
-    ==> map(  -> $dir   { try Pakku::Spec.new: $dir } )
-    ==> grep( -> $candy { $candy ~~ $spec       } )
+    ==> map(  -> $dir  { try Pakku::Meta.new: $dir } )
+    ==> grep( -> $meta { $meta.meta ~~ $spec       } )
     ==> my @candy;
 
   return unless @candy;
 
-  @candy.reduce( &reduce-latest ).prefix;
+  @candy.reduce( &reduce-latest );
+
+}
+
+method cached ( Pakku::Meta:D :$meta! ) {
+
+  🐛 CAC ~ "｢$meta｣";
+
+  my $name-hash = nqp::sha1( $meta.name );
+
+  my $cached = $!cache.add( $name-hash ).add( $meta.id );
+
+  if $cached.d {
+
+    🐛 CAC ~ "｢$meta｣ $cached";
+
+    $cached
+  }
+
+}
+
+method cache ( IO::Path:D :$path! ) {
+
+  my $meta = Pakku::Meta.new: $path;
+
+  🐛 CAC ~ "｢$meta｣";
+
+  my $name-hash = nqp::sha1( $meta.name );
+
+  my $dst = $!cache.add( $name-hash ).add( $meta.id );
+
+  copy-dir src => $path, :$dst;
+
+  🐛 CAC ~ "｢$meta｣ $dst";
 
 }
 
 sub reduce-latest ( $left, $right ) {
 
-  my %left  = $left.spec;
-  my %right = $right.spec;
+  my $left-ver  = $left.meta<ver>;
+  my $left-api  = $left.meta<api>;
+  my $right-ver = $right.meta<ver>;
+  my $right-api = $right.meta<api>;
 
-  return $left if Version.new( %left<ver> // '' ) > Version.new( %right<ver> // '' );
-  return $left if Version.new( %left<api> // '' ) > Version.new( %right<api> // '' );
+  return $left if Version.new( $left-ver // '' ) > Version.new( $right-ver // '' );
+  return $left if Version.new( $left-api // '' ) > Version.new( $right-api // '' );
   return $right;
-
 }
+
+sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) {
+
+  my $relpath := $src.chars;
+
+  for Rakudo::Internals.DIR-RECURSE( ~$src ) -> $path {
+
+    my $destination := $dst.add( $path.substr( $relpath ) );
+
+    $destination.parent.mkdir;
+
+    $path.IO.copy: $destination;
+
+  }
+}
+
 

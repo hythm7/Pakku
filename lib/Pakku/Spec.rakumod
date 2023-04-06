@@ -1,16 +1,28 @@
 use X::Pakku;
 
-unit class Pakku::Spec;
+my role Spec {
 
-has $.name      is required;
-has $.ver;
-has $.version;
+  has $.name is required;
+  has $.ver;
+  has $.from;
+
+  has Str $.id is built( False );
+
+  method gist ( ) {
+    $!name
+      ~ ( ":ver<"  ~ $!ver  ~ ">" if defined $!ver  )
+      ~ ( ":from<" ~ $!from ~ ">" if defined $!from );
+  }
+
+  method Str ( ) { self.gist }
+
+  submethod TWEAK ( ) { use nqp; $!id = nqp::sha1( ~self ) }
+}
+
+class Pakku::Spec::Raku does Spec {
+
 has $.auth;
 has $.api;
-has $.from;
-has $.prefix;
-
-has Str $.id is built( False );
 
 
 method spec ( ) {
@@ -31,12 +43,10 @@ method gist ( ) {
   $!name
     ~ ( ":ver<"  ~ $!ver  ~ ">" if defined $!ver  )
     ~ ( ":auth<" ~ $!auth ~ ">" if defined $!auth )
-    ~ ( ":api<"  ~ $!api  ~ ">" if defined $!api  )
-    ~ ( ":from<" ~ $!from ~ ">" if defined $!from and $!from ne 'raku'    );
+    ~ ( ":api<"  ~ $!api  ~ ">" if defined $!api  );
 
 }
 
-method Str ( ) { self.gist }
 
 multi method ACCEPTS ( ::?CLASS:D: %h --> Bool:D ) {
 
@@ -51,18 +61,24 @@ multi method ACCEPTS ( ::?CLASS:D: %h --> Bool:D ) {
 
 }
 
-multi method ACCEPTS ( ::?CLASS:D: Pakku::Spec:D $spec! --> Bool:D ) {
-
-  samewith $spec.spec;
+multi method ACCEPTS ( ::?CLASS:D: Pakku::Spec::Raku:D $meta! --> Bool:D ) {
+  samewith $meta.spec;
 
 }
 
-multi sub infix:<cmp>( Pakku::Spec:D \a, Pakku::Spec:D \b --> Order:D ) is export {
+multi sub infix:<cmp>( Pakku::Spec::Raku:D \a, Pakku::Spec::Raku:D \b --> Order:D ) is export {
 
   ( Version.new( a.ver ) cmp Version.new( b.ver ) ) or quietly
   ( Version.new( a.api ) cmp Version.new( b.api ) );
 
 }
+
+
+}
+
+class Pakku::Spec::Bin    does Spec { }
+class Pakku::Spec::Native does Spec { }
+class Pakku::Spec::Perl   does Spec { }
 
 grammar SpecGrammar {
 
@@ -95,7 +111,6 @@ class SpecActions {
 
   # TODO Make it work with Regex matchers
   method spec ( $/ ) {
-
     make  { name => $/<name>.Str, $/<pair>.map( *.made ) };
   }
 
@@ -112,62 +127,54 @@ class SpecActions {
 
 }
 
+class Pakku::Spec {
 
-submethod TWEAK ( ) {
+  multi method new ( Str:D $spec ) {
 
-  use nqp;
+    with SpecGrammar.parse( $spec, actions => SpecActions ).made {
 
-  $!ver  //= $!version;
-  $!from //= 'raku';
+      self.new: $_;
 
-  $!id = nqp::sha1( self.Str );
+    } else { die X::Pakku::Spec.new: :$spec }
 
-}
+  }
 
-multi method new ( Str:D $spec ) {
-
-  with Pakku::Spec::SpecGrammar.parse( $spec, actions => Pakku::Spec::SpecActions ).made {
-
-    self.bless: |$_;
-
-  } else { die X::Pakku::Spec.new: :$spec }
-
-}
-
-multi method new ( @spec! ) {
-
-  @spec.map( -> $spec { self.new: $spec } );
-
-}
+  multi method new ( @spec! ) {
+    @spec.map( -> $spec { self.new: $spec } );
+  }
 
 
-multi method new ( IO $prefix! ) {
+  multi method new ( %spec! ) {
 
-  my @meta = <META6.json META6.info META.json META.info>;
+    return self.new: %spec<any> if %spec<any>;
 
-  my $meta-file = @meta.map( -> $file { $prefix.add: $file } ).first( *.f );
+    my $from = %spec<from> // 'raku';
+
+    given $from {
+      when 'raku'   { Pakku::Spec::Raku.new:   |%spec }
+      when 'bin'    { Pakku::Spec::Bin.new:    |%spec }
+      when 'native' { Pakku::Spec::Native.new: |%spec }
+      when 'perl'   { Pakku::Spec::Perl.new:   |%spec }
+    }
+  }
+
+  multi method new ( IO::Path:D $path! ) {
+
+    my @meta = <META6.json META6.info META.json META.info>;
+
+    my $meta-file = @meta.map( -> $file { $path.add: $file } ).first( *.f );
 
 
-  die X::Pakku::Spec.new: spec => $prefix unless $meta-file;
+    die X::Pakku::Spec.new: spec => $path unless $meta-file;
 
-  my %meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
+    my %meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
 
-  %meta<ver> //= %meta<version>;
+    %meta<ver> //= %meta<version>;
 
-  self.new: %meta<name ver auth api>:kv .hash .append: ( :$prefix );
+    samewith %meta;
 
-}
+  }
 
-multi method new ( %spec! ) {
-
-  return self.new: %spec<any> if %spec<any>;
-
-  self.bless: |%spec;
 
 }
-
-subset Pakku::Spec::Raku   of Pakku::Spec where .from ~~ 'raku';
-subset Pakku::Spec::Perl   of Pakku::Spec where .from ~~ 'perl';
-subset Pakku::Spec::Bin    of Pakku::Spec where .from ~~ 'bin';
-subset Pakku::Spec::Native of Pakku::Spec where .from ~~ 'native';
 

@@ -19,7 +19,6 @@ lives-ok {
 
       $!log    = Pakku::Log.new: :verbose<silent>;
       $!recman = Pakku::Recman.new: :@recman;
-      $!cached = $stage.add( 'cached' );
       @!repo   = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
     }
@@ -41,12 +40,8 @@ dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku> 
 
 lives-ok {
 
-my $meta = $core.satisfy( spec => Pakku::Spec.new( 'Pakku' ) );
+$core.satisfy( spec => Pakku::Spec.new( 'Pakku' ) );
 
-my $prefix = $core.fetch( :$meta ); 
-
-my $dist = $meta.to-dist( :$prefix );
-
-}, 'Can satisfy and fetch dependency';
+}, 'Can satisfy a dependency';
 
 done-testing;

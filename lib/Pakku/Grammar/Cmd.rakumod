@@ -1,15 +1,15 @@
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> <whats>    }
-  rule TOP:sym<upgrade>  { :my @*exclude; <pakkuopt>* % <.space> <upgrade>   <upgradeopt>*  % <.space> <whats>    }
+  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> [ <specs> || <path> ]    }
+  rule TOP:sym<upgrade>  { :my @*exclude; <pakkuopt>* % <.space> <upgrade>   <upgradeopt>*  % <.space> <specs>    }
 
-  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> <what>     }
-  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> <what>     }
-  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <whats>    }
-  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <whats>    }
-  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <whats>    }
-  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <whats>?   }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> [ <spec> || <path> ]     }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> [ <spec> || <path> ]     }
+  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <specs>    }
+  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <specs>    }
+  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <specs>    }
+  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <specs>?   }
 
   rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd>                                     }
 
@@ -214,9 +214,6 @@ grammar Pakku::Grammar::Cmd {
 
   regex recman   { <rec>   | <rec>   <.space>* <recman-name> }
   regex norecman { <norec> | <norec> <.space>* <recman-name> }
-  #proto regex recman { * }
-  #regex recman:sym<recman>     { <rec> }
-  #regex recman:sym<recman-name> { <rec> <.space>* <recman-name> }
 
   proto token rec { * }
   token rec:sym<recman>   { <sym> }
@@ -228,10 +225,12 @@ grammar Pakku::Grammar::Cmd {
   token norec:sym<nrec>     { <sym> }
 
   proto token cache { * }
-  token cache:sym<cache>   { <sym> }
-  token cache:sym<c>       { <sym> }
-  token cache:sym<nocache> { <sym> }
-  token cache:sym<nc>      { <sym> }
+  token cache:sym<cache-path> { 'cache' <.space>+ <path> }
+  token cache:sym<c-path>     { 'c'     <.space>+ <path> }
+  token cache:sym<cache>      { <sym> }
+  token cache:sym<c>          { <sym> }
+  token cache:sym<nocache>    { <sym> }
+  token cache:sym<nc>         { <sym> }
 
   proto token yolo { * }
   token yolo:sym<yolo>       { <sym> }
@@ -250,7 +249,6 @@ grammar Pakku::Grammar::Cmd {
   token config:sym<config> { <sym> }
   token config:sym<conf>   { <sym> }
   token config:sym<cnf>    { <sym> }
-  token config:sym<c>      { <sym> }
 
   proto token xtest { * }
   token xtest:sym<xtest>   { <sym> }
@@ -283,10 +281,6 @@ grammar Pakku::Grammar::Cmd {
   proto token tst { * }
   token tst:sym<test> { <sym> }
   token tst:sym<t>    { <sym> }
-
-  #proto token bld { * }
-  #token bld:sym<build> { <sym> }
-  #token bld:sym<bld>   { <sym> }
 
   proto token requires { * }
   token requires:sym<requires> { <sym> }
@@ -410,14 +404,10 @@ grammar Pakku::Grammar::Cmd {
   token level:sym<🦗>     { <sym> }
 
 
-  token whats { <what>+ % \h }
-
-  proto token what { * }
-  token what:sym<spec> {    <spec> }
-  token what:sym<path> { {} <path> }
+  token specs { <spec>+ % \h }
 
   token spec { <name> <spec-pair>* }
-  token path { <[ a..z A..Z 0..9 \-_.!~*'<>():@&=+$,/ ]>+ }
+  token path { <[./\\]> <[ a..z A..Z 0..9 \-_.!~*'<>():@&=+$,/\\ ]>* }
 
   token name { [<-[./:<>()\h]>+]+ % '::' }
 
@@ -450,7 +440,8 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>       = 'add';
     %cmd<pakku>     = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<add>       = $<addopt>».made.hash   if defined $<addopt>;
-    %cmd<add><spec> = $<whats>.made;
+    %cmd<add><spec> = $<specs>.made          if defined $<specs>;
+    %cmd<add><path> = $<path>.made           if defined $<path>;
 
     make %cmd;
 
@@ -464,7 +455,7 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>           = 'upgrade';
     %cmd<pakku>         = $<pakkuopt>».made.hash   if defined $<pakkuopt>;
     %cmd<upgrade>       = $<upgradeopt>».made.hash if defined $<upgradeopt>;
-    %cmd<upgrade><spec> = $<whats>.made;
+    %cmd<upgrade><spec> = $<specs>.made;
 
     make %cmd;
 
@@ -477,7 +468,8 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>         = 'build';
     %cmd<pakku>       = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<build>       = $<buildopt>».made.hash if defined $<buildopt>;
-    %cmd<build><spec> = $<what>.made;
+    %cmd<build><spec> = $<spec>.made if defined $<spec>;
+    %cmd<build><path> = $<path>.made if defined $<path>;
 
     make %cmd;
 
@@ -490,7 +482,8 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>        = 'test';
     %cmd<pakku>      = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<test>       = $<testopt>».made.hash  if defined $<testopt>;
-    %cmd<test><spec> = $<what>.made;
+    %cmd<test><spec> = $<spec>.made           if defined $<spec>;
+    %cmd<test><path> = $<path>.made           if defined $<path>;
 
     make %cmd;
 
@@ -504,7 +497,7 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>          = 'remove';
     %cmd<pakku>        = $<pakkuopt>».made.hash  if defined $<pakkuopt>;
     %cmd<remove>       = $<removeopt>».made.hash if defined $<removeopt>;
-    %cmd<remove><spec> = $<whats>.made;
+    %cmd<remove><spec> = $<specs>.made;
 
     make %cmd;
 
@@ -517,7 +510,7 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>            = 'download';
     %cmd<pakku>          = $<pakkuopt>».made.hash     if defined $<pakkuopt>;
     %cmd<download>       = $<downloadopt>».made.hash  if defined $<downloadopt>;
-    %cmd<download><spec> = $<whats>.made;
+    %cmd<download><spec> = $<specs>.made;
 
     make %cmd;
 
@@ -531,7 +524,7 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>        = 'list';
     %cmd<pakku>      = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<list>       = $<listopt>».made.hash  if defined $<listopt>;
-    %cmd<list><spec> = $<whats>.made          if defined $<whats>;
+    %cmd<list><spec> = $<specs>.made          if defined $<specs>;
 
     make %cmd;
 
@@ -545,7 +538,7 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>          = 'search';
     %cmd<pakku>        = $<pakkuopt>».made.hash   if defined $<pakkuopt>;
     %cmd<search>       = $<searchopt>».made.hash  if defined $<searchopt>;
-    %cmd<search><spec> = $<whats>.made;
+    %cmd<search><spec> = $<specs>.made;
 
     make %cmd;
 
@@ -834,8 +827,10 @@ class Pakku::Grammar::CmdActions {
   method recman:sym<norecman> ( $/ )  { make ( :!recman ) }
   method recman:sym<nr>       ( $/ )  { make ( :!recman ) }
 
-  method cache:sym<cache>   ( $/ )  { make ( :cache  ) }
-  method cache:sym<c>       ( $/ )  { make ( :cache  ) }
+  method cache:sym<cache-path>   ( $/ )  { make ( cache => $<path>.made ) }
+  method cache:sym<c-path>       ( $/ )  { make ( cache => $<path>.made ) }
+  method cache:sym<cache> ( $/ )  { make ( :cache ) }
+  method cache:sym<c>     ( $/ )  { make ( :cache ) }
   method cache:sym<nocache> ( $/ )  { make ( :!cache ) }
   method cache:sym<nc>      ( $/ )  { make ( :!cache ) }
 
@@ -931,10 +926,7 @@ class Pakku::Grammar::CmdActions {
   method level:sym<🐞>     ( $/ ) { make 'warn'   }
   method level:sym<🦗>     ( $/ ) { make 'error'  }
 
-  method whats ( $/ ) { make $<what>».made }
-
-  method what:sym<spec> ( $/ ) { make $<spec>.made }
-  method what:sym<path> ( $/ ) { make $<path>.made }
+  method specs ( $/ ) { make $<spec>».made }
 
   method spec ( $/ ) { make $/.Str }
 

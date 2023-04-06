@@ -8,7 +8,7 @@ has Str $.dist   is built( False );
 has Str $.id     is built( False );
 has Str $.name   is built( False );
 
-has $.source-url is built( False );
+has $.source-location is built( False );
 
 has %!deps;
 
@@ -48,7 +48,7 @@ multi method deps ( Str:D :$deps where 'only' ) { samewith :deps }
 multi method deps ( Bool:D :$deps where not *.so ) { Empty }
 
 
-method to-dist ( ::?CLASS:D: IO :$prefix! ) {
+method to-dist ( ::?CLASS:D: IO::Path:D $prefix! ) {
 
   # %bins and resources stolen from Rakudo
   my %bins = Rakudo::Internals.DIR-RECURSE($prefix.add('bin').absolute).map(*.IO).map: -> $real-path {
@@ -88,7 +88,7 @@ submethod TWEAK ( ) {
 
   $!id = nqp::sha1( $!dist );
 
-  $!source-url = %!meta<source-url>;
+  $!source-location = %!meta<source-location> // %!meta<source-url>;
 
   %!deps<build><requires>.append: flat %!meta<build-depends> if %!meta<build-depends>;
   %!deps<test><requires>.append:  flat %!meta<test-depends>  if %!meta<test-depends>;
@@ -138,38 +138,21 @@ multi method new ( Str:D $json ) {
 
 }
 
-multi method new ( IO::Path:D $local-path ) {
+multi method new ( IO::Path:D $path ) {
 
   my @meta = <META6.json META6.info META.json META.info>;
 
-  my $meta-file = @meta.map( -> $file { $local-path.add: $file } ).first( *.f );
+  my $meta-file = @meta.map( -> $file { $path.add: $file } ).first( *.f );
 
   die 'No META file' unless $meta-file;
 
   my $meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
-
-  $meta<local-path> = $local-path;
 
   samewith $meta;
 
 }
 
 multi method new ( %meta ) {
-
-  # $*REPO will not uninstall without api
-  #%meta<api> //= v0;
-
-  #unless %meta<dist> {
-
-  #  my Str $dist = %meta<name>;
-
-  #  $dist ~= ":ver<$_>"  with %meta<version>;
-  #  $dist ~= ":auth<$_>" with %meta<auth>;
-  #  $dist ~= ":api<$_>"  with %meta<api>;
-
-  #  %meta<dist> = $dist;
-
-  #}
 
   self.bless: meta => system-collapse %meta;
 

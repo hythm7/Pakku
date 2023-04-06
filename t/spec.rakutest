@@ -5,27 +5,56 @@ use Test;
 use Pakku::Spec;
 
 
-my @spec = (
-
+my @rakuspec = (
   'Spec',
   'Spec::Spec',
   'Spec::Spec:ver<0.42>',
   'Spec::Spec:ver<0.42>:auth<github:jojo>',
   'Spec::Spec:auth<github:jojo>:ver<0.42>',
-  'Spec::Spec:ver<0.1>:auth<github:jojo>:api<42>',
-  { :from<bin>, :name<bin> },
-  { :from<lib>, :name<lib>, :ver<42> },
-  { any => [ 'spec:ver<1>:from<native>', 'spec:from<native>' ] },
-
+  'Spec::Spec:ver<0.1>:auth<github:jojo>:api<0.42>',
+  { :from<raku>, :name<Spec::Spec> },
 );
 
-for @spec -> $spec {
 
-  lives-ok { Pakku::Spec.new( $spec ) }, "{ $spec.gist } is valid";
-
+for @rakuspec -> $spec {
+   isa-ok Pakku::Spec.new( $spec ), Pakku::Spec::Raku, $spec.raku;
 }
 
-@spec = (
+my @binspec = (
+  'spec:from<bin>',
+  { :from<bin>, :name<spec> },
+);
+
+for @binspec -> $spec {
+   isa-ok Pakku::Spec.new( $spec ), Pakku::Spec::Bin, $spec.raku;
+}
+
+my @nativespec = (
+  'spec:from<native>',
+  { :from<native>, :name<spec> },
+  { :from<native>, :name<spec>, :ver<0.42> },
+);
+
+for @nativespec -> $spec {
+   isa-ok Pakku::Spec.new( $spec ), Pakku::Spec::Native, $spec.raku;
+}
+
+
+my @arrayspec = (
+  { any => [ 'spec:ver<1>', 'spec' ] },
+  { any => [ { :from<native>, :name<spec>, :ver<0.42> }, { :from<native>, :name<spec> } ] },
+  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
+  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
+  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
+  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
+);
+
+for @arrayspec -> $spec {
+   lives-ok { Pakku::Spec.new( $spec ) }, $spec.raku;
+}
+
+
+my @invalidspec = (
 
   'Spec:',
   'Spec::',
@@ -36,10 +65,50 @@ for @spec -> $spec {
 );
 
 
-for @spec -> $spec {
+for @invalidspec -> $spec {
 
-  dies-ok { Pakku::Spec.new( $spec ) }, "{ $spec.gist } is not valid";
+  dies-ok { Pakku::Spec.new( $spec ) }, "{ $spec.raku } is not valid spec";
 
 }
+
+my $meta = q:to/META/;
+{
+    "perl" : "6.*",
+    "name" : "dist",
+    "auth" : "github:hythm7",
+    "api" : "0",
+    "version" : "0.0.1",
+    "description" : "Description.",
+    "authors" : [ "Haytham Elganiny" ],
+    "license" : "Artistic-2.0",
+    "provides" : {
+        "Module" : "lib/Module.rakumod"
+    },
+    "depends" : [
+      "perl:from<native>"
+    ],
+    "build-depends" : [ ],
+    "test-depends" : [ ],
+    "resources" : [
+    ],
+   "tags": [
+   ],
+    "source-url" : "https://github.com/hythm7/dist.git"
+}
+
+META
+
+my @pathspec = (
+  $*TMPDIR.add( 'pakku-test' ).add( 'META.json' ),
+);
+
+for @pathspec -> $spec {
+   $spec.dirname.IO.mkdir;
+   $spec.spurt: $meta;
+   isa-ok Pakku::Spec.new( $spec.dirname.IO ), Pakku::Spec::Raku, $spec.raku;
+   $spec.unlink;
+   $spec.dirname.IO.rmdir;
+}
+
 
 done-testing;

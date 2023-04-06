@@ -85,6 +85,7 @@ enum PRF is export (
   SPC => 'SPC: ',
   MTA => 'MTA: ',
   FTC => 'FTC: ',
+  CAC => 'CAC: ',
   STG => 'STG: ',
   BLD => 'BLD: ',
   TST => 'TST: ',

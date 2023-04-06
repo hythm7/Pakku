@@ -1,3 +1,7 @@
+#TODO use $!curl instance here and pass it to $!recman
+# move sub retry to Pakku::Curl
+# URL subset of Str (starts with http
+
 use X::Pakku;
 use Pakku::Log;
 use Pakku::Help;
@@ -21,7 +25,6 @@ has Bool $!yolo;
 has Int  $!cores;
 has Int  $!degree;
 
-has IO::Path $!cached;
 has IO::Path $!stage;
 
 has Pakku::Log    $!log;
@@ -29,6 +32,8 @@ has Pakku::Cache  $!cache;
 has Pakku::Recman $!recman;
 
 has CompUnit::Repository @!repo;
+
+has IO::Path $!tmp;
 
 method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
@@ -181,6 +186,29 @@ method !build ( Distribution::Locally:D :$dist ) {
 
 }
 
+multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
+
+  🐛 SPC ~ "｢$spec｣";
+
+  my $meta = try Pakku::Meta.new(
+    ( $!cache.recommend( :$spec ).meta if $!cache  ) //
+    ( $!recman.recommend: :$spec if $!recman )
+  );
+
+  die X::Pakku::Meta.new: meta => $spec unless $meta;
+
+  if $meta {
+
+    🦋 MTA ~ "｢$meta｣"; 
+
+    $meta;
+  }
+
+}
+
+multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
+multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
+multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 
 multi method satisfy ( :@spec! ) {
 
@@ -205,30 +233,6 @@ multi method satisfy ( :@spec! ) {
 
 }
 
-multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
-
-  🐛 SPC ~ "｢$spec｣";
-
-  my $meta = try Pakku::Meta.new(
-    ( $spec.prefix                            ) //
-    ( $!cache  .recommend: :$spec if $!cache  ) //
-    ( $!recman .recommend: :$spec if $!recman )
-  );
-
-  die X::Pakku::Meta.new: meta => $spec unless $meta;
-
-  if $meta {
-
-    🦋 MTA ~ "｢$meta｣"; 
-
-    $meta;
-  }
-
-}
-
-multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
-multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
-multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
 
 multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
 
@@ -278,9 +282,9 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
 }
 
-method get-deps ( Pakku::Meta:D $meta, :$deps, :@exclude ) {
+method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 
-  # cannot use .name instead of .id (that will save a few calls)
+  # cannot use .name instead of .id (which will save a few calls)
   # because dists that depends on two different versions of
   # same dependency, will fail. 
   state %visited;
@@ -314,52 +318,47 @@ method get-deps ( Pakku::Meta:D $meta, :$deps, :@exclude ) {
 }
 
 
-method fetch ( Pakku::Meta:D :$meta! ) {
+# TODO: subset TarGzURL of Str
+multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
-  🦋 FTC ~ "｢$meta｣";
+  🐛 FTC ~ "｢$src｣";
 
-  with $meta.meta<local-path> -> $local-path {
+  mkdir $dst;
 
-    🐛 FTC ~ "｢$local-path｣";
+  my $download = $dst.add( $dst.basename ~ '.tar.gz' ).Str;
 
-    return $local-path;
+  $!recman.fetch: :url( $src ), :$download;
 
-  }
-
-  my $id = $meta.id;
-
-  my $dest = mkdir $!cached.add( $meta.name.subst: '::', '-', :g ).add( $id );
-
-  my $url      = $meta.source-url;
-  my $download = $dest.add( $id ~ '.tar.gz' ).Str;
-
-  🐛 FTC ~ "｢$url｣";
-
-  $!recman.fetch: :$url :$download;
-
-  my $extract = extract archive => $download, dest => ~$dest;
+  my $extract = extract archive => $download, dest => ~$dst;
 
   die X::Pakku::Archive.new: :$download unless $extract;
 
   unlink $download;
 
-  🐛 FTC ~ "｢$dest｣";
-
-  $dest;
+  🐛 FTC ~ "｢$dst｣";
 
 }
 
-method clear-stage ( ) { clear-stage $!stage if $!stage.d }
+method clear ( ) {
 
+  remove-dir $!tmp if $!tmp.d;
+
+  try remove-dir $!stage if $!stage.d;
+
+}
 
 method cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
 
+  my $pakku-dir = $*HOME.add( '.pakku' );
+
   my $pretty   = %!cnf<pakku><pretty>   // True;
   my $verbose  = %!cnf<pakku><verbose>  // 'now';
   my %level    = %!cnf<log><level>      // {};
-  my $cache    = %!cnf<pakku><cache>    // True;
+
+  
+  $!tmp = $pakku-dir.add( '.tmp' );
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
@@ -369,13 +368,20 @@ submethod BUILD ( :%!cnf! ) {
   $!cores  = $*KERNEL.cpu-cores - 1;
   $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
 
-  $!cached = $*HOME.add( '.pakku' ).add( 'cache' );
-
-  $!stage  = $*HOME.add( '.pakku' ).add( 'stage' ).add( now.Num );
-
-  $!cache  = Pakku::Cache.new:  :$!cached if $cache;
+  $!stage  = $pakku-dir.add( '.stage' );
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
+
+  my $cache-conf = %!cnf<pakku><cache>; 
+  my $cache      = $pakku-dir.add( '.cache' ); 
+
+  with $cache-conf {
+    $cache = $cache-conf unless $cache-conf === True;  
+  }
+
+  $!cache = Pakku::Cache.new:  :$cache if $cache;
+
 
   my $recman   = %!cnf<pakku><recman>;
   my $norecman = %!cnf<pakku><norecman>;
@@ -391,8 +397,6 @@ submethod BUILD ( :%!cnf! ) {
 
 
 method metamorph ( ) {
-
-  END try self.clear-stage;
 
   CATCH {
 
@@ -460,8 +464,22 @@ sub find-perl-module ( Str:D $name --> Bool:D ) {
   return False;
 }
 
-sub clear-stage(IO::Path:D $io --> Nil) {
-  # borrowed from CURS.self-destruct
-  .d ?? clear-stage($_) !! .unlink for $io.dir;
+sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) is export {
+
+  my $relpath := $src.chars;
+
+  for Rakudo::Internals.DIR-RECURSE( ~$src ) -> $path {
+
+    my $destination := $dst.add( $path.substr( $relpath ) );
+
+    $destination.parent.mkdir;
+
+    $path.IO.copy: $destination;
+
+  }
+}
+
+sub remove-dir( IO::Path:D $io --> Nil ) is export {
+  .d ?? remove-dir( $_ ) !! .unlink for $io.dir;
   $io.rmdir;
 }

@@ -23,17 +23,19 @@ multi method fly (
 
 ) {
 
+  LEAVE self.clear;
+
   🧚 PRC ~ "｢{@spec}｣";
 
 
   @spec
-    ==> map(  -> $spec { Spec.new: $spec } )
+    ==> map(  -> $spec { Pakku::Spec.new: $spec } )
     ==> grep( -> $spec { $force or not self.satisfied: :$spec } )
     ==> unique( as => *.Str )
     ==> map(  -> $spec { self.satisfy: :$spec } )
     ==> map(  -> $dep {
 
-      my @dep = self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Spec.new( $exclude ) } )  if @exclude );
+      my @dep = self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
       @dep.append: $dep unless $deps ~~ <only>;
 
@@ -44,18 +46,128 @@ multi method fly (
     ==> unique( as => *.Str )
     ==> my @meta;
 
-  @meta.hyper( degree => $!cores )
-    ==> map( -> $meta {
+  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
 
-      my $prefix = $.fetch: :$meta;
+    🦋 FTC ~ "｢$meta｣";
 
-      $meta.to-dist: :$prefix;
+    my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
 
-    } )
-    ==> my @dist;
+    my $cached = $!cache.cached( :$meta ) if $!cache;
+
+    if $cached {
+
+      copy-dir src => $cached, dst => $path;
+
+    } else {
+
+      my $src = $meta.source-location;
+
+      self.fetch: src => $meta.source-location, dst => $path;
+
+      $!cache.cache: :$path if $!cache;
+    }
+
+    $meta.to-dist: $path;
+
+  } );
 
   my $*stage := CompUnit::Repository::Staging.new:
-    prefix    => $!stage,
+    prefix    => $!stage.add( now.Num ),
+    name      => $repo.name // 'custom', # TODO revisit custom repositories
+    next-repo => $*REPO;
+
+
+  @dist 
+    ==> map( -> $dist {
+  
+      self!build: :$dist if $build;
+
+      🦋 STG ~ "｢$dist｣";
+
+      $*stage.install: $dist, :$precompile;
+
+      self!test: :$dist :$xtest if $test;
+
+    } );
+
+  $*stage.remove-artifacts;
+
+  unless $!dont {
+
+    if @dist {
+
+      $*stage.deploy;
+
+      my $bin = $*stage.prefix.add( 'bin' ).Str;
+
+      🧚 BIN ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+    }
+  }
+}
+
+multi method fly (
+
+         'add',
+  IO:D   :$path!,
+         :$deps       = True,
+  Bool:D :$build      = True,
+  Bool:D :$test       = True,
+  Bool:D :$xtest      = False,
+  Bool:D :$precompile = True,
+  Bool:D :$force      = False,
+         :@exclude,
+
+  CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
+
+) {
+
+  LEAVE self.clear;
+
+  🧚 PRC ~ "｢$path｣";
+
+  my $spec = Pakku::Spec.new: $path;
+
+  return if not $force and self.satisfied: :$spec;
+
+  my $meta = Pakku::Meta.new: $path;
+
+  my @meta = self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+
+
+  @meta .=  unique( as => *.Str );
+
+  my $dist = $meta.to-dist: $path;
+
+  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+
+    🦋 FTC ~ "｢$meta｣";
+
+    my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
+
+    my $cached = $!cache.cached( :$meta ) if $!cache;
+
+    if $cached {
+
+      copy-dir src => $cached, dst => $path;
+
+    } else {
+
+      my $src = $meta.source-location;
+
+      self.fetch: src => $meta.source-location, dst => $path;
+
+      $!cache.cache: :$path if $!cache;
+    }
+
+    $meta.to-dist: $path;
+
+  } );
+
+  @dist.append: $dist unless $deps ~~ <only>;
+
+  my $*stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage.add( now.Num ),
     name      => $repo.name // 'custom', # TODO revisit custom repositories
     next-repo => $*REPO;
 
@@ -105,6 +217,8 @@ multi method fly (
 
 ) {
 
+  LEAVE self.clear;
+
   🧚 PRC ~ "｢{@spec}｣";
 
   @spec .= map(  -> $spec { self.upgradable: spec => Pakku::Spec.new: $spec } );
@@ -117,37 +231,260 @@ multi method fly (
 
 }
 
-multi method fly ( 'test', :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
+multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
   
+  LEAVE self.clear;
+
+  🧚 PRC ~ "｢$path｣";
+
+  my $meta = Pakku::Meta.new: $path;
+
+  my @meta = self.get-deps: $meta;
+
+  @meta .=  unique( as => *.Str );
+
+  my $dist = $meta.to-dist: $path;
+
+  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+
+    🦋 FTC ~ "｢$meta｣";
+
+    my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
+
+    my $cached = $!cache.cached( :$meta ) if $!cache;
+
+    if $cached {
+
+      copy-dir src => $cached, dst => $path;
+
+    } else {
+
+      my $src = $meta.source-location;
+
+      self.fetch: src => $meta.source-location, dst => $path;
+
+      $!cache.cache: :$path if $!cache;
+    }
+
+    $meta.to-dist: $path;
+
+  } );
+
+  @dist.append: $dist;
 
   my $*stage := CompUnit::Repository::Staging.new:
-    prefix    => $!stage,
+    prefix    => $!stage.add( now.Num ),
     name      => 'home',
     next-repo => $*REPO;
 
 
-  my $meta = self.satisfy: spec => Spec.new: $spec;
-  my $dist = $meta.to-dist: prefix => $.fetch: :$meta;
+  @dist 
+    ==> map( -> $dist {
+  
+      self!build: :$dist if $build;
 
-  self!build: :$dist :$xtest if $build;
+      🦋 STG ~ "｢$dist｣";
 
-  🦋 STG ~ "｢$dist｣";
+      $*stage.install: $dist;
 
-  $*stage.install: $dist;
+    } );
 
   self!test: :$dist :$xtest unless $!dont;
 
+  $*stage.remove-artifacts;
+
 }
 
-multi method fly ( 'build', :$spec! ) {
 
-  my $meta = self.satisfy: spec => Spec.new: $spec;
+multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
+   
+  LEAVE self.clear;
 
-  my $dist = $meta.to-dist: prefix => $.fetch: :$meta;
+  🧚 PRC ~ "｢$spec｣";
 
-  my $*stage := CompUnit::RepositoryRegistry.repository-for-spec: $dist.prefix.add( 'lib' ).Str;
+  my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
+
+  my @meta = self.get-deps: $meta;
+
+  @meta .=  unique( as => *.Str );
+
+  @meta.append: $meta;
+
+  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+
+    🦋 FTC ~ "｢$meta｣";
+
+    my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
+
+    my $cached = $!cache.cached( :$meta ) if $!cache;
+
+    if $cached {
+
+      copy-dir src => $cached, dst => $path;
+
+    } else {
+
+      my $src = $meta.source-location;
+
+      self.fetch: src => $meta.source-location, dst => $path;
+
+      $!cache.cache: :$path if $!cache;
+    }
+
+    $meta.to-dist: $path;
+
+  } );
+
+  my $*stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage.add( now.Num ),
+    name      => 'home',
+    next-repo => $*REPO;
+
+
+  my $dist = @dist.tail;
+
+  @dist 
+    ==> map( -> $dist {
+  
+      self!build: :$dist if $build;
+
+      🦋 STG ~ "｢$dist｣";
+
+      $*stage.install: $dist;
+
+
+    } );
+
+  self!test: :$dist :$xtest unless $!dont;
+
+  $*stage.remove-artifacts;
+
+}
+
+multi method fly ( 'build', IO::Path:D :$path! ) {
+
+  LEAVE self.clear;
+
+  🧚 PRC ~ "｢$path｣";
+
+  my $meta = Pakku::Meta.new: $path;
+
+  my @meta = self.get-deps: $meta;
+
+  @meta .=  unique( as => *.Str );
+
+  my $dist = $meta.to-dist: $path;
+
+  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+
+    🦋 FTC ~ "｢$meta｣";
+
+    my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
+
+    my $cached = $!cache.cached( :$meta ) if $!cache;
+
+    if $cached {
+
+      copy-dir src => $cached, dst => $path;
+
+    } else {
+
+      my $src = $meta.source-location;
+
+      self.fetch: src => $meta.source-location, dst => $path;
+
+      $!cache.cache: :$path if $!cache;
+    }
+
+    $meta.to-dist: $path;
+
+  } );
+
+  my $*stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage.add( now.Num ),
+    name      => 'home',
+    next-repo => $*REPO;
+
+
+  @dist 
+    ==> map( -> $dist {
+  
+      self!build: :$dist;
+
+      🦋 STG ~ "｢$dist｣";
+
+      $*stage.install: $dist;
+
+
+    } );
 
   self!build: :$dist unless $!dont;
+
+  $*stage.remove-artifacts;
+
+
+}
+
+multi method fly ( 'build', Str:D :$spec! ) {
+
+  LEAVE self.clear;
+
+  🧚 PRC ~ "｢$spec｣";
+
+  my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
+
+  my @meta = self.get-deps: $meta;
+
+  @meta .=  unique( as => *.Str );
+
+  @meta.append: $meta;
+
+  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+
+    🦋 FTC ~ "｢$meta｣";
+
+    my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
+
+    my $cached = $!cache.cached( :$meta ) if $!cache;
+
+    if $cached {
+
+      copy-dir src => $cached, dst => $path;
+
+    } else {
+
+      my $src = $meta.source-location;
+
+      self.fetch: src => $meta.source-location, dst => $path;
+
+      $!cache.cache: :$path if $!cache;
+    }
+
+    $meta.to-dist: $path;
+
+  } );
+
+  my $*stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage.add( now.Num ),
+    name      => 'home',
+    next-repo => $*REPO;
+
+  my $dist = @dist.pop;
+
+  @dist 
+    ==> map( -> $dist {
+  
+      self!build: :$dist;
+
+      🦋 STG ~ "｢$dist｣";
+
+      $*stage.install: $dist;
+
+    } );
+
+  self!build: :$dist unless $!dont;
+
+  $*stage.remove-artifacts;
 
 }
 
@@ -186,7 +523,7 @@ multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details
         ==> flat( );
     } )
     ==> flat( )
-    ==> map( -> $meta { Meta.new: $meta } )
+    ==> map( -> $meta { Pakku::Meta.new: $meta } )
     ==> map( -> $meta { out $meta.gist: :$details } );
 
 
@@ -197,7 +534,7 @@ multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details
     ==> map( *.installed.map( *.meta.item ) )
     ==> flat( )
     ==> grep( *.defined )
-    ==> map( -> $meta { Meta.new: $meta } )
+    ==> map( -> $meta { Pakku::Meta.new: $meta } )
     ==> map( -> $meta { out $meta.gist: :$details } );
   }
 
@@ -208,10 +545,10 @@ multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details
 multi method fly ( 'search', :@spec!, Int :$count, Bool:D :$details = False ) {
 
   @spec
-    ==> map( -> $spec { Spec.new: $spec                        } )
-    ==> map( -> $spec { $!recman.search( :$spec :$count ).Slip } )
-    ==> map( -> $meta { Meta.new( $meta ).gist: :$details      } )
-    ==> map( -> $meta { out $meta                              } );
+    ==> map( -> $spec { Pakku::Spec.new: $spec                        } )
+    ==> map( -> $spec { $!recman.search( :$spec :$count ).Slip   } )
+    ==> map( -> $meta { Pakku::Meta.new( $meta ).gist: :$details } )
+    ==> map( -> $meta { out $meta                                } );
 
   return;
 
@@ -219,12 +556,33 @@ multi method fly ( 'search', :@spec!, Int :$count, Bool:D :$details = False ) {
 
 multi method fly ( 'download', :@spec! ) {
 
-  @spec
-    ==> map( -> $spec { Spec.new:      $spec               } )
+  sink @spec
+    ==> map( -> $spec { Pakku::Spec.new:      $spec               } )
     ==> map( -> $spec { self.satisfy: :$spec               } )
-    ==> map( -> $meta { self.fetch:   :$meta unless $!dont } )
-    ==> map( -> $path { 🧚 "DWN: ｢$path｣"                  } );
+    ==> map( -> $meta {
 
+        🦋 FTC ~ "｢$meta｣";
+
+        my IO::Path $path = $*TMPDIR.add( $meta.id ).add( now.Num );
+
+        my $cached = $!cache.cached( :$meta ) if $!cache;
+
+        if $cached {
+
+          copy-dir src => $cached, dst => $path;
+
+        } else {
+
+          my $src = $meta.source-location;
+
+          self.fetch: src => $meta.source-location, dst => $path;
+
+          $!cache.cache: :$path if $!cache;
+        }
+
+        🧚 "DWN: ｢$path｣";
+
+      } );
 }
 
 multi method fly ( 'config', *%config ) {
@@ -283,7 +641,14 @@ multi method fly ( 'help',  Str:D :$cmd ) {
   }
 }
 
-multi method fly ( ) { samewith %!cnf<cmd>, |%!cnf{ %!cnf<cmd> }; ofun }
+multi method fly ( ) {
+
+  self.clear;
+
+  samewith %!cnf<cmd>, |%!cnf{ %!cnf<cmd> };
+
+  ofun
+}
 
 proto method fly ( | ) {
 
