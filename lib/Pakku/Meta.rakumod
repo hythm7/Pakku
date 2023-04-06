@@ -88,7 +88,7 @@ submethod TWEAK ( ) {
 
   $!id = nqp::sha1( $!dist );
 
-  $!source = %!meta<source> // %!meta<source-url>;
+  $!source = %!meta<source>;
 
   %!deps<build><requires>.append: flat %!meta<build-depends> if %!meta<build-depends>;
   %!deps<test><requires>.append:  flat %!meta<test-depends>  if %!meta<test-depends>;
