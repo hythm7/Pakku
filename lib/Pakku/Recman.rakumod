@@ -18,17 +18,21 @@ submethod BUILD ( :@recman! ) {
 
 method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
-  my $name = $spec.name;
+  my $name = $!curl.escape( $spec.name );
+
   my $ver  = $spec.ver;
   my $auth = $spec.auth;
   my $api  = $spec.api;
 
-  my $query = '/recommend';
+  my @query;
 
-  $query ~= '?name='  ~ $!curl.escape: $name;
-  $query ~= '&ver='   ~ $!curl.escape: $ver  if $ver;
-  $query ~= '&auth='  ~ $!curl.escape: $auth if $auth;
-  $query ~= '&api='   ~ $!curl.escape: $api  if $api;
+  @query.push( 'ver='  ~ $!curl.escape: $ver) if $ver;
+  @query.push( 'auth=' ~ $!curl.escape: $auth)if $auth;
+  @query.push( 'api='  ~ $!curl.escape: $api) if $api;
+
+  my $uri = '/meta/recommend/' ~ $name;
+
+  $uri ~= '?' ~ @query.join( '&') if @query;
 
   my $meta;
  
@@ -36,7 +40,7 @@ method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
     🐛 REC ~ "｢$recman<name>｣";
 
-    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query };
+    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $uri };
 
     🐞 REC ~ "｢$recman<name>｣ $!.message()";
 
@@ -50,18 +54,24 @@ method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
 method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count ) {
 
-  my $name = $spec.name;
+  my $name = $!curl.escape( $spec.name );
+
   my $ver  = $spec.ver;
   my $auth = $spec.auth;
   my $api  = $spec.api;
 
-  my $query = '/search';
+  my @query;
 
-  $query ~= '?name='  ~ $!curl.escape: $name;
-  $query ~= '&ver='   ~ $!curl.escape: $ver   if $ver;
-  $query ~= '&auth='  ~ $!curl.escape: $auth  if $auth;
-  $query ~= '&api='   ~ $!curl.escape: $api   if $api;
-  $query ~= '&count=' ~                $count if $count;
+  @query.push( 'ver='   ~ $!curl.escape: $ver   ) if $ver;
+  @query.push( 'auth='  ~ $!curl.escape: $auth  ) if $auth;
+  @query.push( 'api='   ~ $!curl.escape: $api   ) if $api;
+  @query.push( 'count=' ~                $count ) if $count;
+
+  my $uri = '/meta/search/' ~ $name;
+
+  $uri ~= '?' ~ @query.join( '&') if @query;
+
+  dd $uri;
 
   my $meta;
  
@@ -69,7 +79,7 @@ method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count ) {
 
     🐛 REC ~ "｢$recman<name>｣";
 
-    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $query }
+    last if $meta = try retry { $!curl.content: URL => $recman<url> ~ $uri }
 
     🐞 REC ~ "｢$recman<name>｣ .message()" with $!;
 
