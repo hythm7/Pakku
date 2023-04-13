@@ -43,18 +43,36 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
 }
 
-method search ( ::?CLASS:D: :$spec!, Int :$count ) {
+method search ( ::?CLASS:D: :$spec!, :$count = ∞ ) {
 
   🐛 REC ~ "｢$!name｣ $spec";
 
-  my $name   = $spec.name;
+  my %meta;
+  my %provides;
+
+  %!meta.values
+    ==> map( *.Slip )
+    ==> map( -> $meta {
+
+      my $name   = $meta<name>.lc;
+      my $nameid = nameid( $name );
+
+      %meta{ $nameid }.push: $meta;
+
+      for $meta<provides>.keys -> $unit {
+        %provides{ nameid( $unit.lc ) } = $nameid
+      }
+
+    });
+
+  my $name   = $spec.name.lc;
   my $nameid = nameid( $name );
 
   my @candy;
 
-  @candy = flat %!meta{ $nameid  } if %!meta{ $nameid }:exists;
+  @candy = flat %meta{ $nameid  } if %meta{ $nameid }:exists;
 
-  @candy = flat %!meta{ %!provides{ $nameid } } if %!provides{ $nameid }:exists;
+  @candy = flat %meta{ %provides{ $nameid } } if %provides{ $nameid }:exists;
 
   @candy .= grep( -> %candy {  %candy ~~ $spec } );
 
@@ -65,7 +83,7 @@ method search ( ::?CLASS:D: :$spec!, Int :$count ) {
     return;
   }
 
-  @candy;
+  @candy.head: $count;
 
 }
 
@@ -93,7 +111,9 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
       %!meta{ $nameid }.push: %meta;
 
-      %meta<provides>.map( -> $provides { %!provides{ nameid( $provides ) } = $nameid } );
+      for %meta<provides>.keys -> $unit {
+        %!provides{ nameid( $unit ) } = $nameid
+      }
 
     } );
 

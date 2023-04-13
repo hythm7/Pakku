@@ -32,6 +32,6 @@ method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
 method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count ) {
 
-  for @!recman -> $recman { .return with $recman.search: :$spec }
+  for @!recman -> $recman { .return with $recman.search: :$spec :$count }
 
 }
