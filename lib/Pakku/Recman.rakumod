@@ -26,40 +26,12 @@ submethod BUILD ( :$curl!, :@recman! ) {
 
 method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
-  my $meta;
-
-  @!recman.map( -> $recman {
-
-    🐛 REC ~ "｢$recman.name()｣";
-
-    last if $meta = try $recman.recommend: :$spec;
-
-    🐞 REC ~ "｢$recman.name()｣ $!.message()";
-
-  } );
-
-  return Empty unless $meta;
-
-  $meta;
+  for @!recman -> $recman { .return with $recman.recommend: :$spec }
 
 }
 
 method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count ) {
 
-  my @meta;
-
-  @!recman.map( -> $recman {
-
-    🐛 REC ~ "｢$recman.name()｣";
-
-    last if @meta = try $recman.search: :$spec;
-
-    🐞 REC ~ "｢$recman.name()｣ $!.message()";
-
-  } );
-
-  return Empty unless @meta;
-
-  @meta;
+  for @!recman -> $recman { .return with $recman.search: :$spec }
 
 }

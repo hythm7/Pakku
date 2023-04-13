@@ -343,6 +343,8 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
 multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
 
+  copy-dir :$src :$dst;
+
 }
 
 method clear ( ) {
@@ -471,7 +473,7 @@ sub find-perl-module ( Str:D $name --> Bool:D ) {
   return False;
 }
 
-sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) is export {
+sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil) is export {
 
   my $relpath := $src.chars;
 

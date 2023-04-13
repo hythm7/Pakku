@@ -547,6 +547,7 @@ multi method fly ( 'search', :@spec!, Int :$count, Bool:D :$details = False ) {
   @spec
     ==> map( -> $spec { Pakku::Spec.new: $spec                        } )
     ==> map( -> $spec { $!recman.search( :$spec :$count ).Slip   } )
+    ==> grep( *.defined                                            )
     ==> map( -> $meta { Pakku::Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { out $meta                                } );
 

@@ -10,6 +10,8 @@ has Pakku::Curl:D $!curl     is required is built;
 
 method recommend ( ::?CLASS:D: :$spec! ) {
 
+  🐛 REC ~ "｢$!name｣ $spec";
+
   my $name = $!curl.escape( $spec.name );
 
   my $ver  = $spec.ver;
@@ -28,17 +30,24 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   my $meta;
  
-  🐛 REC ~ "｢$!name｣";
 
   $meta = retry { $!curl.content: URL => $!location ~ $uri };
 
-  return Empty unless $meta;
+  unless $meta {
+
+    🐛 REC ~ "｢$!name｣ $spec not found!";
+
+    return;
+
+  }
 
   $meta;
   
 }
 
 method search ( ::?CLASS:D: :$spec!, Int :$count ) {
+
+  🐛 REC ~ "｢$!name｣ $spec";
 
   my $name = $!curl.escape( $spec.name );
 
@@ -59,11 +68,15 @@ method search ( ::?CLASS:D: :$spec!, Int :$count ) {
 
   my $meta;
  
-  🐛 REC ~ "｢$!name｣";
-
   $meta = retry { $!curl.content: URL => $!location ~ $uri };
 
-  return Empty unless $meta;
+  unless $meta {
+
+    🐛 REC ~ "｢$!name｣ $spec not found!";
+
+    return;
+
+  }
 
   Rakudo::Internals::JSON.from-json: $meta;
   
