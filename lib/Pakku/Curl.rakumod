@@ -223,3 +223,31 @@ class Pakku::Curl {
 
 }
 
+sub retry (
+
+  &action,
+  Int:D  :$max   is copy = 4,
+  Real:D :$delay is copy = 0.2
+
+) is export {
+
+  loop {
+
+    use Pakku::Log;
+
+    my $result = quietly try action();
+
+    return $result unless $!;
+    
+    🐞 CRL ~ $!;
+
+    $!.rethrow if $max == 0;
+
+    sleep $delay;
+
+    $delay *= 2;
+    $max   -= 1;
+
+  }
+}
+

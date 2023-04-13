@@ -50,7 +50,7 @@ lives-ok { $config.config( 'add', :@option ) }, 'set Array option';
 is-deeply from-json(slurp $config-file )<add><exclude>, ["Dep1", "Dep2"], 'confirm set Array option in config file';
 
 my $recman-name = 'my-recman';
-@option = priority => 7, url => 'http://my-recman.com';
+@option = priority => 7, location => 'http://my-recman.com';
 lives-ok { $config.config( 'recman', :$recman-name, :@option ) }, 'set new recman';
 
 lives-ok { $config.config( 'recman', 'disable', :$recman-name ) }, 'recman disable';

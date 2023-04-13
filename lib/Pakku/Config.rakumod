@@ -77,7 +77,7 @@ my class Search {
 my class Recman {
 
   has Str   $.name;
-  has Str   $.url;
+  has Str   $.location;
   has Int() $.priority;
   has Bool  $.active;
 
