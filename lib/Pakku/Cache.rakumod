@@ -31,7 +31,7 @@ method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
 method cached ( Pakku::Meta:D :$meta! ) {
 
-  🐛 CAC ~ "｢$meta｣";
+  🐛 qq[CAC: ｢$meta｣ looking...];
 
   my $name-hash = nqp::sha1( $meta.name );
 
@@ -39,7 +39,7 @@ method cached ( Pakku::Meta:D :$meta! ) {
 
   if $cached.d {
 
-    🐛 CAC ~ "｢$meta｣ $cached";
+    🐛 qq[CAC: ｢$meta｣ ‹$cached›];
 
     $cached
   }
@@ -50,7 +50,7 @@ method cache ( IO::Path:D :$path! ) {
 
   my $meta = Pakku::Meta.new: $path;
 
-  🐛 CAC ~ "｢$meta｣";
+  🐛 qq[CAC: ｢$meta｣ caching...];
 
   my $name-hash = nqp::sha1( $meta.name );
 
@@ -58,7 +58,7 @@ method cache ( IO::Path:D :$path! ) {
 
   copy-dir src => $path, :$dst;
 
-  🐛 CAC ~ "｢$meta｣ $dst";
+  🐛 qq[CAC: ｢$meta｣ ‹$dst›];
 
 }
 

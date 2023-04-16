@@ -1,7 +1,8 @@
 use Pakku::Log;
 use Pakku::Spec;
-use Pakku::Recman::Local;
+
 use Pakku::Recman::HTTP;
+use Pakku::Recman::Local;
 
 
 unit class Pakku::Recman;
@@ -32,6 +33,6 @@ method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
 method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count ) {
 
-  for @!recman -> $recman { .return with $recman.search: :$spec :$count }
+  flat @!recman.map: *.search: :$spec :$count;
 
 }

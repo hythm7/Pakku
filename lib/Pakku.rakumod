@@ -25,7 +25,7 @@ multi method fly (
 
   LEAVE self.clear;
 
-  🧚 PRC ~ "｢{@spec}｣";
+  🧚 qq[PRC: ｢{@spec}｣];
 
 
   @spec
@@ -48,7 +48,7 @@ multi method fly (
 
   my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
 
-    🦋 FTC ~ "｢$meta｣";
+    🦋 qq[FTC: ｢$meta｣];
 
     my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
 
@@ -82,7 +82,7 @@ multi method fly (
   
       self!build: :$dist if $build;
 
-      🦋 STG ~ "｢$dist｣";
+      🦋 qq[STG: ｢$dist｣];
 
       $*stage.install: $dist, :$precompile;
 
@@ -100,7 +100,7 @@ multi method fly (
 
       my $bin = $*stage.prefix.add( 'bin' ).Str;
 
-      🧚 BIN ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+      🧚 "BIN: " ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
     }
   }
@@ -124,7 +124,7 @@ multi method fly (
 
   LEAVE self.clear;
 
-  🧚 PRC ~ "｢$path｣";
+  🧚 qq[PRC: ｢$path｣];
 
   my $spec = Pakku::Spec.new: $path;
 
@@ -141,7 +141,7 @@ multi method fly (
 
   my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
 
-    🦋 FTC ~ "｢$meta｣";
+    🦋 qq[FTC: ｢$meta｣];
 
     my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
 
@@ -177,7 +177,7 @@ multi method fly (
   
       self!build: :$dist if $build;
 
-      🦋 STG ~ "｢$dist｣";
+      🦋 qq[STG: ｢$dist｣];
 
       $*stage.install: $dist, :$precompile;
 
@@ -195,7 +195,7 @@ multi method fly (
 
       my $bin = $*stage.prefix.add( 'bin' ).Str;
 
-      🧚 BIN ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+      🧚 "BIN: " ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
     }
   }
@@ -219,7 +219,7 @@ multi method fly (
 
   LEAVE self.clear;
 
-  🧚 PRC ~ "｢{@spec}｣";
+  🧚 qq[PRC: ｢{@spec}｣];
 
   @spec .= map(  -> $spec { self.upgradable: spec => Pakku::Spec.new: $spec } );
 
@@ -235,7 +235,7 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
   
   LEAVE self.clear;
 
-  🧚 PRC ~ "｢$path｣";
+  🧚 qq[PRC: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
 
@@ -247,7 +247,7 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
   my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
 
-    🦋 FTC ~ "｢$meta｣";
+    🦋 qq[FTC: ｢$meta｣];
 
     my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
 
@@ -283,7 +283,7 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
   
       self!build: :$dist if $build;
 
-      🦋 STG ~ "｢$dist｣";
+      🦋 qq[STG: ｢$dist｣];
 
       $*stage.install: $dist;
 
@@ -300,7 +300,7 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
    
   LEAVE self.clear;
 
-  🧚 PRC ~ "｢$spec｣";
+  🧚 qq[PRC: ｢$spec｣];
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
@@ -312,7 +312,7 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
   my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
 
-    🦋 FTC ~ "｢$meta｣";
+    🦋 qq[FTC: ｢$meta｣];
 
     my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
 
@@ -348,7 +348,7 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
   
       self!build: :$dist if $build;
 
-      🦋 STG ~ "｢$dist｣";
+      🦋 qq[STG: ｢$dist｣];
 
       $*stage.install: $dist;
 
@@ -365,7 +365,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   LEAVE self.clear;
 
-  🧚 PRC ~ "｢$path｣";
+  🧚 qq[PRC: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
 
@@ -377,7 +377,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
 
-    🦋 FTC ~ "｢$meta｣";
+    🦋 qq[FTC: ｢$meta｣];
 
     my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
 
@@ -411,7 +411,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
   
       self!build: :$dist;
 
-      🦋 STG ~ "｢$dist｣";
+      🦋 qq[STG: ｢$dist｣];
 
       $*stage.install: $dist;
 
@@ -429,7 +429,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   LEAVE self.clear;
 
-  🧚 PRC ~ "｢$spec｣";
+  🧚 qq[PRC: ｢$spec｣];
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
@@ -441,7 +441,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
 
-    🦋 FTC ~ "｢$meta｣";
+    🦋 qq[FTC: ｢$meta｣];
 
     my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
 
@@ -476,7 +476,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
   
       self!build: :$dist;
 
-      🦋 STG ~ "｢$dist｣";
+      🦋 qq[STG: ｢$dist｣];
 
       $*stage.install: $dist;
 
@@ -562,7 +562,7 @@ multi method fly ( 'download', :@spec! ) {
     ==> map( -> $spec { self.satisfy: :$spec               } )
     ==> map( -> $meta {
 
-        🦋 FTC ~ "｢$meta｣";
+        🦋 qq[FTC: ｢$meta｣];
 
         my IO::Path $path = $*TMPDIR.add( $meta.id ).add( now.Num );
 

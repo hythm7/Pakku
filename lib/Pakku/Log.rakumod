@@ -79,29 +79,6 @@ sub out  ( Str:D $msg ) is export { $logger.out: $msg }
 sub ofun  ( ) is export { 🧚 '-Ofun'         }
 sub nofun ( ) is export { 🦗 'Nofun'; exit 1 }
 
-enum PRF is export (
-
-  PRC => 'PRC: ',
-  SPC => 'SPC: ',
-  MTA => 'MTA: ',
-  FTC => 'FTC: ',
-  CAC => 'CAC: ',
-  STG => 'STG: ',
-  BLD => 'BLD: ',
-  TST => 'TST: ',
-  UPG => 'UPG: ',
-  BIN => 'BIN: ',
-  WAI => 'WAI: ',
-  TOT => 'TOT: ',
-  OLO => 'OLO: ',
-  REC => 'REC: ',
-  CRL => 'CRL: ',
-  LOG => 'LOG: ',
-  CNF => 'CNF: ',
-  CMD => 'CMD: ',
-
-);
-
 enum Color is export (
 
   reset   =>  0,

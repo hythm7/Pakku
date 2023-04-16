@@ -12,7 +12,7 @@ has %!provides;
 
 method recommend ( ::?CLASS:D: :$spec! ) {
 
-  🐛 REC ~ "｢$!name｣ $spec";
+  🐛 qq[REC: ｢$!name｣ ‹$spec› recommending...];
 
   my $name   = $spec.name;
   my $nameid = nameid( $name );
@@ -34,7 +34,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   unless @candy {
 
-    🐛 REC ~ "｢$!name｣ $spec not found!";
+    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
 
     return;
   }
@@ -45,7 +45,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
 method search ( ::?CLASS:D: :$spec!, :$count = ∞ ) {
 
-  🐛 REC ~ "｢$!name｣ $spec";
+  🐛 qq[REC: ｢$!name｣ ‹$spec› searching...];
 
   my %meta;
   my %provides;
@@ -78,7 +78,7 @@ method search ( ::?CLASS:D: :$spec!, :$count = ∞ ) {
 
   unless @candy {
 
-    🐛 REC ~ "｢$!name｣ $spec not found!";
+    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
 
     return;
   }
@@ -93,13 +93,20 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
   unless $!location.d {
 
-    🐞 REC ~ "｢$!name｣ $!location does not exists" unless $!location.d; 
+    🐞 qq[REC: ｢$!name｣ ‹$!location› does not exist] unless $!location.d; 
     return;
   }
 
   eager dir $!location
     ==> grep( *.d )
     ==> map( -> $dir {
+
+      unless $dir.add( 'META6.json' ).f {
+
+        🐞 qq[REC: ｢$!name｣ ‹$dir› no META6.json!]; 
+
+        next;
+      }
 
       my $meta = Pakku::Meta.new: $dir;
 

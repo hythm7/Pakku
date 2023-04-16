@@ -1,7 +1,3 @@
-#TODO use $!curl instance here and pass it to $!recman
-# move sub retry to Pakku::Curl
-# URL subset of Str (starts with http
-
 use X::Pakku;
 use Pakku::Log;
 use Pakku::Help;
@@ -54,7 +50,7 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
   return unless @test;
 
-  🦋 TST ~ "｢$dist｣";
+  🦋 qq[TST: ｢$dist｣];
 
   my $prefix  = $dist.prefix;
 
@@ -64,26 +60,26 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
   @test.hyper( :$!degree :1batch ).map( -> $test {
 
-    🦋 TST ~ "｢$test.basename()｣";
+    🦋 qq[TST: ｢$test.basename()｣];
 
     react {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $test.relative: $prefix;
 
-      whenever $proc.stdout.lines { 🐛 TST ~ $^out }
-      whenever $proc.stderr.lines { 🐞 TST ~ $^err }
+      whenever $proc.stdout.lines { 🐛 "TST: " ~ $^out }
+      whenever $proc.stderr.lines { 🐞 "TST: " ~ $^err }
 
-      whenever $proc.stdout.stable( 42 ) { 🐞 WAI ~ "｢$proc.command()｣" }
+      whenever $proc.stdout.stable( 42 ) { 🐞 "WAI: " ~ "｢$proc.command()｣" }
 
       whenever $proc.stdout.stable( 420 ) {
 
-        🐞 TOT ~ "｢$dist｣";
+        🐞 qq[TOT: ｢$dist｣];
 
         $proc.kill;
 
         $exitcode =  1;
 
-        🦗 TST ~ "｢$test.basename()｣";
+        🦗 qq[TST: ｢$test.basename()｣];
 
         done;
 
@@ -91,7 +87,7 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
       whenever $proc.start( cwd => $prefix, :%*ENV ) {
 
-        if .exitcode { $exitcode = 1; 🦗 TST ~ "｢$test.basename()｣" }
+        if .exitcode { $exitcode = 1; 🦗 "TST: " ~ "｢$test.basename()｣" }
 
         done;
 
@@ -107,11 +103,11 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
     die X::Pakku::Test.new: :$dist;
 
-    🐞 OLO ~ "｢$dist｣";
+    🐞 qq[OLO: ｢$dist｣];
 
   }
 
-  🧚 TST ~ "｢$dist｣";
+  🧚 qq[TST: ｢$dist｣];
 
 }
 
@@ -124,7 +120,7 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   return unless $file or $builder;
 
-  🦋 BLD ~ "｢$dist｣";
+  🦋 qq[BLD: ｢$dist｣];
 
   my @cmd; 
 
@@ -144,20 +140,20 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   my $proc = Proc::Async.new: @cmd;
 
-  🐛 BLD ~ "｢$proc.command()｣";
+  🐛 qq[BLD: ｢$proc.command()｣];
 
   my $exitcode;
 
   react {
 
-    whenever $proc.stdout.lines { 🐛 BLD ~ $^out }
-    whenever $proc.stderr.lines { 🐞 BLD ~ $^err }
+    whenever $proc.stdout.lines { 🐛 "BLD: " ~ $^out }
+    whenever $proc.stderr.lines { 🐞 "BLD: " ~ $^err }
 
-    whenever $proc.stdout.stable( 42 ) { 🐞 WAI ~ "｢$proc.command()｣" }
+    whenever $proc.stdout.stable( 42 ) { 🐞 "WAI: " ~ "｢$proc.command()｣" }
 
     whenever $proc.stdout.stable( 420 ) {
 
-      🐞 TOT ~ "｢$dist｣";
+      🐞 qq[TOT: ｢$dist｣];
 
       $proc.kill;
 
@@ -180,17 +176,17 @@ method !build ( Distribution::Locally:D :$dist ) {
 
     die X::Pakku::Build.new: :$dist;
 
-    🐞 OLO ~ "｢$dist｣";
+    🐞 qq[OLO: ｢$dist｣];
 
   }
 
-  🧚 BLD ~ "｢$dist｣";
+  🧚 qq[BLD: ｢$dist｣];
 
 }
 
 multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
-  🐛 SPC ~ "｢$spec｣";
+  🐛 qq[SPC: ｢$spec｣];
 
   my $meta = try Pakku::Meta.new(
     ( $!cache.recommend( :$spec ).meta if $!cache  ) //
@@ -201,20 +197,20 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   if $meta {
 
-    🦋 MTA ~ "｢$meta｣"; 
+    🦋 qq[MTA: ｢$meta｣];
 
     $meta;
   }
 
 }
 
-multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
-multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
-multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 OLO ~ "｢$spec｣"; Empty }
+multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 qq[OLO: ｢$spec｣"]; Empty}
+multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 qq[OLO: ｢$spec｣"]; Empty}
+multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 qq[OLO: ｢$spec｣"]; Empty}
 
 multi method satisfy ( :@spec! ) {
 
-  🦋 SPC ~ "｢{@spec}｣";
+  🦋 qq[SPC: ｢{@spec}｣];
 
   my $meta =
     @spec.map( -> $spec {
@@ -223,7 +219,7 @@ multi method satisfy ( :@spec! ) {
 
       if $meta {
 
-        🦋 MTA ~ "｢$meta｣"; 
+        🦋 qq[MTA: ｢$meta｣"];
 
         return $meta;
 
@@ -240,7 +236,7 @@ multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
 
   return False unless @!repo.first( *.candidates: $spec.name, |$spec.spec );
 
-  🐛 SPC ~ "｢$spec｣ satisfied!";
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
 
   True;
 }
@@ -266,7 +262,7 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
   my $inst-spec = Pakku::Spec.new: %( name => $spec.name, |$inst );
 
-  🦋 UPG ~ "｢$inst-spec｣"; 
+  🦋 qq[UPG: ｢$inst-spec｣];
 
   my %candy-spec = %( name => $spec.name, auth => $spec.auth );
 
@@ -278,7 +274,7 @@ method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
 
   return Empty unless $candy-spec cmp $inst-spec ~~ More ;
 
-  🦋 UPG ~ "｢$candy-spec｣"; 
+  🦋 qq[UPG: ｢$candy-spec｣];
 
   $candy-spec;
 
@@ -323,7 +319,7 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 # TODO: subset TarGzURL of Str
 multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
-  🐛 FTC ~ "｢$src｣";
+  🐛 qq[FTC: ｢$src｣];
 
   mkdir $dst;
 
@@ -337,7 +333,7 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   unlink $download;
 
-  🐛 FTC ~ "｢$dst｣";
+  🐛 qq[FTC: ｢$dst｣];
 
 }
 
@@ -349,8 +345,7 @@ multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
 
 method clear ( ) {
 
-  remove-dir $!tmp if $!tmp.d;
-
+  try remove-dir $!tmp   if $!tmp.d;
   try remove-dir $!stage if $!stage.d;
 
 }
@@ -361,17 +356,17 @@ submethod BUILD ( :%!cnf! ) {
 
   my $pakku-dir = $*HOME.add( '.pakku' );
 
-  my $pretty   = %!cnf<pakku><pretty>   // True;
-  my $verbose  = %!cnf<pakku><verbose>  // 'now';
-  my %level    = %!cnf<log><level>      // {};
+  my $pretty   = %!cnf<pakku><pretty>  // True;
+  my $verbose  = %!cnf<pakku><verbose> // 'now';
+  my %level    = %!cnf<log><level>     // {};
 
   
   $!tmp = $pakku-dir.add( '.tmp' );
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
 
-  $!dont  = %!cnf<pakku><dont>    // False;
-  $!yolo  = %!cnf<pakku><yolo>    // False;
+  $!dont  = %!cnf<pakku><dont> // False;
+  $!yolo  = %!cnf<pakku><yolo> // False;
 
   $!cores  = $*KERNEL.cpu-cores - 1;
   $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
@@ -390,8 +385,6 @@ submethod BUILD ( :%!cnf! ) {
 
   $!cache = Pakku::Cache.new:  :$cache if $cache;
 
-  $!curl  = Pakku::Curl.new;
-
   my $recman   = %!cnf<pakku><recman>;
   my $norecman = %!cnf<pakku><norecman>;
 
@@ -400,7 +393,9 @@ submethod BUILD ( :%!cnf! ) {
   @recman .= grep: { .<name> !~~ $norecman } if $norecman;
   @recman .= grep: { .<name>  ~~ $recman   } if $recman;
 
-  $!recman = Pakku::Recman.new: :$!curl :@recman;
+  $!curl  = Pakku::Curl.new;
+
+  $!recman = Pakku::Recman.new: :$!curl :@recman if @recman;
 
 }
 

@@ -10,7 +10,7 @@ has Pakku::Curl:D $!curl     is required is built;
 
 method recommend ( ::?CLASS:D: :$spec! ) {
 
-  🐛 REC ~ "｢$!name｣ $spec";
+  🐛 qq[REC: ｢$!name｣ ‹$spec› recommending...];
 
   my $name = $!curl.escape( $spec.name );
 
@@ -35,7 +35,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   unless $meta {
 
-    🐛 REC ~ "｢$!name｣ $spec not found!";
+    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
 
     return;
 
@@ -47,7 +47,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
 method search ( ::?CLASS:D: :$spec!, Int :$count ) {
 
-  🐛 REC ~ "｢$!name｣ $spec";
+  🐛 qq[REC: ｢$!name｣ ‹$spec› searching...];
 
   my $name = $!curl.escape( $spec.name );
 
@@ -72,7 +72,7 @@ method search ( ::?CLASS:D: :$spec!, Int :$count ) {
 
   unless $meta {
 
-    🐛 REC ~ "｢$!name｣ $spec not found!";
+    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
 
     return;
 
