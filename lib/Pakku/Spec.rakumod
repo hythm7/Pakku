@@ -150,11 +150,11 @@ class Pakku::Spec {
 
     my $from = %spec<from> // 'raku';
 
-    given $from {
+    given $from.lc {
       when 'raku'   { Pakku::Spec::Raku.new:   |%spec }
       when 'bin'    { Pakku::Spec::Bin.new:    |%spec }
       when 'native' { Pakku::Spec::Native.new: |%spec }
-      when 'perl'   { Pakku::Spec::Perl.new:   |%spec }
+      when 'perl5'  { Pakku::Spec::Perl.new:   |%spec }
     }
   }
 

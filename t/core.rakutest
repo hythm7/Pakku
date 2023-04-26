@@ -15,11 +15,16 @@ lives-ok {
 
       my $stage  = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
 
-			my @recman = ( %( :name<pakku>, :location<http://recman.pakku.org>, :1priority, :active ), );
+      my @recman = ( %( :name<pakku>, :location<http://localhost:4242>, :1priority, :active ), );
+
 
       $!log    = Pakku::Log.new: :verbose<silent>;
-      $!recman = Pakku::Recman.new: curl => Pakku::Curl.new, :@recman;
-      @!repo   = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
+			my $curl = Pakku::Curl.new;
+
+			$!recman = Pakku::Recman.new: :$curl :@recman;
+
+			@!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
     }
   } .new

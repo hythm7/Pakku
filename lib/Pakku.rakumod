@@ -17,9 +17,8 @@ multi method fly (
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
   Bool:D :$force      = False,
+  Str:D  :$to         = 'site',
          :@exclude,
-
-  CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
 
 ) {
 
@@ -27,6 +26,7 @@ multi method fly (
 
   🧚 qq[PRC: ｢{@spec}｣];
 
+  my $repo = repo-from-spec $to;
 
   @spec
     ==> map(  -> $spec { Pakku::Spec.new: $spec } )
@@ -46,7 +46,7 @@ multi method fly (
     ==> unique( as => *.Str )
     ==> my @meta;
 
-  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+  my @dist = @meta.map( -> $meta {
 
     🦋 qq[FTC: ｢$meta｣];
 
@@ -73,7 +73,7 @@ multi method fly (
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage.add( now.Num ),
-    name      => $repo.name // 'custom', # TODO revisit custom repositories
+    name      => $repo.name, # TODO revisit custom repositories
     next-repo => $*REPO;
 
 
@@ -111,6 +111,7 @@ multi method fly (
          'add',
   IO:D   :$path!,
          :$deps       = True,
+  Str:D  :$to         = 'site',
   Bool:D :$build      = True,
   Bool:D :$test       = True,
   Bool:D :$xtest      = False,
@@ -118,13 +119,13 @@ multi method fly (
   Bool:D :$force      = False,
          :@exclude,
 
-  CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
-
 ) {
 
   LEAVE self.clear;
 
   🧚 qq[PRC: ｢$path｣];
+
+  my $repo = repo-from-spec $to;
 
   my $spec = Pakku::Spec.new: $path;
 
@@ -139,7 +140,7 @@ multi method fly (
 
   my $dist = $meta.to-dist: $path;
 
-  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+  my @dist = @meta.map( -> $meta {
 
     🦋 qq[FTC: ｢$meta｣];
 
@@ -168,7 +169,7 @@ multi method fly (
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage.add( now.Num ),
-    name      => $repo.name // 'custom', # TODO revisit custom repositories
+    name      => $repo.name,
     next-repo => $*REPO;
 
 
@@ -207,13 +208,12 @@ multi method fly (
          'upgrade',
          :@spec!,
          :$deps   = True,
+  Str:D  :$in     = 'site',
   Bool:D :$build  = True,
   Bool:D :$test   = True,
   Bool:D :$xtest  = False,
   Bool:D :$force  = False,
          :@exclude,
-
-  CompUnit::Repository:D :$repo = CompUnit::RepositoryRegistry.repository-for-name( 'site' ),
 
 ) {
 
@@ -227,7 +227,9 @@ multi method fly (
 
   @spec .= map( *.Str );
 
-  self.add: :@spec :$deps :$build :$test :$force :@exclude :$repo;
+  my $to = $in;
+
+  self.add: :@spec :$deps :$build :$test :$force :@exclude :$to;
 
 }
 
@@ -245,7 +247,7 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
   my $dist = $meta.to-dist: $path;
 
-  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+  my @dist = @meta.map( -> $meta {
 
     🦋 qq[FTC: ｢$meta｣];
 
@@ -285,7 +287,7 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
       🦋 qq[STG: ｢$dist｣];
 
-      $*stage.install: $dist;
+      $*stage.install: $dist, :!precompile;
 
     } );
 
@@ -310,7 +312,7 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
   @meta.append: $meta;
 
-  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+  my @dist = @meta.map( -> $meta {
 
     🦋 qq[FTC: ｢$meta｣];
 
@@ -350,7 +352,7 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
       🦋 qq[STG: ｢$dist｣];
 
-      $*stage.install: $dist;
+      $*stage.install: $dist, :!precompile;
 
 
     } );
@@ -375,7 +377,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   my $dist = $meta.to-dist: $path;
 
-  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+  my @dist = @meta.map( -> $meta {
 
     🦋 qq[FTC: ｢$meta｣];
 
@@ -439,7 +441,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   @meta.append: $meta;
 
-  my @dist = @meta.hyper( degree => $!cores ).map( -> $meta {
+  my @dist = @meta.map( -> $meta {
 
     🦋 qq[FTC: ｢$meta｣];
 
@@ -488,7 +490,9 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
 }
 
-multi method fly ( 'remove', :@spec!, CompUnit::Repository :$repo ) {
+multi method fly ( 'remove', :@spec!, Str :$from ) {
+
+  my $repo = repo-from-spec $from;
 
   sink @!repo
     ==> grep( $repo )
@@ -501,10 +505,12 @@ multi method fly ( 'remove', :@spec!, CompUnit::Repository :$repo ) {
 
       } ) unless $!dont
     } );
-
 }
 
-multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details = False ) { 
+multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) { 
+
+  my $curepo = repo-from-spec $repo;
+
   if @spec {
     
     @spec .= map( -> $spec { Pakku::Spec.new: $spec } );
@@ -512,8 +518,11 @@ multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details
     @spec.map( -> $spec {
 
       @!repo
-        ==> grep( $repo )
+        ==> grep( $curepo )
         ==> map( -> $repo {
+
+          🐛 "REP: ｢$repo.name()｣";
+
           $repo.candidates( $spec.name, |$spec.spec )
             ==> map( -> $dist { $dist.id } )
             ==> map( -> $id   { $repo.distribution: $id } )
@@ -530,8 +539,13 @@ multi method fly ( 'list', :@spec, CompUnit::Repository :$repo, Bool:D :$details
   } else {
 
   @!repo
-    ==> grep( $repo )
-    ==> map( *.installed.map( *.meta.item ) )
+    ==> grep( $curepo )
+    ==> map( -> $repo {
+
+      🐛 "REP: ｢$repo.name()｣";
+
+      $repo.installed.map( *.meta.item );
+      } )
     ==> flat( )
     ==> grep( *.defined )
     ==> map( -> $meta { Pakku::Meta.new: $meta } )

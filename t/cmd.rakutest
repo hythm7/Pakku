@@ -186,33 +186,4 @@ for @tests {
   is-deeply  $got, $expected, $cmd;
 }
 
-my @repo = (
-  'home',
-  'site',
-  'vendor',
-  'core',
-  'some-unknown-repo-name',
-  '/abs/repo/path',
-  'rel/repo/path',
-  './rel/repo/path',
-  'inst#/abs/repo',
-  'inst#rel/repo',
-  'inst#name<foo>#rel/repo',
-  'inst#name(foo)#/abs/repo',
-  'inst#name(foo)#next-repo<bar>#/abs/repo',
-  'inst#name<foo>#next-repo(bar)#/abs/repo',
-  'inst#name<foo>#unknown-opt(baz)#/abs/repo',
-  'uknown-shortname#name<foo>#unknown-opt(baz)#/abs/repo',
-);
-
-for @repo -> $repo {
-
-  my $parser  = Pakku::Grammar::Cmd;
-  my $actions = Pakku::Grammar::CmdActions;
-  my $got     = $parser.parse( $repo, :$actions, :rule<repo> ).made;
-
-  ok $got, $repo;
-
-}
-
 done-testing;

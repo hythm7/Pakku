@@ -336,6 +336,7 @@ grammar Pakku::Grammar::Cmd {
 
   proto token from { * }
   token from:sym<from> { <sym> }
+  token from:sym<f>    { <sym> }
 
   proto token remote { * }
   token remote:sym<remote>   { <sym> }
@@ -359,12 +360,7 @@ grammar Pakku::Grammar::Cmd {
   token count:sym<count>   { <sym> }
   token count:sym<c>       { <sym> }
 
-  proto token repo { * }
-  token repo:sym<home>   { <sym>    }
-  token repo:sym<site>   { <sym>    }
-  token repo:sym<vendor> { <sym>    }
-  token repo:sym<core>   { <sym>    }
-  token repo:sym<spec>   { <-[\s]>+ }
+  token repo { <-[\s]>+ }
 
   token ver { <-[\s]>+ }
    
@@ -776,7 +772,7 @@ class Pakku::Grammar::CmdActions {
   method addopt:sym<xtest>      ( $/ ) { make $<xtest>.made      }
   method addopt:sym<force>      ( $/ ) { make $<force>.made      }
   method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
-  method addopt:sym<to>         ( $/ ) { make ( repo => $<repo>.made ) }
+  method addopt:sym<to>         ( $/ ) { make ( to => $<repo>.Str ) }
   method addopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
 
 
@@ -786,18 +782,18 @@ class Pakku::Grammar::CmdActions {
   method upgradeopt:sym<xtest>      ( $/ ) { make $<xtest>.made }
   method upgradeopt:sym<force>      ( $/ ) { make $<force>.made }
   method upgradeopt:sym<precompile> ( $/ ) { make $<precompile>.made }
-  method upgradeopt:sym<in>         ( $/ ) { make ( repo => $<repo>.made ) }
+  method upgradeopt:sym<in>         ( $/ ) { make ( in => $<repo>.Str ) }
   method upgradeopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
 
 
-  method removeopt:sym<from> ( $/ ) { make ( repo => $<repo>.made ) }
+  method removeopt:sym<from> ( $/ ) { make ( from => $<repo>.Str ) }
 
   method testopt:sym<build> ( $/ ) { make $<build>.made }
   method testopt:sym<xtest> ( $/ ) { make $<xtest>.made }
 
   method listopt:sym<details> ( $/ ) { make $<details>.made }
 
-  method listopt:sym<repo> ( $/ ) { make ( repo => $<repo>.made ) }
+  method listopt:sym<repo> ( $/ ) { make ( repo => $<repo>.Str ) }
 
   method searchopt:sym<details> ( $/ ) { make $<details>.made }
   method searchopt:sym<count>   ( $/ ) { make ( count => +$<number> ) }
@@ -878,22 +874,6 @@ class Pakku::Grammar::CmdActions {
   method details:sym<d>         ( $/ ) { make ( :details  ) }
   method details:sym<nodetails> ( $/ ) { make ( :!details ) }
   method details:sym<nd>        ( $/ ) { make ( :!details ) }
-
-  method repo:sym<home>   ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
-  method repo:sym<site>   ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
-  method repo:sym<vendor> ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
-  method repo:sym<core>   ( $/ ) { make CompUnit::RepositoryRegistry.repository-for-name( ~$/ ) }
-  method repo:sym<spec>   ( $/ ) {
-
-    my $spec = CompUnit::Repository::Spec.from-string( ~$/, 'inst' );
-    # CURS requires name
-    my $name = $spec.options<name> // 'custom-lib';
-    my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $spec );
-
-    CompUnit::RepositoryRegistry.register-name( $name, $repo );
-
-    make $repo;
-  }
 
   method level:sym<SILENT> ( $/ ) { make 'silent' }
   method level:sym<DEBUG>  ( $/ ) { make 'debug'  }

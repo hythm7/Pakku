@@ -453,6 +453,22 @@ sub hashmerge ( %merge-into, %merge-source ) {
   %merge-into;
 }
 
+sub repo-from-spec ( Str $spec ) is export {
+
+  return CompUnit::RepositoryRegistry.repository-for-name( $spec ) if $spec ~~ any <home site vendor core>;
+
+  return CompUnit::Repository unless $spec;
+
+  my $repo-spec = CompUnit::Repository::Spec.from-string( $spec, 'inst' );
+  my $name = $spec.options<name> // 'custom-lib';
+
+  my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $spec );
+
+  CompUnit::RepositoryRegistry.register-name( $name, $repo );
+
+  $repo;
+}
+
 sub find-bin ( Str:D $name --> Bool:D ) is export {
 
   so $*SPEC.path.first( -> $path {
