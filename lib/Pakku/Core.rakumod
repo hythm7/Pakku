@@ -241,15 +241,33 @@ multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
   True;
 }
 
-multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) { return False unless find-bin $spec.name; True }
+multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) {
+
+  return False unless find-bin $spec.name;
+
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
+
+  True;
+}
+
 multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   my \lib = $*VM.platform-library-name( $spec.name.IO, |( version => Version.new( $_ ) with $spec.ver ) ).Str;
 
-  Pakku::Native.can-load: lib; 
+  return False unless Pakku::Native.can-load: lib; 
  
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
+
+  True;
 }
-multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) { return False unless find-perl-module $spec.name; True }
+multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
+
+  return False unless find-perl-module $spec.name;
+ 
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
+
+  True;
+}
 
 multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samewith :$spec } ) }
 
@@ -291,7 +309,7 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 
   $meta.deps: :$deps
 
-    ==> grep( -> $spec { not ( %visited{ $spec.?id // any @$spec.map( *.id ) } or self.satisfied( :$spec ) or not $spec.name )   } )
+    ==> grep( -> $spec { not ( %visited{ $spec.?id // any @$spec.map( *.id ) } or self.satisfied( :$spec ) or not $spec.name )   } ) # sorry :/
 
     ==> map(  -> $spec { self.satisfy: :$spec } )
 
