@@ -31,7 +31,7 @@ method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
 }
 
-method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count ) {
+method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count! ) {
 
   flat @!recman.map: *.search: :$spec :$count;
 

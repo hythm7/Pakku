@@ -11,6 +11,8 @@ has IO::Path() $!cache is built;
 
 method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
+  🐛 qq[CAC: ｢$spec｣ recommending...];
+
   my $name-hash = nqp::sha1( $spec.name );
 
   my $spec-dir = $!cache.add: $name-hash;
@@ -25,7 +27,11 @@ method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
   return unless @candy;
 
-  @candy.reduce( &reduce-latest );
+  my $candy = @candy.reduce( &reduce-latest );
+
+  🐛 qq[CAC: ｢$candy｣];
+
+  $candy;
 
 }
 

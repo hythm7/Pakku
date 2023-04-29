@@ -33,24 +33,17 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   $meta = retry { $!curl.content: URL => $!location ~ $uri };
 
-  unless $meta {
-
-    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
-
-    return;
-
-  }
+  return unless $meta;
 
   $meta;
   
 }
 
-method search ( ::?CLASS:D: :$spec!, Int :$count ) {
+method search ( ::?CLASS:D: :$spec!, Int :$count! ) {
 
   🐛 qq[REC: ｢$!name｣ ‹$spec› searching...];
 
-  my $name = $!curl.escape( $spec.name );
-
+  my $name = $spec.name;
   my $ver  = $spec.ver;
   my $auth = $spec.auth;
   my $api  = $spec.api;
@@ -62,7 +55,7 @@ method search ( ::?CLASS:D: :$spec!, Int :$count ) {
   @query.push( 'api='   ~ $!curl.escape: $api   ) if $api;
   @query.push( 'count=' ~                $count ) if $count;
 
-  my $uri = '/meta/search/' ~ $name;
+  my $uri = '/meta/search/' ~ $!curl.escape( $name );
 
   $uri ~= '?' ~ @query.join( '&') if @query;
 

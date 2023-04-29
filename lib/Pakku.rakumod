@@ -556,7 +556,7 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
 
 }
 
-multi method fly ( 'search', :@spec!, Int :$count, Bool:D :$details = False ) {
+multi method fly ( 'search', :@spec!, Int :$count = 666, Bool:D :$details = False ) {
 
   @spec
     ==> map( -> $spec { Pakku::Spec.new: $spec                        } )

@@ -15,64 +15,41 @@ method recommend ( ::?CLASS:D: :$spec! ) {
   🐛 qq[REC: ｢$!name｣ ‹$spec› recommending...];
 
   my $name   = $spec.name;
-  my $nameid = nameid( $name );
 
   my @candy;
 
-  @candy = flat %!meta{ $nameid  } if %!meta{ $nameid }:exists;
+  @candy = flat %!meta{ $name  } if %!meta{ $name }:exists;
 
   @candy .= grep( -> %candy { %candy ~~ $spec } );
 
   unless @candy {
 
-    @candy = flat %!meta{ %!provides{ $nameid } } if %!provides{ $nameid }:exists;
+    @candy = flat %!provides{ $name } if %!provides{ $name }:exists;
 
     @candy .= grep( -> %candy {  %candy ~~ $spec } );
 
   }
 
-
-  unless @candy {
-
-    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
-
-    return;
-  }
+  return unless @candy;
 
   @candy.reduce( &reduce-latest );
 
 }
 
-method search ( ::?CLASS:D: :$spec!, :$count = ∞ ) {
+method search ( ::?CLASS:D: :$spec!, :$count! ) {
 
   🐛 qq[REC: ｢$!name｣ ‹$spec› searching...];
 
-  my %meta;
-  my %provides;
+  my $name = $spec.name;
 
-  %!meta.values
-    ==> map( *.Slip )
-    ==> map( -> $meta {
-
-      my $name   = $meta<name>.lc;
-      my $nameid = nameid( $name );
-
-      %meta{ $nameid }.push: $meta;
-
-      for $meta<provides>.keys -> $unit {
-        %provides{ nameid( $unit.lc ) } = $nameid
-      }
-
-    });
-
-  my $name   = $spec.name.lc;
-  my $nameid = nameid( $name );
+  my $rx   = rx/ :i $name /;
 
   my @candy;
 
-  @candy = flat %meta{ $nameid  } if %meta{ $nameid }:exists;
+  @candy = flat %!meta{ $rx  } if %!meta{ $rx }:exists;
 
-  @candy = flat %meta{ %provides{ $nameid } } if %provides{ $nameid }:exists;
+  @candy.append:  flat %!provides{ $rx } if %!provides{ $rx }:exists;
+  @candy .= unique;
 
   @candy .= grep( -> %candy {  %candy ~~ $spec } );
 
@@ -83,13 +60,19 @@ method search ( ::?CLASS:D: :$spec!, :$count = ∞ ) {
     return;
   }
 
-  @candy.head: $count;
+  @candy
+    ==> sort( -> %left, %right {
+      quietly (%right<name> ~~ / :i ^ $name / ) cmp (%left<name> ~~ / :i ^ $name / ) ||
+      quietly (%right<name> ~~ / :i   $name / ) cmp (%left<name> ~~ / :i   $name / ) ||
+      %left<name> cmp %right<name>                                                   ||
+      quietly ( Version.new( %right<ver> ) cmp Version.new( %left<ver> ) ) or
+      quietly ( Version.new( %right<api> ) cmp Version.new( %left<api> ) );
+    })
+    ==> head( $count );
 
 }
 
 submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
-
-  use nqp;
 
   unless $!location.d {
 
@@ -110,19 +93,44 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
       my $meta = Pakku::Meta.new: $dir;
 
-      my $nameid = nameid( $meta.name );
-
+      my $name = $meta.name;
       my %meta = $meta.meta;
 
       %meta<source> = $dir;
 
-      %!meta{ $nameid }.push: %meta;
+      %!meta{ $name }.push: %meta;
 
       for %meta<provides>.keys -> $unit {
-        %!provides{ nameid( $unit ) } = $nameid
+        %!provides{ $unit }.push: %meta;
       }
 
     } );
+
+  my role LookupRegex {
+
+    has Str @!key = self.keys;
+
+    multi method EXISTS-KEY( Regex:D $rx ) {
+
+      so @!key.first( -> $key { $key ~~ $rx } );
+
+    }
+
+    multi method AT-KEY( Regex:D $rx ) {
+
+      my @key = @!key.grep( -> $key { $key ~~ $rx } );
+
+      return Any unless @key;
+
+      @key.map( -> $key { flat samewith $key } );
+
+    }
+    
+  }
+
+
+  %!meta     does LookupRegex;
+  %!provides does LookupRegex;
 
 }
 
@@ -134,4 +142,3 @@ my sub reduce-latest ( %left, %right ) {
 
 }
 
-my sub nameid ( Str:D $name ) { use nqp; nqp::sha1( $name ) }
