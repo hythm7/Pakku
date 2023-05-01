@@ -1,3 +1,4 @@
+use Pakku::Log;
 use Pakku::Spec;
 
 unit class Pakku::Meta;
@@ -75,14 +76,13 @@ method to-dist ( ::?CLASS:D: IO::Path:D $prefix! ) {
 
 }
 
-
 submethod TWEAK ( ) {
 
   use nqp;
 
-  my $ver = %!meta<version> // %!meta<ver>;
-
   $!name = %!meta<name>;
+
+  my $ver = %!meta<version> // %!meta<ver>;
 
   $!dist = quietly "{$!name}:ver<$ver>:auth<%!meta<auth>>:api<%!meta<api>>";
 
@@ -124,6 +124,21 @@ submethod TWEAK ( ) {
 
 }
 
+multi method gist ( ::?CLASS:D: Bool:D :$details --> Str:D ) {
+
+
+  return  color("｢{self}｣" , magenta ) unless $details;
+  
+  my Str $info = color("MTA: ｢{self}｣" , magenta );
+
+  $info ~= .map( -> $dep { color( "\nDEP: ｢$dep｣", cyan ) } ) with self.deps( :deps );
+
+  $info ~= .map( -> $provide { color( "\nPRV: ｢$provide｣", green )} ) with %!meta<provides>.keys;
+
+  $info ~= color("\nURL: ｢{.Str}｣", blue  ) with %!meta<source-url>;
+  $info ~= color("\nDSC: ｢{.Str}｣", white ) with %!meta<description>;
+
+}
 
 
 proto method new ( | ) { * };
@@ -140,11 +155,9 @@ multi method new ( Str:D $json ) {
 
 multi method new ( IO::Path:D $path ) {
 
-  my @meta = <META6.json META6.info META.json META.info>;
+  my $meta-file = $path.add: 'META6.json';
 
-  my $meta-file = @meta.map( -> $file { $path.add: $file } ).first( *.f );
-
-  die 'No META file' unless $meta-file;
+  die "No META file found in $path" unless $meta-file.e;
 
   my $meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
 
@@ -240,156 +253,4 @@ sub system-collapse($data) {
   return $return;
 }
 
-my enum Color (
 
-  RESET   =>  0,
-  BLACK   => 30,
-  RED     => 31,
-  GREEN   => 32,
-  YELLOW  => 33,
-  BLUE    => 34,
-  MAGENTA => 35,
-  CYAN    => 36,
-  WHITE   => 37,
-
-);
-
-my sub color ( Str:D $text, Color $color ) { "\e\[" ~ $color.Int ~ "m" ~ $text ~ "\e\[0m" }
-
-multi method gist ( ::?CLASS:D: Bool:D :$details --> Str:D ) {
-
-  return color( ~self, MAGENTA ) unless $details;
-  
-  (
-    ( color( ~self, MAGENTA )                              ),
-    ( gist-name $!name                                     ),
-    ( gist-ver  %!meta<version>     if %!meta<version>     ),
-    ( gist-auth %!meta<auth>        if %!meta<auth>        ),
-    ( gist-api  %!meta<api>         if %!meta<api>         ),
-    ( gist-desc %!meta<description> if %!meta<description> ),
-    ( gist-url  %!meta<source-url>  if %!meta<source-url>  ),
-    ( gist-deps %!deps              if %!deps              ),
-    ( gist-prov %!meta<provides>    if %!meta<provides>    ),
-    ( gist-file %!meta<files>       if %!meta<files>       ),
-    (            ''                                        ),
-  ).join( "\n" );
-
-
-}
-
-sub gist-name ( $name --> Str:D ) {
-
-  color( 'name', BLUE     ) ~
-  color( ' → ',  YELLOW ) ~
-  color( ~$name, CYAN    )
-
-}
-
-sub gist-ver ( $ver --> Str:D ) {
-
-  color( 'ver',  BLUE     ) ~
-  color( '  → ', YELLOW ) ~
-  color( ~$ver,  CYAN    )
-
-}
-
-sub gist-auth ( $auth --> Str:D ) {
-
-  color( 'auth', BLUE     ) ~
-  color( ' → ',  YELLOW ) ~
-  color( ~$auth, CYAN    )
-
-}
-
-sub gist-api ( $api --> Str:D ) {
-
-  color( 'api',  BLUE     ) ~
-  color( '  → ', YELLOW ) ~
-  color( ~$api,  CYAN    )
-
-}
-
-sub gist-desc ( $desc --> Str:D ) {
-
-  color( 'desc', BLUE     ) ~
-  color( ' → ',  YELLOW ) ~
-  color( ~$desc, CYAN    )
-
-}
-
-sub gist-url ( $url --> Str:D ) {
-
-  color( 'url',  BLUE     ) ~
-  color( '  → ', YELLOW ) ~
-  color( ~$url,  CYAN    )
-
-}
-
-sub gist-deps ( %deps --> Str:D ) {
-
-  my $label = color( 'deps', BLUE );
-  (
-      "$label \n" ~
-       %deps.kv.map( -> $phase, $need {
-         color( '↳ ',        YELLOW )           ~
-         color( ~$phase,     GREEN  ) ~ "\n"    ~
-         color( '↳ ',        YELLOW ).indent(2) ~
-         color( ~$need.keys, RED    ) ~ "\n"    ~
-            $need.values.map( -> @spec  {
-                @spec.map( -> $spec {
-                  color( '↳ ',       YELLOW  )  ~
-                  color( $spec.gist, MAGENTA )
-                } ).join("\n").indent( 4 )
-
-               } )
-       }).join( "\n" ).indent( 5 )
-  )
-
-}
-
-sub gist-prov ( %prov --> Str:D ) {
-
-  my $label = color( 'prov', BLUE );
-
-  (
-    "$label \n" ~
-     %prov.kv.map( -> $unit, $file {
-       $file ~~ Hash
-         ?? color( '↳ ',        YELLOW  )                      ~
-            color( ~$unit,      MAGENTA ) ~ "\n"                    ~
-            color( '↳ ',        YELLOW  ).indent( 2 )          ~
-            color( ~$file.keys, CYAN    )  ~ "\n"               ~
-              $file.kv.map( -> $file, $info {
-                $info.grep( *.value ).hash.kv.map( -> $k, $v {
-                  color( '↳ ',  YELLOW ).indent( 2 ) ~
-                  color( ~$k,   RED    )             ~
-                  color( ' → ', YELLOW )             ~
-                  color( ~$v,   GREEN  )
-                } ).join("\n").indent( 2 )
-              })
-         !! color( '↳ ',   YELLOW  )             ~
-            color( ~$unit, MAGENTA ) ~ "\n"      ~
-            color( '↳ ',   YELLOW  ).indent( 2 ) ~
-            color( $file,  CYAN    );
-     }).join( "\n" ).indent( 5 )
-  )
-}
-
-sub gist-file ( %file --> Str:D ) {
-
-  my $label = color( 'file', BLUE );
-
-  (
-    "$label \n" ~
-     %file.kv.map( -> $name, $file {
-
-       color( '↳ ',   YELLOW )             ~
-       color( ~$name, CYAN   ) ~ "\n"      ~
-       color( '↳ ',   YELLOW ).indent( 2 ) ~
-         color( 'file', RED  )             ~
-         color( ' → ',  YELLOW )           ~
-         color( ~$file, GREEN  )
-     }).join( "\n" ).indent( 5 )
-  )
-
-}
