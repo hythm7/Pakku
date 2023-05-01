@@ -556,11 +556,19 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
 
 }
 
-multi method fly ( 'search', :@spec!, Int :$count = 666, Bool:D :$details = False ) {
+multi method fly (
+
+    'search',
+    :@spec!,
+    Int    :$count   = 666,
+    Bool:D :$relaxed = True,
+    Bool:D :$details = False,
+
+  ) {
 
   @spec
     ==> map( -> $spec { Pakku::Spec.new: $spec                        } )
-    ==> map( -> $spec { $!recman.search( :$spec :$count ).Slip   } )
+    ==> map( -> $spec { $!recman.search( :$spec :$relaxed :$count ).Slip   } )
     ==> grep( *.defined                                            )
     ==> map( -> $meta { Pakku::Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { out $meta                                } );

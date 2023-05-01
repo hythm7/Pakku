@@ -192,8 +192,9 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token searchopt { * }
-  token searchopt:sym<details> { <details> }
-  token searchopt:sym<count>   { <count> <.space>* <number> }
+  token searchopt:sym<details>    { <details> }
+  token searchopt:sym<relaxed>    { <relaxed> }
+  token searchopt:sym<count>      { <count> <.space>* <number> }
 
 
   proto token pretty { * }
@@ -355,6 +356,13 @@ grammar Pakku::Grammar::Cmd {
   token details:sym<d>         { <sym> }
   token details:sym<nodetails> { <sym> }
   token details:sym<nd>        { <sym> }
+
+  proto token relaxed { * }
+  token relaxed:sym<relaxed>   { <sym> }
+  token relaxed:sym<r>         { <sym> }
+  token relaxed:sym<norelaxed> { <sym> }
+  token relaxed:sym<nr>        { <sym> }
+
 
   proto token count { * }
   token count:sym<count>   { <sym> }
@@ -795,8 +803,9 @@ class Pakku::Grammar::CmdActions {
 
   method listopt:sym<repo> ( $/ ) { make ( repo => $<repo>.Str ) }
 
-  method searchopt:sym<details> ( $/ ) { make $<details>.made }
-  method searchopt:sym<count>   ( $/ ) { make ( count => +$<number> ) }
+  method searchopt:sym<details>    ( $/ ) { make $<details>.made            }
+  method searchopt:sym<relaxed>    ( $/ ) { make $<relaxed>.made            }
+  method searchopt:sym<count>      ( $/ ) { make ( count => $<number>.Int ) }
 
   method deps:sym<only>    ( $/ )  { make ( deps => 'only' )    }
   method deps:sym<runtime> ( $/ )  { make ( deps => 'runtime' ) }
@@ -874,6 +883,12 @@ class Pakku::Grammar::CmdActions {
   method details:sym<d>         ( $/ ) { make ( :details  ) }
   method details:sym<nodetails> ( $/ ) { make ( :!details ) }
   method details:sym<nd>        ( $/ ) { make ( :!details ) }
+
+  method relaxed:sym<relaxed>   ( $/ ) { make ( :relaxed  ) }
+  method relaxed:sym<d>         ( $/ ) { make ( :relaxed  ) }
+  method relaxed:sym<norelaxed> ( $/ ) { make ( :!relaxed ) }
+  method relaxed:sym<nr>        ( $/ ) { make ( :!relaxed ) }
+
 
   method level:sym<SILENT> ( $/ ) { make 'silent' }
   method level:sym<DEBUG>  ( $/ ) { make 'debug'  }

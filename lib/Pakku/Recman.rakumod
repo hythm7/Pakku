@@ -31,8 +31,14 @@ method recommend ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec! ) {
 
 }
 
-method search ( ::?CLASS:D: Pakku::Spec::Raku:D :$spec!, Int :$count! ) {
+method search (
+    ::?CLASS:D:
+    Pakku::Spec::Raku:D :$spec!,
+    Bool:D              :$relaxed!,
+    Int:D               :$count!,
 
-  flat @!recman.map: *.search: :$spec :$count;
+  ) {
+
+  flat @!recman.map: *.search: :$spec :$relaxed :$count;
 
 }

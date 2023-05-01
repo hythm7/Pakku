@@ -91,6 +91,10 @@ my @tests = (
     ${:cmd("search"), :search(${:spec($["Spec"])})},
   "search details Spec" =>
     ${:cmd("search"), :search(${:details, :spec($["Spec"])})},
+  "search relaxed Spec" =>
+    ${:cmd("search"), :search(${:relaxed, :spec($["Spec"])})},
+  "search norelaxed Spec" =>
+    ${:cmd("search"), :search(${:!relaxed, :spec($["Spec"])})},
   "download Spec" =>
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "down Spec" =>

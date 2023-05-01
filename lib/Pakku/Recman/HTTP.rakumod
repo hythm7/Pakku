@@ -39,7 +39,14 @@ method recommend ( ::?CLASS:D: :$spec! ) {
   
 }
 
-method search ( ::?CLASS:D: :$spec!, Int :$count! ) {
+method search (
+
+    ::?CLASS:D:
+    :$spec!,
+    :$relaxed!,
+    :$count!,
+
+  ) {
 
   🐛 qq[REC: ｢$!name｣ ‹$spec› searching...];
 
@@ -50,10 +57,11 @@ method search ( ::?CLASS:D: :$spec!, Int :$count! ) {
 
   my @query;
 
-  @query.push( 'ver='   ~ $!curl.escape: $ver   ) if $ver;
-  @query.push( 'auth='  ~ $!curl.escape: $auth  ) if $auth;
-  @query.push( 'api='   ~ $!curl.escape: $api   ) if $api;
-  @query.push( 'count=' ~                $count ) if $count;
+  @query.push( 'ver='     ~ $!curl.escape: $ver     ) if $ver;
+  @query.push( 'auth='    ~ $!curl.escape: $auth    ) if $auth;
+  @query.push( 'api='     ~ $!curl.escape: $api     ) if $api;
+  @query.push( 'count='   ~                $count   ) if $count;
+  @query.push( 'relaxed=' ~                $relaxed ) if $relaxed;
 
   my $uri = '/meta/search/' ~ $!curl.escape( $name );
 

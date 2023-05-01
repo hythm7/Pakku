@@ -36,13 +36,22 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
 }
 
-method search ( ::?CLASS:D: :$spec!, :$count! ) {
+method search (
+
+    ::?CLASS:D:
+    :$spec!,
+    :$relaxed!,
+    :$count!,
+
+  ) {
 
   🐛 qq[REC: ｢$!name｣ ‹$spec› searching...];
 
-  my $name = $spec.name;
+  my $pattern = $spec.name.raku;
 
-  my $rx   = rx/ :i $name /;
+  $pattern = "^ $pattern \$" unless $relaxed;
+
+  my $rx   = rx/ :i <$pattern> /;
 
   my @candy;
 
@@ -62,8 +71,8 @@ method search ( ::?CLASS:D: :$spec!, :$count! ) {
 
   @candy
     ==> sort( -> %left, %right {
-      quietly (%right<name> ~~ / :i ^ $name / ) cmp (%left<name> ~~ / :i ^ $name / ) ||
-      quietly (%right<name> ~~ / :i   $name / ) cmp (%left<name> ~~ / :i   $name / ) ||
+      quietly (%right<name> ~~ $rx ) cmp (%left<name> ~~ $rx ) ||
+      quietly (%right<name> ~~ $rx ) cmp (%left<name> ~~ $rx ) ||
       %left<name> cmp %right<name>                                                   ||
       quietly ( Version.new( %right<ver> ) cmp Version.new( %left<ver> ) ) or
       quietly ( Version.new( %right<api> ) cmp Version.new( %left<api> ) );
