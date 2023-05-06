@@ -15,7 +15,7 @@ lives-ok {
 
       my $stage  = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
 
-      my @recman = ( %( :name<pakku>, :location<http://localhost:4242>, :1priority, :active ), );
+      my @recman = ( %( :name<pakku>, :location<http://recman.pakku.org>, :1priority, :active ), );
 
 
       $!log    = Pakku::Log.new: :verbose<silent>;
