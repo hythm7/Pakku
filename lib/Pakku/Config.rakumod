@@ -70,6 +70,7 @@ my class List {
 my class Search {
 
   has Bool  $.details;
+  has Bool  $.relaxed;
   has Int() $.count;
 
 }
