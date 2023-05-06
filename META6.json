@@ -49,5 +49,5 @@
     "raku"
     ],
   "test-depends" : [ ],
-  "version" : "bellona"
+  "version" : "caria"
 }
