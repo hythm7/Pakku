@@ -131,12 +131,12 @@ multi method gist ( ::?CLASS:D: Bool:D :$details --> Str:D ) {
   
   my Str $info = color("MTA: ｢{self}｣" , magenta );
 
-  $info ~= .map( -> $dep { color( "\nDEP: ｢$dep｣", cyan ) } ) with self.deps( :deps );
+  $info ~= .map( -> $dep { color( "\nDEP: ｢$dep｣", cyan ) } ) with self.deps( :deps ).sort;
 
-  $info ~= .map( -> $provide { color( "\nPRV: ｢$provide｣", green )} ) with %!meta<provides>.keys;
+  $info ~= .map( -> $provide { color( "\nPRV: ｢$provide｣", green )} ) with %!meta<provides>.keys.sort;
 
   $info ~= color("\nURL: ｢{.Str}｣", blue  ) with %!meta<source-url>;
-  $info ~= color("\nDSC: ｢{.Str}｣", white ) with %!meta<description>;
+  $info ~= color("\nDES: ｢{.Str}｣", white ) with %!meta<description>;
 
 }
 
