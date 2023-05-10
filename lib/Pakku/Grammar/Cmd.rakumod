@@ -10,6 +10,7 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <specs>    }
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <specs>    }
   rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <specs>?   }
+  rule TOP:sym<state>     { <pakkuopt>* % <.space> <state>      <listopt>*     % <.space> <specs>?   }
 
   rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd>                                     }
 
@@ -48,6 +49,7 @@ grammar Pakku::Grammar::Cmd {
   token config-module:sym<test>     { <sym> }
   token config-module:sym<remove>   { <sym> }
   token config-module:sym<list>     { <sym> }
+  token config-module:sym<state>    { <sym> }
   token config-module:sym<search>   { <sym> }
   token config-module:sym<download> { <sym> }
 
@@ -95,7 +97,7 @@ grammar Pakku::Grammar::Cmd {
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
   token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
   token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
-  token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
+  token cmd:sym<state>     { <!before <.space>> ~ <!after <.space>> <state>     }
   token cmd:sym<config>   { <!before <.space>> ~ <!after <.space>> <config>   }
   token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
 
@@ -127,6 +129,10 @@ grammar Pakku::Grammar::Cmd {
   token list:sym<list> { <sym> }
   token list:sym<l>    { <sym> }
   token list:sym<↪>    { <sym> }
+
+  proto token state { * }
+  token state:sym<state> { <sym> }
+  token state:sym<st>    { <sym> }
 
   proto token search { * }
   token search:sym<search> { <sym> }
@@ -190,6 +196,7 @@ grammar Pakku::Grammar::Cmd {
   token listopt:sym<details> { <details> }
   token listopt:sym<repo>    { <sym> <.space>* <repo> }
 
+  proto token stateopt { * }
 
   proto token searchopt { * }
   token searchopt:sym<details>    { <details> }
@@ -533,6 +540,20 @@ class Pakku::Grammar::CmdActions {
     make %cmd;
 
   }
+
+  method TOP:sym<state> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>         = 'state';
+    %cmd<pakku>       = $<pakkuopt>».made.hash if defined $<pakkuopt>;
+    %cmd<state>       = $<stateopt>».made.hash if defined $<stateopt>;
+    %cmd<state><spec> = $<specs>.made          if defined $<specs>;
+
+    make %cmd;
+
+  }
+
 
 
   method TOP:sym<search> ( $/ ) {
