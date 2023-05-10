@@ -10,7 +10,7 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <specs>    }
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <specs>    }
   rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <specs>?   }
-  rule TOP:sym<state>     { <pakkuopt>* % <.space> <state>      <listopt>*     % <.space> <specs>?   }
+  rule TOP:sym<state>     { <pakkuopt>* % <.space> <state>      <stateopt>*     % <.space> <specs>?   }
 
   rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd>                                     }
 
