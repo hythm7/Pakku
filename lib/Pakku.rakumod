@@ -229,7 +229,7 @@ multi method fly (
 
   my $to = $in;
 
-  self.add: :@spec :$deps :$build :$test :$force :@exclude :$to;
+  samewith 'add', :@spec, :$deps, :$build, :$test, :$force, :@exclude, :$to;
 
 }
 
