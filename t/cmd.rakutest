@@ -99,6 +99,12 @@ my @tests = (
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "down Spec" =>
     ${:cmd("download"), :download(${:spec($["Spec"])})},
+  "st" =>
+    ${:cmd("state")},
+  "state" =>
+    ${:cmd("state")},
+  "state Spec" =>
+    ${:cmd("state"), :state(${:spec($["Spec"])})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
   "cache add Spec" =>
