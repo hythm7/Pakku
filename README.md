@@ -22,7 +22,7 @@ zef install Pakku
 
 Usage
 =====
-Pakku commands allows one to `add`, `remove`, `upgrade`, `list`, `search` or `download` Raku distributions.
+Pakku allows one to manage Raku distributions via commands such as `add`, `remove`, `update` etc.
 
 There are two types of options:
 
@@ -53,27 +53,27 @@ Options to control general Pakku behavior.
 
 <pre>
 pretty             → use colors
-nopretty           → no colors
 async              → run asynchronously (disabled by default because some dists tests are not async safe) 
-noasync            → dont run asynchronously
-nocache            → disable cache
 dont               → do everything but dont do it (dry run)
+please             → be nice to butterflies
+yolo               → dont stop on errors (eg. proceed after test failure)
 verbose  < level > → verbosity < debug now info warn error silent >
 config   < path >  → specify config file
 recman             → enable all remote recommendation manager
-norecman           → disable all remote recommendation manager
 recman   < MyRec > → use MyRec recommendation manager only
+norecman           → disable all remote recommendation manager
 norecman < MyRec > → use all recommendation managers excepts MyRec
-please             → be nice to butterflies
-yolo               → dont stop on errors (eg. proceed after test failure)
+nopretty           → no colors
+noasync            → dont run asynchronously
+nocache            → disable cache
 </pre>
 
 <b>Examples:</b>
 <pre>
-<b>pakku async   add Dist</b>                # run in async mode while adding Dist
-<b>pakku nocache add Dist</b>                # dont use local cache
-<b>pakku dont    add Dist</b>                # dont add Dist (dry run)
-<b>pakku pretty  please remove Dist</b>
+<b>pakku async   add dist</b>                # run in async mode while adding dist
+<b>pakku nocache add dist</b>                # dont use local cache
+<b>pakku dont    add dist</b>                # dont add dist (dry run)
+<b>pakku pretty  please remove dist</b>
 
 </pre>
 
@@ -85,35 +85,35 @@ yolo               → dont stop on errors (eg. proceed after test failure)
 
 <pre>
 deps                → all dependencies
-nodeps              → no dependencies
-exclude < Dep1 >    → exclude Dep1
 deps    < only >    → only dependencies
 deps    < build >   → build dependencies only
 deps    < test >    → test dependencies only
 deps    < runtime > → runtime dependencies only
-build               → build distribution
-nobuild             → bypass build
+exclude < Dep1 >    → exclude Dep1
 test                → test distribution
-notest              → bypass test
 xtest               → xTest distribution
-noxtest             → bypass xtest
+build               → build distribution
 force               → force add distribution even if installed
-noforce             → no force
 precomp             → precompile distribution 
-noprecomp           → no precompile
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
+nodeps              → no dependencies
+nobuild             → bypass build
+notest              → bypass test
+noxtest             → bypass xtest
+noforce             → no force
+noprecomp           → no precompile
 </pre>
 
 <b>Examples:</b>
 <pre>
-<b>pakku add Dist</b>                                # add Dist
-<b>pakku add notest  Dist</b>                        # add Dist without testing
-<b>pakku add nodeps  Dist</b>                        # add Dist but dont add dependencies
-<b>pakku add deps only Dist</b>                      # add Dist dependencies but dont add Dist
-<b>pakku add exclude Dep1 Dist</b>                   # add Dist and exclude Dep1 from dependenncies
-<b>pakku add noprecomp notest  Dist</b>              # add Dist without testing and no precompilation
-<b>pakku add to      /opt/MyApp Dist</b>             # add Dist to custom repo
-<b>pakku add force   to   vendor  Dist1 Dist2</b>    # add Dist1 and Dist2 to vendor repo even if they are installed
+<b>pakku add dist</b>                                # add dist
+<b>pakku add notest  dist</b>                        # add dist without testing
+<b>pakku add nodeps  dist</b>                        # add dist but dont add dependencies
+<b>pakku add deps only dist</b>                      # add dist dependencies but dont add dist
+<b>pakku add exclude Dep1 dist</b>                   # add dist and exclude Dep1 from dependenncies
+<b>pakku add noprecomp notest  dist</b>              # add dist without testing and no precompilation
+<b>pakku add to      /opt/MyApp dist</b>             # add dist to custom repo
+<b>pakku add force   to   vendor  dist1 dist2</b>    # add dist1 and dist2 to vendor repo even if they are installed
 </pre>
 
 
@@ -127,8 +127,8 @@ from < repo > → remove distribution from provided repo only
 
 <b>Examples:</b>
 <pre>
-<b>pakku remove Dist</b>            # remove Dist from all repos
-<b>pakku remove from site Dist</b>  # remove Dist from site repo only
+<b>pakku remove dist</b>            # remove dist from all repos
+<b>pakku remove from site dist</b>  # remove dist from site repo only
 </pre>
 
 
@@ -145,10 +145,10 @@ repo < name-or-path > → list specific repo
 <b>Examples:</b>
 <pre>
 <b>pakku list</b>                         # list all installed dists
-<b>pakku list Dist</b>                    # list installed Dist
-<b>pakku list details Dist</b>            # list installed Dist details
+<b>pakku list dist</b>                    # list installed dist
+<b>pakku list details dist</b>            # list installed dist details
 <b>pakku list repo home</b>               # list all dists installed to home repo
-<b>pakku list repo /opt/MyApp Dist</b>    # list installed Dist in custom repo
+<b>pakku list repo /opt/MyApp dist</b>    # list installed dist in custom repo
 </pre>
 
 
@@ -158,15 +158,18 @@ repo < name-or-path > → list specific repo
 **options:**
 
 <pre>
-details            → details of dist
-count   < number > → number of dists to be returned
+relaxed          → relaxed search
+details          → details of dist
+count < number > → number of dists to be returned
+norelaxed        → no relaxed search
 </pre>
 
 <b>Examples:</b>
 <pre>
 <b>pakku search dist</b>               # search distributions matching dist (ignored case) on online recman
-<b>pakku search count 4 Dist</b>       # search dist and return the lates 4 versions only
-<b>pakku search details Dist</b>       # search dist and list all details
+<b>pakku search norelaxed dist</b>               # no relaxed search
+<b>pakku search count 4 dist</b>       # search dist and return the lates 4 versions only
+<b>pakku search details dist</b>       # search dist and list all details
 </pre>
 
 
@@ -175,7 +178,7 @@ count   < number > → number of dists to be returned
 
 <b>Examples:</b>
 <pre>
-<b>pakku build Dist</b>
+<b>pakku build dist</b>
 <b>pakku build .</b>
 </pre>
 
@@ -186,26 +189,27 @@ count   < number > → number of dists to be returned
 
 <pre>
 xtest   → XTest distribution
-noxtest → Bypass xtest
 build   → Build distribution
+noxtest → Bypass xtest
 nobuild → Bypass build
 </pre>
 
 <b>Examples:</b>
 <pre>
-<b>pakku test Dist</b>
-<b>pakku test ./Dist</b>
-<b>pakku test xtest ./Dist</b>
-<b>pakku test nobuild ./Dist</b>
+<b>pakku test dist</b>
+<b>pakku test ./dist</b>
+<b>pakku test xtest ./dist</b>
+<b>pakku test nobuild ./dist</b>
 </pre>
 
 
-**upgrade command**
+**update command**
 
 **options:**
 
 <pre>
-deps         → upgrade dependencies
+clean        → clean not needed dists after update 
+deps         → update dependencies
 nodeps       → no dependencies
 exclude Dep1 → exclude Dep1
 deps only    → dependencies only
@@ -215,18 +219,37 @@ test         → test distribution
 notest       → bypass test
 xtest        → xTest distribution
 noxtest      → bypass xtest
-force        → force upgrade
+force        → force update
 noforce      → no force
 precomp      → precompile distribution 
 noprecomp    → no precompile
-in < repo >  → upgrade distribution in repo < home site vendor core /path/to/MyApp >
+noclean      → dont clean unneeded dists 
+in < repo >  → update distribution and install in repo < home site vendor core /path/to/MyApp >
 </pre>
 
 <b>Examples:</b>
 <pre>
-<b>pakku upgrade Dist</b>
-<b>pakku upgrade nodeps  Dist</b>
-<b>pakku upgrade force   in   vendor  Dist1 Dist2</b>
+<b>pakku update dist</b>
+<b>pakku update notest  dist</b>
+<b>pakku update nodeps  dist</b>
+<b>pakku update force   in   vendor  dist1 dist2</b>
+</pre>
+
+
+**state command**
+
+**options:**
+
+<pre>
+updates      → check updates for dists
+noupdates    → dont check updates for dists
+</pre>
+
+<b>Examples:</b>
+<pre>
+<b>pakku state</b>
+<b>pakku state dist</b>
+<b>pakku update noupdates  dist</b>
 </pre>
 
 
@@ -234,7 +257,7 @@ in < repo >  → upgrade distribution in repo < home site vendor core /path/to/M
 
 <b>Examples:</b>
 <pre>
-<b>pakku download Dist</b>     # download source code od Dist
+<b>pakku download dist</b>     # download source code od dist
 </pre>
 
 
@@ -285,7 +308,7 @@ unset         → unset option
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add    → a  upgrade  → u  yolo     → y  nopretty → np  silent → «S 0»
+add    → a  update   → u  yolo     → y  nopretty → np  silent → «S 0»
 remove → r  download → d  exclude  → x  nodeps   → nd  debug  → «D 1»
 list   → l  help     → h  deps     → d  noforce  → nf  now    → «N 2»
 search → s  verbose  → v  force    → f  notest   → nt  info   → «I 3»
@@ -296,7 +319,7 @@ test   → t  only     → o  norecman → nr nocache  → nc  error  → «E 5�
 
 The below are `Pakku` commands as well!
 <pre>
-<b>pakku 👓 🧚 ↓   Dist</b>
+<b>pakku 👓 🧚 ↓   dist</b>
 <b>pakku ↪</b>
 <b>pakku ❓</b>
 </pre>
@@ -355,11 +378,11 @@ Gotchas
 =======
 **Caching downloaded distributions**
 
-When one installs a distribution via `pakku add MyDist`, Pakku first looks in the local cache to see if there is a downloaded distribution matches `MyDist` specification, if nothing found in the cache, Pakku then searches the configured `RecMan` and obtain the latest version of `MyDist` (e.g. `MyDist:ver<0.4.1>`), download, cache, and install it.
+When one installs a distribution via `pakku add dist`, Pakku first looks in the local cache to see if there is a downloaded distribution matches `dist` specification, if nothing found in the cache, Pakku then searches the configured `RecMan` and obtain the latest version of `dist` (e.g. `dist:ver<0.4.1>`), download, cache, and install it.
 
-After sometime when a new version `MyDist:ver<0.4.2>` is released and available in `RecMan`, if one try to install `MyDist` via `pakku add MyDist`, what happens is Pakku will find `MyDist:ver<0.4.1>` available in local cache and will install that version because it matches `MyDist` specification. so one will not get the latest version `MyDist:ver<0.4.2>`.
+After sometime when a new version `dist:ver<0.4.2>` is released and available in `RecMan`, if one try to install `dist` via `pakku add dist`, what happens is Pakku will find `dist:ver<0.4.1>` available in local cache and will install that version because it matches `dist` specification. so one will not get the latest version `dist:ver<0.4.2>`.
 
-There are two ways to avoid this and get the latest version, either specify the version e.g. `pakku add  MyDist:ver<0.4.2>` or disable cache lookup e.g. `pakku nocache add MyDist` (also, one can permenantly disable cache in config file).
+There are two ways to avoid this and get the latest version, either specify the version e.g. `pakku add  dist:ver<0.4.2>` or disable cache lookup e.g. `pakku nocache add dist` (also, one can permenantly disable cache in config file).
 
 
 **Pakku installs to _site_ repo by default**
@@ -368,7 +391,7 @@ If the user doesn't have `rw` permision to `site` repo, one can change the defau
 
 ```pakku config add set to home```
 
-or specify the repo in the command e.g. `pakku add to home MyDist`
+or specify the repo in the command e.g. `pakku add to home dist`
 
 Caveats
 =======
