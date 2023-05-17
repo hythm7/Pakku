@@ -2,7 +2,7 @@ grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
   rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> [ <specs> || <path> ]    }
-  rule TOP:sym<upgrade>  { :my @*exclude; <pakkuopt>* % <.space> <upgrade>   <upgradeopt>*  % <.space> <specs>    }
+  rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> <specs>?    }
 
   rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> [ <spec> || <path> ]     }
   rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> [ <spec> || <path> ]     }
@@ -44,7 +44,7 @@ grammar Pakku::Grammar::Cmd {
   proto token config-module { * } 
   token config-module:sym<pakku>    { <sym> }
   token config-module:sym<add>      { <sym> }
-  token config-module:sym<upgrade>  { <sym> }
+  token config-module:sym<update>   { <sym> }
   token config-module:sym<build>    { <sym> }
   token config-module:sym<test>     { <sym> }
   token config-module:sym<remove>   { <sym> }
@@ -91,7 +91,7 @@ grammar Pakku::Grammar::Cmd {
 
   proto token cmd { * } 
   token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
-  token cmd:sym<upgrade>  { <!before <.space>> ~ <!after <.space>> <upgrade>  }
+  token cmd:sym<update>  { <!before <.space>> ~ <!after <.space>> <update>  }
   token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
   token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
@@ -109,11 +109,18 @@ grammar Pakku::Grammar::Cmd {
   token add:sym<a>   { <sym> }
   token add:sym<↓>   { <sym>  }
 
-  proto token upgrade { * }
-  token upgrade:sym<upgrade> { <sym> }
-  token upgrade:sym<up>      { <sym> }
-  token upgrade:sym<u>       { <sym> }
-  token upgrade:sym<↑>       { <sym> }
+  proto token update { * }
+  token update:sym<update>  { <sym> }
+  token update:sym<upgrade> { <sym> }
+  token update:sym<up>      { <sym> }
+  token update:sym<u>       { <sym> }
+  token update:sym<↑>       { <sym> }
+
+  proto token updates { * }
+  token updates:sym<updates>   { <sym> }
+  token updates:sym<noupdates> { <sym> }
+  token updates:sym<up>        { <sym> }
+  token updates:sym<nu>        { <sym> }
 
   proto token remove { * }
   token remove:sym<remove> { <sym> }
@@ -170,15 +177,16 @@ grammar Pakku::Grammar::Cmd {
   token addopt:sym<to>         { <sym>     <.space>* <repo> }
   token addopt:sym<exclude>    { <exclude> <.space>* <spec> }
 
-  proto token upgradeopt { * }
-  token upgradeopt:sym<deps>       { <deps>       }
-  token upgradeopt:sym<build>      { <build>      }
-  token upgradeopt:sym<test>       { <test>       }
-  token upgradeopt:sym<xtest>      { <xtest>      }
-  token upgradeopt:sym<force>      { <force>      }
-  token upgradeopt:sym<precompile> { <precompile> }
-  token upgradeopt:sym<in>         { <sym>     <.space>* <repo> }
-  token upgradeopt:sym<exclude>    { <exclude> <.space>* <spec> }
+  proto token updateopt { * }
+  token updateopt:sym<clean>      { <clean>      }
+  token updateopt:sym<deps>       { <deps>       }
+  token updateopt:sym<build>      { <build>      }
+  token updateopt:sym<test>       { <test>       }
+  token updateopt:sym<xtest>      { <xtest>      }
+  token updateopt:sym<force>      { <force>      }
+  token updateopt:sym<precompile> { <precompile> }
+  token updateopt:sym<in>         { <sym>     <.space>* <repo> }
+  token updateopt:sym<exclude>    { <exclude> <.space>* <spec> }
 
 
   proto token downloadopt { * }
@@ -197,6 +205,7 @@ grammar Pakku::Grammar::Cmd {
   token listopt:sym<repo>    { <sym> <.space>* <repo> }
 
   proto token stateopt { * }
+  token stateopt:sym<updates>    { <updates> }
 
   proto token searchopt { * }
   token searchopt:sym<details>    { <details> }
@@ -342,6 +351,12 @@ grammar Pakku::Grammar::Cmd {
   token exclude:sym<exclude> { <sym> }
   token exclude:sym<x>       { <sym> }
 
+  proto token clean { * }
+  token clean:sym<clean>   { <sym> }
+  token clean:sym<c>       { <sym> }
+  token clean:sym<noclean> { <sym> }
+  token clean:sym<nc>      { <sym> }
+
   proto token from { * }
   token from:sym<from> { <sym> }
   token from:sym<f>    { <sym> }
@@ -459,14 +474,14 @@ class Pakku::Grammar::CmdActions {
   }
 
 
-  method TOP:sym<upgrade> ( $/ ) {
+  method TOP:sym<update> ( $/ ) {
 
     my %cmd;
 
-    %cmd<cmd>           = 'upgrade';
-    %cmd<pakku>         = $<pakkuopt>».made.hash   if defined $<pakkuopt>;
-    %cmd<upgrade>       = $<upgradeopt>».made.hash if defined $<upgradeopt>;
-    %cmd<upgrade><spec> = $<specs>.made;
+    %cmd<cmd>           = 'update';
+    %cmd<pakku>         = $<pakkuopt>».made.hash if defined $<pakkuopt>;
+    %cmd<update>       = $<updateopt>».made.hash if defined $<updateopt>;
+    %cmd<update><spec> = $<specs>.made           if defined $<specs>;
 
     make %cmd;
 
@@ -595,7 +610,7 @@ class Pakku::Grammar::CmdActions {
   }
 
   method cmd:sym<add>      ( $/ ) { make 'add'      }
-  method cmd:sym<upgrade>  ( $/ ) { make 'upgrade'  }
+  method cmd:sym<update>   ( $/ ) { make 'update'  }
   method cmd:sym<build>    ( $/ ) { make 'build'    }
   method cmd:sym<test>     ( $/ ) { make 'test'     }
   method cmd:sym<remove>   ( $/ ) { make 'remove'   }
@@ -805,14 +820,15 @@ class Pakku::Grammar::CmdActions {
   method addopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
 
 
-  method upgradeopt:sym<deps>       ( $/ ) { make $<deps>.made  }
-  method upgradeopt:sym<build>      ( $/ ) { make $<build>.made }
-  method upgradeopt:sym<test>       ( $/ ) { make $<test>.made  }
-  method upgradeopt:sym<xtest>      ( $/ ) { make $<xtest>.made }
-  method upgradeopt:sym<force>      ( $/ ) { make $<force>.made }
-  method upgradeopt:sym<precompile> ( $/ ) { make $<precompile>.made }
-  method upgradeopt:sym<in>         ( $/ ) { make ( in => $<repo>.Str ) }
-  method upgradeopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
+  method updateopt:sym<clean>      ( $/ ) { make $<clean>.made  }
+  method updateopt:sym<deps>       ( $/ ) { make $<deps>.made  }
+  method updateopt:sym<build>      ( $/ ) { make $<build>.made }
+  method updateopt:sym<test>       ( $/ ) { make $<test>.made  }
+  method updateopt:sym<xtest>      ( $/ ) { make $<xtest>.made }
+  method updateopt:sym<force>      ( $/ ) { make $<force>.made }
+  method updateopt:sym<precompile> ( $/ ) { make $<precompile>.made }
+  method updateopt:sym<in>         ( $/ ) { make ( in => $<repo>.Str ) }
+  method updateopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
 
 
   method removeopt:sym<from> ( $/ ) { make ( from => $<repo>.Str ) }
@@ -827,6 +843,13 @@ class Pakku::Grammar::CmdActions {
   method searchopt:sym<details>    ( $/ ) { make $<details>.made            }
   method searchopt:sym<relaxed>    ( $/ ) { make $<relaxed>.made            }
   method searchopt:sym<count>      ( $/ ) { make ( count => $<number>.Int ) }
+
+  method stateopt:sym<updates>      ( $/ ) { make $<updates>.made }
+
+  method updates:sym<updates>   ( $/ ) { make ( :updates  ) }
+  method updates:sym<up>        ( $/ ) { make ( :updates  ) }
+  method updates:sym<noupdates> ( $/ ) { make ( :!updates ) }
+  method updates:sym<nu>        ( $/ ) { make ( :!updates ) }
 
   method deps:sym<only>    ( $/ )  { make ( deps => 'only' )    }
   method deps:sym<runtime> ( $/ )  { make ( deps => 'runtime' ) }
@@ -888,6 +911,11 @@ class Pakku::Grammar::CmdActions {
   method precompile:sym<noprecompile> ( $/ )  { make ( :!precompile ) }
   method precompile:sym<noprecomp>    ( $/ )  { make ( :!precompile ) }
   method precompile:sym<np>           ( $/ )  { make ( :!precompile ) }
+
+  method clean:sym<clean>   ( $/ ) { make ( :clean  ) }
+  method clean:sym<c>       ( $/ ) { make ( :clean  ) }
+  method clean:sym<noclean> ( $/ ) { make ( :!clean ) }
+  method clean:sym<nc>      ( $/ ) { make ( :!clean ) }
 
   method remote:sym<remote>   ( $/ )  { make ( :remote  ) }
   method remote:sym<r>        ( $/ )  { make ( :remote  ) }
