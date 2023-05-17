@@ -241,15 +241,18 @@ in < repo >  → update distribution and install in repo < home site vendor core
 **options:**
 
 <pre>
-updates      → check updates for dists
-noupdates    → dont check updates for dists
+updates   → check updates for dists
+clean     → clean older versions of dists
+noupdates → dont check updates for dists
+noclean   → dont clean older versions
 </pre>
 
 <b>Examples:</b>
 <pre>
 <b>pakku state</b>
 <b>pakku state dist</b>
-<b>pakku update noupdates  dist</b>
+<b>pakku state clean  dist</b>
+<b>pakku state noupdates  dist</b>
 </pre>
 
 
