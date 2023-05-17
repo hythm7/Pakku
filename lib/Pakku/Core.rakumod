@@ -452,9 +452,9 @@ sub repo-from-spec ( Str $spec ) is export {
   return CompUnit::Repository unless $spec;
 
   my $repo-spec = CompUnit::Repository::Spec.from-string( $spec, 'inst' );
-  my $name = $spec.options<name> // 'custom-lib';
+  my $name = $repo-spec.options<name> // 'custom-lib';
 
-  my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $spec );
+  my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $repo-spec );
 
   CompUnit::RepositoryRegistry.register-name( $name, $repo );
 
