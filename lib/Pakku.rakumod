@@ -2,6 +2,7 @@ use CompUnit::Repository::Staging;
 
 use Pakku::Log;
 use Pakku::Core;
+use Pakku::State;
 
 unit class Pakku;
   also does Pakku::Core;
@@ -203,35 +204,6 @@ multi method fly (
    
 }
 
-multi method fly (
-
-         'upgrade',
-         :@spec!,
-         :$deps   = True,
-  Str:D  :$in     = 'site',
-  Bool:D :$build  = True,
-  Bool:D :$test   = True,
-  Bool:D :$xtest  = False,
-  Bool:D :$force  = False,
-         :@exclude,
-
-) {
-
-  LEAVE self.clear;
-
-  🧚 qq[PRC: ｢{@spec}｣];
-
-  @spec .= map(  -> $spec { self.upgradable: spec => Pakku::Spec.new: $spec } );
-
-  return unless so @spec;
-
-  @spec .= map( *.Str );
-
-  my $to = $in;
-
-  samewith 'add', :@spec, :$deps, :$build, :$test, :$force, :@exclude, :$to;
-
-}
 
 multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
   
@@ -492,6 +464,8 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
 multi method fly ( 'remove', :@spec!, Str :$from ) {
 
+  🦋 qq[RMV: ｢{@spec}｣];
+
   my $repo = repo-from-spec $from;
 
   sink @!repo
@@ -501,7 +475,12 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
         my $spec = Pakku::Spec.new: $str;
         my @dist = $repo.candidates( $spec.name, |$spec.spec );
 
-        sink @dist.map( -> $dist { $repo.uninstall: $dist } )
+        🐛 qq[RMV: ｢$spec｣ ‹$repo.name()› not installed!] unless @dist;
+
+        sink @dist.map( -> $dist {
+          🦋 qq[RMV: ｢$dist｣];
+          $repo.uninstall: $dist
+        } )
 
       } ) unless $!dont
     } );
@@ -608,6 +587,294 @@ multi method fly ( 'download', :@spec! ) {
       } );
 }
 
+
+multi method fly (
+
+         'update',
+         :$deps       = True,
+  Bool:D :$build      = True,
+  Bool:D :$test       = True,
+  Bool:D :$xtest      = False,
+  Bool:D :$precompile = True,
+  Bool:D :$force      = False,
+  Bool:D :$clean      = True,
+  Str:D  :$in         = 'home',
+         :@exclude,
+
+    :@spec = @!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } )
+
+  ) {
+
+  🦋 qq[STT: ｢...｣];
+
+  my @add;
+
+  my %state = Pakku::State.new( :$!recman ).state;
+
+  sink @spec.sort
+   ==> map( -> $spec { Pakku::Spec.new: $spec } )
+   ==> map( -> $spec {
+
+     🐛 "SPC: ｢$spec｣";
+
+     @!repo
+       ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
+       ==> flat( )
+       ==> grep( *.defined )
+       ==> my @candy;
+
+     unless @candy {
+
+       🐞 "SPC: ｢$spec｣ not installed!";
+
+       next;
+
+     }
+
+     sink @candy.map( -> $spec {
+    
+     🐛 "SPC: ｢$spec｣";
+
+     my $state = %state{ $spec };
+
+     my $upd = $state.<upd>.grep( *.defined ).head;
+
+     unless $upd {
+
+       🦋 "UPD: ｢$spec｣ no updates!";
+
+       next;
+
+     }
+
+     🦋 "UPD: ｢$upd｣";
+
+
+     @add.push: $upd;
+
+     #my $meta  = $state.<meta>;
+
+     #my @dep = $state.<dep>.grep( Pakku::Meta ).grep( *.defined );
+     #my @rev = $state.<rev>.grep( *.defined );
+
+
+     #@add.push: $upd;
+
+     #unless $upd {
+
+     #  🦋 "UPD: ｢$candy｣ no updates!";
+
+     #  next;
+
+     #}
+
+     #🦋 "UPD: ｢$upd｣";
+
+     #@dep.map( -> $dep {
+
+     #  🦋 "DEP: ｢$dep｣";
+
+     #  #%state{ $dep }.<rev>.grep( -> $rev { $meta !~~ $rev } );
+
+     #} );
+
+     #@rev.map( -> $rev {
+
+     #  my $dep = %state{ $rev }.<meta>.deps( :deps ).grep( -> $dep { $meta.name eq $dep.name } ).first( -> $dep { $meta.meta ~~ $dep } );
+     #  my $ok = $upd.meta ~~ $dep;
+
+     #  if $ok {
+
+     #  🦋 "REV: ｢$rev｣ OK with update!";
+
+     #  } else {
+
+     #    🐞 "REV: ｢$rev｣ Not OK with update!";
+
+     #    🐞 "UPD: ｢$upd｣ skip!";
+
+     #  }
+
+     #  $ok;
+
+     #} )
+     #  ==> my @ok;
+
+     #next unless all @ok;
+
+     #@rev.map( -> $meta { 🦋 "REV: ｢$meta｣" } );
+     } );
+
+   } );
+
+  my @repo = @!repo;
+
+  @!repo = CompUnit::RepositoryRegistry.repository-for-name('core');
+
+  @add 
+    ==> map(  -> $dep {
+      my @dep = self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+
+      @dep.append: $dep unless $deps ~~ <only>;
+
+      @dep;
+
+    } )
+    ==> flat( )
+    ==> unique( as => *.Str )
+    ==> my @meta;
+
+  @!repo = @repo;
+
+  @meta
+    ==> grep( -> $meta { not self.satisfied: spec => Pakku::Spec.new: ~$meta } )
+    ==> map( -> $meta {
+
+    🦋 qq[FTC: ｢$meta｣];
+
+    my IO::Path $path = $!tmp.add( $meta.id ).add( now.Num );
+
+    my $cached = $!cache.cached( :$meta ) if $!cache;
+
+    if $cached {
+
+      copy-dir src => $cached, dst => $path;
+
+    } else {
+
+      my $src = $meta.source;
+
+      self.fetch: src => $meta.source, dst => $path;
+
+      $!cache.cache: :$path if $!cache;
+    }
+
+    $meta.to-dist: $path;
+
+    } )
+  ==> my @dist;
+
+
+  my $repo = repo-from-spec $in;
+
+  my $*stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage.add( now.Num ),
+    name      => $repo.name,
+    next-repo => $*REPO;
+
+
+  @dist 
+    ==> map( -> $dist {
+  
+      self!build: :$dist if $build;
+
+      🦋 qq[STG: ｢$dist｣];
+
+      $*stage.install: $dist, :$precompile;
+
+      self!test: :$dist :$xtest if $test;
+
+    } );
+
+  $*stage.remove-artifacts;
+
+  unless $!dont {
+
+    if @dist {
+
+      $*stage.deploy;
+
+      my $bin = $*stage.prefix.add( 'bin' ).Str;
+
+      🧚 "BIN: " ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+    }
+
+    if $clean {
+
+      my @clean = Pakku::State.new( :$!recman :!updates ).cleanable;
+
+      samewith 'remove', spec => @clean.map( *.Str ) if @clean;
+
+    }
+
+  }
+
+}
+
+multi method fly (
+
+    'state',
+
+    :$updates = True,
+
+    :@spec = @!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } )
+
+  ) {
+
+  🦋 qq[STT: ｢...｣];
+
+  my $state = Pakku::State.new( :$!recman, :$updates );
+
+  my @cleanable = $state.cleanable;
+
+  my %state = $state.state;
+
+  sink @spec.sort
+    ==> map( -> $spec { Pakku::Spec.new: $spec } )
+    ==> map( -> $spec { 
+        
+      🐛 "STT: ｢$spec｣";
+      @!repo
+        ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
+        ==> flat( )
+        ==> grep( *.defined )
+        ==> my @candy;
+
+      unless @candy {
+
+        🐞 "SPC: ｢$spec｣ not installed!";
+
+        next;
+      }
+
+      sink @candy.map( -> $spec {
+
+        #🦋 "SPC: ｢$spec｣";
+
+        my $state = %state{ $spec };
+
+        unless $state {
+
+          🐞 "SPC: ｢$spec｣ not installed!";
+
+          next;
+
+        }
+
+        my @dep      = $state.<dep>.grep( Pakku::Meta       ).grep( *.defined );
+        my @missing  = $state.<dep>.grep( Pakku::Spec::Raku ).grep( *.defined );
+
+        my @rev     = $state.<rev>.grep( *.defined );
+        my @upd = $state.<upd>.grep( *.defined );
+
+        @dep.map( -> $meta { 🐛 "DEP: ｢$meta｣" } );
+
+        @missing.map( -> $spec { 🐞 "DEP: ｢$spec｣ missing!"  } );
+
+        @upd.map( -> $meta { 🦋 "UPD: ｢$meta｣" } );
+
+        @rev.map( -> $meta { 🐛 "REV: ｢$meta｣"  } );
+
+        🦋 "CLN: ｢$spec｣" if @cleanable.grep( -> $meta { $spec ~~ $meta.dist } );
+
+        🦗 "STT: ｢$spec｣" if     @missing;
+        🧚 "STT: ｢$spec｣" unless @missing;
+      } );
+    } );
+
+}
+
 multi method fly ( 'config', *%config ) {
 
   my @arg;
@@ -638,11 +905,12 @@ multi method fly ( 'help',  Str:D :$cmd ) {
     when 'remove'   { out self!remove-help   }
     when 'list'     { out self!list-help     }
     when 'search'   { out self!search-help   }
-    when 'upgrade'  { out self!upgrade-help  }
+    when 'state'    { out self!state-help    }
+    when 'update'   { out self!update-help   }
     when 'build'    { out self!build-help    }
     when 'test'     { out self!test-help     }
     when 'download' { out self!download-help }
-    when 'config'   { out self!config-help }
+    when 'config'   { out self!config-help   }
     when 'help'     { out self!help-help     }
 
 
@@ -652,7 +920,8 @@ multi method fly ( 'help',  Str:D :$cmd ) {
         self!remove-help,
         self!list-help,
         self!search-help,
-        self!upgrade-help,
+        self!state-help,
+        self!update-help,
         self!build-help,
         self!test-help,
         self!download-help,
