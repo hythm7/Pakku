@@ -143,10 +143,13 @@ submethod !state-help ( ) {
 
   %state<example>.push: 'pakku state';
   %state<example>.push: 'pakku state dist';
+  %state<example>.push: 'pakku state clean dist';
   %state<example>.push: 'pakku state noupdates dist';
 
   %state<opt>.push: ( 'updates'            => 'check for dists updates' );
-  %state<opt>.push: ( 'noupdates'          => 'dont check for dists updates' );
+  %state<opt>.push: ( 'clean'            => 'clean older versions' );
+  %state<opt>.push: ( 'noclean'          => 'dont clean older versions' );
+  
 
   help %state;
 
