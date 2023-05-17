@@ -164,8 +164,8 @@ grammar Pakku::Grammar::Cmd {
   token pakkuopt:sym<yolo>     { <yolo> }
   token pakkuopt:sym<please>   { <sym>    }
   token pakkuopt:sym<dont>     { <sym>    }
-  token pakkuopt:sym<verbose>  { <verbose> <.space>* <level> }
-  token pakkuopt:sym<config>   { <config>  <.space>* <path> }
+  token pakkuopt:sym<verbose>  { <verbose> <.space>+ <level> }
+  token pakkuopt:sym<config>   { <config>  <.space>+ <path> }
 
   proto token addopt { * }
   token addopt:sym<deps>       { <deps>       }
@@ -174,8 +174,8 @@ grammar Pakku::Grammar::Cmd {
   token addopt:sym<xtest>      { <xtest>      }
   token addopt:sym<force>      { <force>      }
   token addopt:sym<precompile> { <precompile> }
-  token addopt:sym<to>         { <sym>     <.space>* <repo> }
-  token addopt:sym<exclude>    { <exclude> <.space>* <spec> }
+  token addopt:sym<to>         { <sym>     <.space>+ <repo> }
+  token addopt:sym<exclude>    { <exclude> <.space>+ <spec> }
 
   proto token updateopt { * }
   token updateopt:sym<clean>      { <clean>      }
@@ -185,8 +185,8 @@ grammar Pakku::Grammar::Cmd {
   token updateopt:sym<xtest>      { <xtest>      }
   token updateopt:sym<force>      { <force>      }
   token updateopt:sym<precompile> { <precompile> }
-  token updateopt:sym<in>         { <sym>     <.space>* <repo> }
-  token updateopt:sym<exclude>    { <exclude> <.space>* <spec> }
+  token updateopt:sym<in>         { <sym>     <.space>+ <repo> }
+  token updateopt:sym<exclude>    { <exclude> <.space>+ <spec> }
 
 
   proto token downloadopt { * }
@@ -197,12 +197,12 @@ grammar Pakku::Grammar::Cmd {
   token testopt:sym<xtest> { <xtest> }
 
   proto token removeopt { * }
-  token removeopt:sym<from> { <from> <.space>* <repo> }
+  token removeopt:sym<from> { <from> <.space>+ <repo> }
 
 
   proto token listopt { * }
   token listopt:sym<details> { <details> }
-  token listopt:sym<repo>    { <sym> <.space>* <repo> }
+  token listopt:sym<repo>    { <sym> <.space>+ <repo> }
 
   proto token stateopt { * }
   token stateopt:sym<updates>    { <updates> }
@@ -210,7 +210,7 @@ grammar Pakku::Grammar::Cmd {
   proto token searchopt { * }
   token searchopt:sym<details>    { <details> }
   token searchopt:sym<relaxed>    { <relaxed> }
-  token searchopt:sym<count>      { <count> <.space>* <number> }
+  token searchopt:sym<count>      { <count> <.space>+ <number> }
 
 
   proto token pretty { * }
@@ -229,8 +229,8 @@ grammar Pakku::Grammar::Cmd {
   token async:sym<sync>    { <sym> }
 
 
-  regex recman   { <rec>   | <rec>   <.space>* <recman-name> }
-  regex norecman { <norec> | <norec> <.space>* <recman-name> }
+  regex recman   { <rec>   | <rec>   <.space>+ <recman-name> }
+  regex norecman { <norec> | <norec> <.space>+ <recman-name> }
 
   proto token rec { * }
   token rec:sym<recman>   { <sym> }
@@ -274,10 +274,10 @@ grammar Pakku::Grammar::Cmd {
   token xtest:sym<nxt>     { <sym> }
 
   proto token deps { * }
-  token deps:sym<only>    { <dep> <.space>* <only>    }
-  token deps:sym<runtime> { <dep> <.space>* <runtime> }
-  token deps:sym<test>    { <dep> <.space>* <tst>    }
-  token deps:sym<build>   { <dep> <.space>* <build>   }
+  token deps:sym<only>    { <dep> <.space>+ <only>    }
+  token deps:sym<runtime> { <dep> <.space>+ <runtime> }
+  token deps:sym<test>    { <dep> <.space>+ <tst>    }
+  token deps:sym<build>   { <dep> <.space>+ <build>   }
   token deps:sym<deps>    { <sym>                     }
   token deps:sym<nodeps>  { <nodeps>                  }
 
