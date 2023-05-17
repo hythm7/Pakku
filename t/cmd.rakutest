@@ -75,8 +75,22 @@ my @tests = (
     ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "pretty v3 add force Spec" =>
     ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose("info")})},
+  "update" =>
+    ${:update(${}), :cmd("update")},
+  "update Dist" =>
+    ${:update(${:spec($["Dist"])}), :cmd("update")},
   "upgrade Dist" =>
-    ${:upgrade(${:spec($["Dist"])}), :cmd("upgrade")},
+    ${:update(${:spec($["Dist"])}), :cmd("update")},
+  "up Dist" =>
+    ${:update(${:spec($["Dist"])}), :cmd("update")},
+  "up clean Dist" =>
+    ${:update(${:spec($["Dist"]), :clean}), :cmd("update")},
+  "up noclean Dist" =>
+    ${:update(${:spec($["Dist"]), :!clean}), :cmd("update")},
+  "up nc Dist" =>
+    ${:update(${:spec($["Dist"]), :!clean}), :cmd("update")},
+  "up c" =>
+    ${:update(${:clean}), :cmd("update")},
   "remove Spec1 Spec2" =>
     ${:cmd("remove"), :remove(${:spec($["Spec1", "Spec2"])})},
   "l" =>
@@ -100,9 +114,15 @@ my @tests = (
   "down Spec" =>
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "st" =>
-    ${:cmd("state")},
-  "state" =>
-    ${:cmd("state")},
+    ${:cmd("state"), :state({})},
+  "state noupdates" =>
+    ${:cmd("state"), :state({:!updates})},
+  "state up" =>
+    ${:cmd("state"), :state({:updates})},
+  "state nu" =>
+    ${:cmd("state"), :state({:!updates})},
+  "state updates" =>
+    ${:cmd("state"), :state({:updates})},
   "state Spec" =>
     ${:cmd("state"), :state(${:spec($["Spec"])})},
   "add" =>
