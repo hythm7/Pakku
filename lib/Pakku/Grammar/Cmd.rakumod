@@ -205,7 +205,8 @@ grammar Pakku::Grammar::Cmd {
   token listopt:sym<repo>    { <sym> <.space>+ <repo> }
 
   proto token stateopt { * }
-  token stateopt:sym<updates>    { <updates> }
+  token stateopt:sym<clean>   { <clean> }
+  token stateopt:sym<updates> { <updates> }
 
   proto token searchopt { * }
   token searchopt:sym<details>    { <details> }
@@ -844,7 +845,8 @@ class Pakku::Grammar::CmdActions {
   method searchopt:sym<relaxed>    ( $/ ) { make $<relaxed>.made            }
   method searchopt:sym<count>      ( $/ ) { make ( count => $<number>.Int ) }
 
-  method stateopt:sym<updates>      ( $/ ) { make $<updates>.made }
+  method stateopt:sym<clean>   ( $/ ) { make $<clean>.made   }
+  method stateopt:sym<updates> ( $/ ) { make $<updates>.made }
 
   method updates:sym<updates>   ( $/ ) { make ( :updates  ) }
   method updates:sym<up>        ( $/ ) { make ( :updates  ) }
