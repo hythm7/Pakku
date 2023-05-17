@@ -9,18 +9,18 @@ submethod !add-help ( ) {
   %add<cmd>     = 'Add';
   %add<desc>    = 'Add distribution';
 
-  %add<example>.push: 'pakku add Dist';
-  %add<example>.push: 'pakku add notest Dist';
-  %add<example>.push: 'pakku add nodeps Dist';
-  %add<example>.push: 'pakku add deps only Dist';
-  %add<example>.push: 'pakku add exclude Dep Dist';
-  %add<example>.push: 'pakku add noprecomp notest Dist';
-  %add<example>.push: 'pakku add to     /opt/MyApp Dist';
-  %add<example>.push: 'pakku add force  to   home  Dist1 Dist2';
+  %add<example>.push: 'pakku add dist';
+  %add<example>.push: 'pakku add notest dist';
+  %add<example>.push: 'pakku add nodeps dist';
+  %add<example>.push: 'pakku add deps only dist';
+  %add<example>.push: 'pakku add exclude Dep dist';
+  %add<example>.push: 'pakku add noprecomp notest dist';
+  %add<example>.push: 'pakku add to     /opt/MyApp dist';
+  %add<example>.push: 'pakku add force  to   home  dist1 dist2';
 
   %add<opt>.push: ( 'deps'            => 'add all dependencies' );
   %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
-  %add<opt>.push: ( 'deps only'       => 'dont add the Dist, only dependencies' );
+  %add<opt>.push: ( 'deps only'       => 'dont add the dist, only dependencies' );
   %add<opt>.push: ( 'deps build'      => 'build dependencies' );
   %add<opt>.push: ( 'deps test'       => 'test dependencies' );
   %add<opt>.push: ( 'deps runtime'    => 'runtime dependencies' );
@@ -48,7 +48,7 @@ submethod !remove-help ( ) {
   %remove<cmd>     = 'Remove';
   %remove<desc>    = 'Remove distribution';
 
-  %remove<example>.push: 'pakku remove Dist';
+  %remove<example>.push: 'pakku remove dist';
 
   %remove<opt>.push: ( 'from <repo>' => 'remove distribution from provided repo only' );
 
@@ -64,10 +64,10 @@ submethod !list-help ( ) {
   %list<desc>    = 'List distribution details';
 
   %list<example>.push: 'pakku list';
-  %list<example>.push: 'pakku list Dist';
-  %list<example>.push: 'pakku list details Dist';
+  %list<example>.push: 'pakku list dist';
+  %list<example>.push: 'pakku list details dist';
   %list<example>.push: 'pakku list repo home';
-  %list<example>.push: 'pakku list repo /opt/MyApp Dist';
+  %list<example>.push: 'pakku list repo /opt/MyApp dist';
 
   %list<opt>.push: ( 'details'     => 'list details' );
   %list<opt>.push: ( 'repo <name>' => 'list repo' );
@@ -83,48 +83,72 @@ submethod !search-help ( ) {
   %search<cmd>     = 'Search';
   %search<desc>    = 'Search distribution on Recman';
 
-  %search<example>.push: 'pakku search Dist';
-  %search<example>.push: 'pakku search count 5 Dist';
-  %search<example>.push: 'pakku search details Dist';
+  %search<example>.push: 'pakku search           dist';
+  %search<example>.push: 'pakku search norelaxed dist';
+  %search<example>.push: 'pakku search count 5   dist';
+  %search<example>.push: 'pakku search details   dist';
 
-  %search<opt>.push: ( 'count'       => 'distributions count' );
-  %search<opt>.push: ( 'details'     => 'search details' );
+  %search<opt>.push: ( 'relaxed' => 'relaxed search' );
+  %search<opt>.push: ( 'count'   => 'distributions count' );
+  %search<opt>.push: ( 'details' => 'search details' );
 
   help %search;
 
 }
 
-submethod !upgrade-help ( ) {
+submethod !update-help ( ) {
 
-  my %upgrade;
+  my %update;
 
-  %upgrade<cmd>     = 'Upgrade';
-  %upgrade<desc>    = 'Upgrade distribution';
+  %update<cmd>     = 'Update';
+  %update<desc>    = 'Update distribution';
 
-  %upgrade<example>.push: 'pakku upgrade Dist';
-  %upgrade<example>.push: 'pakku upgrade nodeps Dist';
-  %upgrade<example>.push: 'pakku upgrade notest Dist';
-  %upgrade<example>.push: 'pakku upgrade exclude Dep Dist';
-  %upgrade<example>.push: 'pakku upgrade in     /opt/MyApp Dist';
-  %upgrade<example>.push: 'pakku upgrade force  in   vendor  Dist1 Dist2';
+  %update<example>.push: 'pakku update';
+  %update<example>.push: 'pakku update noclean';
+  %update<example>.push: 'pakku update dist';
+  %update<example>.push: 'pakku update nodeps dist';
+  %update<example>.push: 'pakku update notest dist';
+  %update<example>.push: 'pakku update exclude Dep dist';
+  %update<example>.push: 'pakku update in     /opt/MyApp dist';
+  %update<example>.push: 'pakku update force  in   vendor  dist1 dist2';
 
-  %upgrade<opt>.push: ( 'deps'            => 'upgrade dependencies' );
-  %upgrade<opt>.push: ( 'nodeps'          => 'dont upgrade dependencies' );
-  %upgrade<opt>.push: ( 'deps only'       => 'upgrade dependencies only' );
-  %upgrade<opt>.push: ( 'build'           => 'build distribution' );
-  %upgrade<opt>.push: ( 'nobuild'         => 'bypass build' );
-  %upgrade<opt>.push: ( 'test'            => 'test distribution' );
-  %upgrade<opt>.push: ( 'notest'          => 'bypass test' );
-  %upgrade<opt>.push: ( 'xtest'           => 'xtest distribution' );
-  %upgrade<opt>.push: ( 'noxtest'         => 'bypass xtest' );
-  %upgrade<opt>.push: ( 'force'           => 'force upgrade' );
-  %upgrade<opt>.push: ( 'noforce'         => 'no force' );
-  %upgrade<opt>.push: ( 'precomp'         => 'precomp distribution' );
-  %upgrade<opt>.push: ( 'noprecomp'       => 'no precomp' );
-  %upgrade<opt>.push: ( 'exclude <dep>'   => 'upgrade distribution but exclude specific dep' );
-  %upgrade<opt>.push: ( 'in <repo>'       => 'upgrade distribution in repo <home site vendor core /path/to/MyApp>' );
+  %update<opt>.push: ( 'clean'         => 'clean not needed dists' );
+  %update<opt>.push: ( 'noclean'       => 'dont clean' );
+  %update<opt>.push: ( 'deps'          => 'update dependencies' );
+  %update<opt>.push: ( 'nodeps'        => 'dont update dependencies' );
+  %update<opt>.push: ( 'deps only'     => 'update dependencies only' );
+  %update<opt>.push: ( 'build'         => 'build distribution' );
+  %update<opt>.push: ( 'nobuild'       => 'bypass build' );
+  %update<opt>.push: ( 'test'          => 'test distribution' );
+  %update<opt>.push: ( 'notest'        => 'bypass test' );
+  %update<opt>.push: ( 'xtest'         => 'xtest distribution' );
+  %update<opt>.push: ( 'noxtest'       => 'bypass xtest' );
+  %update<opt>.push: ( 'force'         => 'force update' );
+  %update<opt>.push: ( 'noforce'       => 'no force' );
+  %update<opt>.push: ( 'precomp'       => 'precomp distribution' );
+  %update<opt>.push: ( 'noprecomp'     => 'no precomp' );
+  %update<opt>.push: ( 'exclude <dep>' => 'update distribution but exclude specific dep' );
+  %update<opt>.push: ( 'in <repo>'     => 'update distribution in repo <home site vendor core /path/to/MyApp>' );
 
-  help %upgrade;
+  help %update;
+
+}
+
+submethod !state-help ( ) {
+
+  my %state;
+
+  %state<cmd>     = 'State';
+  %state<desc>    = 'State distribution';
+
+  %state<example>.push: 'pakku state';
+  %state<example>.push: 'pakku state dist';
+  %state<example>.push: 'pakku state noupdates dist';
+
+  %state<opt>.push: ( 'updates'            => 'check for dists updates' );
+  %state<opt>.push: ( 'noupdates'          => 'dont check for dists updates' );
+
+  help %state;
 
 }
 
@@ -136,7 +160,7 @@ submethod !build-help ( ) {
   %build<cmd>     = 'Build';
   %build<desc>    = 'Build distribution';
 
-  %build<example>.push: 'pakku build Dist';
+  %build<example>.push: 'pakku build dist';
   %build<example>.push: 'pakku build .';
 
   help %build;
@@ -150,10 +174,10 @@ submethod !test-help ( ) {
   %test<cmd>     = 'Test';
   %test<desc>    = 'Test distribution';
 
-  %test<example>.push: 'pakku test Dist';
-  %test<example>.push: 'pakku test ./Dist';
-  %test<example>.push: 'pakku test xtest ./Dist';
-  %test<example>.push: 'pakku test nobuild ./Dist';
+  %test<example>.push: 'pakku test dist';
+  %test<example>.push: 'pakku test ./dist';
+  %test<example>.push: 'pakku test xtest ./dist';
+  %test<example>.push: 'pakku test nobuild ./dist';
 
   %test<opt>.push: ( 'xtest'   => 'xtest distribution' );
   %test<opt>.push: ( 'noxtest' => 'bypass xtest' );
@@ -171,7 +195,7 @@ submethod !download-help ( ) {
   %download<cmd>     = 'Download';
   %download<desc>    = 'Download distribution';
 
-  %download<example>.push: 'pakku download Dist';
+  %download<example>.push: 'pakku download dist';
 
   help %download;
 
@@ -212,7 +236,7 @@ submethod !help-help ( ) {
 
   %help<example>.push: 'pakku';
   %help<example>.push: 'pakku add';
-  %help<example>.push: 'pakku upgrade';
+  %help<example>.push: 'pakku update';
   %help<example>.push: 'pakku help';
   %help<example>.push: 'pakku help list';
   %help<example>.push: 'pakku help help';
@@ -228,13 +252,13 @@ submethod !pakku-help ( ) {
   %pakku<cmd>     = 'Pakku';
   %pakku<desc>    = 'Pakku Options';
 
-  %pakku<example>.push: 'pakku dont     add Dist';
-  %pakku<example>.push: 'pakku async    add Dist';
-  %pakku<example>.push: 'pakku nocache  add Dist';
-  %pakku<example>.push: 'pakku norecman add Dist';
-  %pakku<example>.push: 'pakku nopretty add Dist';
-  %pakku<example>.push: 'pakku verbose  debug  add    Dist';
-  %pakku<example>.push: 'pakku pretty   please remove Dist';
+  %pakku<example>.push: 'pakku dont     add dist';
+  %pakku<example>.push: 'pakku async    add dist';
+  %pakku<example>.push: 'pakku nocache  add dist';
+  %pakku<example>.push: 'pakku norecman add dist';
+  %pakku<example>.push: 'pakku nopretty add dist';
+  %pakku<example>.push: 'pakku verbose  debug  add    dist';
+  %pakku<example>.push: 'pakku pretty   please remove dist';
 
   %pakku<opt>.push: ( 'pretty'           => 'colorfull butterfly'  );
   %pakku<opt>.push: ( 'nopretty'         => 'no color' );
