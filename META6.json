@@ -32,6 +32,7 @@
     "Pakku::Recman::Local" : "lib/Pakku/Recman/Local.rakumod",
     "Pakku::Archive"       : "lib/Pakku/Archive.rakumod",
     "Pakku::Grammar::Cmd"  : "lib/Pakku/Grammar/Cmd.rakumod",
+    "Pakku::State"         : "lib/Pakku/State.rakumod",
     "Pakku::Config"        : "lib/Pakku/Config.rakumod",
     "X::Pakku"             : "lib/X/Pakku.rakumod"
   },
