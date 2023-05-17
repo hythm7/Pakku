@@ -1,16 +1,16 @@
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> [ <specs> || <path> ]    }
-  rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> <specs>?    }
+  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> 'spec'? [ <specs> || <path> ]    }
+  rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> 'spec'? <specs>?    }
 
-  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> [ <spec> || <path> ]     }
-  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> [ <spec> || <path> ]     }
-  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> <specs>    }
-  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> <specs>    }
-  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> <specs>    }
-  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> <specs>?   }
-  rule TOP:sym<state>     { <pakkuopt>* % <.space> <state>      <stateopt>*     % <.space> <specs>?   }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> 'spec'? [ <spec> || <path> ]     }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> 'spec'? [ <spec> || <path> ]     }
+  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> 'spec'? <specs>    }
+  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> 'spec'? <specs>    }
+  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> 'spec'? <specs>    }
+  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> 'spec'? <specs>?   }
+  rule TOP:sym<state>     { <pakkuopt>* % <.space> <state>      <stateopt>*     % <.space> 'spec'? <specs>?   }
 
   rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd>                                     }
 
