@@ -190,7 +190,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   my $meta = try Pakku::Meta.new(
     ( $!cache.recommend( :$spec ).meta if $!cache  ) //
-    ( $!recman.recommend: :$spec if $!recman )
+    ( $!recman.recommend: :$spec       if $!recman )
   );
 
   die X::Pakku::Meta.new: meta => $spec unless $meta;
@@ -271,33 +271,6 @@ multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
 
 multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samewith :$spec } ) }
 
-
-method upgradable ( Pakku::Spec::Raku:D :$spec! ) {
-
-  my $inst = @!repo.map( *.candidates: $spec.name, |$spec.spec ).flat.map( *.meta ).sort( *.<ver> ).sort( *.<api> ).tail;
-
-  die X::Pakku::Upgrade.new: :$spec unless $inst;
-
-  my $inst-spec = Pakku::Spec.new: %( name => $spec.name, |$inst );
-
-  🦋 qq[UPG: ｢$inst-spec｣];
-
-  my %candy-spec = %( name => $spec.name, auth => $spec.auth );
-
-  my $candy-meta = $!recman.recommend: spec => Pakku::Spec.new: %candy-spec;
-
-  die X::Pakku::Meta.new: spec => %candy-spec unless $candy-meta;
-
-  my $candy-spec = Pakku::Spec.new: Pakku::Meta.new( Rakudo::Internals::JSON.from-json( $candy-meta )).Str;
-
-  return Empty unless $candy-spec cmp $inst-spec ~~ More ;
-
-  🦋 qq[UPG: ｢$candy-spec｣];
-
-  $candy-spec;
-
-}
-
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 
   # cannot use .name instead of .id (which will save a few calls)
@@ -360,6 +333,7 @@ multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
   copy-dir :$src :$dst;
 
 }
+
 
 method clear ( ) {
 
