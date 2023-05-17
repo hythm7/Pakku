@@ -475,7 +475,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
         my $spec = Pakku::Spec.new: $str;
         my @dist = $repo.candidates( $spec.name, |$spec.spec );
 
-        🐛 qq[RMV: ｢$spec｣ ‹$repo.name()› not installed!] unless @dist;
+        🐛 qq[SPC: ｢$spec｣ ‹$repo.name()› not installed!] unless @dist;
 
         sink @dist.map( -> $dist {
           🦋 qq[RMV: ｢$dist｣];
@@ -806,6 +806,7 @@ multi method fly (
 
     'state',
 
+    :$clean   = False,
     :$updates = True,
 
     :@spec = @!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } )
@@ -816,7 +817,7 @@ multi method fly (
 
   my $state = Pakku::State.new( :$!recman, :$updates );
 
-  my @cleanable = $state.cleanable;
+  my @clean = $state.cleanable;
 
   my %state = $state.state;
 
@@ -840,7 +841,7 @@ multi method fly (
 
       sink @candy.map( -> $spec {
 
-        #🦋 "SPC: ｢$spec｣";
+        🐛 "SPC: ｢$spec｣";
 
         my $state = %state{ $spec };
 
@@ -866,10 +867,20 @@ multi method fly (
 
         @rev.map( -> $meta { 🐛 "REV: ｢$meta｣"  } );
 
-        🦋 "CLN: ｢$spec｣" if @cleanable.grep( -> $meta { $spec ~~ $meta.dist } );
-
         🦗 "STT: ｢$spec｣" if     @missing;
         🧚 "STT: ｢$spec｣" unless @missing;
+
+        sink @clean
+          ==> grep( -> $meta { $spec ~~ $meta.dist } )
+          ==> map( -> $meta {
+            🦋 "CLN: ｢$spec｣";
+
+            unless $!dont {
+              samewith 'remove', spec => $meta.dist.Array if $clean;
+            }
+
+          } );
+
       } );
     } );
 
