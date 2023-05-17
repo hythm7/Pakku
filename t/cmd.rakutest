@@ -115,6 +115,8 @@ my @tests = (
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "st" =>
     ${:cmd("state"), :state({})},
+  "state clean" =>
+    ${:cmd("state"), :state({:clean})},
   "state noupdates" =>
     ${:cmd("state"), :state({:!updates})},
   "state up" =>
