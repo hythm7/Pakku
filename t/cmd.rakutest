@@ -69,11 +69,11 @@ my @tests = (
     ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
   "nrec rea add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
-  "v3 add force Spec" =>
+  "v 3 add force Spec" =>
     ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
   "v 3 add nodeps Spec" =>
     ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
-  "pretty v3 add force Spec" =>
+  "pretty v 3 add force Spec" =>
     ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose("info")})},
   "update" =>
     ${:update(${}), :cmd("update")},
