@@ -58,7 +58,13 @@
     "build": true,
     "xtest": false
   },
-  "upgrade": {
+  "state": {
+    "updates": true,
+    "clean": true
+  },
+
+  "udate": {
+    "clean": true,
     "build": true,
     "deps": true,
     "force": false,

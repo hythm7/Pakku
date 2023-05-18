@@ -30,8 +30,9 @@ my class Add {
 
 }
 
-my class Upgrade {
+my class Update {
 
+  has Bool $.clean;
   has Bool $.build;
   has Bool $.test;
   has Bool $.xtest;
@@ -42,6 +43,14 @@ my class Upgrade {
   has Str  @.exclude;
 
 }
+
+my class State {
+
+  has Bool $.clean;
+  has Bool $.updates;
+
+}
+
 
 my class Remove {
 
@@ -93,13 +102,14 @@ my class Log {
 
 has Pakku    $.pakku;
 has Add      $.add;
-has Upgrade  $.upgrade;
+has Update   $.update;
 has Search   $.search;
 has Remove   $.remove;
 has Build    $.build;
 has Test     $.test;
 has List     $.list;
 has Download $.download;
+has State    $.state;
 has Recman   $.recman;
 has Log      $.log;
 
