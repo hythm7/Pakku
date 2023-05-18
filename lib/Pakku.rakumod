@@ -468,6 +468,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
 
   my $repo = repo-from-spec $from;
 
+
   sink @!repo
     ==> grep( $repo )
     ==> map( -> $repo {
@@ -475,7 +476,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
         my $spec = Pakku::Spec.new: $str;
         my @dist = $repo.candidates( $spec.name, |$spec.spec );
 
-        🐛 qq[SPC: ｢$spec｣ ‹$repo.name()› not installed!] unless @dist;
+        🐛 qq[SPC: ｢$spec｣ ‹$repo.prefix()› not installed!] unless @dist;
 
         sink @dist.map( -> $dist {
           🦋 qq[RMV: ｢$dist｣];
@@ -598,12 +599,14 @@ multi method fly (
   Bool:D :$precompile = True,
   Bool:D :$force      = False,
   Bool:D :$clean      = True,
-  Str:D  :$in         = 'home',
+  Str:D  :$in         = 'site',
          :@exclude,
 
     :@spec = @!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } )
 
   ) {
+
+  LEAVE self.clear;
 
   🦋 qq[STT: ｢...｣];
 
@@ -633,76 +636,24 @@ multi method fly (
 
      sink @candy.map( -> $spec {
     
-     🐛 "SPC: ｢$spec｣";
+       🐛 "SPC: ｢$spec｣";
 
-     my $state = %state{ $spec };
+       my $state = %state{ $spec };
 
-     my $upd = $state.<upd>.grep( *.defined ).head;
+       my $upd = $state.<upd>.grep( *.defined ).head;
 
-     unless $upd {
+       unless $upd {
 
-       🦋 "UPD: ｢$spec｣ no updates!";
+         🐛 "UPD: ｢$spec｣ no updates!";
 
-       next;
+         next;
 
-     }
+       }
 
-     🦋 "UPD: ｢$upd｣";
+       🦋 "UPD: ｢$upd｣";
 
+       @add.push: $upd;
 
-     @add.push: $upd;
-
-     #my $meta  = $state.<meta>;
-
-     #my @dep = $state.<dep>.grep( Pakku::Meta ).grep( *.defined );
-     #my @rev = $state.<rev>.grep( *.defined );
-
-
-     #@add.push: $upd;
-
-     #unless $upd {
-
-     #  🦋 "UPD: ｢$candy｣ no updates!";
-
-     #  next;
-
-     #}
-
-     #🦋 "UPD: ｢$upd｣";
-
-     #@dep.map( -> $dep {
-
-     #  🦋 "DEP: ｢$dep｣";
-
-     #  #%state{ $dep }.<rev>.grep( -> $rev { $meta !~~ $rev } );
-
-     #} );
-
-     #@rev.map( -> $rev {
-
-     #  my $dep = %state{ $rev }.<meta>.deps( :deps ).grep( -> $dep { $meta.name eq $dep.name } ).first( -> $dep { $meta.meta ~~ $dep } );
-     #  my $ok = $upd.meta ~~ $dep;
-
-     #  if $ok {
-
-     #  🦋 "REV: ｢$rev｣ OK with update!";
-
-     #  } else {
-
-     #    🐞 "REV: ｢$rev｣ Not OK with update!";
-
-     #    🐞 "UPD: ｢$upd｣ skip!";
-
-     #  }
-
-     #  $ok;
-
-     #} )
-     #  ==> my @ok;
-
-     #next unless all @ok;
-
-     #@rev.map( -> $meta { 🦋 "REV: ｢$meta｣" } );
      } );
 
    } );
