@@ -513,6 +513,7 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
     } )
     ==> flat( )
     ==> map( -> $meta { Pakku::Meta.new: $meta } )
+    ==> sort( *.Str )
     ==> map( -> $meta { out $meta.gist: :$details } );
 
 
@@ -529,6 +530,7 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
     ==> flat( )
     ==> grep( *.defined )
     ==> map( -> $meta { Pakku::Meta.new: $meta } )
+    ==> sort( *.Str )
     ==> map( -> $meta { out $meta.gist: :$details } );
   }
 
