@@ -12,7 +12,7 @@ has %!provides;
 
 method recommend ( ::?CLASS:D: :$spec! ) {
 
-  🐛 qq[REC: ｢$!name｣ ‹$spec› recommending...];
+  🐛 qq[REC: ｢$spec｣ ‹$!name› recommending...];
 
   my $name   = $spec.name;
 
@@ -45,7 +45,7 @@ method search (
 
   ) {
 
-  🐛 qq[REC: ｢$!name｣ ‹$spec› searching...];
+  🐛 qq[REC: ｢$spec｣ ‹$!name› searching...];
 
   my $pattern = $spec.name.raku;
 
