@@ -60,10 +60,10 @@
   },
   "state": {
     "updates": true,
-    "clean": true
+    "clean": false
   },
 
-  "udate": {
+  "update": {
     "clean": true,
     "build": true,
     "deps": true,
