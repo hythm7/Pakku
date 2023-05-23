@@ -23,7 +23,6 @@ multi method fly (
 
 ) {
 
-  LEAVE self.clear;
 
   🧚 qq[PRC: ｢{@spec}｣];
 
@@ -122,8 +121,6 @@ multi method fly (
 
 ) {
 
-  LEAVE self.clear;
-
   🧚 qq[PRC: ｢$path｣];
 
   my $repo = repo-from-spec $to;
@@ -207,8 +204,6 @@ multi method fly (
 
 multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
   
-  LEAVE self.clear;
-
   🧚 qq[PRC: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
@@ -272,8 +267,6 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
 multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
    
-  LEAVE self.clear;
-
   🧚 qq[PRC: ｢$spec｣];
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
@@ -337,8 +330,6 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
 multi method fly ( 'build', IO::Path:D :$path! ) {
 
-  LEAVE self.clear;
-
   🧚 qq[PRC: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
@@ -400,8 +391,6 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 }
 
 multi method fly ( 'build', Str:D :$spec! ) {
-
-  LEAVE self.clear;
 
   🧚 qq[PRC: ｢$spec｣];
 
@@ -607,8 +596,6 @@ multi method fly (
     :@spec = @!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } )
 
   ) {
-
-  LEAVE self.clear;
 
   🦋 qq[STT: ｢...｣];
 
@@ -899,6 +886,8 @@ multi method fly ( 'help',  Str:D :$cmd ) {
 
 multi method fly ( ) {
 
+  LEAVE self.clear;
+
   self.clear;
 
   samewith %!cnf<cmd>, |%!cnf{ %!cnf<cmd> };
@@ -910,9 +899,12 @@ proto method fly ( | ) {
 
   {*}
 
+  LEAVE self.clear;
+
   CATCH {
     when X::Pakku { 🦗 .message; .resume if $!yolo; nofun }
     default       { 🦗 .gist;                       nofun }
   }
+
 }
 
