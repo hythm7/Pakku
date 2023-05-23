@@ -273,26 +273,14 @@ multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samew
 
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 
-  # cannot use .name instead of .id (which will save a few calls)
-  # because dists that depends on two different versions of
-  # same dependency, will fail. 
   state %visited;
   
   once for @exclude { %visited{ .id } = True } if @exclude;
 
-  $meta.deps: :$deps
-
+  $meta.deps( :$deps )
     ==> grep( -> $spec { not ( %visited{ $spec.?id // any @$spec.map( *.id ) } or self.satisfied( :$spec ) or not $spec.name )   } ) # sorry :/
-
     ==> map(  -> $spec { self.satisfy: :$spec } )
-
-    ==> my @meta-deps;
-
-  return Empty unless +@meta-deps;
-
-  my @dep;
-
-  for @meta-deps -> $dep {
+    ==> map(  -> $dep { 
 
     my $id = $dep.id;
 
@@ -300,10 +288,10 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 
     %visited{ $id } = True;
 
-    @dep.append: flat self.get-deps( $dep, :$deps), $dep
-  }
+    self.get-deps( $dep, :$deps), $dep;
 
-  @dep;
+  } )
+
 }
 
 

@@ -36,7 +36,7 @@ multi method fly (
     ==> map(  -> $spec { self.satisfy: :$spec } )
     ==> map(  -> $dep {
 
-      my @dep = self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+      my @dep = flat self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
       @dep.append: $dep unless $deps ~~ <only>;
 
@@ -134,7 +134,7 @@ multi method fly (
 
   my $meta = Pakku::Meta.new: $path;
 
-  my @meta = self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+  my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
 
   @meta .=  unique( as => *.Str );
@@ -213,7 +213,7 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
   my $meta = Pakku::Meta.new: $path;
 
-  my @meta = self.get-deps: $meta;
+  my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
 
@@ -278,7 +278,7 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
-  my @meta = self.get-deps: $meta;
+  my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
 
@@ -343,7 +343,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   my $meta = Pakku::Meta.new: $path;
 
-  my @meta = self.get-deps: $meta;
+  my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
 
@@ -407,7 +407,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
-  my @meta = self.get-deps: $meta;
+  my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
 
@@ -666,7 +666,7 @@ multi method fly (
 
   @add 
     ==> map(  -> $dep {
-      my @dep = self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+      my @dep = flat self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
       @dep.append: $dep unless $deps ~~ <only>;
 
