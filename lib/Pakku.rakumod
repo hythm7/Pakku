@@ -24,7 +24,7 @@ multi method fly (
 ) {
 
 
-  🧚 qq[PRC: ｢{@spec}｣];
+  🧚 qq[ADD: ｢{@spec}｣];
 
   my $repo = repo-from-spec $to;
 
@@ -121,7 +121,7 @@ multi method fly (
 
 ) {
 
-  🧚 qq[PRC: ｢$path｣];
+  🧚 qq[ADD: ｢$path｣];
 
   my $repo = repo-from-spec $to;
 
@@ -204,7 +204,7 @@ multi method fly (
 
 multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
   
-  🧚 qq[PRC: ｢$path｣];
+  🧚 qq[TST: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
 
@@ -267,7 +267,7 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
 multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
    
-  🧚 qq[PRC: ｢$spec｣];
+  🧚 qq[TST: ｢$spec｣];
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
@@ -330,7 +330,7 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
 multi method fly ( 'build', IO::Path:D :$path! ) {
 
-  🧚 qq[PRC: ｢$path｣];
+  🧚 qq[BLD: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
 
@@ -392,7 +392,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
 multi method fly ( 'build', Str:D :$spec! ) {
 
-  🧚 qq[PRC: ｢$spec｣];
+  🧚 qq[BLD: ｢$spec｣];
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
