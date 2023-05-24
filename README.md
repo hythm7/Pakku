@@ -348,7 +348,7 @@ means Pakku is starting to build `Inline::Perl5:ver<0.60>:auth<cpan:NINE>:api<>`
 Below is a list of output lines that one can see and their meaning:
 
 ```
-🧚 PRC → started successfully and processing
+🧚 ADD → start add command
 🦋 SPC → processing Spec
 🦋 MTA → processing Meta
 🦋 FTC → fetching
