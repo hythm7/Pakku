@@ -32,7 +32,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   return unless @candy;
 
-  🐛 qq[REC: ｢$spec｣ ‹$!name› found!];
+  🐛 qq[REC: ｢$spec｣ ‹$!name› found];
 
   @candy.reduce( &reduce-latest );
 
