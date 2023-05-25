@@ -33,13 +33,19 @@ multi method fly (
     ==> grep( -> $spec { $force or not self.satisfied: :$spec } )
     ==> unique( as => *.Str )
     ==> map(  -> $spec { self.satisfy: :$spec } )
-    ==> map(  -> $dep {
+    ==> map(  -> $meta {
 
-      my @dep = flat self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+      🧚 qq[MTA: ｢$meta｣];
 
-      @dep.append: $dep unless $deps ~~ <only>;
+      my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
-      @dep;
+      @meta .= unique( as => *.Str );
+
+      @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
+
+      @meta.append: $meta unless $deps ~~ <only>;
+
+      @meta;
 
     } )
     ==> flat( )
@@ -131,10 +137,13 @@ multi method fly (
 
   my $meta = Pakku::Meta.new: $path;
 
+  🧚 qq[MTA: ｢$meta｣];
+
   my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
+  @meta .= unique( as => *.Str );
 
-  @meta .=  unique( as => *.Str );
+  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   my $dist = $meta.to-dist: $path;
 
@@ -208,9 +217,13 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
   my $meta = Pakku::Meta.new: $path;
 
+  🧚 qq[MTA: ｢$meta｣];
+
   my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
+
+  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   my $dist = $meta.to-dist: $path;
 
@@ -271,9 +284,13 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
+  🧚 qq[MTA: ｢$meta｣];
+
   my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
+
+  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   @meta.append: $meta;
 
@@ -334,9 +351,13 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   my $meta = Pakku::Meta.new: $path;
 
+  🧚 qq[MTA: ｢$meta｣];
+
   my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
+
+  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   my $dist = $meta.to-dist: $path;
 
@@ -396,9 +417,13 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
+  🧚 qq[MTA: ｢$meta｣];
+
   my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
+
+  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   @meta.append: $meta;
 
@@ -453,7 +478,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
 multi method fly ( 'remove', :@spec!, Str :$from ) {
 
-  🦋 qq[RMV: ｢{@spec}｣];
+  🧚 qq[RMV: ｢{@spec}｣];
 
   my $repo = repo-from-spec $from;
 
@@ -484,7 +509,7 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
     
     @spec .= map( -> $spec { Pakku::Spec.new: $spec } );
 
-    @spec.map( -> $spec {
+    sink @spec.map( -> $spec {
 
       @!repo
         ==> grep( $curepo )
@@ -508,7 +533,7 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
 
   } else {
 
-  @!repo
+  sink @!repo
     ==> grep( $curepo )
     ==> map( -> $repo {
 
@@ -523,8 +548,6 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
     ==> map( -> $meta { out $meta.gist: :$details } );
   }
 
-  return;
-
 }
 
 multi method fly (
@@ -537,18 +560,18 @@ multi method fly (
 
   ) {
 
-  @spec
+  sink @spec
     ==> map( -> $spec { Pakku::Spec.new: $spec                        } )
     ==> map( -> $spec { $!recman.search( :$spec :$relaxed :$count ).Slip   } )
     ==> grep( *.defined                                            )
     ==> map( -> $meta { Pakku::Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { out $meta                                } );
 
-  return;
-
 }
 
 multi method fly ( 'download', :@spec! ) {
+
+  🧚 "DWN: ｢{@spec}｣";
 
   sink @spec
     ==> map( -> $spec { Pakku::Spec.new:      $spec               } )
@@ -613,6 +636,7 @@ multi method fly (
        ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
        ==> flat( )
        ==> grep( *.defined )
+       ==> grep( *.Str )
        ==> my @candy;
 
      unless @candy {
@@ -652,12 +676,19 @@ multi method fly (
   @!repo = CompUnit::RepositoryRegistry.repository-for-name('core');
 
   @add 
-    ==> map(  -> $dep {
-      my @dep = flat self.get-deps: $dep, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+    ==> unique( as => *.Str )
+    ==> map(  -> $meta {
 
-      @dep.append: $dep unless $deps ~~ <only>;
+      🧚 qq[MTA: ｢$meta｣];
 
-      @dep;
+      my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+      @meta .= unique( as => *.Str );
+
+      @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
+
+      @meta.append: $meta unless $deps ~~ <only>;
+
+      @meta;
 
     } )
     ==> flat( )
@@ -734,7 +765,13 @@ multi method fly (
 
       my @clean = Pakku::State.new( :$!recman :!updates ).cleanable;
 
-      samewith 'remove', spec => @clean.map( *.Str ) if @clean;
+      if @clean {
+
+        🦋 qq[CLN: ｢...｣];
+
+        samewith 'remove', spec => @clean.map( *.Str );
+
+      }
 
     }
 
@@ -766,6 +803,7 @@ multi method fly (
     ==> map( -> $spec { 
         
       🐛 "STT: ｢$spec｣";
+
       @!repo
         ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
         ==> flat( )
@@ -813,6 +851,7 @@ multi method fly (
         sink @clean
           ==> grep( -> $meta { $spec ~~ $meta.dist } )
           ==> map( -> $meta {
+
             🦋 "CLN: ｢$spec｣";
 
             unless $!dont {
@@ -820,10 +859,8 @@ multi method fly (
             }
 
           } );
-
       } );
     } );
-
 }
 
 multi method fly ( 'config', *%config ) {

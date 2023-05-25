@@ -35,6 +35,8 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   return unless $meta;
 
+  🐛 qq[REC: ｢$spec｣ ‹$!name› found];
+
   $meta;
   
 }
@@ -73,11 +75,13 @@ method search (
 
   unless $meta {
 
-    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
+    🐛 qq[REC: ｢$spec｣ ‹$!name› not found!];
 
     return;
 
   }
+
+  🐛 qq[REC: ｢$spec｣ ‹$!name› found];
 
   Rakudo::Internals::JSON.from-json: $meta;
   

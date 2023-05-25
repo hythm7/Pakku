@@ -195,12 +195,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   die X::Pakku::Meta.new: meta => $spec unless $meta;
 
-  if $meta {
-
-    🦋 qq[MTA: ｢$meta｣];
-
-    $meta;
-  }
+  $meta;
 
 }
 

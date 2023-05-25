@@ -32,6 +32,8 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   return unless @candy;
 
+  🐛 qq[REC: ｢$spec｣ ‹$!name› found!];
+
   @candy.reduce( &reduce-latest );
 
 }
@@ -64,10 +66,12 @@ method search (
 
   unless @candy {
 
-    🐛 qq[REC: ｢$!name｣ ‹$spec› not found!];
+    🐛 qq[REC: ｢$spec｣ ‹$!name› not found!];
 
     return;
   }
+
+  🐛 qq[REC: ｢$spec｣ ‹$!name› found];
 
   @candy
     ==> sort( -> %left, %right {
