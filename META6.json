@@ -50,5 +50,5 @@
     "raku"
     ],
   "test-depends" : [ ],
-  "version" : "caria.1"
+  "version" : "caria.2"
 }
