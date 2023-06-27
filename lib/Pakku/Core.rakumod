@@ -186,39 +186,73 @@ method !build ( Distribution::Locally:D :$dist ) {
 
 multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
-  🐛 qq[SPC: ｢$spec｣];
+  🐛 qq[SPC: ｢$spec｣ satisfying!];
 
   my $meta = try Pakku::Meta.new(
     ( $!cache.recommend( :$spec ).meta if $!cache  ) //
     ( $!recman.recommend: :$spec       if $!recman )
   );
 
-  die X::Pakku::Meta.new: meta => $spec unless $meta;
+  unless $meta {
+
+    🐞 qq[SPC: ｢$spec｣ could not satisfy, may be exclude!];
+
+    die X::Pakku::Meta.new: meta => $spec;
+
+  }
+
+  🦋 qq[MTA: ｢$meta｣];
 
   $meta;
 
 }
 
-multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 qq[OLO: ｢$spec｣"]; Empty}
-multi method satisfy ( Pakku::Spec::Native:D :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 qq[OLO: ｢$spec｣"]; Empty}
-multi method satisfy ( Pakku::Spec::Perl:D   :$spec! ) { die X::Pakku::Spec.new: :$spec; 🐞 qq[OLO: ｢$spec｣"]; Empty}
+multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
+
+  🐞 qq[SPC: ｢$spec｣ could not satisfy, try to install or may be exclude!];
+
+  die X::Pakku::Spec.new: :$spec;
+
+  🐞 qq[OLO: ｢$spec｣"];
+
+  Empty;
+
+}
+multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
+
+  🐞 qq[SPC: ｢$spec｣ could not satisfy, try to install or may be exclude!];
+
+  die X::Pakku::Spec.new: :$spec;
+
+  🐞 qq[OLO: ｢$spec｣"];
+
+  Empty
+
+}
+
+multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
+
+  🐞 qq[SPC: ｢$spec｣ could not satisfy, try to install or may be exclude!];
+
+  die X::Pakku::Spec.new: :$spec;
+
+  🐞 qq[OLO: ｢$spec｣"];
+
+  Empty
+}
 
 multi method satisfy ( :@spec! ) {
 
-  🦋 qq[SPC: ｢{@spec}｣];
+  🐛 qq[SPC: ｢{@spec}｣ satisfying!];
 
   my $meta =
     @spec.map( -> $spec {
 
+      🐛 qq[SPC: ｢$spec｣ trying!];
+
       my $meta = try samewith :$spec;
 
-      if $meta {
-
-        🦋 qq[MTA: ｢$meta｣"];
-
-        return $meta;
-
-      }
+      return $meta if $meta;
 
     } );
 

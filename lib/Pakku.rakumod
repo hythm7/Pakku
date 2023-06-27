@@ -35,13 +35,9 @@ multi method fly (
     ==> map(  -> $spec { self.satisfy: :$spec } )
     ==> map(  -> $meta {
 
-      🧚 qq[MTA: ｢$meta｣];
-
       my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
       @meta .= unique( as => *.Str );
-
-      @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
       @meta.append: $meta unless $deps ~~ <only>;
 
@@ -137,13 +133,9 @@ multi method fly (
 
   my $meta = Pakku::Meta.new: $path;
 
-  🧚 qq[MTA: ｢$meta｣];
-
   my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
   @meta .= unique( as => *.Str );
-
-  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   my $dist = $meta.to-dist: $path;
 
@@ -217,8 +209,6 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
   my $meta = Pakku::Meta.new: $path;
 
-  🧚 qq[MTA: ｢$meta｣];
-
   my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
@@ -284,13 +274,9 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
-  🧚 qq[MTA: ｢$meta｣];
-
   my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
-
-  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   @meta.append: $meta;
 
@@ -350,8 +336,6 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
   🧚 qq[BLD: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
-
-  🧚 qq[MTA: ｢$meta｣];
 
   my @meta = flat self.get-deps: $meta;
 
@@ -417,13 +401,9 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
-  🧚 qq[MTA: ｢$meta｣];
-
   my @meta = flat self.get-deps: $meta;
 
   @meta .=  unique( as => *.Str );
-
-  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
   @meta.append: $meta;
 
