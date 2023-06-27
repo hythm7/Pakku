@@ -303,21 +303,26 @@ multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samew
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 
   state %visited;
-  
+
   once for @exclude { %visited{ .id } = True } if @exclude;
 
   $meta.deps( :$deps )
-    ==> grep( -> $spec { not ( %visited{ $spec.?id // any @$spec.map( *.id ) } or self.satisfied( :$spec ) or not $spec.name )   } ) # sorry :/
-    ==> map(  -> $spec { self.satisfy: :$spec } )
-    ==> map(  -> $dep { 
+    ==> grep( -> $spec { 
+      not ( 
+            %visited{ $spec.?id // @$spec.map( *.id ).any } or
+            self.satisfied( :$spec )                        or
+            not $spec.name # empty name after collapse meta
+          )
+      } )
+    ==> map(  -> $spec {
 
-    my $id = $dep.id;
+    my $id = $spec.id;
 
-    next if %visited{ $id };
+    my $meta = self.satisfy: :$spec;
 
     %visited{ $id } = True;
 
-    self.get-deps( $dep, :$deps), $dep;
+    self.get-deps( $meta, :$deps), $meta;
 
   } )
 
