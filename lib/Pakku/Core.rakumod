@@ -309,18 +309,18 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
   $meta.deps( :$deps )
     ==> grep( -> $spec { 
       not ( 
-            %visited{ $spec.?id // @$spec.map( *.id ).any } or
-            self.satisfied( :$spec )                        or
-            not $spec.name # empty name after collapse meta
+            %visited{ $spec.?id // @$spec.map( *.id ).any }:exists or
+            self.satisfied( :$spec )                               or
+            # File::Which has empty dep name
+            # should be removed after File::Which is fixed
+            not $spec.name
           )
       } )
     ==> map(  -> $spec {
 
-    my $id = $spec.id;
-
     my $meta = self.satisfy: :$spec;
 
-    %visited{ $id } = True;
+    %visited{ $spec.id } = True;
 
     self.get-deps( $meta, :$deps), $meta;
 
