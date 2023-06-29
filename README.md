@@ -41,7 +41,7 @@ These are the options that control the general behavior of Pakku, eg. specify th
 These are the options that control the specified command, for example when installing a distributions one can add `notest` option to disable testing. these options must be placed after the command.
 
 
-**Pakku General Options**
+### Pakku General Options
 
 <b>Options:</b>
 
@@ -68,12 +68,12 @@ please             → be nice to butterflies
 <b>pakku nocache add dist</b>                # dont use cache
 <b>pakku dont    add dist</b>                # dont add dist (dry run)
 <b>pakku pretty  please remove dist</b>
-
 </pre>
 
+### Pakku Commands
 
-
-**add command** - Install distributions
+#### add
+Install distributions
 
 **options:**
 
@@ -111,7 +111,8 @@ noprecomp           → no precompile
 </pre>
 
 
-**remove command** - Remove distributions
+#### remove
+Remove distributions
 
 **options:**
 
@@ -127,7 +128,8 @@ from < repo > → remove distribution from provided repo only
 
 
 
-**list command** - List installed distributions
+#### list
+List installed distributions
 
 **options:**
 
@@ -147,7 +149,8 @@ repo < name-or-path > → list specific repo
 
 
 
-**search command** - Search available distributions
+#### search
+Search available distributions
 
 **options:**
 
@@ -168,7 +171,8 @@ norelaxed        → no relaxed search
 
 
 
-**build command** - Build distributions
+#### build
+Build distributions
 
 <b>Examples:</b>
 <pre>
@@ -177,7 +181,8 @@ norelaxed        → no relaxed search
 </pre>
 
 
-**test command** - Test distributions
+#### test
+Test distributions
 
 **options:**
 
@@ -197,7 +202,8 @@ nobuild → Bypass build
 </pre>
 
 
-**update command** - Update distributions to latest version
+#### update
+Update distributions to latest version
 
 **options:**
 
@@ -230,7 +236,8 @@ in < repo >  → update distribution and install in repo < home site vendor core
 </pre>
 
 
-**state command** - Check the state of installed distributions
+#### state
+Check the state of installed distributions
 
 **options:**
 
@@ -250,7 +257,8 @@ noclean   → dont clean older versions
 </pre>
 
 
-**download command** - Download distributions source
+#### download
+Download distributions source
 
 <b>Examples:</b>
 <pre>
@@ -258,8 +266,7 @@ noclean   → dont clean older versions
 </pre>
 
 
-**config command** - Manipulate configurations
-
+#### config
 Each Pakku command like `add`, `remove`, `search` etc. corresponds to a config module with the same name in the config file.
 one can use config command to `enable`, `disable`, `set`, `unset` an option in the config file.
 
@@ -291,8 +298,10 @@ unset         → unset option
 </pre>
 
 
-**help**
+#### help
+Get help on a specific command
 
+<b>Examples:</b>
 <pre>
 <b>pakku</b>
 <b>pakku add</b>
