@@ -2,7 +2,7 @@
 
 Pakku
 =====
-A Package Manager for Raku.
+A Package Manager for the Raku programming language.
 
 Installation
 ============
@@ -22,32 +22,26 @@ zef install Pakku
 
 Usage
 =====
-Pakku allows one to manage Raku distributions via commands such as `add`, `remove`, `update` etc.
+Pakku manages Raku distributions via commands such as `add`, `remove`, `update` etc.
+
+Full command is like:
+
+`pakku [general options] [command] [command options] [dists]`
+
+
 
 There are two types of options:
 
 **General options**
 
-These are the options that control the general behavior of Pakku, like specify the configuration file, run asynchronously or disable colors. The general options are valid for all commands, and  must be placed before the specified command (`add`, `remove`...).
+These are the options that control the general behavior of Pakku, eg. specify the configuration file, run asynchronously or disable colors. The general options are valid for all commands, and must be placed before the command.
 
-**Specific command options**
+**Command options**
 
-These are the options that control the specified command, for example when installing a distributions one can specify `notest` option to disable testing. these options must be placed after the command.
-
-
-Full command is similar to:
-
-`pakku [general options] [command] [specific command options] [dists]`
+These are the options that control the specified command, for example when installing a distributions one can add `notest` option to disable testing. these options must be placed after the command.
 
 
-A Pakku command result is either:
-  - `-Ofun` - Success
-  - `Nofun` - Failure
-
-
-**General Options**
-
-Options to control general Pakku behavior.
+**Pakku General Options**
 
 <b>Options:</b>
 
@@ -55,8 +49,6 @@ Options to control general Pakku behavior.
 pretty             → use colors
 async              → run asynchronously (disabled by default because some dists tests are not async safe) 
 dont               → do everything but dont do it (dry run)
-please             → be nice to butterflies
-yolo               → dont stop on errors (eg. proceed after test failure)
 verbose  < level > → verbosity < debug now info warn error silent >
 config   < path >  → specify config file
 recman             → enable all remote recommendation manager
@@ -66,12 +58,14 @@ norecman < MyRec > → use all recommendation managers excepts MyRec
 nopretty           → no colors
 noasync            → dont run asynchronously
 nocache            → disable cache
+yolo               → proceed if error occured (eg. test failure)
+please             → be nice to butterflies
 </pre>
 
 <b>Examples:</b>
 <pre>
 <b>pakku async   add dist</b>                # run in async mode while adding dist
-<b>pakku nocache add dist</b>                # dont use local cache
+<b>pakku nocache add dist</b>                # dont use cache
 <b>pakku dont    add dist</b>                # dont add dist (dry run)
 <b>pakku pretty  please remove dist</b>
 
@@ -376,6 +370,11 @@ Below is a list of output lines that one can see and their meaning:
 	- 4 `｢warn ｣` 🐞 → Warnings only
 	- 5 `｢error｣` 🦗 → Errors only
 	- 0 `｢silent｣`   → Nothing
+
+**Command result**:
+  - `-Ofun` - Success
+  - `Nofun` - Failure
+
 
 Gotchas
 =======
