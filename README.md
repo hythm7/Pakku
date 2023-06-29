@@ -41,7 +41,7 @@ These are the options that control the general behavior of Pakku, eg. specify th
 These are the options that control the specified command, for example when installing a distributions one can add `notest` option to disable testing. these options must be placed after the command.
 
 
-### Pakku General Options
+## Pakku General Options
 
 <b>Options:</b>
 
@@ -70,9 +70,9 @@ please             → be nice to butterflies
 <b>pakku pretty  please remove dist</b>
 </pre>
 
-### Pakku Commands
+## Pakku Commands
 
-#### add
+### add
 Install distributions
 
 **options:**
@@ -111,7 +111,7 @@ noprecomp           → no precompile
 </pre>
 
 
-#### remove
+### remove
 Remove distributions
 
 **options:**
@@ -128,7 +128,7 @@ from < repo > → remove distribution from provided repo only
 
 
 
-#### list
+### list
 List installed distributions
 
 **options:**
@@ -149,7 +149,7 @@ repo < name-or-path > → list specific repo
 
 
 
-#### search
+### search
 Search available distributions
 
 **options:**
@@ -171,7 +171,7 @@ norelaxed        → no relaxed search
 
 
 
-#### build
+### build
 Build distributions
 
 <b>Examples:</b>
@@ -181,7 +181,7 @@ Build distributions
 </pre>
 
 
-#### test
+### test
 Test distributions
 
 **options:**
@@ -202,7 +202,7 @@ nobuild → Bypass build
 </pre>
 
 
-#### update
+### update
 Update distributions to latest version
 
 **options:**
@@ -236,7 +236,7 @@ in < repo >  → update distribution and install in repo < home site vendor core
 </pre>
 
 
-#### state
+### state
 Check the state of installed distributions
 
 **options:**
@@ -257,7 +257,7 @@ noclean   → dont clean older versions
 </pre>
 
 
-#### download
+### download
 Download distributions source
 
 <b>Examples:</b>
@@ -266,7 +266,7 @@ Download distributions source
 </pre>
 
 
-#### config
+### config
 Each Pakku command like `add`, `remove`, `search` etc. corresponds to a config module with the same name in the config file.
 one can use config command to `enable`, `disable`, `set`, `unset` an option in the config file.
 
@@ -298,7 +298,7 @@ unset         → unset option
 </pre>
 
 
-#### help
+### help
 Get help on a specific command
 
 <b>Examples:</b>
