@@ -195,10 +195,11 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   unless $meta {
 
-    🐞 qq[SPC: ｢$spec｣ could not satisfy, may be exclude!];
+    🐞 qq[SPC: ｢$spec｣ could not satisfy!];
 
-    die X::Pakku::Meta.new: meta => $spec;
+    die X::Pakku::Spec.new: :$spec;
 
+    🐞 qq[OLO: ｢$spec｣"];
   }
 
   🦋 qq[MTA: ｢$meta｣];
@@ -209,7 +210,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
 multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
 
-  🐞 qq[SPC: ｢$spec｣ could not satisfy, try to install or may be exclude!];
+  🐞 qq[SPC: ｢$spec｣ could not satisfy!];
 
   die X::Pakku::Spec.new: :$spec;
 
@@ -220,7 +221,7 @@ multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
 }
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
-  🐞 qq[SPC: ｢$spec｣ could not satisfy, try to install or may be exclude!];
+  🐞 qq[SPC: ｢$spec｣ could not satisfy!];
 
   die X::Pakku::Spec.new: :$spec;
 
@@ -232,7 +233,7 @@ multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
 multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
 
-  🐞 qq[SPC: ｢$spec｣ could not satisfy, try to install or may be exclude!];
+  🐞 qq[SPC: ｢$spec｣ could not satisfy!];
 
   die X::Pakku::Spec.new: :$spec;
 
@@ -256,16 +257,26 @@ multi method satisfy ( :@spec! ) {
 
     } );
 
-  die X::Pakku::Meta.new: meta => @spec unless $meta;;
+  die X::Pakku::Spec.new: :@spec unless $meta;;
 
+  🐞 qq[OLO: ｢{@spec}｣"];
+
+  Empty
 }
 
 
 multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
 
-  return False unless @!repo.first( *.candidates: $spec.name, |$spec.spec );
+  my $name = $spec.name;
+  my %spec = $spec.spec;
 
-  🐛 qq[SPC: ｢$spec｣ satisfied!];
+  # File::Which has empty dep name
+  # should be removed after File::Which is fixed
+  return True if $name eq '';
+
+  return False unless @!repo.first( *.candidates: $name, |%spec );
+
+  🐛 qq[SPC: ｢$spec｣ already satisfied!];
 
   True;
 }
@@ -274,7 +285,7 @@ multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) {
 
   return False unless find-bin $spec.name;
 
-  🐛 qq[SPC: ｢$spec｣ satisfied!];
+  🐛 qq[SPC: ｢$spec｣ already satisfied!];
 
   True;
 }
@@ -285,7 +296,7 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   return False unless Pakku::Native.can-load: lib; 
  
-  🐛 qq[SPC: ｢$spec｣ satisfied!];
+  🐛 qq[SPC: ｢$spec｣ already satisfied!];
 
   True;
 }
@@ -293,7 +304,7 @@ multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
 
   return False unless find-perl-module $spec.name;
  
-  🐛 qq[SPC: ｢$spec｣ satisfied!];
+  🐛 qq[SPC: ｢$spec｣ already satisfied!];
 
   True;
 }
@@ -310,10 +321,7 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
     ==> grep( -> $spec { 
       not ( 
             %visited{ $spec.?id // @$spec.map( *.id ).any }:exists or
-            self.satisfied( :$spec )                               or
-            # File::Which has empty dep name
-            # should be removed after File::Which is fixed
-            not $spec.name
+            self.satisfied( :$spec )
           )
       } )
     ==> map(  -> $spec {
