@@ -32,11 +32,11 @@ Full command is like:
 
 There are two types of options:
 
-**General options**
+**General options:**
 
 These are the options that control the general behavior of Pakku, eg. specify the configuration file, run asynchronously or disable colors. The general options are valid for all commands, and must be placed before the command.
 
-**Command options**
+**Command options:**
 
 These are the options that control the specified command, for example when installing a distributions one can add `notest` option to disable testing. these options must be placed after the command.
 
