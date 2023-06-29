@@ -2,7 +2,7 @@
 
 Pakku
 =====
-A Package Manager for the Raku programming language.
+A Package Manager for the Raku Programming Language.
 
 Installation
 ============
@@ -73,7 +73,7 @@ please             → be nice to butterflies
 
 
 
-**add command**
+**add command** - Install distributions
 
 **options:**
 
@@ -111,7 +111,7 @@ noprecomp           → no precompile
 </pre>
 
 
-**remove command**
+**remove command** - Remove distributions
 
 **options:**
 
@@ -127,7 +127,7 @@ from < repo > → remove distribution from provided repo only
 
 
 
-**list command**
+**list command** - List installed distributions
 
 **options:**
 
@@ -147,7 +147,7 @@ repo < name-or-path > → list specific repo
 
 
 
-**search command**
+**search command** - Search available distributions
 
 **options:**
 
@@ -161,14 +161,14 @@ norelaxed        → no relaxed search
 <b>Examples:</b>
 <pre>
 <b>pakku search dist</b>               # search distributions matching dist (ignored case) on online recman
-<b>pakku search norelaxed dist</b>               # no relaxed search
+<b>pakku search norelaxed dist</b>     # no relaxed search
 <b>pakku search count 4 dist</b>       # search dist and return the lates 4 versions only
 <b>pakku search details dist</b>       # search dist and list all details
 </pre>
 
 
 
-**build command**
+**build command** - Build distributions
 
 <b>Examples:</b>
 <pre>
@@ -177,7 +177,7 @@ norelaxed        → no relaxed search
 </pre>
 
 
-**test command**
+**test command** - Test distributions
 
 **options:**
 
@@ -197,7 +197,7 @@ nobuild → Bypass build
 </pre>
 
 
-**update command**
+**update command** - Update distributions to latest version
 
 **options:**
 
@@ -230,7 +230,7 @@ in < repo >  → update distribution and install in repo < home site vendor core
 </pre>
 
 
-**state command**
+**state command** - Check the state of installed distributions
 
 **options:**
 
@@ -250,7 +250,7 @@ noclean   → dont clean older versions
 </pre>
 
 
-**download command**
+**download command** - Download distributions source
 
 <b>Examples:</b>
 <pre>
@@ -258,12 +258,23 @@ noclean   → dont clean older versions
 </pre>
 
 
-
-**config**
+**config command** - Manipulate configurations
 
 Each Pakku command like `add`, `remove`, `search` etc. corresponds to a config module with the same name in the config file.
 one can use config command to `enable`, `disable`, `set`, `unset` an option in the config file.
 
+
+**options:**
+
+<pre>
+enable        → enable option
+disable       → disable option
+set < value > → set option to value 
+unset         → unset option
+</pre>
+
+
+<b>Examples:</b>
 <pre>
 <b>pakku config</b>                             # view all config modules
 <b>pakku config new</b>                         # create a new config file
@@ -278,16 +289,6 @@ one can use config command to `enable`, `disable`, `set`, `unset` an option in t
 <b>pakku config add reset</b>                   # reset <b>add</b> config module to default
 <b>pakku config reset</b>                       # reset all config modules to default
 </pre>
-
-**options:**
-
-<pre>
-enable        → enable option
-disable       → disable option
-set < value > → set option to value 
-unset         → unset option
-</pre>
-
 
 
 **help**
