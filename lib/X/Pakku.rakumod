@@ -36,7 +36,6 @@ class X::Pakku::Test is X::Pakku {
 
 }
 
-
 class X::Pakku::Stage is X::Pakku {
 
   has $.dist;
@@ -55,9 +54,9 @@ class X::Pakku::Add is X::Pakku {
 
 class X::Pakku::Archive is X::Pakku {
 
-  has $.download;
+  has $.archive;
 
-  method message ( ) { "ARC: ｢$!download｣" }
+  method message ( ) { "ARC: ｢$!archive｣" }
 
 }
 
