@@ -7,10 +7,6 @@ A Package Manager for the Raku Programming Language.
 Installation
 ============
 <pre>
-
-# Pakku depends on <b>libarchive</b> and <b>libcurl</b>
-# Requires <b>Rakudo 2022.12 </b> version or later
-
 # <b>Install</b>
 git clone https://github.com/hythm7/Pakku.git
 cd Pakku
