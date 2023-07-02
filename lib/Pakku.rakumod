@@ -26,8 +26,6 @@ multi method fly (
 
   🧚 qq[ADD: ｢{@spec}｣];
 
-  my $repo = repo-from-spec $to;
-
   @spec
     ==> map(  -> $spec { Pakku::Spec.new: $spec } )
     ==> grep( -> $spec { $force or not self.satisfied: :$spec } )
@@ -47,6 +45,14 @@ multi method fly (
     ==> flat( )
     ==> unique( as => *.Str )
     ==> my @meta;
+
+  unless @meta {
+
+    🧚 qq[ADD: ｢{@spec}｣ already installed!];
+
+    return;
+
+  }
 
   my @dist = @meta.map( -> $meta {
 
@@ -72,6 +78,20 @@ multi method fly (
     $meta.to-dist: $path;
 
   } );
+
+  my $repo = repo-from-spec $to;
+
+  unless $repo.can-install {
+
+    🐞 qq[REP: ｢$repo｣ can not install!];
+
+    $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
+
+    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+
+    die X::Pakku::Add.new: dist => @spec unless $repo;
+
+  }
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage.add( now.Num ),
@@ -125,11 +145,14 @@ multi method fly (
 
   🧚 qq[ADD: ｢$path｣];
 
-  my $repo = repo-from-spec $to;
-
   my $spec = Pakku::Spec.new: $path;
 
-  return if not $force and self.satisfied: :$spec;
+  if not $force and self.satisfied( :$spec ) {
+
+    🧚 qq[ADD: ｢$spec｣ already installed!];
+
+    return;
+  }
 
   my $meta = Pakku::Meta.new: $path;
 
@@ -165,6 +188,20 @@ multi method fly (
   } );
 
   @dist.append: $dist unless $deps ~~ <only>;
+
+  my $repo = repo-from-spec $to;
+
+  unless $repo.can-install {
+
+    🐞 qq[REP: ｢$repo｣ can not install!];
+
+    $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
+
+    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+
+    die X::Pakku::Add.new: dist => $path unless $repo;
+
+  }
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage.add( now.Num ),
