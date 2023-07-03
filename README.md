@@ -37,35 +37,6 @@ These are the options that control the general behavior of Pakku, eg. specify th
 These are the options that control the specified command, for example when installing a distributions one can add `notest` option to disable testing. these options must be placed after the command.
 
 
-## Pakku General Options
-
-<b>Options:</b>
-
-<pre>
-pretty             → use colors
-async              → run asynchronously (disabled by default because some dists tests are not async safe) 
-dont               → do everything but dont do it (dry run)
-verbose  < level > → verbosity < debug now info warn error silent >
-config   < path >  → specify config file
-recman             → enable all remote recommendation manager
-recman   < MyRec > → use MyRec recommendation manager only
-norecman           → disable all remote recommendation manager
-norecman < MyRec > → use all recommendation managers excepts MyRec
-nopretty           → no colors
-noasync            → dont run asynchronously
-nocache            → disable cache
-yolo               → proceed if error occured (eg. test failure)
-please             → be nice to butterflies
-</pre>
-
-<b>Examples:</b>
-<pre>
-<b>pakku async   add dist</b>                # run in async mode while adding dist
-<b>pakku nocache add dist</b>                # dont use cache
-<b>pakku dont    add dist</b>                # dont add dist (dry run)
-<b>pakku pretty  please remove dist</b>
-</pre>
-
 ## Pakku Commands
 
 ### add
@@ -74,18 +45,18 @@ Install distributions
 **options:**
 
 <pre>
-deps                → all dependencies
-deps    < only >    → only dependencies
-deps    < build >   → build dependencies only
-deps    < test >    → test dependencies only
-deps    < runtime > → runtime dependencies only
-exclude < Dep1 >    → exclude Dep1
 test                → test distribution
 xtest               → xTest distribution
 build               → build distribution
 force               → force add distribution even if installed
 precomp             → precompile distribution 
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
+deps                → all dependencies
+deps    < build >   → build dependencies only
+deps    < test >    → test dependencies only
+deps    < runtime > → runtime dependencies only
+deps    < only >    → install dependencies but not the dist
+exclude < Dep1 >    → exclude Dep1
 nodeps              → no dependencies
 nobuild             → bypass build
 notest              → bypass test
@@ -305,6 +276,37 @@ Get help on a specific command
 <b>pakku help list</b>
 <b>pakku help help</b>
 </pre>
+
+
+## Pakku General Options
+
+<b>Options:</b>
+
+<pre>
+pretty             → use colors
+async              → run asynchronously (disabled by default because some dists tests are not async safe) 
+dont               → do everything but dont do it (dry run)
+verbose  < level > → verbosity < debug now info warn error silent >
+config   < path >  → specify config file
+recman             → enable all remote recommendation manager
+recman   < MyRec > → use MyRec recommendation manager only
+norecman           → disable all remote recommendation manager
+norecman < MyRec > → use all recommendation managers excepts MyRec
+nopretty           → no colors
+noasync            → dont run asynchronously
+nocache            → disable cache
+yolo               → proceed if error occured (eg. test failure)
+please             → be nice to butterflies
+</pre>
+
+<b>Examples:</b>
+<pre>
+<b>pakku async   add dist</b>                # run in async mode while adding dist
+<b>pakku nocache add dist</b>                # dont use cache
+<b>pakku dont    add dist</b>                # dont add dist (dry run)
+<b>pakku pretty  please remove dist</b>
+</pre>
+
 
 
 <h3>Feeling Rakuish Today?</h3>
