@@ -497,11 +497,10 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
 
   🧚 qq[RMV: ｢{@spec}｣];
 
-  my $repo = repo-from-spec $from;
+  my @repo = $from ?? repo-from-spec( $from ) !! @!repo;
 
 
-  sink @!repo
-    ==> grep( $repo )
+  sink @repo
     ==> map( -> $repo {
       sink @spec.map( -> $str {
         my $spec = Pakku::Spec.new: $str;
@@ -520,7 +519,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
 
 multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) { 
 
-  my $curepo = repo-from-spec $repo;
+  my @repo = $repo ?? repo-from-spec( $repo ) !! @!repo;
 
   if @spec {
     
@@ -528,8 +527,7 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
 
     sink @spec.map( -> $spec {
 
-      @!repo
-        ==> grep( $curepo )
+      @repo
         ==> map( -> $repo {
 
           🐛 "REP: ｢$repo.name()｣";
@@ -550,8 +548,7 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
 
   } else {
 
-  sink @!repo
-    ==> grep( $curepo )
+  sink @repo
     ==> map( -> $repo {
 
       🐛 "REP: ｢$repo.name()｣";
