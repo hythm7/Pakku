@@ -95,7 +95,7 @@ multi method fly (
 
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage.add( now.Num ),
-    name      => $repo.name, # TODO revisit custom repositories
+    name      => $repo.name,
     next-repo => $*REPO;
 
 
