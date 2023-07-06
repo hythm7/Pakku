@@ -236,7 +236,7 @@ sub system-collapse($data) {
                        Any;
         }
         
-        die "Unable to resolve path: {$path.cache[*-1].join('.')} in \$*DISTRO\nhad: {$value} ~~ {$value.WHAT.^name}"
+        die "Unable to resolve path: {$path.cache[*-1].join('.')} in $idx\nhad: {$value} ~~ {$value.WHAT.^name}"
           if Any ~~ $fkey;
         return system-collapse($data{$idx}{$fkey});
       }
