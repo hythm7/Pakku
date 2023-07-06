@@ -86,7 +86,7 @@ grammar SpecGrammar {
 
   token spec { <name> <pair>* }
 
-  token name { [<-[/:<>()\h]>+]+ % '::' }
+  token name { [<-[/:<>()\h]>*]+ % '::' }
 
   token pair { ':' <key> <value> }
 
