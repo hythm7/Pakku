@@ -16,11 +16,10 @@ unit role Pakku::Core;
 
 has      %!cnf;
 
-has Bool $!dont;
-has Bool $!yolo;
-
 has Int  $!cores;
 has Int  $!degree;
+has Bool $!dont;
+has Bool $!yolo;
 
 has IO::Path $!stage;
 
