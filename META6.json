@@ -31,9 +31,9 @@
     "Pakku::Cache"         : "lib/Pakku/Cache.rakumod",
     "Pakku::Native"        : "lib/Pakku/Native.rakumod",
     "Pakku::Recman"        : "lib/Pakku/Recman.rakumod",
-    "Pakku::HTTP"          : "lib/Pakku/HTTP.rakumod",
     "Pakku::Recman::HTTP"  : "lib/Pakku/Recman/HTTP.rakumod",
     "Pakku::Recman::Local" : "lib/Pakku/Recman/Local.rakumod",
+    "Pakku::HTTP"          : "lib/Pakku/HTTP.rakumod",
     "Pakku::Archive"       : "lib/Pakku/Archive.rakumod",
     "Pakku::Grammar::Cmd"  : "lib/Pakku/Grammar/Cmd.rakumod",
     "Pakku::State"         : "lib/Pakku/State.rakumod",
@@ -54,5 +54,5 @@
     "raku"
     ],
   "test-depends" : [ ],
-  "version" : "caria.4"
+  "version" : "caria.5"
 }
