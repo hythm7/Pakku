@@ -23,4 +23,4 @@ jobs:
       - name: Add Pakku
         run: raku -I. bin/pakku add .
       - name: Add Distribution
-        run: pakku async add App::Rak::Complete
+        run: pakku async add App::Rak
