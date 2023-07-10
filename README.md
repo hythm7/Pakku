@@ -403,10 +403,6 @@ If the user doesn't have `rw` permision to `site` repo, one can change the defau
 
 or specify the repo in the command e.g. `pakku add to home dist`
 
-Caveats
-=======
-Doesn't play nice with `libcurl.dll` on some windows systems, need to investigate more.
-
 Credits
 =======
 Thanks to `Panda` and `Zef` for `Pakku` inspiration.
