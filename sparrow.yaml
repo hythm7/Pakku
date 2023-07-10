@@ -12,9 +12,9 @@ tasks:
     code: |
       set -e
       sudo apt-get update
-      sudo apt-get install -y libarchive13 libcurl4-openssl-dev libz-dev > /dev/null
+      sudo apt-get install -y libarchive13 > /dev/null
       cd source
-      raku -I. bin/pakku add to home .
+      raku -I. bin/pakku add .
   -
     name: add-dist
     language: Bash
