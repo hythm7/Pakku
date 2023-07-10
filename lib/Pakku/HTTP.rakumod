@@ -2,8 +2,9 @@ use Pakku::Log;
 
 # This file is borrwoed from
 # HTTP::Tiny:ver<0.2.6>:auth<zef:jjatria>
-# with minimal modifications to wrok as HTTP client
-# and avoid libcurl native dependency
+# with minimal modifications.
+# it will serve as HTTP client to avoid
+# libcurl native dependency
 
 class X::Pakku::HTTP is Exception {
   has     $.response is required;
