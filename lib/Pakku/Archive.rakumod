@@ -62,10 +62,10 @@ sub archive_error_string( archive $archive --> Str ) is native( LIB ) { * }
 
 my class Data { has size_t $.size; has Blob   $.buf; }
 
-sub extract( IO::Path:D :$archive!, Str:D :$dest! --> Bool ) is export {
+sub extract( IO::Path:D :$archive!, IO::Path:D :$dst! --> Bool ) is export {
 
   my $buffer      = slurp $archive, :bin;
-  my $buffer-size = $archive.IO.s;
+  my $buffer-size = $archive.s;
 
   my archive $a = archive_read_new;
 
@@ -106,7 +106,7 @@ sub extract( IO::Path:D :$archive!, Str:D :$dest! --> Bool ) is export {
   
     for %entries.kv -> $pathname,  ( $entry, $data ) {
   
-      archive_entry_set_pathname $entry, $dest.IO.add( $pathname.IO.relative( $root ) ).Str;
+      archive_entry_set_pathname $entry, $dst.add( $pathname.IO.relative( $root ) ).Str;
   
       my $res = archive_write_header($e, $entry);
   

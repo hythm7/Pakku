@@ -348,7 +348,7 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   $!http.download: url-encode( $src ), $archive;
 
-  my $extract = extract :$archive, dest => ~$dst;
+  my $extract = extract :$archive, :$dst;
 
   die X::Pakku::Archive.new: :$archive unless $extract;
 
