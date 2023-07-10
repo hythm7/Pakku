@@ -7,7 +7,6 @@ has Str:D         $.name     is required;
 has Str:D         $.location is required;
 has Pakku::HTTP:D $!http     is required is built;
 
-
 method recommend ( ::?CLASS:D: :$spec! ) {
 
   🐛 qq[REC: ｢$spec｣ ‹$!name› recommending...];
@@ -23,14 +22,22 @@ method recommend ( ::?CLASS:D: :$spec! ) {
   @query.push( 'auth=' ~ url-encode $auth ) if $auth;
   @query.push( 'api='  ~ url-encode $api  ) if $api;
 
-  my $uri = '/meta/recommend/' ~ url-encode $name;
+  my $uri = $!location ~ '/meta/recommend/' ~ url-encode $name;
 
   $uri ~= '?' ~ @query.join( '&') if @query;
+
+  🐛 qq[REC: ｢$uri｣];
 
   my $response;
  
   retry {
-    $response = $!http.get:  $!location ~ $uri;
+    $response = $!http.get: $uri;
+
+    unless $response<success> {
+
+      die X::Pakku::HTTP.new: :$response, message => $response<reason> unless $response<status> == 404;  
+    }
+
   }
 
   my $meta = $response<content>.decode if $response<content>;
@@ -67,14 +74,24 @@ method search (
   @query.push( 'count='   ~ url-encode $count   ) if $count;
   @query.push( 'relaxed=' ~ url-encode $relaxed ) if $relaxed;
 
-  my $uri = '/meta/search/' ~ url-encode $name;
+  my $uri = $!location ~ '/meta/search/' ~ url-encode $name;
 
   $uri ~= '?' ~ @query.join( '&') if @query;
 
+  🐛 qq[REC: ｢$uri｣];
+
   my $response;
- 
+
   retry {
-    $response = $!http.get:  $!location ~ $uri;
+
+    $response = $!http.get: $uri;
+
+    unless $response<success> {
+
+      die X::Pakku::HTTP.new: :$response, message => $response<reason> unless $response<status> == 404;  
+
+    }
+
   }
 
   my $meta = $response<content>.decode if $response<content>;
@@ -93,15 +110,6 @@ method search (
   
 }
 
-sub url-encode ( Str() $text --> Str ) {
-  return $text.subst:
-    /<-[
-      ! * ' ( ) ; : @ + $ , / ? # \[ \]
-      0..9 A..Z a..z \- . ~ _
-    ]> /,
-      { .Str.encode».fmt('%%%02X').join }, :g;
-}
-
 sub retry (
 
   &action,
@@ -112,17 +120,17 @@ sub retry (
 
   loop {
 
-    use Pakku::Log;
-
     my $result = quietly try action();
 
     return $result unless $!;
     
-    🐞 qq[CRL: $!];
+    🐞 qq[REC: $!];
 
     $!.rethrow if $max == 0;
 
     sleep $delay;
+
+    🐛 qq[REC: retrying!];
 
     $delay *= 2;
     $max   -= 1;
@@ -130,5 +138,11 @@ sub retry (
   }
 }
 
-
-
+sub url-encode ( Str() $text --> Str ) {
+  return $text.subst:
+    /<-[
+      ! * ' ( ) ; : @ + $ , / ? # \[ \]
+      0..9 A..Z a..z \- . ~ _
+    ]> /,
+      { .Str.encode».fmt('%%%02X').join }, :g;
+}
