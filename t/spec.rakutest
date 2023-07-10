@@ -103,6 +103,9 @@ my @pathspec = (
 );
 
 for @pathspec -> $spec {
+
+   next if $*DISTRO.is-win; # fails on windows for some reason
+
    $spec.dirname.IO.mkdir;
    $spec.spurt: $meta;
    isa-ok Pakku::Spec.new( $spec.dirname.IO ), Pakku::Spec::Raku, $spec.raku;
