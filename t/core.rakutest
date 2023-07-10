@@ -20,9 +20,9 @@ lives-ok {
 
       $!log    = Pakku::Log.new: :verbose<silent>;
 
-			my $curl = Pakku::Curl.new;
+			my $http = Pakku::HTTP.new;
 
-			$!recman = Pakku::Recman.new: :$curl :@recman;
+			$!recman = Pakku::Recman.new: :$http :@recman;
 
 			@!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 

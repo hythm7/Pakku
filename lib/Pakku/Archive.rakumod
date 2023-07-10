@@ -64,7 +64,7 @@ sub archive_error_string( archive $archive --> Str ) is native( LIB ) { * }
 
 my class Data { has size_t $.size; has Blob   $.buf; }
 
-sub extract( Str:D :$archive!, Str:D :$dest! --> Bool ) is export {
+sub extract( IO::Path:D :$archive!, Str:D :$dest! --> Bool ) is export {
 
   my $buffer      = slurp $archive, :bin;
   my $buffer-size = $archive.IO.s;

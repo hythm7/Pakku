@@ -9,8 +9,7 @@ unit class Pakku::Recman;
 
 has @!recman;
  
-
-submethod BUILD ( :$curl!, :@recman! ) {
+submethod BUILD ( :$http!, :@recman! ) {
 
   @recman
     ==> grep( *.<active> )
@@ -19,8 +18,8 @@ submethod BUILD ( :$curl!, :@recman! ) {
       my $name     = %recman<name>;
       my $location = %recman<location>;
     $location.starts-with( 'http')
-      ?? Pakku::Recman::HTTP.new(  :$curl, |%recman )
-      !! Pakku::Recman::Local.new(         |%recman );
+      ?? Pakku::Recman::HTTP.new(  :$http, |%recman )
+      !! Pakku::Recman::Local.new( |%recman );
     } )
     ==> @!recman;
 }

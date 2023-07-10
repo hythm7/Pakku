@@ -7,7 +7,6 @@
   "depends" : {
     "runtime": {
       "requires": [
-						{ "any": [ "curl:ver<4>:from<native>",     "curl:from<native>"    ] },
 						{ "any": [ "archive:ver<13>:from<native>", "archive:from<native>" ] }
 		  ]
     }
@@ -24,10 +23,10 @@
     "Pakku::Core"          : "lib/Pakku/Core.rakumod",
     "Pakku::Spec"          : "lib/Pakku/Spec.rakumod",
     "Pakku::Meta"          : "lib/Pakku/Meta.rakumod",
-    "Pakku::Curl"          : "lib/Pakku/Curl.rakumod",
     "Pakku::Cache"         : "lib/Pakku/Cache.rakumod",
     "Pakku::Native"        : "lib/Pakku/Native.rakumod",
     "Pakku::Recman"        : "lib/Pakku/Recman.rakumod",
+    "Pakku::HTTP"          : "lib/Pakku/HTTP.rakumod",
     "Pakku::Recman::HTTP"  : "lib/Pakku/Recman/HTTP.rakumod",
     "Pakku::Recman::Local" : "lib/Pakku/Recman/Local.rakumod",
     "Pakku::Archive"       : "lib/Pakku/Archive.rakumod",

@@ -3,7 +3,6 @@ use Pakku::Log;
 use Pakku::Help;
 use Pakku::Spec;
 use Pakku::Meta;
-use Pakku::Curl;
 use Pakku::Cache;
 use Pakku::Native;
 use Pakku::Recman;
@@ -25,7 +24,7 @@ has IO::Path $!stage;
 
 has Pakku::Log    $!log;
 has Pakku::Cache  $!cache;
-has Pakku::Curl   $!curl;
+has Pakku::HTTP   $!http;
 has Pakku::Recman $!recman;
 
 has CompUnit::Repository @!repo;
@@ -343,15 +342,17 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   mkdir $dst;
 
-  my $download = $dst.add( $dst.basename ~ '.tar.gz' ).Str;
+  my $archive = $dst.add( $dst.basename ~ '.tar.gz' );
 
-  retry { $!curl.download: :URL( $src ), :$download };
+  url-encode $src;
 
-  my $extract = extract archive => $download, dest => ~$dst;
+  $!http.download: url-encode( $src ), $archive;
 
-  die X::Pakku::Archive.new: :$download unless $extract;
+  my $extract = extract :$archive, dest => ~$dst;
 
-  unlink $download;
+  die X::Pakku::Archive.new: :$archive unless $extract;
+
+  unlink $archive;
 
   🐛 qq[FTC: ｢$dst｣];
 
@@ -414,9 +415,9 @@ submethod BUILD ( :%!cnf! ) {
   @recman .= grep: { .<name> !~~ $norecman } if $norecman;
   @recman .= grep: { .<name>  ~~ $recman   } if $recman;
 
-  $!curl  = Pakku::Curl.new;
+  $!http  = Pakku::HTTP.new;
 
-  $!recman = Pakku::Recman.new: :$!curl :@recman if @recman;
+  $!recman = Pakku::Recman.new: :$!http :@recman if @recman;
 
 }
 
@@ -523,5 +524,14 @@ sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil) is export {
 sub remove-dir( IO::Path:D $io --> Nil ) is export {
   .d ?? remove-dir( $_ ) !! .unlink for $io.dir;
   $io.rmdir;
+}
+
+sub url-encode ( Str() $text --> Str ) {
+  return $text.subst:
+    /<-[
+      ! * ' ( ) ; : @ + $ , / ? # \[ \]
+      0..9 A..Z a..z \- . ~ _
+    ]> /,
+      { .Str.encode».fmt('%%%02X').join }, :g;
 }
 
