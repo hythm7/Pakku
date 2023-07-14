@@ -566,9 +566,9 @@ multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) {
 
 multi method fly (
 
-    'search',
-    :@spec!,
-    Int    :$count   = 666,
+           'search',
+           :@spec!,
+    Int:D  :$count   = 666,
     Bool:D :$relaxed = True,
     Bool:D :$details = False,
 

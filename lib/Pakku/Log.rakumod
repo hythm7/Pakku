@@ -47,14 +47,14 @@ my enum LogLevel <silent debug now info warn error>;
 submethod BUILD (
 
   Bool:D :$!pretty = True,
-         :$!verbose = now,
+         :$verbose = now,
          :%level,
 
 ) {
 
   $logger = self;
 
-  $!verbose = LogLevel::{$!verbose};  
+  $!verbose = LogLevel::{ $verbose } // now;  
 
   return $logger if $!verbose == silent;
 
@@ -65,6 +65,8 @@ submethod BUILD (
   $!info  = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🧚 ' ) :color( $color // %level<3><color> // '35' ) if  info  ≥ $!verbose;
   $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🐞 ' ) :color( $color // %level<4><color> // '33' ) if  warn  ≥ $!verbose;
   $!error = Level.new: :fh( $*ERR ) :prefix( %level<5><prefix> // '🦗 ' ) :color( $color // %level<5><color> // '31' ) if  error ≥ $!verbose;
+
+  $logger.warn.msg: qq[CNF: ｢$verbose｣ unknown log level!] unless LogLevel::{ $verbose }; 
 
 }
 

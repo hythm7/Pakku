@@ -376,36 +376,50 @@ method cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
 
-  my $pakku-dir = $*HOME.add( '.pakku' );
+  my $home = %!cnf<pakku><home>;
 
   my $pretty   = %!cnf<pakku><pretty>  // True;
   my $verbose  = %!cnf<pakku><verbose> // 'now';
   my %level    = %!cnf<log><level>     // {};
 
-  
-  $!tmp = $pakku-dir.add( '.tmp' );
-
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
+  
+  🐛 qq[CNF: ‹home› $home];
 
-  $!dont  = %!cnf<pakku><dont> // False;
-  $!yolo  = %!cnf<pakku><yolo> // False;
+  $!tmp = $home.add( '.tmp' );
 
-  $!cores  = $*KERNEL.cpu-cores - 1;
-  $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
+  🐛 qq[CNF: ‹tmp› $!tmp];
 
-  $!stage  = $pakku-dir.add( '.stage' );
+  $!stage  = $home.add( '.stage' );
 
-  @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
-
+  🐛 qq[CNF: ‹stage› $!stage];
 
   my $cache-conf = %!cnf<pakku><cache>; 
-  my $cache      = $pakku-dir.add( '.cache' ); 
+  my $cache      = $home.add( '.cache' ); 
 
-  with $cache-conf {
+  if $cache-conf {
     $cache = $cache-conf unless $cache-conf === True;  
   }
 
   $!cache = Pakku::Cache.new:  :$cache if $cache;
+
+  🐛 qq[CNF: ‹cache› $cache];
+
+  $!dont  = %!cnf<pakku><dont> // False;
+
+  🐛 qq[CNF: ‹dont› $!dont];
+
+  $!yolo  = %!cnf<pakku><yolo> // False;
+
+  🐛 qq[CNF: ‹yolo› $!yolo];
+
+  $!cores  = $*KERNEL.cpu-cores - 1;
+
+  🐛 qq[CNF: ‹cores› $!cores];
+
+  $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
+
+  🐛 qq[CNF: ‹degree› $!degree];
 
   my $recman   = %!cnf<pakku><recman>;
   my $norecman = %!cnf<pakku><norecman>;
@@ -418,6 +432,12 @@ submethod BUILD ( :%!cnf! ) {
   $!http  = Pakku::HTTP.new;
 
   $!recman = Pakku::Recman.new: :$!http :@recman if @recman;
+
+  @recman.map( -> $recman { 🐛 qq[CNF: ‹recman› $recman<location>] } );
+
+  @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+
+  🐛 qq[CNF: ‹repos› {@!repo}];
 
 }
 
@@ -435,25 +455,40 @@ method metamorph ( ) {
       default { 🦗 .gist }
   }
 
+  my $home = $*HOME.add( '.pakku' );
+
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::CmdActions );
 
   die X::Pakku::Cmd.new( cmd => @*ARGS ) unless $cmd;
 
-  my %cnf = $cmd.made;
+  my %cmd = $cmd.made;
 
-  %cnf<pakku><config> //= $*HOME.add( '.pakku' ).add( 'config.json' );
+  my %env = get-env;
 
-  my $config-file = %cnf<pakku><config>;
+  my %cnf = hashmerge %env, %cmd;
 
-  if $config-file.e {
+
+  if %cnf<pakku><config>:exists {
+
+    die X::Pakku::Cnf.new( cnf => %cnf<pakku><config> ) unless %cnf<pakku><config>.IO.f;
+
+  }
+
+  %cnf<pakku><config> //= $home.add( 'config.json' );
+
+  my $config-file = %cnf<pakku><config>.IO;
+
+  if $config-file.f {
 
     my $cnf = Rakudo::Internals::JSON.from-json: slurp $config-file.IO;
 
-    die X::Pakku::Cnf.new( cnf => $config-file ) unless $cnf;
+    die X::Pakku::Cnf.new( cnf => $config-file ) unless defined $cnf;
 
     %cnf =  hashmerge $cnf, %cnf;
 
   }
+
+  %cnf<pakku><home> = $home;
 
   self.bless( :%cnf );
 
@@ -535,3 +570,54 @@ sub url-encode ( Str() $text --> Str ) {
       { .Str.encode».fmt('%%%02X').join }, :g;
 }
 
+sub get-env ( ) {
+
+  my %env;
+
+  %env<pakku><cache>    = %*ENV<PAKKU_CACHE>       if %*ENV<PAKKU_CACHE>;
+  %env<pakku><verbose>  = %*ENV<PAKKU_VERBOSE>     if %*ENV<PAKKU_VERBOSE>;
+  %env<pakku><recman>   = %*ENV<PAKKU_RECMAN>      if %*ENV<PAKKU_RECMAN>;
+  %env<pakku><norecman> = %*ENV<PAKKU_NORECMAN>    if %*ENV<PAKKU_NORECMAN>;
+  %env<pakku><config >  = %*ENV<PAKKU_CONFIG>.IO   if %*ENV<PAKKU_CONFIG>;
+  %env<pakku><dont>     = %*ENV<PAKKU_DONT>.Bool   if %*ENV<PAKKU_DONT>;
+  %env<pakku><yoloy>    = %*ENV<PAKKU_YOLO>.Bool   if %*ENV<PAKKU_YOLO>;
+  %env<pakku><pretty>   = %*ENV<PAKKU_PRETTY>.Bool if %*ENV<PAKKU_PRETTY>;
+
+  %env<pakku><add><to>         = %*ENV<PAKKU_ADD_TO>                       if %*ENV<PAKKU_ADD_TO>;
+  %env<pakku><add><deps>       = %*ENV<PAKKU_ADD_DEPS>                     if %*ENV<PAKKU_ADD_DEPS>;
+  %env<pakku><add><test>       = %*ENV<PAKKU_ADD_TEST>.Bool                if %*ENV<PAKKU_ADD_TEST>;
+  %env<pakku><add><build>      = %*ENV<PAKKU_ADD_BUILD>.Bool               if %*ENV<PAKKU_ADD_BUILD>;
+  %env<pakku><add><force>      = %*ENV<PAKKU_ADD_FORCE>.Bool               if %*ENV<PAKKU_ADD_FORCE>;
+  %env<pakku><add><xtest>      = %*ENV<PAKKU_ADD_XTEST>.Bool               if %*ENV<PAKKU_ADD_XTEST>;
+  %env<pakku><add><precompile> = %*ENV<PAKKU_ADD_PRECOMPILE>.Bool          if %*ENV<PAKKU_ADD_PRECOMPILE>;
+  %env<pakku><add><exclude>    = %*ENV<PAKKU_ADD_EXCLUDE>.split( / \s+ / ) if %*ENV<PAKKU_ADD_EXCLUDE>;
+
+  %env<pakku><test><build> = %*ENV<PAKKU_TEST_BUILD>.Bool if %*ENV<PAKKU_TEST_BUILD>;
+  %env<pakku><test><xtest> = %*ENV<PAKKU_TEST_XTEST>.Bool if %*ENV<PAKKU_TEST_XTEST>;
+
+  %env<pakku><remove><from> = %*ENV<PAKKU_REMOVE_FROM> if %*ENV<PAKKU_REMOVE_FROM>;
+
+  %env<pakku><list><repo>    = %*ENV<PAKKU_LIST_REPO>         if %*ENV<PAKKU_LIST_REPO>;
+  %env<pakku><list><details> = %*ENV<PAKKU_LIST_DETAILS>.Bool if %*ENV<PAKKU_LIST_DETAILS>;
+
+  %env<pakku><search><count>   = %*ENV<PAKKU_SEARCH_count>.Int    if %*ENV<PAKKU_SEARCH_COUNT>;
+  %env<pakku><search><details> = %*ENV<PAKKU_SEARCH_DETAILS>.Bool if %*ENV<PAKKU_SEARCH_DETAILS>;
+  %env<pakku><search><relaxed> = %*ENV<PAKKU_SEARCH_RELAXED>.Bool if %*ENV<PAKKU_SEARCH_RELAXED>;
+
+  %env<pakku><update><in>         = %*ENV<PAKKU_UPDATE_IN>                       if %*ENV<PAKKU_UPDATE_IN>;
+  %env<pakku><update><deps>       = %*ENV<PAKKU_UPDATE_DEPS>                     if %*ENV<PAKKU_UPDATE_DEPS>;
+  %env<pakku><update><test>       = %*ENV<PAKKU_UPDATE_TEST>.Bool                if %*ENV<PAKKU_UPDATE_TEST>;
+  %env<pakku><update><xtest>      = %*ENV<PAKKU_UPDATE_XTEST>.Bool               if %*ENV<PAKKU_UPDATE_XTEST>;
+  %env<pakku><update><build>      = %*ENV<PAKKU_UPDATE_BUILD>.Bool               if %*ENV<PAKKU_UPDATE_BUILD>;
+  %env<pakku><update><force>      = %*ENV<PAKKU_UPDATE_FORCE>.Bool               if %*ENV<PAKKU_UPDATE_FORCE>;
+  %env<pakku><update><clean>      = %*ENV<PAKKU_UPDATE_CLEAN>.Bool               if %*ENV<PAKKU_UPDATE_CLEAN>;
+  %env<pakku><update><precompile> = %*ENV<PAKKU_UPDATE_PRECOMPILE>.Bool          if %*ENV<PAKKU_UPDATE_PRECOMPILE>;
+  %env<pakku><update><exclude>    = %*ENV<PAKKU_UPDATE_EXCLUDE>.split( / \s+ / ) if %*ENV<PAKKU_UPDATE_EXCLUDE>;
+
+
+  %env<pakku><state><clean>   = %*ENV<PAKKU_STATE_CLEAN>.Bool   if %*ENV<PAKKU_STATE_CLEAN>;
+  %env<pakku><state><updates> = %*ENV<PAKKU_STATE_UPDATES>.Bool if %*ENV<PAKKU_STATE_UPDATES>;
+
+ %env;
+
+}
