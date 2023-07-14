@@ -225,11 +225,11 @@ noclean   → dont clean older versions
 
 
 ### download
-Download distributions source
+Download distribution source
 
 <b>Examples:</b>
 <pre>
-<b>pakku download dist</b>     # download source code od dist
+<b>pakku download dist</b>     # download dist and extract to temp directory
 </pre>
 
 
@@ -327,6 +327,52 @@ The below are `Pakku` commands as well!
 <b>pakku 👓 🧚 ↓   dist</b>
 <b>pakku ↪</b>
 <b>pakku ❓</b>
+</pre>
+
+## ENV Options
+
+Options can be set via environment variables as well:
+
+**General**
+<pre>
+PAKKU_CACHE PAKKU_VERBOSE PAKKU_RECMAN PAKKU_NORECMAN PAKKU_CONFIG PAKKU_DONT PAKKU_YOLO PAKKU_PRETTY
+</pre>
+
+**Add**
+<pre>
+PAKKU_ADD_TO PAKKU_ADD_DEPS PAKKU_ADD_TEST PAKKU_ADD_BUILD PAKKU_ADD_FORCE PAKKU_ADD_XTEST
+PAKKU_ADD_PRECOMPILE PAKKU_ADD_EXCLUDE
+</pre>
+
+**Test**
+<pre>
+PAKKU_TEST_BUILD PAKKU_TEST_XTEST
+</pre>
+
+**Remove**
+<pre>
+PAKKU_REMOVE_FROM
+</pre>
+
+**List**
+<pre>
+PAKKU_LIST_REPO PAKKU_LIST_DETAILS
+</pre>
+
+**Search**
+<pre>
+PAKKU_LIST_REPO PAKKU_SEARCH_COUNT PAKKU_SEARCH_DETAILS PAKKU_SEARCH_RELAXED
+</pre>
+
+**Update**
+<pre>
+PAKKU_UPDATE_IN PAKKU_UPDATE_DEPS PAKKU_UPDATE_TEST PAKKU_UPDATE_XTEST PAKKU_UPDATE_BUILD PAKKU_UPDATE_FORCE
+PAKKU_UPDATE_CLEAN PAKKU_UPDATE_PRECOMPILE PAKKU_UPDATE_EXCLUDE
+</pre>
+
+**State**
+<pre>
+PAKKU_STATE_CLEAN> PAKKU_STATE_UPDATES
 </pre>
 
 
