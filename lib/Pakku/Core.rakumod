@@ -395,7 +395,7 @@ submethod BUILD ( :%!cnf! ) {
   my $cache-conf = %!cnf<pakku><cache>; 
   my $cache      = $home.add( '.cache' ); 
 
-  if $cache-conf {
+  with $cache-conf {
     $cache = $cache-conf unless $cache-conf === True;  
   }
 

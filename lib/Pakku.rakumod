@@ -820,7 +820,7 @@ multi method fly (
 
   ) {
 
-  🦋 qq[STT: ｢...｣];
+  🧚 qq[STT: ｢{ @spec }｣];
 
   my $state = Pakku::State.new( :$!recman, :$updates );
 
