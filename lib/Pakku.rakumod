@@ -122,7 +122,11 @@ multi method fly (
 
       my $bin = $*stage.prefix.add( 'bin' ).Str;
 
-      🧚 "BIN: " ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+      my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣] if @bin;
+
+      for @bin -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] };
 
     }
   }
@@ -232,7 +236,11 @@ multi method fly (
 
       my $bin = $*stage.prefix.add( 'bin' ).Str;
 
-      🧚 "BIN: " ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+      my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣] if @bin;
+
+      for @bin -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] };
 
     }
   }
