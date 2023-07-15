@@ -124,9 +124,9 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣] if @bin;
+      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
 
-      for @bin -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] };
+      @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
 
     }
   }
@@ -238,9 +238,9 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣] if @bin;
+      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
 
-      for @bin -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] };
+      @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
 
     }
   }
@@ -642,7 +642,7 @@ multi method fly (
 
   ) {
 
-  🦋 qq[STT: ｢...｣];
+  🧚 "UPD: ｢{@spec}｣";
 
   my @add;
 
@@ -693,20 +693,19 @@ multi method fly (
 
    } );
 
+
   my @repo = @!repo;
 
   @!repo = CompUnit::RepositoryRegistry.repository-for-name('core');
+
+  🧚 qq[UPD: ｢{ @add }｣] if @add;
 
   @add 
     ==> unique( as => *.Str )
     ==> map(  -> $meta {
 
-      🧚 qq[MTA: ｢$meta｣];
-
       my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
       @meta .= unique( as => *.Str );
-
-      @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
 
       @meta.append: $meta unless $deps ~~ <only>;
 
@@ -750,6 +749,18 @@ multi method fly (
 
   my $repo = repo-from-spec $in;
 
+  unless $repo.can-install {
+
+    🐞 qq[REP: ｢$repo｣ can not install!];
+
+    $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
+
+    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+
+    die X::Pakku::Add.new: dist => @spec unless $repo;
+
+  }
+
   my $*stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage.add( now.Num ),
     name      => $repo.name,
@@ -779,7 +790,11 @@ multi method fly (
 
       my $bin = $*stage.prefix.add( 'bin' ).Str;
 
-      🧚 "BIN: " ~ "｢{.IO.basename}｣" for Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+      my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+
+      @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
 
     }
 
@@ -787,14 +802,7 @@ multi method fly (
 
       my @clean = Pakku::State.new( :$!recman :!updates ).cleanable;
 
-      if @clean {
-
-        🦋 qq[CLN: ｢...｣];
-
-        samewith 'remove', spec => @clean.map( *.Str );
-
-      }
-
+      samewith 'remove', spec => @clean.map( *.Str ) if @clean;
     }
 
   }
