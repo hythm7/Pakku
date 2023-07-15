@@ -311,9 +311,7 @@ multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samew
 
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 
-  state %visited;
-
-  once for @exclude { %visited{ .id } = True } if @exclude;
+  state %visited = @exclude.map: *.id => True;
 
   $meta.deps( :$deps )
     ==> grep( -> $spec { 
