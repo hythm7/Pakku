@@ -7,12 +7,7 @@
   "depends" : {
     "runtime": {
       "requires": [
-            { "any": [
-                "archive:ver<13>:from<native>",
-                "archive:from<native>",
-                "archiveint:from<native>"
-              ]
-            }
+        { "any": [ "archive:ver<13>:from<native>", "archive:from<native>", "archiveint:from<native>" ] }
       ]
     }
   },
