@@ -36,7 +36,7 @@ class Pakku::HTTP {
   has Bool   $!keep-alive      is built = True;
   has Bool   $!throw-exceptions  is built;
   has Str    $!agent         is built
-    = self.^name ~ '/' ~ $?DISTRIBUTION.meta<ver> ~ ' Raku';
+    = $?DISTRIBUTION.meta<name> ~ '/' ~ $?DISTRIBUTION.meta<ver> ~ ' Raku';
 
   submethod TWEAK (
      :$cookie-jar,
