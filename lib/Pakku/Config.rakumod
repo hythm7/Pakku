@@ -350,7 +350,7 @@ multi method config ( Str:D $module, 'view', Str :@option! )  {
 
   🦋 qq[CNF: ｢$module｣];
 
-  @option.map( -> $option { out to-json %!configuration{ $module }{ $option }:p } );
+  sink @option.map( -> $option { out to-json %!configuration{ $module }{ $option }:p } );
 
 }
 
