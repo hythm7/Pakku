@@ -286,7 +286,7 @@ Get help on a specific command
 pretty             → use colors
 async              → run asynchronously (disabled by default because some dists tests are not async safe) 
 dont               → do everything but dont do it (dry run)
-verbose  < level > → verbosity < debug now info warn error silent >
+verbose  < level > → verbosity < all debug now info warn error nothing >
 config   < path >  → specify config file
 recman             → enable all remote recommendation manager
 recman   < MyRec > → use MyRec recommendation manager only
@@ -313,7 +313,7 @@ please             → be nice to butterflies
 
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
-add    → a  update   → u  yolo     → y  nopretty → np  silent → «S 0»
+add    → a  update   → u  yolo     → y  nopretty → np  nothing → «N 0»
 remove → r  download → d  exclude  → x  nodeps   → nd  debug  → «D 1»
 list   → l  help     → h  deps     → d  noforce  → nf  now    → «N 2»
 search → s  verbose  → v  force    → f  notest   → nt  info   → «I 3»
@@ -419,12 +419,13 @@ Below is a list of output lines that one can see and their meaning:
 
 **Pakku verbosity levels:**
 
-	- 1 `｢debug｣` 🐛 → Everything
-	- 2 `｢ now ｣` 🦋 → What is happenning now
-	- 3 `｢info ｣` 🧚 → Important things only
-	- 4 `｢warn ｣` 🐞 → Warnings only
-	- 5 `｢error｣` 🦗 → Errors only
-	- 0 `｢silent｣`   → Nothing
+	- 1 `｢ all ｣` 🐛 → All avaialble output
+	- 2 `｢debug｣` 🐛 → Debug output
+	- 3 `｢ now ｣` 🦋 → What is happenning now
+	- 4 `｢info ｣` 🧚 → Important things only
+	- 5 `｢warn ｣` 🐞 → Warnings only
+	- 6 `｢error｣` 🦗 → Errors only
+	- 0 `｢nothing｣`  → Nothing
 
 **Command result**:
   - `-Ofun` - Success
