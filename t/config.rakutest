@@ -5,7 +5,7 @@ use Test;
 use Pakku::Log;
 use Pakku::Config;
 
-Pakku::Log.new: verbose => 'silent';
+Pakku::Log.new: verbose => 'nothing';
 #plan 1;
 
 my $config-file = $*TMPDIR.add( 'pakku-config.json.' ~ now.Num );
@@ -74,9 +74,9 @@ my $log-level = 'debug';
 @option = prefix => 'DEBUG: ', color => 'blue';
 lives-ok { $config.config( 'log', :$log-level, :@option ) }, 'set new log level';
 
-@option = color => 42;
+@option = color => 'yellow';
 lives-ok { $config.config( 'log', :$log-level, :@option ) }, 'set log level option';
-is-deeply from-json(slurp $config-file )<log>{ $log-level }<color>, 42, 'confirm set log level option in config file';
+is-deeply from-json(slurp $config-file )<log>{ $log-level }<color>, 'yellow', 'confirm set log level option in config file';
 
 @option = color => Nil;
 lives-ok { $config.config( 'log', :$log-level, :@option ) }, 'unset log level option';

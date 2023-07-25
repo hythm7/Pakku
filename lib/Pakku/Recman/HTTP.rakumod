@@ -26,7 +26,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   $uri ~= '?' ~ @query.join( '&') if @query;
 
-  🐛 qq[REC: ｢$uri｣];
+  🐝 qq[REC: ｢$uri｣];
 
   my $response;
  
@@ -78,7 +78,7 @@ method search (
 
   $uri ~= '?' ~ @query.join( '&') if @query;
 
-  🐛 qq[REC: ｢$uri｣];
+  🐝 qq[REC: ｢$uri｣];
 
   my $response;
 

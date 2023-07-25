@@ -63,8 +63,7 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
     react {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $test.relative: $prefix;
-
-      whenever $proc.stdout.lines { 🐛 "TST: " ~ $^out }
+      whenever $proc.stdout.lines { 🐝 "TST: " ~ $^out }
       whenever $proc.stderr.lines { 🐞 "TST: " ~ $^err }
 
       whenever $proc.stdout.stable( 42 ) { 🐞 "WAI: " ~ "｢$proc.command()｣" }
@@ -144,7 +143,7 @@ method !build ( Distribution::Locally:D :$dist ) {
 
   react {
 
-    whenever $proc.stdout.lines { 🐛 "BLD: " ~ $^out }
+    whenever $proc.stdout.lines { 🐝 "BLD: " ~ $^out }
     whenever $proc.stderr.lines { 🐞 "BLD: " ~ $^err }
 
     whenever $proc.stdout.stable( 42 ) { 🐞 "WAI: " ~ "｢$proc.command()｣" }
@@ -274,7 +273,7 @@ multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
 
   return False unless @!repo.first( *.candidates: $name, |%spec );
 
-  🐛 qq[SPC: ｢$spec｣ already satisfied!];
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
 
   True;
 }
@@ -283,7 +282,7 @@ multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) {
 
   return False unless find-bin $spec.name;
 
-  🐛 qq[SPC: ｢$spec｣ already satisfied!];
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
 
   True;
 }
@@ -294,7 +293,7 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   return False unless Pakku::Native.can-load: lib; 
  
-  🐛 qq[SPC: ｢$spec｣ already satisfied!];
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
 
   True;
 }
@@ -302,7 +301,7 @@ multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
 
   return False unless find-perl-module $spec.name;
  
-  🐛 qq[SPC: ｢$spec｣ already satisfied!];
+  🐛 qq[SPC: ｢$spec｣ satisfied!];
 
   True;
 }
@@ -322,6 +321,8 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
       } )
     ==> map(  -> $spec {
 
+    🐛 qq[DEP: ｢$spec｣];
+
     my $meta = self.satisfy: :$spec;
 
     %visited{ $spec.id } = True;
@@ -336,19 +337,23 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
 # TODO: subset TarGzURL of Str
 multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
+  🐝 qq[FTC: ‹$src› $dst];
+
   🐛 qq[FTC: ｢$src｣];
 
   mkdir $dst;
 
   my $archive = $dst.add( $dst.basename ~ '.tar.gz' );
 
-  url-encode $src;
-
   $!http.download: url-encode( $src ), $archive;
+
+  🐝 qq[EXT: ‹$archive›];
 
   my $extract = extract :$archive, :$dst;
 
   die X::Pakku::Archive.new: :$archive unless $extract;
+
+  🐝 qq[RMV: ‹$archive›];
 
   unlink $archive;
 
@@ -358,7 +363,13 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
 multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
 
+  🐝 qq[FTC: ‹$src› $dst];
+
+  🐛 qq[FTC: ｢$src｣];
+
   copy-dir :$src :$dst;
+
+  🐛 qq[FTC: ｢$dst｣];
 
 }
 
@@ -378,10 +389,12 @@ submethod BUILD ( :%!cnf! ) {
 
   my $pretty   = %!cnf<pakku><pretty>  // True;
   my $verbose  = %!cnf<pakku><verbose> // 'now';
-  my %level    = %!cnf<log><level>     // {};
+  my %level    = %!cnf<log>            // {};
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
   
+  %*ENV.grep( *.key.starts-with( any <RAKU PAKKU> ) ).map( -> $env { 🐝 qq[ENV: ‹{$env.key}› {$env.value}] } );
+
   🐝 qq[CNF: ‹home› $home];
 
   $!tmp = $home.add( '.tmp' );
@@ -493,7 +506,7 @@ method metamorph ( ) {
 }
 
 # borrowed from Hash::Merge:cpan:TYIL to fix #6
-sub hashmerge ( %merge-into, %merge-source ) {
+my sub hashmerge ( %merge-into, %merge-source ) {
 
   for %merge-source.keys -> $key {
     if %merge-into{ $key } :exists {
@@ -524,7 +537,7 @@ sub repo-from-spec ( Str $spec ) is export {
   $repo;
 }
 
-sub find-bin ( Str:D $name --> Bool:D ) is export {
+my sub find-bin ( Str:D $name --> Bool:D ) {
 
   so $*SPEC.path.first( -> $path {
     $*SPEC.catfile( $path, $name ).IO.f or ( $*SPEC.catfile( $path, $name ~ '.exe'  ).IO.f if $*DISTRO.is-win )
@@ -532,7 +545,7 @@ sub find-bin ( Str:D $name --> Bool:D ) is export {
 
 }
 
-sub find-perl-module ( Str:D $name --> Bool:D ) {
+my sub find-perl-module ( Str:D $name --> Bool:D ) {
 
   return True if run('perl', "-M$name", '-e 1', :err).exitcode == 0;
 
@@ -554,12 +567,12 @@ sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil) is export {
   }
 }
 
-sub remove-dir( IO::Path:D $io --> Nil ) is export {
+my sub remove-dir( IO::Path:D $io --> Nil ) is export {
   .d ?? remove-dir( $_ ) !! .unlink for $io.dir;
   $io.rmdir;
 }
 
-sub url-encode ( Str() $text --> Str ) {
+my sub url-encode ( Str() $text --> Str ) {
   return $text.subst:
     /<-[
       ! * ' ( ) ; : @ + $ , / ? # \[ \]
@@ -568,7 +581,7 @@ sub url-encode ( Str() $text --> Str ) {
       { .Str.encode».fmt('%%%02X').join }, :g;
 }
 
-sub get-env ( ) {
+my sub get-env ( ) {
 
   my %env;
 

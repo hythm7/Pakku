@@ -9,7 +9,7 @@ my class Level {
   has IO::Handle $!fh is required;
 
 
-  multi method msg ( Level:D: $msg ) { $!fh.put: $!color ~ $!prefix ~ $msg ~ $!reset }
+  multi method msg ( Level:D: $msg ) { $!fh.put: $!color ~ $!prefix ~ " " ~ $msg ~ $!reset }
   multi method msg ( Level:U: $msg ) { return }
 
   submethod BUILD ( :$!fh!, :$!prefix!, :$color! ) {
@@ -45,6 +45,7 @@ my Pakku::Log $logger;
 
 my enum LogLevel <nothing all debug now info warn error>;
 
+
 submethod BUILD (
 
   Bool:D :$!pretty = True,
@@ -52,21 +53,23 @@ submethod BUILD (
          :%level,
 
 ) {
-
   $logger = self;
 
   $!verbose = LogLevel::{ $verbose } // now;  
 
   return $logger if $!verbose == nothing;
 
+  my %color = ( :0reset, :30black, :31red, :32green, :33yellow, :34blue, :35magenta, :36cyan, :37white );
+
+  
   my $color = '' unless $!pretty;
 
-  $!all   = Level.new: :fh( $*OUT ) :prefix( %level<1><prefix> // '🐝 ' ) :color( $color // %level<1><color> // '0'  ) if  all   ≥ $!verbose;
-  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<2><prefix> // '🐛 ' ) :color( $color // %level<2><color> // '32' ) if  debug ≥ $!verbose;
-  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🦋 ' ) :color( $color // %level<3><color> // '36' ) if  now   ≥ $!verbose;
-  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🧚 ' ) :color( $color // %level<4><color> // '35' ) if  info  ≥ $!verbose;
-  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<5><prefix> // '🐞 ' ) :color( $color // %level<5><color> // '33' ) if  warn  ≥ $!verbose;
-  $!error = Level.new: :fh( $*ERR ) :prefix( %level<6><prefix> // '🦗 ' ) :color( $color // %level<6><color> // '31' ) if  error ≥ $!verbose;
+  $!all   = Level.new: :fh( $*OUT ) :prefix( %level<all><prefix>   // '🐝' ) :color( $color // %color{ %level<all><color>   // 'reset'   } ) if  all   ≥ $!verbose;
+  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<debug><prefix> // '🐛' ) :color( $color // %color{ %level<debug><color> // 'green'   } ) if  debug ≥ $!verbose;
+  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<now><prefix>   // '🦋' ) :color( $color // %color{ %level<now><color>   // 'cyan'    } ) if  now   ≥ $!verbose;
+  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<info><prefix>  // '🧚' ) :color( $color // %color{ %level<info><color>  // 'magenta' } ) if  info  ≥ $!verbose;
+  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<warn><prefix>  // '🐞' ) :color( $color // %color{ %level<warn><color>  // 'yellow'  } ) if  warn  ≥ $!verbose;
+  $!error = Level.new: :fh( $*ERR ) :prefix( %level<error><prefix> // '🦗' ) :color( $color // %color{ %level<error><color> // 'red' } // 31 ) if  error ≥ $!verbose;
 
   $logger.warn.msg: qq[CNF: ｢$verbose｣ unknown log level!] unless LogLevel::{ $verbose }; 
 
@@ -97,6 +100,7 @@ enum Color is export (
   white   => 37,
 
 );
+
 
 sub color ( Str:D $text, Color $color ) is export { "\e\[" ~ $color.Int ~ "m" ~ $text ~ "\e\[0m" }
 

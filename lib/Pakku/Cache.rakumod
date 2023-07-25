@@ -80,7 +80,7 @@ sub reduce-latest ( $left, $right ) {
   return $right;
 }
 
-sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) {
+my sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) {
 
   my $relpath := $src.chars;
 

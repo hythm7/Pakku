@@ -48,7 +48,7 @@ multi method fly (
 
   unless @meta {
 
-    🧚 qq[ADD: ｢{@spec}｣ already installed!];
+    🧚 qq[ADD: ｢{@spec}｣ already added!];
 
     return;
 
@@ -153,7 +153,7 @@ multi method fly (
 
   if not $force and self.satisfied( :$spec ) {
 
-    🧚 qq[ADD: ｢$spec｣ already installed!];
+    🧚 qq[ADD: ｢$spec｣ already added!];
 
     return;
   }
@@ -514,7 +514,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
         my $spec = Pakku::Spec.new: $str;
         my @dist = $repo.candidates( $spec.name, |$spec.spec );
 
-        🐛 qq[SPC: ｢$spec｣ ‹$repo.prefix()› not installed!] unless @dist;
+        🐛 qq[SPC: ｢$spec｣ ‹$repo.prefix()› not added!] unless @dist;
 
         sink @dist.map( -> $dist {
           🦋 qq[RMV: ｢$dist｣];
@@ -663,7 +663,7 @@ multi method fly (
 
      unless @candy {
 
-       🐞 "SPC: ｢$spec｣ not installed!";
+       🐞 "SPC: ｢$spec｣ not added!";
 
        next;
 
@@ -840,7 +840,7 @@ multi method fly (
 
       unless @candy {
 
-        🐞 "SPC: ｢$spec｣ not installed!";
+        🐞 "SPC: ｢$spec｣ not added!";
 
         next;
       }
@@ -853,7 +853,7 @@ multi method fly (
 
         unless $state {
 
-          🐞 "SPC: ｢$spec｣ not installed!";
+          🐞 "SPC: ｢$spec｣ not added!";
 
           next;
 

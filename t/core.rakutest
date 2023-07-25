@@ -18,7 +18,7 @@ lives-ok {
       my @recman = ( %( :name<pakku>, :location<http://recman.pakku.org>, :1priority, :active ), );
 
 
-      $!log    = Pakku::Log.new: :verbose<silent>;
+      $!log    = Pakku::Log.new: :verbose<nothing>;
 
 			my $http = Pakku::HTTP.new;
 
