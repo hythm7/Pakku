@@ -642,7 +642,7 @@ multi method fly (
 
   ) {
 
-  🧚 "UPD: ｢{@spec}｣";
+  🧚 "UPD: ｢...｣";
 
   my @add;
 
@@ -671,8 +671,6 @@ multi method fly (
 
      sink @candy.map( -> $spec {
     
-       🐛 "SPC: ｢$spec｣";
-
        my $state = %state{ $spec };
 
        my $upd = $state.<upd>.grep( *.defined ).head;
@@ -820,7 +818,7 @@ multi method fly (
 
   ) {
 
-  🧚 qq[STT: ｢{ @spec }｣];
+  🧚 qq[STT: ｢...｣];
 
   my $state = Pakku::State.new( :$!recman, :$updates );
 
