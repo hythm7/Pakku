@@ -23,7 +23,8 @@ my class Level {
 
 
 
-has Level $.silent;
+has Level $.nothing;
+has Level $.all;
 has Level $.debug;
 has Level $.now;
 has Level $.info;
@@ -42,7 +43,7 @@ method out ( Str:D $msg ) {
 
 my Pakku::Log $logger;
 
-my enum LogLevel <silent debug now info warn error>;
+my enum LogLevel <nothing all debug now info warn error>;
 
 submethod BUILD (
 
@@ -56,20 +57,22 @@ submethod BUILD (
 
   $!verbose = LogLevel::{ $verbose } // now;  
 
-  return $logger if $!verbose == silent;
+  return $logger if $!verbose == nothing;
 
   my $color = '' unless $!pretty;
 
-  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<1><prefix> // '🐛 ' ) :color( $color // %level<1><color> // '32' ) if  debug ≥ $!verbose;
-  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<2><prefix> // '🦋 ' ) :color( $color // %level<2><color> // '36' ) if  now   ≥ $!verbose;
-  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🧚 ' ) :color( $color // %level<3><color> // '35' ) if  info  ≥ $!verbose;
-  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🐞 ' ) :color( $color // %level<4><color> // '33' ) if  warn  ≥ $!verbose;
-  $!error = Level.new: :fh( $*ERR ) :prefix( %level<5><prefix> // '🦗 ' ) :color( $color // %level<5><color> // '31' ) if  error ≥ $!verbose;
+  $!all   = Level.new: :fh( $*OUT ) :prefix( %level<1><prefix> // '🐝 ' ) :color( $color // %level<1><color> // '0'  ) if  all   ≥ $!verbose;
+  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<2><prefix> // '🐛 ' ) :color( $color // %level<2><color> // '32' ) if  debug ≥ $!verbose;
+  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<3><prefix> // '🦋 ' ) :color( $color // %level<3><color> // '36' ) if  now   ≥ $!verbose;
+  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<4><prefix> // '🧚 ' ) :color( $color // %level<4><color> // '35' ) if  info  ≥ $!verbose;
+  $!warn  = Level.new: :fh( $*OUT ) :prefix( %level<5><prefix> // '🐞 ' ) :color( $color // %level<5><color> // '33' ) if  warn  ≥ $!verbose;
+  $!error = Level.new: :fh( $*ERR ) :prefix( %level<6><prefix> // '🦗 ' ) :color( $color // %level<6><color> // '31' ) if  error ≥ $!verbose;
 
   $logger.warn.msg: qq[CNF: ｢$verbose｣ unknown log level!] unless LogLevel::{ $verbose }; 
 
 }
 
+sub prefix:<🐝> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.all.msg:   $msg }
 sub prefix:<🐛> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.debug.msg: $msg }
 sub prefix:<🦋> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.now.msg:   $msg }
 sub prefix:<🧚> ( Str:D $msg ) is export is looser( &infix:<~> ) { $logger.info.msg:  $msg }

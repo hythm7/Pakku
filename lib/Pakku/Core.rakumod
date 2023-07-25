@@ -382,15 +382,15 @@ submethod BUILD ( :%!cnf! ) {
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
   
-  🐛 qq[CNF: ‹home› $home];
+  🐝 qq[CNF: ‹home› $home];
 
   $!tmp = $home.add( '.tmp' );
 
-  🐛 qq[CNF: ‹tmp› $!tmp];
+  🐝 qq[CNF: ‹tmp› $!tmp];
 
   $!stage  = $home.add( '.stage' );
 
-  🐛 qq[CNF: ‹stage› $!stage];
+  🐝 qq[CNF: ‹stage› $!stage];
 
   my $cache-conf = %!cnf<pakku><cache>; 
   my $cache      = $home.add( '.cache' ); 
@@ -401,23 +401,23 @@ submethod BUILD ( :%!cnf! ) {
 
   $!cache = Pakku::Cache.new:  :$cache if $cache;
 
-  🐛 qq[CNF: ‹cache› $cache];
+  🐝 qq[CNF: ‹cache› $cache];
 
   $!dont  = %!cnf<pakku><dont> // False;
 
-  🐛 qq[CNF: ‹dont› $!dont];
+  🐝 qq[CNF: ‹dont› $!dont];
 
   $!yolo  = %!cnf<pakku><yolo> // False;
 
-  🐛 qq[CNF: ‹yolo› $!yolo];
+  🐝 qq[CNF: ‹yolo› $!yolo];
 
   $!cores  = $*KERNEL.cpu-cores - 1;
 
-  🐛 qq[CNF: ‹cores› $!cores];
+  🐝 qq[CNF: ‹cores› $!cores];
 
   $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
 
-  🐛 qq[CNF: ‹degree› $!degree];
+  🐝 qq[CNF: ‹degree› $!degree];
 
   my $recman   = %!cnf<pakku><recman>;
   my $norecman = %!cnf<pakku><norecman>;
@@ -431,11 +431,11 @@ submethod BUILD ( :%!cnf! ) {
 
   $!recman = Pakku::Recman.new: :$!http :@recman if @recman;
 
-  @recman.map( -> $recman { 🐛 qq[CNF: ‹recman› $recman<location>] } );
+  @recman.map( -> $recman { 🐝 qq[CNF: ‹recman› $recman<location>] } );
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
-  🐛 qq[CNF: ‹repos› {@!repo}];
+  🐝 qq[CNF: ‹repos› {@!repo}];
 
 }
 

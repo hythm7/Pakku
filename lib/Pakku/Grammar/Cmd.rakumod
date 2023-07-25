@@ -76,6 +76,7 @@ grammar Pakku::Grammar::Cmd {
   token recman-name   { <key> }
 
   proto token log-level { * } 
+  token log-level:sym<all>   { <sym> }
   token log-level:sym<debug> { <sym> }
   token log-level:sym<now>   { <sym> }
   token log-level:sym<info>  { <sym> }
@@ -398,37 +399,64 @@ grammar Pakku::Grammar::Cmd {
   token number { <digit>+ }
 
   proto token level { * }
-  token level:sym<SILENT> { <sym> }
-  token level:sym<DEBUG>  { <sym> }
-  token level:sym<NOW>    { <sym> }
-  token level:sym<INFO>   { <sym> }
-  token level:sym<WARN>   { <sym> }
-  token level:sym<ERROR>  { <sym> }
-  token level:sym<silent> { <sym> }
-  token level:sym<debug>  { <sym> }
-  token level:sym<now>    { <sym> }
-  token level:sym<info>   { <sym> }
-  token level:sym<warn>   { <sym> }
-  token level:sym<error>  { <sym> }
-  token level:sym<fatal>  { <sym> }
-  token level:sym<S>      { <sym> }
-  token level:sym<D>      { <sym> }
-  token level:sym<N>      { <sym> }
-  token level:sym<I>      { <sym> }
-  token level:sym<W>      { <sym> }
-  token level:sym<E>      { <sym> }
-  token level:sym<0>      { <sym> }
-  token level:sym<1>      { <sym> }
-  token level:sym<2>      { <sym> }
-  token level:sym<3>      { <sym> }
-  token level:sym<4>      { <sym> }
-  token level:sym<5>      { <sym> }
-  token level:sym<42>     { <sym> }
-  token level:sym<🐛>     { <sym> }
-  token level:sym<🦋>     { <sym> }
-  token level:sym<🧚>     { <sym> }
-  token level:sym<🐞>     { <sym> }
-  token level:sym<🦗>     { <sym> }
+  token level:sym<nothing> { <nothing> }
+  token level:sym<all>     { <all>     }
+  token level:sym<debug>   { <debug>   }
+  token level:sym<now>     { <now>     }
+  token level:sym<info>    { <info>    }
+  token level:sym<warn>    { <warn>    }
+  token level:sym<error>   { <error>   }
+
+  proto token nothing { * }
+  token nothing:sym<nothing> { <sym> }
+  token nothing:sym<NOTHING> { <sym> }
+  token nothing:sym<NO>      { <sym> }
+  token nothing:sym<N>       { <sym> }
+  token nothing:sym<0>       { <sym> }
+  token nothing:sym<silent>  { <sym> } # deprecated
+  token nothing:sym<SILENT>  { <sym> } # deprecated
+
+  proto token all { * }
+  token all:sym<all> { <sym> }
+  token all:sym<ALL> { <sym> }
+  token all:sym<A>   { <sym> }
+  token all:sym<1>   { <sym> }
+  token all:sym<42>  { <sym> }
+  token all:sym<🐝>  { <sym> }
+
+  proto token debug { * }
+  token debug:sym<debug> { <sym> }
+  token debug:sym<DEBUG> { <sym> }
+  token debug:sym<2>     { <sym> }
+  token debug:sym<D>     { <sym> }
+  token debug:sym<🐛>    { <sym> }
+
+  proto token now { * }
+  token now:sym<now> { <sym> }
+  token now:sym<NOW> { <sym> }
+  token now:sym<3>   { <sym> }
+  token now:sym<🦋>  { <sym> }
+
+  proto token info { * }
+  token info:sym<info> { <sym> }
+  token info:sym<INFO> { <sym> }
+  token info:sym<I>    { <sym> }
+  token info:sym<4>    { <sym> }
+  token info:sym<🧚>   { <sym> }
+
+  proto token warn { * }
+  token warn:sym<warn> { <sym> }
+  token warn:sym<WARN> { <sym> }
+  token warn:sym<W>    { <sym> }
+  token warn:sym<5>    { <sym> }
+  token warn:sym<🐞>   { <sym> }
+
+  proto token error { * }
+  token error:sym<error> { <sym> }
+  token error:sym<ERROR> { <sym> }
+  token error:sym<E>     { <sym> }
+  token error:sym<6>     { <sym> }
+  token error:sym<🦗>    { <sym> }
 
 
   token specs { <spec>+ % \h }
@@ -941,36 +969,13 @@ class Pakku::Grammar::CmdActions {
   method relaxed:sym<nr>        ( $/ ) { make ( :!relaxed ) }
 
 
-  method level:sym<SILENT> ( $/ ) { make 'silent' }
-  method level:sym<DEBUG>  ( $/ ) { make 'debug'  }
-  method level:sym<NOW>    ( $/ ) { make 'now'    }
-  method level:sym<INFO>   ( $/ ) { make 'info'   }
-  method level:sym<WARN>   ( $/ ) { make 'warn'   }
-  method level:sym<ERROR>  ( $/ ) { make 'error'  }
-  method level:sym<silent> ( $/ ) { make 'silent' }
-  method level:sym<debug>  ( $/ ) { make 'debug'  }
-  method level:sym<now>    ( $/ ) { make 'now'    }
-  method level:sym<info>   ( $/ ) { make 'info'   }
-  method level:sym<warn>   ( $/ ) { make 'warn'   }
-  method level:sym<error>  ( $/ ) { make 'error'  }
-  method level:sym<S>      ( $/ ) { make 'silent' }
-  method level:sym<D>      ( $/ ) { make 'debug'  }
-  method level:sym<N>      ( $/ ) { make 'now'    }
-  method level:sym<I>      ( $/ ) { make 'info'   }
-  method level:sym<W>      ( $/ ) { make 'warn'   }
-  method level:sym<E>      ( $/ ) { make 'error'  }
-  method level:sym<0>      ( $/ ) { make 'silent' }
-  method level:sym<1>      ( $/ ) { make 'debug'  }
-  method level:sym<2>      ( $/ ) { make 'now'    }
-  method level:sym<3>      ( $/ ) { make 'info'   }
-  method level:sym<4>      ( $/ ) { make 'warn'   }
-  method level:sym<5>      ( $/ ) { make 'error'  }
-  method level:sym<42>     ( $/ ) { make 'debug'  }
-  method level:sym<🐛>     ( $/ ) { make 'debug'  }
-  method level:sym<🦋>     ( $/ ) { make 'now'    }
-  method level:sym<🧚>     ( $/ ) { make 'info'   }
-  method level:sym<🐞>     ( $/ ) { make 'warn'   }
-  method level:sym<🦗>     ( $/ ) { make 'error'  }
+  method level:sym<nothing> ( $/ ) { make 'nothing' }
+  method level:sym<all>     ( $/ ) { make 'all'     }
+  method level:sym<debug>   ( $/ ) { make 'debug'   }
+  method level:sym<now>     ( $/ ) { make 'now'     }
+  method level:sym<info>    ( $/ ) { make 'info'    }
+  method level:sym<warn>    ( $/ ) { make 'warn'    }
+  method level:sym<error>   ( $/ ) { make 'error'   }
 
   method specs ( $/ ) { make $<spec>».made }
 

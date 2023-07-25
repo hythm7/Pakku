@@ -12,6 +12,10 @@
     "details": false
   },
   "log": {
+    "all": {
+      "color": "reset",
+      "prefix": "🐝"
+    },
     "debug": {
       "color": "green",
       "prefix": "🐛"
