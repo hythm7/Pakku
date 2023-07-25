@@ -314,11 +314,11 @@ please             → be nice to butterflies
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
 add    → a  update   → u  yolo     → y  nopretty → np  nothing → «N 0»
-remove → r  download → d  exclude  → x  nodeps   → nd  debug  → «D 1»
-list   → l  help     → h  deps     → d  noforce  → nf  now    → «N 2»
-search → s  verbose  → v  force    → f  notest   → nt  info   → «I 3»
-build  → b  pretty   → p  details  → d  nobuild  → nb  warn   → «W 4»
-test   → t  only     → o  norecman → nr nocache  → nc  error  → «E 5»
+remove → r  download → d  exclude  → x  nodeps   → nd  all     → «A 1»
+list   → l  help     → h  deps     → d  noforce  → nf  debug   → «D 2»
+search → s  verbose  → v  force    → f  notest   → nt  now     → «N 3»
+build  → b  pretty   → p  details  → d  nobuild  → nb  info    → «I 4»
+test   → t  only     → o  norecman → nr nocache  → nc  warn    → «W 5»
 									     
 </pre>
 
