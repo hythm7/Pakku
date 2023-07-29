@@ -393,7 +393,9 @@ submethod BUILD ( :%!cnf! ) {
 
   $!log    = Pakku::Log.new: :$pretty :$verbose :%level;
   
-  %*ENV.grep( *.key.starts-with( any <RAKU PAKKU> ) ).map( -> $env { 🐝 qq[ENV: ｢‹{$env.key}› {$env.value}] } );
+  %*ENV
+    ==> grep( *.key.starts-with( any <RAKU PAKKU> ) )
+    ==> map( -> $env { 🐝 qq[ENV: ｢{$env.key}｣ ‹{$env.value}›] } );
 
   🐝 qq[CNF: ｢home｣   ‹$home›];
 
