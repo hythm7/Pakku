@@ -419,13 +419,13 @@ Below is a list of output lines that one can see and their meaning:
 
 **Pakku verbosity levels:**
 
-	- 1 `｢ all ｣` 🐛 → All avaialble output
-	- 2 `｢debug｣` 🐛 → Debug output
-	- 3 `｢ now ｣` 🦋 → What is happenning now
-	- 4 `｢info ｣` 🧚 → Important things only
-	- 5 `｢warn ｣` 🐞 → Warnings only
-	- 6 `｢error｣` 🦗 → Errors only
-	- 0 `｢nothing｣`  → Nothing
+	- 1 `｢ all ｣`   🐝 → All avaialble output
+	- 2 `｢debug｣`   🐛 → Debug output
+	- 3 `｢ now ｣`   🦋 → What is happenning now
+	- 4 `｢info ｣`   🧚 → Important things only
+	- 5 `｢warn ｣`   🐞 → Warnings only
+	- 6 `｢error｣`   🦗 → Errors only
+	- 0 `｢nothing｣`    → Nothing
 
 **Command result**:
   - `-Ofun` - Success
