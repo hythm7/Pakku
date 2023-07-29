@@ -239,7 +239,6 @@ submethod !help-help ( ) {
 
   %help<example>.push: 'pakku';
   %help<example>.push: 'pakku add';
-  %help<example>.push: 'pakku update';
   %help<example>.push: 'pakku help';
   %help<example>.push: 'pakku help list';
   %help<example>.push: 'pakku help help';
@@ -274,7 +273,7 @@ submethod !pakku-help ( ) {
   %pakku<opt>.push: ( 'async'            => 'run asynchronously when possible' );
   %pakku<opt>.push: ( 'yolo'             => 'dont stop on Pakku exceptions' );
   %pakku<opt>.push: ( 'please'           => 'be nice to butterflies' );
-  %pakku<opt>.push: ( 'verbose <level>'  => 'verbose level <silent debug now info warn error>' );
+  %pakku<opt>.push: ( 'verbose <level>'  => 'verbose level <nothing all debug now info warn error>' );
   %pakku<opt>.push: ( 'config  <path>'   => 'specify config file' );
 
   help %pakku;
