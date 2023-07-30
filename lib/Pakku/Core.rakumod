@@ -11,7 +11,6 @@ use Pakku::Config;
 use Pakku::Grammar::Cmd;
 
 unit role Pakku::Core;
-  also does Pakku::Help;
 
 has      %!cnf;
 
@@ -31,7 +30,17 @@ has CompUnit::Repository @!repo;
 
 has IO::Path $!tmp;
 
-method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
+method !tmp    { $!tmp    }
+method !degree { $!degree }
+method !dont   { $!dont   }
+method !yolo   { $!yolo   }
+method !stage  { $!stage  }
+method !cache  { $!cache  }
+method !http   { $!http   }
+method !recman { $!recman }
+method !repo   { @!repo   }
+
+method test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
   my @dir =  <tests t>;
 
@@ -108,7 +117,7 @@ method !test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
 }
 
-method !build ( Distribution::Locally:D :$dist ) {
+method build ( Distribution::Locally:D :$dist ) {
 
   my $prefix  = $dist.prefix.absolute.IO;
   my $builder = $dist.meta<builder>;
@@ -373,6 +382,110 @@ multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
 
 }
 
+method state ( :$updates = True ) {
+
+  🐛 "STT: ｢...｣";
+
+  my %state;
+
+  @!repo
+    ==> map( *.installed )
+    ==> grep( *.defined )
+    ==> flat(  )
+    ==> map( { Pakku::Meta.new: .meta } )
+    ==> map( -> $meta { 
+
+      🐛 "STT: ｢$meta｣";
+
+      unless %state{ $meta }:exists {
+
+        %state{ $meta }.<dep> = [];
+        %state{ $meta }.<rev> = [];
+        %state{ $meta }.<upd> = [];
+
+      }
+
+      %state{ $meta }.<meta> = $meta;
+
+      $!recman.search( :spec( Pakku::Spec.new: $meta.name ) :!relaxed :42count )
+        ==> grep( *.defined )
+        ==> grep( -> %meta { $meta.name       ~~ %meta.<name> } )
+        ==> grep( -> %meta { $meta.meta<auth> ~~ %meta.<auth> } )
+        ==> grep( -> %meta {
+              ( quietly Version.new( %meta<version> ) cmp Version.new( $meta.meta<version> ) or  
+                quietly Version.new( %meta<api>     ) cmp Version.new( $meta.meta<api>     )  
+              ) ~~ More
+            } )
+        ==> sort( -> %left, %right {
+
+              quietly ( Version.new( %right<version> ) cmp Version.new( %left<version> ) ) or 
+              quietly ( Version.new( %right<api> ) cmp Version.new( %left<api> ) );
+
+            } )
+        ==> map( -> %meta { Pakku::Meta.new: %meta } )
+        ==> my @upd if $updates and $!recman;
+
+      if @upd {
+        %state{ $meta  }.<upd> .append: @upd;
+      }
+
+      sink $meta.deps( :deps ).grep( Pakku::Spec::Raku ).grep( *.name.so ).map( -> $spec {
+
+        🐛 "SPC: ｢$spec｣";
+
+        @!repo
+          ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ).head } )
+          ==> grep( *.defined )
+          ==> my @candy;
+
+        my $candy = @candy.head;
+
+        unless $candy {
+
+          🐛 "SPC: ｢$spec｣ missing!";
+
+          %state{ $meta }.<dep> .push: $spec;
+
+          next;
+        }
+
+        my $dep = Pakku::Meta.new: $candy.read-dist( )( $candy.id );
+
+        🐛 "DEP: ｢$dep｣";
+
+        %state{ $meta }.<dep> .push: $dep;
+        %state{ $dep  }.<rev> .push: $meta;
+
+      } );
+
+  } );
+
+  my %meta;
+
+  %state.values
+    ==> map( *.<meta> )
+    ==> map( -> $meta { %meta{ $meta.name }.push: $meta } );
+
+  sink %state.values
+    ==> grep( *.<rev>.not )
+    ==> map( *.<meta> )
+    ==> grep( -> $meta {
+       any %meta{ $meta.name }.map( {
+         ( quietly Version.new( $meta.meta.<version> ) cmp Version.new( .meta<version> ) or  
+           quietly Version.new( $meta.meta.<api>     ) cmp Version.new( .meta<api>     )  
+         ) ~~ Less
+       } ) 
+    } )
+    ==> map( -> $meta { %state{ $meta }<cln> = True } );
+
+  %state;
+}
+
+method repo-from-spec ( Str :$spec ) { repo-from-spec $spec }
+
+method copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil ) {
+  copy-dir :$src, :$dst;
+}
 
 method clear ( ) {
 
@@ -381,7 +494,7 @@ method clear ( ) {
 
 }
 
-method cnf ( ) { %!cnf }
+method !cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
 
@@ -523,7 +636,7 @@ my sub hashmerge ( %merge-into, %merge-source ) {
   %merge-into;
 }
 
-sub repo-from-spec ( Str $spec ) is export {
+my sub repo-from-spec ( Str $spec ) {
 
   return CompUnit::RepositoryRegistry.repository-for-name( $spec ) if $spec ~~ any <home site vendor core>;
 
@@ -554,7 +667,7 @@ my sub find-perl-module ( Str:D $name --> Bool:D ) {
   return False;
 }
 
-sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil) is export {
+sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil ) {
 
   my $relpath := $src.chars;
 

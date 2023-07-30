@@ -34,7 +34,7 @@
     },
     "warn": {
       "color": "yellow",
-      "prefix": "🦋"
+      "prefix": "🐞"
     }
   },
   "pakku": {

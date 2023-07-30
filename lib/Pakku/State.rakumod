@@ -2,116 +2,90 @@ use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
 
-unit class Pakku::State;
+unit role Pakku::State;
 
-has %.state;
-has $!recman;
+multi method fly (
 
-has @.ok;
-has @.error;
-has @.updatable;
-has @.cleanable;
+    'state',
 
-submethod BUILD ( :$!recman, :$updates = True ) {
+    :$clean   = False,
+    :$updates = True,
 
-  🐛 "STT: ｢...｣";
+    :@spec = self!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } )
 
-  my @repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+  ) {
 
-  @repo
-    ==> map( *.installed )
-    ==> grep( *.defined )
-    ==> flat(  )
-    ==> map( { Pakku::Meta.new: .meta } )
-    ==> map( -> $meta { 
+  🧚 qq[STT: ｢...｣];
 
-      🐛 "STT: ｢$meta｣";
+  my %state = self.state: :$updates;
 
-      unless %!state{ $meta }:exists {
+  %state.values
+    ==> grep( *.<cln> )
+    ==> map( *.<meta> )
+    ==> my @clean;
 
-        %!state{ $meta }.<dep> = [];
-        %!state{ $meta }.<rev> = [];
-        %!state{ $meta }.<upd> = [];
+  sink @spec.sort
+    ==> map( -> $spec { Pakku::Spec.new: $spec } )
+    ==> map( -> $spec { 
+        
+      🐛 "STT: ｢$spec｣";
 
-      }
-
-      %!state{ $meta }.<meta> = $meta;
-
-      $!recman.search( :spec( Pakku::Spec.new: $meta.name ) :!relaxed :42count )
+      self!repo
+        ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
+        ==> flat( )
         ==> grep( *.defined )
-        ==> grep( -> %meta { $meta.name       ~~ %meta.<name> } )
-        ==> grep( -> %meta { $meta.meta<auth> ~~ %meta.<auth> } )
-        ==> grep( -> %meta {
-              ( quietly Version.new( %meta<version> ) cmp Version.new( $meta.meta<version> ) or  
-                quietly Version.new( %meta<api>     ) cmp Version.new( $meta.meta<api>     )  
-              ) ~~ More
-            } )
-        ==> sort( &sort-latest )
-        ==> map( -> %meta { Pakku::Meta.new: %meta } )
-        ==> my @upd if $updates and $!recman;
+        ==> my @candy;
 
-      if @upd {
-        %!state{ $meta  }.<upd> .append: @upd;
-        @!updatable.push( $meta ) unless @!updatable.grep( $meta );
+      unless @candy {
+
+        🐞 "SPC: ｢$spec｣ not added!";
+
+        next;
       }
 
-      sink $meta.deps( :deps ).grep( Pakku::Spec::Raku ).grep( *.name.so ).map( -> $spec {
+      sink @candy.map( -> $spec {
 
         🐛 "SPC: ｢$spec｣";
 
-        @repo
-          ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ).head } )
-          ==> grep( *.defined )
-          ==> my @candy;
+        my $state = %state{ $spec };
 
-        my $candy = @candy.head;
+        unless $state {
 
-        unless $candy {
-
-          🐛 "SPC: ｢$spec｣ missing!";
-
-          %!state{ $meta }.<dep> .push: $spec;
-
-          @!error.push( $meta ) unless @!error.grep( $meta );
+          🐞 "SPC: ｢$spec｣ not added!";
 
           next;
+
         }
 
-        my $dep = Pakku::Meta.new: $candy.read-dist( )( $candy.id );
+        my @dep      = $state.<dep>.grep( Pakku::Meta       ).grep( *.defined );
+        my @missing  = $state.<dep>.grep( Pakku::Spec::Raku ).grep( *.defined );
 
-        🐛 "DEP: ｢$dep｣";
+        my @rev     = $state.<rev>.grep( *.defined );
+        my @upd = $state.<upd>.grep( *.defined );
 
-        %!state{ $meta }.<dep> .push: $dep;
-        %!state{ $dep  }.<rev> .push: $meta;
+        @dep.map( -> $meta { 🐛 "DEP: ｢$meta｣" } );
 
+        @missing.map( -> $spec { 🐞 "DEP: ｢$spec｣ missing!"  } );
+
+        @upd.map( -> $meta { 🦋 "UPD: ｢$meta｣" } );
+
+        @rev.map( -> $meta { 🐛 "REV: ｢$meta｣"  } );
+
+        🦗 "STT: ｢$spec｣" if     @missing;
+        🧚 "STT: ｢$spec｣" unless @missing;
+
+        sink @clean
+          ==> grep( -> $meta { $spec ~~ $meta.dist } )
+          ==> map( -> $meta {
+
+            🦋 "CLN: ｢$spec｣";
+
+            unless self!dont {
+              samewith 'remove', spec => $meta.dist.Array if $clean;
+            }
+
+          } );
       } );
-
-      @!ok.push( $meta ) unless @!ok.grep( $meta );
-  } );
-
-  my %meta;
-
-  %!state.values
-    ==> map( *.<meta> )
-    ==> map( -> $meta { %meta{ $meta.name }.push: $meta } );
-
-  %!state.values
-    ==> grep( *.<rev>.not )
-    ==> map( *.<meta> )
-    ==> grep( -> $meta {
-       any %meta{ $meta.name }.map( {
-         ( quietly Version.new( $meta.meta.<version> ) cmp Version.new( .meta<version> ) or  
-           quietly Version.new( $meta.meta.<api>     ) cmp Version.new( .meta<api>     )  
-         ) ~~ Less
-       } ) 
-    } )
-    ==> @!cleanable;
+    } );
 }
 
-
-my sub sort-latest ( %left, %right ) {
-
-  quietly ( Version.new( %right<version> ) cmp Version.new( %left<version> ) ) or 
-  quietly ( Version.new( %right<api> ) cmp Version.new( %left<api> ) );
-
-}

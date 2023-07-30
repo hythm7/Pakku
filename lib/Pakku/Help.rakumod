@@ -2,7 +2,43 @@ use Pakku::Log;
 
 unit role Pakku::Help;
 
-submethod !add-help ( ) {
+multi method fly ( 'help',  Str:D :$cmd ) {
+
+  given $cmd {
+
+    when 'add'      { out self!add-help      }
+    when 'remove'   { out self!remove-help   }
+    when 'list'     { out self!list-help     }
+    when 'search'   { out self!search-help   }
+    when 'state'    { out self!state-help    }
+    when 'update'   { out self!update-help   }
+    when 'build'    { out self!build-help    }
+    when 'test'     { out self!test-help     }
+    when 'download' { out self!download-help }
+    when 'config'   { out self!config-help   }
+    when 'help'     { out self!help-help     }
+
+
+    default {
+      out (
+        self!add-help,
+        self!remove-help,
+        self!list-help,
+        self!search-help,
+        self!state-help,
+        self!update-help,
+        self!build-help,
+        self!test-help,
+        self!download-help,
+        self!config-help,
+        self!pakku-help,
+        self!help-help,
+      ).join: "\n";
+    }
+  }
+}
+
+method !add-help ( ) {
 
   my %add;
 
@@ -41,7 +77,7 @@ submethod !add-help ( ) {
 
 }
 
-submethod !remove-help ( ) {
+method !remove-help ( ) {
 
   my %remove;
 
@@ -56,7 +92,7 @@ submethod !remove-help ( ) {
 
 }
 
-submethod !list-help ( ) {
+method !list-help ( ) {
 
   my %list;
 
@@ -76,7 +112,7 @@ submethod !list-help ( ) {
 
 }
 
-submethod !search-help ( ) {
+method !search-help ( ) {
 
   my %search;
 
@@ -96,7 +132,7 @@ submethod !search-help ( ) {
 
 }
 
-submethod !update-help ( ) {
+method !update-help ( ) {
 
   my %update;
 
@@ -134,7 +170,7 @@ submethod !update-help ( ) {
 
 }
 
-submethod !state-help ( ) {
+method !state-help ( ) {
 
   my %state;
 
@@ -156,7 +192,7 @@ submethod !state-help ( ) {
 }
 
 
-submethod !build-help ( ) {
+method !build-help ( ) {
 
   my %build;
 
@@ -170,7 +206,7 @@ submethod !build-help ( ) {
 
 }
 
-submethod !test-help ( ) {
+method !test-help ( ) {
 
   my %test;
 
@@ -191,7 +227,7 @@ submethod !test-help ( ) {
 
 }
 
-submethod !download-help ( ) {
+method !download-help ( ) {
 
   my %download;
 
@@ -204,7 +240,7 @@ submethod !download-help ( ) {
 
 }
 
-submethod !config-help ( ) {
+method !config-help ( ) {
 
   my %config;
 
@@ -230,7 +266,7 @@ submethod !config-help ( ) {
 
 }
 
-submethod !help-help ( ) {
+method !help-help ( ) {
 
   my %help;
 
@@ -247,7 +283,7 @@ submethod !help-help ( ) {
 
 }
 
-submethod !pakku-help ( ) {
+method !pakku-help ( ) {
 
   my %pakku;
 
