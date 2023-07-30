@@ -141,8 +141,8 @@ sub retry (
 sub url-encode ( Str() $text --> Str ) {
   return $text.subst:
     /<-[
-      ! * ' ( ) ; : @ + $ , / ? # \[ \]
-      0..9 A..Z a..z \- . ~ _
+      ! ' ( ) ; : @ $ , / ? # \[ \]
+      0..9 A..Z a..z . ~ _
     ]> /,
       { .Str.encode».fmt('%%%02X').join }, :g;
 }
