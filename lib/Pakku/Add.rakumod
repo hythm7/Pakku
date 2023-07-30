@@ -25,6 +25,20 @@ multi method fly (
 
   🧚 qq[ADD: ｢{@spec}｣];
 
+  my $repo = self.repo-from-spec: spec => $to;
+
+  unless $repo.can-install {
+
+    🐞 qq[REP: ｢$repo｣ can not install!];
+
+    $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
+
+    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+
+    die X::Pakku::Add.new: dist => @spec unless $repo;
+
+  }
+
   @spec
     ==> map(  -> $spec { Pakku::Spec.new: $spec } )
     ==> grep( -> $spec { $force or not self.satisfied: :$spec } )
@@ -78,21 +92,7 @@ multi method fly (
 
   } );
 
-  my $repo = self.repo-from-spec: spec => $to;
-
-  unless $repo.can-install {
-
-    🐞 qq[REP: ｢$repo｣ can not install!];
-
-    $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
-
-    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
-
-    die X::Pakku::Add.new: dist => @spec unless $repo;
-
-  }
-
-  my $*stage := CompUnit::Repository::Staging.new:
+  my $stage := CompUnit::Repository::Staging.new:
     prefix    => self!stage.add( now.Num ),
     name      => $repo.name,
     next-repo => $*REPO;
@@ -101,25 +101,25 @@ multi method fly (
   @dist 
     ==> map( -> $dist {
   
-      self.build: :$dist if $build;
+      self.build: :$stage :$dist if $build;
 
       🦋 qq[STG: ｢$dist｣];
 
-      $*stage.install: $dist, :$precompile;
+      $stage.install: $dist, :$precompile;
 
-      self.test: :$dist :$xtest if $test;
+      self.test: :$stage :$dist :$xtest if $test;
 
     } );
 
-  $*stage.remove-artifacts;
+  $stage.remove-artifacts;
 
   unless self!dont {
 
     if @dist {
 
-      $*stage.deploy;
+      $stage.deploy;
 
-      my $bin = $*stage.prefix.add( 'bin' ).Str;
+      my $bin = $stage.prefix.add( 'bin' ).Str;
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
@@ -147,6 +147,20 @@ multi method fly (
 ) {
 
   🧚 qq[ADD: ｢$path｣];
+
+  my $repo = self.repo-from-spec: spec => $to;
+
+  unless $repo.can-install {
+
+    🐞 qq[REP: ｢$repo｣ can not install!];
+
+    $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
+
+    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+
+    die X::Pakku::Add.new: dist => $path unless $repo;
+
+  }
 
   my $spec = Pakku::Spec.new: $path;
 
@@ -192,21 +206,7 @@ multi method fly (
 
   @dist.append: $dist unless $deps ~~ <only>;
 
-  my $repo = self.repo-from-spec: spec => $to;
-
-  unless $repo.can-install {
-
-    🐞 qq[REP: ｢$repo｣ can not install!];
-
-    $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
-
-    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
-
-    die X::Pakku::Add.new: dist => $path unless $repo;
-
-  }
-
-  my $*stage := CompUnit::Repository::Staging.new:
+  my $stage := CompUnit::Repository::Staging.new:
     prefix    => self!stage.add( now.Num ),
     name      => $repo.name,
     next-repo => $*REPO;
@@ -215,25 +215,25 @@ multi method fly (
   @dist 
     ==> map( -> $dist {
   
-      self.build: :$dist if $build;
+      self.build: :$stage :$dist if $build;
 
       🦋 qq[STG: ｢$dist｣];
 
-      $*stage.install: $dist, :$precompile;
+      $stage.install: $dist, :$precompile;
 
-      self.test: :$dist :$xtest if $test;
+      self.test: :$stage :$dist :$xtest if $test;
 
     } );
 
-  $*stage.remove-artifacts;
+  $stage.remove-artifacts;
 
   unless self!dont {
 
     if @dist {
 
-      $*stage.deploy;
+      $stage.deploy;
 
-      my $bin = $*stage.prefix.add( 'bin' ).Str;
+      my $bin = $stage.prefix.add( 'bin' ).Str;
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
@@ -245,4 +245,3 @@ multi method fly (
   }
    
 }
-

@@ -28,7 +28,12 @@ multi method fly (
 
   my @add;
 
-  my %state = Pakku::State.new( recman => self!recman ).state;
+  my %state = self.state: :updates;
+
+  %state.values
+    ==> grep( *.<cln> )
+    ==> map( *.<meta> )
+    ==> my @clean;
 
   sink @spec.sort
    ==> map( -> $spec { Pakku::Spec.new: $spec } )
@@ -141,7 +146,7 @@ multi method fly (
 
   }
 
-  my $*stage := CompUnit::Repository::Staging.new:
+  my $stage := CompUnit::Repository::Staging.new:
     prefix    => self!stage.add( now.Num ),
     name      => $repo.name,
     next-repo => $*REPO;
@@ -150,25 +155,25 @@ multi method fly (
   @dist 
     ==> map( -> $dist {
   
-      self.build: :$dist if $build;
+      self.build: :$stage :$dist if $build;
 
       🦋 qq[STG: ｢$dist｣];
 
-      $*stage.install: $dist, :$precompile;
+      $stage.install: $dist, :$precompile;
 
-      self.test: :$dist :$xtest if $test;
+      self.test: :$stage :$dist :$xtest if $test;
 
     } );
 
-  $*stage.remove-artifacts;
+  $stage.remove-artifacts;
 
   unless self!dont {
 
     if @dist {
 
-      $*stage.deploy;
+      $stage.deploy;
 
-      my $bin = $*stage.prefix.add( 'bin' ).Str;
+      my $bin = $stage.prefix.add( 'bin' ).Str;
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
@@ -179,12 +184,7 @@ multi method fly (
     }
 
     if $clean {
-
-      my @clean = Pakku::State.new( recman => self!recman, :!updates ).cleanable;
-
       samewith 'remove', spec => @clean.map( *.Str ) if @clean;
     }
-
   }
-
 }

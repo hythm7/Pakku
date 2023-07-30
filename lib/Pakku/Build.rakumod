@@ -45,7 +45,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   } );
 
-  my $*stage := CompUnit::Repository::Staging.new:
+  my $stage := CompUnit::Repository::Staging.new:
     prefix    => self!stage.add( now.Num ),
     name      => 'home',
     next-repo => $*REPO;
@@ -54,18 +54,18 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
   @dist 
     ==> map( -> $dist {
   
-      self.build: :$dist;
+      self.build: :$stage :$dist;
 
       🦋 qq[STG: ｢$dist｣];
 
-      $*stage.install: $dist;
+      $stage.install: $dist;
 
 
     } );
 
   self.build: :$dist unless self!dont;
 
-  $*stage.remove-artifacts;
+  $stage.remove-artifacts;
 
 
 }
@@ -107,7 +107,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   } );
 
-  my $*stage := CompUnit::Repository::Staging.new:
+  my $stage := CompUnit::Repository::Staging.new:
     prefix    => self!stage.add( now.Num ),
     name      => 'home',
     next-repo => $*REPO;
@@ -117,17 +117,17 @@ multi method fly ( 'build', Str:D :$spec! ) {
   @dist 
     ==> map( -> $dist {
   
-      self.build: :$dist;
+      self.build: :$stage :$dist;
 
       🦋 qq[STG: ｢$dist｣];
 
-      $*stage.install: $dist;
+      $stage.install: $dist;
 
     } );
 
   self.build: :$dist unless self!dont;
 
-  $*stage.remove-artifacts;
+  $stage.remove-artifacts;
 
 }
 

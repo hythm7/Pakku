@@ -1,3 +1,5 @@
+use CompUnit::Repository::Staging;
+
 use X::Pakku;
 use Pakku::Log;
 use Pakku::Help;
@@ -40,7 +42,11 @@ method !http   { $!http   }
 method !recman { $!recman }
 method !repo   { @!repo   }
 
-method test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
+method test (
+  CompUnit::Repository::Staging:D :$stage!,
+  Distribution::Locally:D :$dist!,
+  Bool :$xtest
+  ) {
 
   my @dir =  <tests t>;
 
@@ -61,7 +67,7 @@ method test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
   my $prefix  = $dist.prefix;
 
-  %*ENV<RAKULIB> = "$*stage.path-spec()";
+  %*ENV<RAKULIB> = "$stage.path-spec()";
 
   my Int $exitcode;
 
@@ -117,7 +123,11 @@ method test ( Distribution::Locally:D :$dist!, Bool :$xtest ) {
 
 }
 
-method build ( Distribution::Locally:D :$dist ) {
+method build (
+
+  CompUnit::Repository::Staging:D :$stage!,
+  Distribution::Locally:D :$dist!
+  ) {
 
   my $prefix  = $dist.prefix.absolute.IO;
   my $builder = $dist.meta<builder>;
@@ -142,7 +152,7 @@ method build ( Distribution::Locally:D :$dist ) {
       '-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
   }
 
-  %*ENV<RAKULIB> = "$*stage.path-spec()";
+  %*ENV<RAKULIB> = "$stage.path-spec()";
 
   my $proc = Proc::Async.new: @cmd;
 
