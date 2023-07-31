@@ -125,7 +125,7 @@ multi method fly (
 
           @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
 
-          $stage.self-destruct;
+          try $stage.self-destruct; # trying for Windows
 
         }
 
