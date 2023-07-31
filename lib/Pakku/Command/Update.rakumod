@@ -34,7 +34,7 @@ multi method fly (
     ==> map( *.<meta> )
     ==> my @clean;
 
-  sink @spec.sort
+  eager @spec.sort
    ==> map( -> $spec { Pakku::Spec.new: $spec } )
    ==> map( -> $spec {
 
@@ -44,7 +44,7 @@ multi method fly (
        ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
        ==> flat( )
        ==> grep( *.defined )
-       ==> grep( *.Str )
+       ==> map( *.Str )
        ==> my @candy;
 
      unless @candy {
@@ -55,9 +55,18 @@ multi method fly (
 
      }
 
-     sink @candy.map( -> $spec {
+     eager @candy.map( -> $spec {
     
        my $state = %state{ $spec };
+
+       $state.<dep>.grep( Pakku::Spec::Raku )
+         ==> grep( *.defined )
+         ==> map( *.Str )
+         ==> my @missing;
+
+       @missing.map( -> $spec { 🐞 "DEP: ｢$spec｣ missing!"  } );
+
+       @add.append: @missing if @missing;
 
        my $upd = $state.<upd>.grep( *.defined ).head;
 
@@ -71,21 +80,18 @@ multi method fly (
 
        🦋 "UPD: ｢$upd｣";
 
-       @add.push: $upd;
+       @add.push: $upd.Str;
 
      } );
 
    } );
 
-
-  my @repo = self!repo;
-
-  self!repo = CompUnit::RepositoryRegistry.repository-for-name('core');
-
   🧚 qq[UPD: ｢{ @add }｣] if @add;
 
   @add 
+    ==> map(  -> $spec { Pakku::Spec.new: $spec } )
     ==> unique( as => *.Str )
+    ==> map(  -> $spec { self.satisfy: :$spec } )
     ==> map(  -> $meta {
 
       my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
@@ -99,8 +105,6 @@ multi method fly (
     ==> flat( )
     ==> unique( as => *.Str )
     ==> my @meta;
-
-  self!repo = @repo;
 
   @meta
     ==> grep( -> $meta { not self.satisfied: spec => Pakku::Spec.new: ~$meta } )

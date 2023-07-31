@@ -431,6 +431,7 @@ method state ( :$updates = True ) {
 
             } )
         ==> map( -> %meta { Pakku::Meta.new: %meta } )
+        ==> grep( -> $meta { not self.satisfied: spec => Pakku::Spec.new: ~$meta } )
         ==> my @upd if $updates and $!recman;
 
       if @upd {
@@ -474,7 +475,7 @@ method state ( :$updates = True ) {
     ==> map( *.<meta> )
     ==> map( -> $meta { %meta{ $meta.name }.push: $meta } );
 
-  sink %state.values
+  %state.values
     ==> grep( *.<rev>.not )
     ==> map( *.<meta> )
     ==> grep( -> $meta {

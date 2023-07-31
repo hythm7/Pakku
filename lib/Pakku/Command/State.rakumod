@@ -34,6 +34,7 @@ multi method fly (
         ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
         ==> flat( )
         ==> grep( *.defined )
+        ==> map( *.Str )
         ==> my @candy;
 
       unless @candy {
@@ -43,7 +44,7 @@ multi method fly (
         next;
       }
 
-      sink @candy.map( -> $spec {
+      eager @candy.map( -> $spec {
 
         🐛 "SPC: ｢$spec｣";
 
@@ -74,7 +75,7 @@ multi method fly (
         🦗 "STT: ｢$spec｣" if     @missing;
         🧚 "STT: ｢$spec｣" unless @missing;
 
-        sink @clean
+        eager @clean
           ==> grep( -> $meta { $spec ~~ $meta.dist } )
           ==> map( -> $meta {
 
