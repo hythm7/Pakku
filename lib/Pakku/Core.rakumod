@@ -723,6 +723,7 @@ my sub get-env ( ) {
   %env<pakku><add><test>       = %*ENV<PAKKU_ADD_TEST>.Bool                if %*ENV<PAKKU_ADD_TEST>;
   %env<pakku><add><build>      = %*ENV<PAKKU_ADD_BUILD>.Bool               if %*ENV<PAKKU_ADD_BUILD>;
   %env<pakku><add><force>      = %*ENV<PAKKU_ADD_FORCE>.Bool               if %*ENV<PAKKU_ADD_FORCE>;
+  %env<pakku><add><serial>     = %*ENV<PAKKU_ADD_SERIAL>.Bool              if %*ENV<PAKKU_ADD_SERIAL>;
   %env<pakku><add><xtest>      = %*ENV<PAKKU_ADD_XTEST>.Bool               if %*ENV<PAKKU_ADD_XTEST>;
   %env<pakku><add><precompile> = %*ENV<PAKKU_ADD_PRECOMPILE>.Bool          if %*ENV<PAKKU_ADD_PRECOMPILE>;
   %env<pakku><add><exclude>    = %*ENV<PAKKU_ADD_EXCLUDE>.split( / \s+ / ) if %*ENV<PAKKU_ADD_EXCLUDE>;
