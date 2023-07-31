@@ -3,6 +3,7 @@
     "build": true,
     "deps": true,
     "force": false,
+    "serial": false,
     "precompile": true,
     "test": true,
     "to": "site",

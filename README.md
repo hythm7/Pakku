@@ -53,6 +53,7 @@ test                → test distribution
 xtest               → xTest distribution
 build               → build distribution
 force               → force add distribution even if installed
+serial              → add distributions in serial order
 precomp             → precompile distribution 
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
 deps                → all dependencies
@@ -66,6 +67,7 @@ nobuild             → bypass build
 notest              → bypass test
 noxtest             → bypass xtest
 noforce             → no force
+noserial            → no serial
 noprecomp           → no precompile
 </pre>
 
@@ -74,6 +76,7 @@ noprecomp           → no precompile
 <b>pakku add dist</b>                                # add dist
 <b>pakku add notest  dist</b>                        # add dist without testing
 <b>pakku add nodeps  dist</b>                        # add dist but dont add dependencies
+<b>pakku add serial  dist</b>                        # add dists in serial order
 <b>pakku add deps only dist</b>                      # add dist dependencies but dont add dist
 <b>pakku add exclude Dep1 dist</b>                   # add dist and exclude Dep1 from dependenncies
 <b>pakku add noprecomp notest  dist</b>              # add dist without testing and no precompilation

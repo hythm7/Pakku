@@ -17,6 +17,7 @@ multi method fly (
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
   Bool:D :$force      = False,
+  Bool:D :$serial     = False,
   Str:D  :$to         = 'site',
          :@exclude,
 
@@ -97,27 +98,59 @@ multi method fly (
     name      => $repo.name,
     next-repo => $*REPO;
 
+  if $serial {
 
-  @dist 
-    ==> map( -> $dist {
+    eager @dist 
+      ==> map( -> $dist {
   
-      self.build: :$stage :$dist if $build;
+        self.build: :$stage :$dist if $build;
 
-      🦋 qq[STG: ｢$dist｣];
+        🦋 qq[STG: ｢$dist｣];
 
-      $stage.install: $dist, :$precompile;
+        $stage.install: $dist, :$precompile;
 
-      self.test: :$stage :$dist :$xtest if $test;
+        self.test: :$stage :$dist :$xtest if $test;
 
-    } );
+        unless self!dont {
 
-  $stage.remove-artifacts;
+          $stage.remove-artifacts;
 
-  unless self!dont {
+          $stage.deploy;
 
-    if @dist {
+          my $bin = $stage.prefix.add( 'bin' ).Str;
 
-      $stage.deploy;
+          my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+          🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+
+          @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
+
+          $stage.self-destruct;
+
+        }
+
+      } );
+
+  } else {
+
+    @dist 
+      ==> map( -> $dist {
+  
+        self.build: :$stage :$dist if $build;
+
+        🦋 qq[STG: ｢$dist｣];
+
+        $stage.install: $dist, :$precompile;
+
+        self.test: :$stage :$dist :$xtest if $test;
+
+      } );
+
+    unless self!dont {
+
+      $stage.remove-artifacts;
+
+      $stage.deploy if @dist;
 
       my $bin = $stage.prefix.add( 'bin' ).Str;
 
@@ -136,12 +169,13 @@ multi method fly (
          'add',
   IO:D   :$path!,
          :$deps       = True,
-  Str:D  :$to         = 'site',
   Bool:D :$build      = True,
   Bool:D :$test       = True,
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
   Bool:D :$force      = False,
+  Bool:D :$serial     = False,
+  Str:D  :$to         = 'site',
          :@exclude,
 
 ) {
@@ -211,27 +245,59 @@ multi method fly (
     name      => $repo.name,
     next-repo => $*REPO;
 
+  if $serial {
 
-  @dist 
-    ==> map( -> $dist {
+    @dist 
+      ==> map( -> $dist {
   
-      self.build: :$stage :$dist if $build;
+        self.build: :$stage :$dist if $build;
 
-      🦋 qq[STG: ｢$dist｣];
+        🦋 qq[STG: ｢$dist｣];
 
-      $stage.install: $dist, :$precompile;
+        $stage.install: $dist, :$precompile;
 
-      self.test: :$stage :$dist :$xtest if $test;
+        self.test: :$stage :$dist :$xtest if $test;
 
-    } );
+        unless self!dont {
 
-  $stage.remove-artifacts;
+          $stage.remove-artifacts;
 
-  unless self!dont {
+          $stage.deploy;
 
-    if @dist {
+          my $bin = $stage.prefix.add( 'bin' ).Str;
 
-      $stage.deploy;
+          my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
+
+          🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+
+          @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
+
+          $stage.self-destruct;
+
+        }
+
+      } );
+
+  } else {
+
+    @dist 
+      ==> map( -> $dist {
+  
+        self.build: :$stage :$dist if $build;
+
+        🦋 qq[STG: ｢$dist｣];
+
+        $stage.install: $dist, :$precompile;
+
+        self.test: :$stage :$dist :$xtest if $test;
+
+      } );
+
+    unless self!dont {
+
+      $stage.remove-artifacts;
+
+      $stage.deploy if @dist;
 
       my $bin = $stage.prefix.add( 'bin' ).Str;
 
@@ -243,5 +309,4 @@ multi method fly (
 
     }
   }
-   
 }

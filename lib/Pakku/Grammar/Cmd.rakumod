@@ -174,6 +174,7 @@ grammar Pakku::Grammar::Cmd {
   token addopt:sym<test>       { <test>       }
   token addopt:sym<xtest>      { <xtest>      }
   token addopt:sym<force>      { <force>      }
+  token addopt:sym<serial>     { <serial>     }
   token addopt:sym<precompile> { <precompile> }
   token addopt:sym<to>         { <sym>     <.space>+ <repo> }
   token addopt:sym<exclude>    { <exclude> <.space>+ <spec> }
@@ -340,6 +341,12 @@ grammar Pakku::Grammar::Cmd {
   token force:sym<➟>       { <sym> }
   token force:sym<noforce> { <sym> }
   token force:sym<nf>      { <sym> }
+
+  proto token serial { * }
+  token serial:sym<serial>   { <sym> }
+  token serial:sym<s>        { <sym> }
+  token serial:sym<noserial> { <sym> }
+  token serial:sym<ns>       { <sym> }
 
   proto token precompile { * }
   token precompile:sym<precompile>   { <sym> }
@@ -844,6 +851,7 @@ class Pakku::Grammar::CmdActions {
   method addopt:sym<test>       ( $/ ) { make $<test>.made       }
   method addopt:sym<xtest>      ( $/ ) { make $<xtest>.made      }
   method addopt:sym<force>      ( $/ ) { make $<force>.made      }
+  method addopt:sym<serial>     ( $/ ) { make $<serial>.made     }
   method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
   method addopt:sym<to>         ( $/ ) { make ( to => $<repo>.Str ) }
   method addopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
@@ -935,6 +943,11 @@ class Pakku::Grammar::CmdActions {
   method force:sym<➟>       ( $/ )  { make ( :force  ) }
   method force:sym<noforce> ( $/ )  { make ( :!force ) }
   method force:sym<nf>      ( $/ )  { make ( :!force ) }
+
+  method serial:sym<serial>   ( $/ )  { make ( :serial  ) }
+  method serial:sym<s>        ( $/ )  { make ( :serial  ) }
+  method serial:sym<noserial> ( $/ )  { make ( :!serial ) }
+  method serial:sym<ns>       ( $/ )  { make ( :!serial ) }
 
   method precompile:sym<precompile>   ( $/ )  { make ( :precompile  ) }
   method precompile:sym<precomp>      ( $/ )  { make ( :precompile  ) }

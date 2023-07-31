@@ -48,6 +48,7 @@ method !add-help ( ) {
   %add<example>.push: 'pakku add dist';
   %add<example>.push: 'pakku add notest dist';
   %add<example>.push: 'pakku add nodeps dist';
+  %add<example>.push: 'pakku add serial dist';
   %add<example>.push: 'pakku add deps only dist';
   %add<example>.push: 'pakku add exclude Dep dist';
   %add<example>.push: 'pakku add noprecomp notest dist';
@@ -68,6 +69,8 @@ method !add-help ( ) {
   %add<opt>.push: ( 'noxtest'         => 'bypass xtest' );
   %add<opt>.push: ( 'force'           => 'force add distribution even if installed' );
   %add<opt>.push: ( 'noforce'         => 'no force' );
+  %add<opt>.push: ( 'serial'          => 'add distribution in serial order' );
+  %add<opt>.push: ( 'noserial'        => 'no serial' );
   %add<opt>.push: ( 'precomp'         => 'precomp distribution' );
   %add<opt>.push: ( 'noprecomp'       => 'no precomp' );
   %add<opt>.push: ( 'exclude <dep>'   => 'add distribution but exclude specific dep' );

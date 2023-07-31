@@ -47,6 +47,7 @@ my class Add {
   has Bool $.test;
   has Bool $.xtest;
   has Bool $.force;
+  has Bool $.serial;
   has Bool $.precompile;
   has Any  $.deps;
   has Str  $.to;
