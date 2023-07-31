@@ -8,8 +8,8 @@ use Pakku::Command::Search;
 use Pakku::Command::Remove;
 use Pakku::Command::State;
 use Pakku::Command::Update;
-use Pakku::Command::Config;
 use Pakku::Command::Download;
+use Pakku::Command::Config;
 use Pakku::Command::Help;
 
 unit class Pakku;
@@ -22,8 +22,8 @@ unit class Pakku;
   also does Pakku::Command::Remove;
   also does Pakku::Command::State;
   also does Pakku::Command::Update;
-  also does Pakku::Command::Config;
   also does Pakku::Command::Download;
+  also does Pakku::Command::Config;
   also does Pakku::Command::Help;
 
 proto method fly ( | ) {
