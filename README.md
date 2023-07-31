@@ -49,6 +49,12 @@ Install distributions
 **options:**
 
 <pre>
+deps                → all dependencies
+deps    < build >   → build dependencies only
+deps    < test >    → test dependencies only
+deps    < runtime > → runtime dependencies only
+deps    < only >    → install dependencies but not the dist
+exclude < Dep1 >    → exclude Dep1
 test                → test distribution
 xtest               → xTest distribution
 build               → build distribution
@@ -56,12 +62,6 @@ force               → force add distribution even if installed
 serial              → add distributions in serial order
 precomp             → precompile distribution 
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
-deps                → all dependencies
-deps    < build >   → build dependencies only
-deps    < test >    → test dependencies only
-deps    < runtime > → runtime dependencies only
-deps    < only >    → install dependencies but not the dist
-exclude < Dep1 >    → exclude Dep1
 nodeps              → no dependencies
 nobuild             → bypass build
 notest              → bypass test
