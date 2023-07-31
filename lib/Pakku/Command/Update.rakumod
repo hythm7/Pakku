@@ -3,9 +3,8 @@ use CompUnit::Repository::Staging;
 use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
-use Pakku::State;
 
-unit role Pakku::Update;
+unit role Pakku::Command::Update;
 
 multi method fly (
 

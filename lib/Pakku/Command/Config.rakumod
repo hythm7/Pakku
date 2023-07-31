@@ -1,7 +1,7 @@
 use X::Pakku;
 use Pakku::Log;
 
-unit role Pakku::Config;
+unit role Pakku::Command::Config;
 
 my class Config { ... }
 

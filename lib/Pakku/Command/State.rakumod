@@ -2,7 +2,7 @@ use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
 
-unit role Pakku::State;
+unit role Pakku::Command::State;
 
 multi method fly (
 

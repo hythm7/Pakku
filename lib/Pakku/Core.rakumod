@@ -2,14 +2,12 @@ use CompUnit::Repository::Staging;
 
 use X::Pakku;
 use Pakku::Log;
-use Pakku::Help;
 use Pakku::Spec;
 use Pakku::Meta;
 use Pakku::Cache;
 use Pakku::Native;
 use Pakku::Recman;
 use Pakku::Archive;
-use Pakku::Config;
 use Pakku::Grammar::Cmd;
 
 unit role Pakku::Core;

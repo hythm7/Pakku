@@ -1,6 +1,6 @@
 use Pakku::Log;
 
-unit role Pakku::Help;
+unit role Pakku::Command::Help;
 
 multi method fly ( 'help',  Str:D :$cmd ) {
 

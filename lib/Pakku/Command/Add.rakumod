@@ -4,7 +4,7 @@ use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
 
-unit role Pakku::Add;
+unit role Pakku::Command::Add;
 
 
 multi method fly (

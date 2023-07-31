@@ -1,30 +1,30 @@
 use Pakku::Log;
 use Pakku::Core;
-use Pakku::Add;
-use Pakku::Test;
-use Pakku::Build;
-use Pakku::Remove;
-use Pakku::List;
-use Pakku::Search;
-use Pakku::Download;
-use Pakku::State;
-use Pakku::Update;
-use Pakku::Config;
-use Pakku::Help;
+use Pakku::Command::Add;
+use Pakku::Command::List;
+use Pakku::Command::Test;
+use Pakku::Command::Build;
+use Pakku::Command::Search;
+use Pakku::Command::Remove;
+use Pakku::Command::State;
+use Pakku::Command::Update;
+use Pakku::Command::Config;
+use Pakku::Command::Download;
+use Pakku::Command::Help;
 
 unit class Pakku;
   also does Pakku::Core;
-  also does Pakku::Add;
-  also does Pakku::Test;
-  also does Pakku::Build;
-  also does Pakku::Remove;
-  also does Pakku::List;
-  also does Pakku::Search;
-  also does Pakku::Download;
-  also does Pakku::State;
-  also does Pakku::Update;
-  also does Pakku::Config;
-  also does Pakku::Help;
+  also does Pakku::Command::Add;
+  also does Pakku::Command::List;
+  also does Pakku::Command::Test;
+  also does Pakku::Command::Build;
+  also does Pakku::Command::Search;
+  also does Pakku::Command::Remove;
+  also does Pakku::Command::State;
+  also does Pakku::Command::Update;
+  also does Pakku::Command::Config;
+  also does Pakku::Command::Download;
+  also does Pakku::Command::Help;
 
 proto method fly ( | ) {
 

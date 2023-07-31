@@ -4,11 +4,11 @@ use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
 
-unit role Pakku::Test;
+unit role Pakku::Command::Build;
 
-multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
-  
-  🧚 qq[TST: ｢$path｣];
+multi method fly ( 'build', IO::Path:D :$path! ) {
+
+  🧚 qq[BLD: ｢$path｣];
 
   my $meta = Pakku::Meta.new: $path;
 
@@ -45,8 +45,6 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
 
   } );
 
-  @dist.append: $dist;
-
   my $stage := CompUnit::Repository::Staging.new:
     prefix    => self!stage.add( now.Num ),
     name      => 'home',
@@ -56,24 +54,25 @@ multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest  = False, Bool:D :
   @dist 
     ==> map( -> $dist {
   
-      self.build: :$stage :$dist if $build;
+      self.build: :$stage :$dist;
 
       🦋 qq[STG: ｢$dist｣];
 
-      $stage.install: $dist, :!precompile;
+      $stage.install: $dist;
+
 
     } );
 
-  self.test: :$dist :$xtest unless self!dont;
+  self.build: :$dist unless self!dont;
 
   $stage.remove-artifacts;
 
+
 }
 
+multi method fly ( 'build', Str:D :$spec! ) {
 
-multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$build = True ) {
-   
-  🧚 qq[TST: ｢$spec｣];
+  🧚 qq[BLD: ｢$spec｣];
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
@@ -113,25 +112,22 @@ multi method fly ( 'test', Str:D :$spec!, Bool:D :$xtest  = False, Bool:D :$buil
     name      => 'home',
     next-repo => $*REPO;
 
-
-  my $dist = @dist.tail;
+  my $dist = @dist.pop;
 
   @dist 
     ==> map( -> $dist {
   
-      self.build: :$stage :$dist if $build;
+      self.build: :$stage :$dist;
 
       🦋 qq[STG: ｢$dist｣];
 
-      $stage.install: $dist, :!precompile;
-
+      $stage.install: $dist;
 
     } );
 
-  self.test: :$dist :$xtest unless self!dont;
+  self.build: :$dist unless self!dont;
 
   $stage.remove-artifacts;
 
 }
-
 

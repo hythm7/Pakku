@@ -1,7 +1,7 @@
 use Pakku::Log;
 use Pakku::Spec;
 
-unit role Pakku::Download;
+unit role Pakku::Command::Download;
 
 multi method fly ( 'download', :@spec! ) {
 

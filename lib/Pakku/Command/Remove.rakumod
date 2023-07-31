@@ -1,7 +1,7 @@
 use Pakku::Log;
 use Pakku::Spec;
 
-unit role Pakku::Remove;
+unit role Pakku::Command::Remove;
 multi method fly ( 'remove', :@spec!, Str :$from ) {
 
   🧚 qq[RMV: ｢{@spec}｣];

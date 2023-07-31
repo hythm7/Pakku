@@ -2,7 +2,7 @@ use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
 
-unit role Pakku::Search;
+unit role Pakku::Command::Search;
 
 multi method fly (
 

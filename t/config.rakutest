@@ -3,11 +3,11 @@
 use Test;
 
 use Pakku::Log;
-use Pakku::Config;
+use Pakku::Command::Config;
 
 my $config-file = $*TMPDIR.add( 'pakku-config.json.' ~ now.Num );
 
-my class TestConfig does Pakku::Config {
+my class TestConfig does Pakku::Command::Config {
   has %!cnf;
 	method !cnf ( ) { %!cnf }
 

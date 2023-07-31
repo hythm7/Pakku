@@ -2,7 +2,7 @@ use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
 
-unit role Pakku::List;
+unit role Pakku::Command::List;
 
 multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) { 
 
