@@ -44,7 +44,9 @@ multi method fly ( ) {
 
   self.clear;
 
-  samewith %!cnf<cmd>, |%!cnf{ %!cnf<cmd> };
+  my $cmd = %!cnf<cmd>;
+
+  samewith $cmd, |%!cnf{ $cmd };
 
   ofun
 }
