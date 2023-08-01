@@ -2,19 +2,20 @@ grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
   rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> 'spec'? [ <specs> || <path> ]    }
-  rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> 'spec'? <specs>?    }
+  rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> 'spec'? <specs>? }
 
-  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> 'spec'? [ <spec> || <path> ]     }
-  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> 'spec'? [ <spec> || <path> ]     }
-  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> 'spec'? <specs>    }
-  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> 'spec'? <specs>    }
-  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> 'spec'? <specs>    }
-  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> 'spec'? <specs>?   }
-  rule TOP:sym<state>     { <pakkuopt>* % <.space> <state>      <stateopt>*     % <.space> 'spec'? <specs>?   }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>     <buildopt>*    % <.space> 'spec'? [ <spec> || <path> ] }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>      <testopt>*     % <.space> 'spec'? [ <spec> || <path> ] }
+  rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>    <removeopt>*   % <.space> 'spec'?   <specs>            }
+  rule TOP:sym<download> { <pakkuopt>* % <.space> <download>  <downloadopt>* % <.space> 'spec'?   <specs>            }
+  rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>    <searchopt>*   % <.space> 'spec'?   <specs>            }
+  rule TOP:sym<list>     { <pakkuopt>* % <.space> <list>      <listopt>*     % <.space> 'spec'?   <specs>?           }
+  rule TOP:sym<nuke>     { <pakkuopt>* % <.space> <nuke>      <nukeopt>*     % <.space> 'spec'?   <nukes>            }
+  rule TOP:sym<state>    { <pakkuopt>* % <.space> <state>      <stateopt>*     % <.space> 'spec'? <specs>?           }
 
-  rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd>                                     }
+  rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd>                                                       }
 
-  rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>?     <cmd>?                    <anything> }
+  rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>?     <cmd>?                    <anything>                   }
 
 
   proto token config-cmd { * } 
@@ -51,6 +52,7 @@ grammar Pakku::Grammar::Cmd {
   token config-module:sym<list>     { <sym> }
   token config-module:sym<state>    { <sym> }
   token config-module:sym<search>   { <sym> }
+  token config-module:sym<nuke>     { <sym> }
   token config-module:sym<download> { <sym> }
 
   token config-module-recman { <module-recman> }
@@ -92,13 +94,14 @@ grammar Pakku::Grammar::Cmd {
 
   proto token cmd { * } 
   token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
-  token cmd:sym<update>  { <!before <.space>> ~ <!after <.space>> <update>  }
+  token cmd:sym<update>  { <!before <.space>> ~ <!after <.space>> <update>    }
   token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
   token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
   token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
   token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
-  token cmd:sym<state>     { <!before <.space>> ~ <!after <.space>> <state>     }
+  token cmd:sym<nuke>     { <!before <.space>> ~ <!after <.space>> <nuke>     }
+  token cmd:sym<state>    { <!before <.space>> ~ <!after <.space>> <state>    }
   token cmd:sym<config>   { <!before <.space>> ~ <!after <.space>> <config>   }
   token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
 
@@ -147,6 +150,9 @@ grammar Pakku::Grammar::Cmd {
   token search:sym<s>      { <sym> }
   token search:sym<🌎>     { <sym> }
 
+  proto token nuke { * }
+  token nuke:sym<nuke> { <sym> }
+  token nuke:sym<n>    { <sym> }
 
   proto token help { * }
   token help:sym<help> { <sym> }
@@ -215,6 +221,7 @@ grammar Pakku::Grammar::Cmd {
   token searchopt:sym<relaxed>    { <relaxed> }
   token searchopt:sym<count>      { <count> <.space>+ <number> }
 
+  proto token nukeopt { * }
 
   proto token pretty { * }
   token pretty:sym<pretty>   { <sym> }
@@ -486,6 +493,17 @@ grammar Pakku::Grammar::Cmd {
   token spec-value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>? ] }
   token spec-value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>? ] }
 
+  token nukes { <nukable>+ % \h }
+
+  proto token nukable { * }
+  token nukable:sym<home>   { <sym> }
+  token nukable:sym<site>   { <sym> }
+  token nukable:sym<vendor> { <sym> }
+  token nukable:sym<cache>  { <sym> }
+  token nukable:sym<stage>  { <sym> }
+  token nukable:sym<tmp>    { <sym> }
+  token nukable:sym<pakku>  { <sym> }
+
   token anything { {} .* }
 
   token lt  { '<' }
@@ -620,6 +638,20 @@ class Pakku::Grammar::CmdActions {
 
   }
 
+  method TOP:sym<nuke> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>        = 'nuke';
+    %cmd<pakku>      = $<pakkuopt>».made.hash if defined $<pakkuopt>;
+    %cmd<nuke>       = $<nukeopt>».made.hash  if defined $<nukeopt>;
+    %cmd<nuke><nuke> = $<nukes>.made;
+
+    make %cmd;
+
+  }
+
+
   method TOP:sym<config> ( $/ ) {
 
     my %cmd;
@@ -653,6 +685,7 @@ class Pakku::Grammar::CmdActions {
   method cmd:sym<download> ( $/ ) { make 'download' }
   method cmd:sym<list>     ( $/ ) { make 'list'     }
   method cmd:sym<search>   ( $/ ) { make 'search'   }
+  method cmd:sym<nuke>     ( $/ ) { make 'nuke'     }
   method cmd:sym<config>   ( $/ ) { make 'config'   }
   method cmd:sym<help>     ( $/ ) { make 'help'     }
 
@@ -995,5 +1028,15 @@ class Pakku::Grammar::CmdActions {
   method spec ( $/ ) { make $/.Str }
 
   method path ( $/ ) { make $/.IO }
+
+  method nukes ( $/ ) { make $<nukable>».made }
+
+  method nukable:sym<home>   ( $/ ) { make 'home'   }
+  method nukable:sym<site>   ( $/ ) { make 'site'   }
+  method nukable:sym<vendor> ( $/ ) { make 'vendor' }
+  method nukable:sym<cache>  ( $/ ) { make 'cache'  }
+  method nukable:sym<stage>  ( $/ ) { make 'stage'  }
+  method nukable:sym<tmp>    ( $/ ) { make 'tmp'    }
+  method nukable:sym<pakku>  ( $/ ) { make 'pakku'  }
 
 }
