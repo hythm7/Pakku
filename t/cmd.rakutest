@@ -113,6 +113,20 @@ my @tests = (
     ${:cmd("download"), :download(${:spec($["Spec"])})},
   "down Spec" =>
     ${:cmd("download"), :download(${:spec($["Spec"])})},
+  "nuke home" =>
+    ${:cmd("nuke"), :nuke(${:nuke($["home"])})},
+  "nuke site" =>
+    ${:cmd("nuke"), :nuke(${:nuke($["site"])})},
+  "nuke vendor" =>
+    ${:cmd("nuke"), :nuke(${:nuke($["vendor"])})},
+  "nuke cache" =>
+    ${:cmd("nuke"), :nuke(${:nuke($["cache"])})},
+  "nuke stage" =>
+    ${:cmd("nuke"), :nuke(${:nuke($["stage"])})},
+  "nuke tmp" =>
+    ${:cmd("nuke"), :nuke(${:nuke($["tmp"])})},
+  "nuke pakku" =>
+    ${:cmd("nuke"), :nuke(${:nuke($["pakku"])})},
   "st" =>
     ${:cmd("state"), :state({})},
   "state clean" =>
