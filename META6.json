@@ -3,7 +3,7 @@
   "authors": [
     "Haytham Elganiny"
   ],
-  "build-depends" : [ ],
+  "build-depends": [ ],
   "depends": {
     "runtime": {
       "requires": [
