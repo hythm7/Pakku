@@ -500,8 +500,6 @@ grammar Pakku::Grammar::Cmd {
   token nukable:sym<site>   { <sym> }
   token nukable:sym<vendor> { <sym> }
   token nukable:sym<cache>  { <sym> }
-  token nukable:sym<stage>  { <sym> }
-  token nukable:sym<tmp>    { <sym> }
   token nukable:sym<pakku>  { <sym> }
 
   token anything { {} .* }

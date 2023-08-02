@@ -15,6 +15,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
     when 'build'    { out self!build-help    }
     when 'test'     { out self!test-help     }
     when 'download' { out self!download-help }
+    when 'nuke'     { out self!nuke          }
     when 'config'   { out self!config-help   }
     when 'help'     { out self!help-help     }
 
@@ -30,6 +31,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
         self!build-help,
         self!test-help,
         self!download-help,
+        self!nuke-help,
         self!config-help,
         self!pakku-help,
         self!help-help,
@@ -242,6 +244,24 @@ method !download-help ( ) {
   help %download;
 
 }
+
+method !nuke-help ( ) {
+
+  my %nuke;
+
+  %nuke<cmd>     = 'Nuke';
+  %nuke<desc>    = 'Nuke directories';
+
+  %nuke<example>.push: 'pakku nuke cache';
+  %nuke<example>.push: 'pakku nuke pakku';
+  %nuke<example>.push: 'pakku nuke home';
+  %nuke<example>.push: 'pakku nuke site';
+  %nuke<example>.push: 'pakku nuke vendor';
+
+  help %nuke;
+
+}
+
 
 method !config-help ( ) {
 

@@ -7,7 +7,7 @@ use Pakku::Meta;
 
 unit class Pakku::Cache;
 
-has IO::Path() $!cache is built;
+has IO::Path() $.cache-dir;
 
 method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
@@ -15,7 +15,7 @@ method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
   my $name-hash = nqp::sha1( $spec.name );
 
-  my $spec-dir = $!cache.add: $name-hash;
+  my $spec-dir = $!cache-dir.add: $name-hash;
 
   return unless $spec-dir.d;
 
@@ -41,7 +41,7 @@ method cached ( Pakku::Meta:D :$meta! ) {
 
   my $name-hash = nqp::sha1( $meta.name );
 
-  my $cached = $!cache.add( $name-hash ).add( $meta.id );
+  my $cached = $!cache-dir.add( $name-hash ).add( $meta.id );
 
   if $cached.d {
 
@@ -60,7 +60,7 @@ method cache ( IO::Path:D :$path! ) {
 
   my $name-hash = nqp::sha1( $meta.name );
 
-  my $dst = $!cache.add( $name-hash ).add( $meta.id );
+  my $dst = $!cache-dir.add( $name-hash ).add( $meta.id );
 
   copy-dir src => $path, :$dst;
 

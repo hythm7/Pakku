@@ -240,6 +240,19 @@ Download distribution source
 </pre>
 
 
+### nuke
+Nuke directories
+
+<b>Examples:</b>
+<pre>
+<b>pakku nuke cache</b>    # nuke cache 
+<b>pakku nuke pakku</b>    # nuke pakku home directory
+<b>pakku nuke home</b>     # nuke home repo
+<b>pakku nuke site</b>     # nuke site repo
+<b>pakku nuke vendor</b>   # nuke vendor repo
+</pre>
+
+
 ### config
 Each Pakku command like `add`, `remove`, `search` etc. corresponds to a config module with the same name in the config file.
 one can use config command to `enable`, `disable`, `set`, `unset` an option in the config file.

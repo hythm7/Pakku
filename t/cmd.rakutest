@@ -121,10 +121,6 @@ my @tests = (
     ${:cmd("nuke"), :nuke(${:nuke($["vendor"])})},
   "nuke cache" =>
     ${:cmd("nuke"), :nuke(${:nuke($["cache"])})},
-  "nuke stage" =>
-    ${:cmd("nuke"), :nuke(${:nuke($["stage"])})},
-  "nuke tmp" =>
-    ${:cmd("nuke"), :nuke(${:nuke($["tmp"])})},
   "nuke pakku" =>
     ${:cmd("nuke"), :nuke(${:nuke($["pakku"])})},
   "st" =>

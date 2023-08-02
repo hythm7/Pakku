@@ -85,6 +85,8 @@ my class Remove {
 
 my class Download { }
 
+my class Nuke { }
+
 my class Build    { }
 
 my class Test {
@@ -136,6 +138,7 @@ my class Config {
   has Test     $.test;
   has List     $.list;
   has Download $.download;
+  has Nuke     $.nuke;
   has State    $.state;
   has Recman   $.recman;
   has Log      $.log;

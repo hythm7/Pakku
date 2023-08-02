@@ -9,6 +9,7 @@ use Pakku::Command::Remove;
 use Pakku::Command::State;
 use Pakku::Command::Update;
 use Pakku::Command::Download;
+use Pakku::Command::Nuke;
 use Pakku::Command::Config;
 use Pakku::Command::Help;
 
@@ -23,6 +24,7 @@ unit class Pakku;
   also does Pakku::Command::State;
   also does Pakku::Command::Update;
   also does Pakku::Command::Download;
+  also does Pakku::Command::Nuke;
   also does Pakku::Command::Config;
   also does Pakku::Command::Help;
 

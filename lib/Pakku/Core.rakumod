@@ -14,12 +14,15 @@ unit role Pakku::Core;
 
 has      %!cnf;
 
+has IO::Path $!home;
+has IO::Path $!stage;
+has IO::Path $!tmp;
+
 has Int  $!cores;
 has Int  $!degree;
 has Bool $!dont;
 has Bool $!yolo;
 
-has IO::Path $!stage;
 
 has Pakku::Log    $!log;
 has Pakku::Cache  $!cache;
@@ -28,8 +31,8 @@ has Pakku::Recman $!recman;
 
 has CompUnit::Repository @!repo;
 
-has IO::Path $!tmp;
 
+method !home   { $!home   }
 method !tmp    { $!tmp    }
 method !degree { $!degree }
 method !dont   { $!dont   }
@@ -507,7 +510,7 @@ method !cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
 
-  my $home = %!cnf<pakku><home>;
+  $!home = %!cnf<pakku><home>;
 
   my $pretty   = %!cnf<pakku><pretty>  // True;
   my $verbose  = %!cnf<pakku><verbose> // 'now';
@@ -519,24 +522,24 @@ submethod BUILD ( :%!cnf! ) {
     ==> grep( *.key.starts-with( any <RAKU PAKKU> ) )
     ==> map( -> $env { 🐝 qq[ENV: ｢{$env.key}｣ ‹{$env.value}›] } );
 
-  🐝 qq[CNF: ｢home｣   ‹$home›];
+  🐝 qq[CNF: ｢home｣   ‹$!home›];
 
-  $!stage  = $home.add( '.stage' );
+  $!stage  = $!home.add( '.stage' );
 
   🐝 qq[CNF: ｢stage｣  ‹$!stage›];
 
   my $cache-conf = %!cnf<pakku><cache>; 
-  my $cache      = $home.add( '.cache' ); 
+  my $cache-dir      = $!home.add( '.cache' ); 
 
   with $cache-conf {
-    $cache = $cache-conf unless $cache-conf === True;  
+    $cache-dir = $cache-conf unless $cache-conf === True;  
   }
 
-  $!cache = Pakku::Cache.new:  :$cache if $cache;
+  $!cache = Pakku::Cache.new:  :$cache-dir if $cache-dir;
 
-  🐝 qq[CNF: ｢cache｣  ‹$cache›];
+  🐝 qq[CNF: ｢cache｣  ‹$cache-dir›];
 
-  $!tmp = $home.add( '.tmp' );
+  $!tmp = $!home.add( '.tmp' );
 
   🐝 qq[CNF: ｢tmp｣    ‹$!tmp›];
 
