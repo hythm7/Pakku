@@ -1,22 +1,22 @@
 {
-  "auth" : "github:hythm7",
-  "authors" : [
+  "auth": "github:hythm7",
+  "authors": [
     "Haytham Elganiny"
   ],
   "build-depends" : [ ],
-  "depends" : {
+  "depends": {
     "runtime": {
       "requires": [
         { "any": [ "archive:ver<13>:from<native>", "archive:from<native>", "archiveint:from<native>" ] }
       ]
     }
   },
-  "description" : "Package Manager for Raku",
-  "license" : "Artistic-2.0",
-  "name" : "Pakku",
-  "perl" : "6.d",
-  "api"  : "0",
-  "provides" : {
+  "description": "Package Manager for Raku",
+  "license": "Artistic-2.0",
+  "name": "Pakku",
+  "perl": "6.d",
+  "api": "0",
+  "provides": {
     "Pakku":                     "lib/Pakku.rakumod",
     "Pakku::Log":                "lib/Pakku/Log.rakumod",
     "Pakku::Core":               "lib/Pakku/Core.rakumod",
@@ -44,9 +44,9 @@
     "Pakku::Command::Download":  "lib/Pakku/Command/Download.rakumod",
     "X::Pakku":                  "lib/X/Pakku.rakumod"
   },
-  "resources" : [ "config.json" ],
-  "source-url" : "https://github.com/hythm7/Pakku.git",
-  "tags" : [
+  "resources": [ "config.json" ],
+  "source-url": "https://github.com/hythm7/Pakku.git",
+  "tags": [
     "repo",
     "dist",
     "module",
@@ -57,6 +57,6 @@
     "distribution",
     "raku"
     ],
-  "test-depends" : [ ],
-  "version" : "caria.8"
+  "test-depends": [ ],
+  "version": "caria.8"
 }
