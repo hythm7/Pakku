@@ -12,6 +12,8 @@ multi method fly (
   eager @nuke.map( &nuke );
 
 
+  ## TODO: check permissions
+
   multi sub nuke ( 'home' ) {
 
     🦋 qq[NUK: ｢home｣];
