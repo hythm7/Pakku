@@ -44,7 +44,7 @@
     "Pakku::Command::Download":  "lib/Pakku/Command/Download.rakumod",
     "X::Pakku":                  "lib/X/Pakku.rakumod"
   },
-  "resources" : [ "default-config.json" ],
+  "resources" : [ "config.json" ],
   "source-url" : "https://github.com/hythm7/Pakku.git",
   "tags" : [
     "repo",

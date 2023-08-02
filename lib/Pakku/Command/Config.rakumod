@@ -499,7 +499,7 @@ my class Config {
 
   submethod BUILD ( IO :$!config-file! ) {
 
-    %!default-configuration = from-json slurp %?RESOURCES<default-config.json>;
+    %!default-configuration = from-json slurp %?RESOURCES<config.json>;
 
     %!configuration = from-json slurp $!config-file if $!config-file.e;
 
