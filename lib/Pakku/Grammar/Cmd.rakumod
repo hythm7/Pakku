@@ -15,7 +15,7 @@ grammar Pakku::Grammar::Cmd {
 
   rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd> }
 
-  rule TOP:sym<help>     { <pakkuopt>* % <.space> <help> <cmd>? <anything> }
+  rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>? <cmd>? <anything> }
 
 
   proto token config-cmd { * } 

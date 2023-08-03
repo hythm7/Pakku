@@ -1,5 +1,17 @@
 use Pakku::Log;
 use Pakku::Core;
+use Pakku::Command::Add;
+use Pakku::Command::List;
+use Pakku::Command::Test;
+use Pakku::Command::Build;
+use Pakku::Command::Search;
+use Pakku::Command::Remove;
+use Pakku::Command::State;
+use Pakku::Command::Update;
+use Pakku::Command::Download;
+use Pakku::Command::Nuke;
+use Pakku::Command::Config;
+use Pakku::Command::Help;
 
 unit class Pakku;
   also does Pakku::Core;
@@ -23,12 +35,9 @@ proto method fly ( | ) {
   LEAVE self.clear;
 
   CATCH {
-
-    when X::Pakku { 🦗 .message; .resume if $!yolo; nofun; }
-    default       { 🦗 .gist;                       nofun; }
-
+    when X::Pakku { 🦗 .message; .resume if $!yolo; nofun }
+    default       { 🦗 .gist;                       nofun }
   }
-
 }
 
 multi method fly ( ) {
