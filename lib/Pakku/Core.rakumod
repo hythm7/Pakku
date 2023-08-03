@@ -10,9 +10,23 @@ use Pakku::Recman;
 use Pakku::Archive;
 use Pakku::Grammar::Cmd;
 
+use Pakku::Command::Add;
+use Pakku::Command::List;
+use Pakku::Command::Test;
+use Pakku::Command::Build;
+use Pakku::Command::Search;
+use Pakku::Command::Remove;
+use Pakku::Command::State;
+use Pakku::Command::Update;
+use Pakku::Command::Download;
+use Pakku::Command::Nuke;
+use Pakku::Command::Config;
+use Pakku::Command::Help;
+
+
 unit role Pakku::Core;
 
-has      %!cnf;
+has %!cnf;
 
 has IO::Path $!home;
 has IO::Path $!stage;
@@ -586,11 +600,19 @@ method metamorph ( ) {
 
     Pakku::Log.new: :pretty :verbose<debug>;
 
-      when X::Pakku::Cmd { 🦗 .message; nofun   }
-      when X::Pakku::Cnf { 🦗 .message; nofun   }
-      when JSONException { 🦗 .message; .resume }
+      when X::Pakku::Cmd {
 
-      default { 🦗 .gist }
+        Pakku::Command::Help.fly: 'help', :cmd<all>;
+
+        🦗 .message;
+
+        nofun;
+
+      }
+
+      when X::Pakku::Cnf { 🦗 .message; nofun   }
+
+      default { 🦗 .gist; nofun }
   }
 
   my $home = $*HOME.add( '.pakku' );

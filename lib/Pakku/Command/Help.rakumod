@@ -296,10 +296,12 @@ method !help-help ( ) {
   %help<cmd>     = 'Help';
   %help<desc>    = 'Print help';
 
-  %help<example>.push: 'pakku';
-  %help<example>.push: 'pakku add';
-  %help<example>.push: 'pakku help';
+  %help<example>.push: 'pakku help add';
   %help<example>.push: 'pakku help list';
+  %help<example>.push: 'pakku help remove';
+  %help<example>.push: 'pakku add';
+  %help<example>.push: 'pakku remove';
+  %help<example>.push: 'pakku help';
   %help<example>.push: 'pakku help help';
 
   help %help;
