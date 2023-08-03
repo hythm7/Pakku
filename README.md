@@ -203,10 +203,10 @@ in < repo >  → update distribution and install in repo < home site vendor core
 
 <b>Examples:</b>
 <pre>
+<b>pakku update</b>       # update all installed distribution
 <b>pakku update dist</b>
-<b>pakku update notest  dist</b>
-<b>pakku update nodeps  dist</b>
-<b>pakku update force   in   vendor  dist1 dist2</b>
+<b>pakku update nodeps dist</b>
+<b>pakku update notest dist1 dist2</b>
 </pre>
 
 
