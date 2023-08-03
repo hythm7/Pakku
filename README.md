@@ -290,10 +290,11 @@ Get help on a specific command
 
 <b>Examples:</b>
 <pre>
-<b>pakku</b>
+<b>pakku help add</b>
+<b>pakku help list</b>
+<b>pakku help remove</b>
 <b>pakku add</b>
 <b>pakku help</b>
-<b>pakku help list</b>
 <b>pakku help help</b>
 </pre>
 
