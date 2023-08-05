@@ -586,6 +586,7 @@ method metamorph ( ) {
 
     Pakku::Log.new: :pretty :verbose<debug>;
 
+      when X::Pakku::Cmd { 🦗 .message; nofun   }
       when X::Pakku::Cnf { 🦗 .message; nofun   }
 
       default { 🦗 .gist }
