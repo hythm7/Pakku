@@ -586,7 +586,17 @@ method metamorph ( ) {
 
     Pakku::Log.new: :pretty :verbose<debug>;
 
-      when X::Pakku::Cmd { 🦗 .message; nofun   }
+      when X::Pakku::Cmd {
+
+        my $cmd = Pakku::Grammar::Cmd.subparse( @*ARGS, actions => Pakku::Grammar::CmdActions ).made<cmd>;
+
+        self.fly: 'help', :$cmd;
+
+        🦗 .message;
+
+        nofun;
+      }
+
       when X::Pakku::Cnf { 🦗 .message; nofun   }
 
       default { 🦗 .gist }
