@@ -4,50 +4,42 @@ use Pakku::Meta;
 
 unit role Pakku::Command::List;
 
-multi method fly ( 'list', :@spec, Str :$repo, Bool:D :$details = False ) { 
+multi method fly (
+
+  'list',
+
+  Str    :$repo,
+  Bool:D :$details = False,
+
+  :@spec = self!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } ),
+  ) { 
 
   my @repo = $repo ?? self.repo-from-spec( spec => $repo ) !! self!repo;
 
-  if @spec {
     
-    @spec .= map( -> $spec { Pakku::Spec.new: $spec } );
+  @repo
+    ==> map( -> $repo {
 
-    sink @spec.map( -> $spec {
-
-      @repo
-        ==> map( -> $repo {
-
-          🐛 "REP: ｢$repo.name()｣";
-
+      @spec
+        ==> sort( )
+        ==> map( -> $spec { Pakku::Spec.new: $spec } )
+        ==> map( -> $spec {
           $repo.candidates( $spec.name, |$spec.spec )
             ==> map( -> $dist { $dist.id } )
             ==> map( -> $id   { $repo.distribution: $id } )
             ==> map( -> $dist { $dist.meta.item } )
-            ==> flat( );
-          } )
-        ==> flat( );
-    } )
-    ==> flat( )
-    ==> map( -> $meta { Pakku::Meta.new: $meta } )
-    ==> sort( *.Str )
-    ==> map( -> $meta { out $meta.gist: :$details unless self!dont } );
-
-
-  } else {
-
-  sink @repo
-    ==> map( -> $repo {
-
-      🐛 "REP: ｢$repo.name()｣";
-
-      $repo.installed.map( *.meta.item );
+            ==> flat( )
+            ==> map( -> $meta { Pakku::Meta.new: $meta } )
       } )
-    ==> flat( )
-    ==> grep( *.defined )
-    ==> map( -> $meta { Pakku::Meta.new: $meta } )
-    ==> sort( *.Str )
-    ==> map( -> $meta { out $meta.gist: :$details unless self!dont } );
-  }
+      ==> flat( )
+      ==> my @meta;
+
+      🐛 "REP: ｢$repo.name()｣" if @meta;
+
+      @meta.map( -> $meta { out $meta.gist: :$details} ) unless self!dont;
+
+    } )
+    ==> flat( );
 
 }
 
