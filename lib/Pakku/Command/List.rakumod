@@ -17,7 +17,7 @@ multi method fly (
   my @repo = $repo ?? self.repo-from-spec( spec => $repo ) !! self!repo;
 
     
-  @repo
+  eager @repo
     ==> map( -> $repo {
 
       @spec
