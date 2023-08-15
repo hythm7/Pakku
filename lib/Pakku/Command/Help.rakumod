@@ -4,6 +4,12 @@ unit role Pakku::Command::Help;
 
 multi method fly ( 'help',  Str:D :$cmd ) {
 
+  my $name    = $?DISTRIBUTION.meta<name> ;
+  my $version = $?DISTRIBUTION.meta<ver> ;
+  my $header = color( "$name $version", magenta );
+
+  out $header;
+
   given $cmd {
 
     when 'add'      { out self!add-help      }
@@ -35,7 +41,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
         self!config-help,
         self!pakku-help,
         self!help-help,
-      ).join: "\n";
+      ).Str;
     }
   }
 }
@@ -350,6 +356,7 @@ sub help ( %cmd --> Str:D ) {
   my @opt     = %cmd<opt>.flat;
 
   q:s:f:c:to/END/
+
   {
     desc( $cmd, $desc ) ~
     example( @example ) ~
