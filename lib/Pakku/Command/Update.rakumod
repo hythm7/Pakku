@@ -29,11 +29,6 @@ multi method fly (
 
   my %state = self.state: :updates;
 
-  %state.values
-    ==> grep( *.<cln> )
-    ==> map( *.<meta> )
-    ==> my @clean;
-
   eager @spec.sort
    ==> map( -> $spec { Pakku::Spec.new: $spec } )
    ==> map( -> $spec {
@@ -187,7 +182,14 @@ multi method fly (
     }
 
     if $clean {
-      samewith 'remove', spec => @clean.map( *.Str ) if @clean;
+
+      self.state( :!updates ).values
+        ==> grep( *.<cln> )
+        ==> map( *.<meta>.Str )
+        ==> my @spec;
+
+      samewith 'remove', :@spec if @spec;
+
     }
   }
 }
