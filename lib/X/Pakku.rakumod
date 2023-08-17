@@ -48,7 +48,15 @@ class X::Pakku::Add is X::Pakku {
 
   has $.dist;
 
-  method message ( ) { "Add: ｢$!dist｣" }
+  method message ( ) { "ADD: ｢$!dist｣" }
+
+}
+
+class X::Pakku::Remove is X::Pakku {
+
+  has $.spec;
+
+  method message ( ) { "RMV: ｢$!spec｣" }
 
 }
 
