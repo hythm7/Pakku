@@ -33,7 +33,7 @@ multi method fly (
 
       remove-dir $target;
 
-      🧚 qq[NUK: ｢site｣];
+      🧚 qq[NUK: ｢home｣];
 
     }
 
