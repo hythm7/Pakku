@@ -138,6 +138,8 @@ multi method gist ( ::?CLASS:D: Bool:D :$details --> Str:D ) {
   $info ~= color("\nURL: ｢{.Str}｣", blue  ) with %!meta<source-url>;
   $info ~= color("\nDES: ｢{.Str}｣", white ) with %!meta<description>;
 
+  $info;
+
 }
 
 
