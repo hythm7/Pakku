@@ -14,7 +14,6 @@ multi method fly (
   Bool:D :$test       = True,
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
-  Bool:D :$force      = False,
   Bool:D :$clean      = True,
   Str:D  :$in         = 'site',
          :@exclude,

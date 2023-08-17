@@ -2,7 +2,6 @@
   "add": {
     "build": true,
     "deps": true,
-    "force": false,
     "serial": false,
     "precompile": true,
     "test": true,
@@ -44,6 +43,7 @@
     "dont": false,
     "please": true,
     "pretty": true,
+    "force": false,
     "recman": true,
     "verbose": "now",
     "yolo": false
@@ -72,7 +72,6 @@
     "clean": true,
     "build": true,
     "deps": true,
-    "force": false,
     "precompile": true,
     "test": true,
     "xtest": false

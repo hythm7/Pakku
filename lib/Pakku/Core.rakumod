@@ -21,6 +21,7 @@ has IO::Path $!tmp;
 has Int  $!cores;
 has Int  $!degree;
 has Bool $!dont;
+has Bool $!force;
 has Bool $!yolo;
 
 
@@ -36,6 +37,7 @@ method !home   { $!home   }
 method !tmp    { $!tmp    }
 method !degree { $!degree }
 method !dont   { $!dont   }
+method !force  { $!force  }
 method !yolo   { $!yolo   }
 method !stage  { $!stage  }
 method !cache  { $!cache  }
@@ -547,6 +549,10 @@ submethod BUILD ( :%!cnf! ) {
 
   🐝 qq[CNF: ｢dont｣   ‹$!dont›];
 
+  $!force  = %!cnf<pakku><force> // False;
+
+  🐝 qq[CNF: ｢force｣   ‹$!force›];
+
   $!yolo  = %!cnf<pakku><yolo> // False;
 
   🐝 qq[CNF: ｢yolo｣   ‹$!yolo›];
@@ -727,14 +733,14 @@ my sub get-env ( ) {
   %env<pakku><norecman> = %*ENV<PAKKU_NORECMAN>    if %*ENV<PAKKU_NORECMAN>;
   %env<pakku><config >  = %*ENV<PAKKU_CONFIG>.IO   if %*ENV<PAKKU_CONFIG>;
   %env<pakku><dont>     = %*ENV<PAKKU_DONT>.Bool   if %*ENV<PAKKU_DONT>;
-  %env<pakku><yoloy>    = %*ENV<PAKKU_YOLO>.Bool   if %*ENV<PAKKU_YOLO>;
+  %env<pakku><force>    = %*ENV<PAKKU_FORCE>.Bool  if %*ENV<PAKKU_FORCE>;
+  %env<pakku><yolo>     = %*ENV<PAKKU_YOLO>.Bool   if %*ENV<PAKKU_YOLO>;
   %env<pakku><pretty>   = %*ENV<PAKKU_PRETTY>.Bool if %*ENV<PAKKU_PRETTY>;
 
   %env<pakku><add><to>         = %*ENV<PAKKU_ADD_TO>                       if %*ENV<PAKKU_ADD_TO>;
   %env<pakku><add><deps>       = %*ENV<PAKKU_ADD_DEPS>                     if %*ENV<PAKKU_ADD_DEPS>;
   %env<pakku><add><test>       = %*ENV<PAKKU_ADD_TEST>.Bool                if %*ENV<PAKKU_ADD_TEST>;
   %env<pakku><add><build>      = %*ENV<PAKKU_ADD_BUILD>.Bool               if %*ENV<PAKKU_ADD_BUILD>;
-  %env<pakku><add><force>      = %*ENV<PAKKU_ADD_FORCE>.Bool               if %*ENV<PAKKU_ADD_FORCE>;
   %env<pakku><add><serial>     = %*ENV<PAKKU_ADD_SERIAL>.Bool              if %*ENV<PAKKU_ADD_SERIAL>;
   %env<pakku><add><xtest>      = %*ENV<PAKKU_ADD_XTEST>.Bool               if %*ENV<PAKKU_ADD_XTEST>;
   %env<pakku><add><precompile> = %*ENV<PAKKU_ADD_PRECOMPILE>.Bool          if %*ENV<PAKKU_ADD_PRECOMPILE>;
@@ -757,7 +763,6 @@ my sub get-env ( ) {
   %env<pakku><update><test>       = %*ENV<PAKKU_UPDATE_TEST>.Bool                if %*ENV<PAKKU_UPDATE_TEST>;
   %env<pakku><update><xtest>      = %*ENV<PAKKU_UPDATE_XTEST>.Bool               if %*ENV<PAKKU_UPDATE_XTEST>;
   %env<pakku><update><build>      = %*ENV<PAKKU_UPDATE_BUILD>.Bool               if %*ENV<PAKKU_UPDATE_BUILD>;
-  %env<pakku><update><force>      = %*ENV<PAKKU_UPDATE_FORCE>.Bool               if %*ENV<PAKKU_UPDATE_FORCE>;
   %env<pakku><update><clean>      = %*ENV<PAKKU_UPDATE_CLEAN>.Bool               if %*ENV<PAKKU_UPDATE_CLEAN>;
   %env<pakku><update><precompile> = %*ENV<PAKKU_UPDATE_PRECOMPILE>.Bool          if %*ENV<PAKKU_UPDATE_PRECOMPILE>;
   %env<pakku><update><exclude>    = %*ENV<PAKKU_UPDATE_EXCLUDE>.split( / \s+ / ) if %*ENV<PAKKU_UPDATE_EXCLUDE>;

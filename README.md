@@ -58,7 +58,6 @@ exclude < Dep1 >    → exclude Dep1
 test                → test distribution
 xtest               → xTest distribution
 build               → build distribution
-force               → force add distribution even if installed
 serial              → add distributions in serial order
 precomp             → precompile distribution 
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
@@ -66,22 +65,21 @@ nodeps              → no dependencies
 nobuild             → bypass build
 notest              → bypass test
 noxtest             → bypass xtest
-noforce             → no force
 noserial            → no serial
 noprecomp           → no precompile
 </pre>
 
 <b>Examples:</b>
 <pre>
-<b>pakku add dist</b>                                # add dist
-<b>pakku add notest  dist</b>                        # add dist without testing
-<b>pakku add nodeps  dist</b>                        # add dist but dont add dependencies
-<b>pakku add serial  dist</b>                        # add dists in serial order
-<b>pakku add deps only dist</b>                      # add dist dependencies but dont add dist
-<b>pakku add exclude Dep1 dist</b>                   # add dist and exclude Dep1 from dependenncies
-<b>pakku add noprecomp notest  dist</b>              # add dist without testing and no precompilation
-<b>pakku add to      /opt/MyApp dist</b>             # add dist to custom repo
-<b>pakku add force   to   vendor  dist1 dist2</b>    # add dist1 and dist2 to vendor repo even if they are installed
+<b>pakku add dist</b>                           # add dist
+<b>pakku add notest  dist</b>                   # add dist without testing
+<b>pakku add nodeps  dist</b>                   # add dist but dont add dependencies
+<b>pakku add serial  dist</b>                   # add dists in serial order
+<b>pakku add deps only dist</b>                 # add dist dependencies but dont add dist
+<b>pakku add exclude Dep1 dist</b>              # add dist and exclude Dep1 from dependenncies
+<b>pakku add noprecomp notest  dist</b>         # add dist without testing and no precompilation
+<b>pakku add to   /opt/MyApp dist</b>           # add dist to custom repo
+<b>pakku add to   vendor     dist1 dist2</b>    # add dist1 and dist2 to vendor repo even if they are installed
 </pre>
 
 
@@ -193,8 +191,6 @@ test         → test distribution
 notest       → bypass test
 xtest        → xTest distribution
 noxtest      → bypass xtest
-force        → force update
-noforce      → no force
 precomp      → precompile distribution 
 noprecomp    → no precompile
 noclean      → dont clean unneeded dists 
@@ -274,7 +270,7 @@ unset         → unset option
 <b>pakku config new</b>                         # create a new config file
 <b>pakku config add</b>                         # view add config module
 <b>pakku config add precompile</b>              # view <b>precompile</b> option in <b>add</b> config module
-<b>pakku config add enable force</b>            # enable option <b>force</b> in <b>add</b> module 
+<b>pakku config add enable xtest</b>            # enable option <b>xtest</b> in <b>add</b> module 
 <b>pakku config add set to home</b>             # set option <b>to</b> to <b>home</b> (change default repo to home) in <b>add</b> module 
 <b>pakku config pakku enable async</b>          # enable  option <b>async</b> in <b>pakku</b> module (general options) 
 <b>pakku config pakku unset verbose</b>         # unset option <b>verbose</b> in <b>pakku</b> module 
@@ -306,6 +302,7 @@ Get help on a specific command
 
 <pre>
 pretty             → use colors
+force              → use force
 async              → run asynchronously (disabled by default because some dists tests are not async safe) 
 dont               → do everything but dont do it (dry run)
 verbose  < level > → verbosity < all debug now info warn error nothing >
@@ -315,6 +312,7 @@ recman   < MyRec > → use MyRec recommendation manager only
 norecman           → disable all remote recommendation manager
 norecman < MyRec > → use all recommendation managers excepts MyRec
 nopretty           → no colors
+noforce            → no force
 noasync            → dont run asynchronously
 nocache            → disable cache
 yolo               → proceed if error occured (eg. test failure)
@@ -358,12 +356,12 @@ Options can be set via environment variables as well:
 **General**
 <pre>
 PAKKU_VERBOSE PAKKU_CACHE PAKKU_RECMAN PAKKU_NORECMAN PAKKU_CONFIG PAKKU_DONT
-PAKKU_PRETTY PAKKU_YOLO 
+PAKKU_FORCE PAKKU_PRETTY PAKKU_YOLO 
 </pre>
 
 **Add**
 <pre>
-PAKKU_ADD_TO PAKKU_ADD_DEPS PAKKU_ADD_TEST PAKKU_ADD_BUILD PAKKU_ADD_FORCE PAKKU_ADD_XTEST
+PAKKU_ADD_TO PAKKU_ADD_DEPS PAKKU_ADD_TEST PAKKU_ADD_BUILD PAKKU_ADD_XTEST
 PAKKU_ADD_SERIAL PAKKU_ADD_PRECOMPILE PAKKU_ADD_EXCLUDE
 </pre>
 
@@ -390,7 +388,7 @@ PAKKU_SEARCH_COUNT PAKKU_SEARCH_DETAILS PAKKU_SEARCH_RELAXED
 **Update**
 <pre>
 PAKKU_UPDATE_IN PAKKU_UPDATE_DEPS PAKKU_UPDATE_TEST PAKKU_UPDATE_XTEST PAKKU_UPDATE_BUILD
-PAKKU_UPDATE_FORCE PAKKU_UPDATE_CLEAN PAKKU_UPDATE_PRECOMPILE PAKKU_UPDATE_EXCLUDE
+PAKKU_UPDATE_CLEAN PAKKU_UPDATE_PRECOMPILE PAKKU_UPDATE_EXCLUDE
 </pre>
 
 **State**

@@ -60,8 +60,8 @@ method !add-help ( ) {
   %add<example>.push: 'pakku add deps only dist';
   %add<example>.push: 'pakku add exclude Dep dist';
   %add<example>.push: 'pakku add noprecomp notest dist';
-  %add<example>.push: 'pakku add to     /opt/MyApp dist';
-  %add<example>.push: 'pakku add force  to   home  dist1 dist2';
+  %add<example>.push: 'pakku add to /opt/MyApp dist';
+  %add<example>.push: 'pakku add to home       dist1 dist2';
 
   %add<opt>.push: ( 'deps'            => 'add all dependencies' );
   %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
@@ -75,8 +75,6 @@ method !add-help ( ) {
   %add<opt>.push: ( 'notest'          => 'bypass test' );
   %add<opt>.push: ( 'xtest'           => 'xtest distribution' );
   %add<opt>.push: ( 'noxtest'         => 'bypass xtest' );
-  %add<opt>.push: ( 'force'           => 'force add distribution even if installed' );
-  %add<opt>.push: ( 'noforce'         => 'no force' );
   %add<opt>.push: ( 'serial'          => 'add distribution in serial order' );
   %add<opt>.push: ( 'noserial'        => 'no serial' );
   %add<opt>.push: ( 'precomp'         => 'precomp distribution' );
@@ -157,7 +155,6 @@ method !update-help ( ) {
   %update<example>.push: 'pakku update notest dist';
   %update<example>.push: 'pakku update exclude Dep dist';
   %update<example>.push: 'pakku update in     /opt/MyApp dist';
-  %update<example>.push: 'pakku update force  in   vendor  dist1 dist2';
 
   %update<opt>.push: ( 'clean'         => 'clean not needed dists' );
   %update<opt>.push: ( 'noclean'       => 'dont clean' );
@@ -170,8 +167,6 @@ method !update-help ( ) {
   %update<opt>.push: ( 'notest'        => 'bypass test' );
   %update<opt>.push: ( 'xtest'         => 'xtest distribution' );
   %update<opt>.push: ( 'noxtest'       => 'bypass xtest' );
-  %update<opt>.push: ( 'force'         => 'force update' );
-  %update<opt>.push: ( 'noforce'       => 'no force' );
   %update<opt>.push: ( 'precomp'       => 'precomp distribution' );
   %update<opt>.push: ( 'noprecomp'     => 'no precomp' );
   %update<opt>.push: ( 'exclude <dep>' => 'update distribution but exclude specific dep' );
@@ -323,6 +318,7 @@ method !pakku-help ( ) {
   %pakku<desc>    = 'Pakku Options';
 
   %pakku<example>.push: 'pakku dont     add dist';
+  %pakku<example>.push: 'pakku force    add dist';
   %pakku<example>.push: 'pakku async    add dist';
   %pakku<example>.push: 'pakku nocache  add dist';
   %pakku<example>.push: 'pakku norecman add dist';
@@ -332,6 +328,8 @@ method !pakku-help ( ) {
 
   %pakku<opt>.push: ( 'pretty'           => 'colorfull butterfly'  );
   %pakku<opt>.push: ( 'nopretty'         => 'no color' );
+  %pakku<opt>.push: ( 'force'            => 'use force' );
+  %pakku<opt>.push: ( 'noforce'          => 'no force' );
   %pakku<opt>.push: ( 'nocache'          => 'disable cache' );
   %pakku<opt>.push: ( 'recman'           => 'use all available recommendation managers' );
   %pakku<opt>.push: ( 'norecman'         => 'disable all recommendation managers' );

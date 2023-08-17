@@ -16,7 +16,6 @@ multi method fly (
   Bool:D :$test       = True,
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
-  Bool:D :$force      = False,
   Bool:D :$serial     = False,
   Str:D  :$to         = 'site',
          :@exclude,
@@ -42,7 +41,7 @@ multi method fly (
 
   @spec
     ==> map(  -> $spec { Pakku::Spec.new: $spec } )
-    ==> grep( -> $spec { $force or not self.satisfied: :$spec } )
+    ==> grep( -> $spec { self!force or not self.satisfied: :$spec } )
     ==> unique( as => *.Str )
     ==> map(  -> $spec { self.satisfy: :$spec } )
     ==> map(  -> $meta {
@@ -173,7 +172,6 @@ multi method fly (
   Bool:D :$test       = True,
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
-  Bool:D :$force      = False,
   Bool:D :$serial     = False,
   Str:D  :$to         = 'site',
          :@exclude,
@@ -198,7 +196,7 @@ multi method fly (
 
   my $spec = Pakku::Spec.new: $path;
 
-  if not $force and self.satisfied( :$spec ) {
+  if not self!force and self.satisfied( :$spec ) {
 
     🧚 qq[ADD: ｢$spec｣ already added!];
 

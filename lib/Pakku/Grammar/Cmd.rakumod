@@ -164,6 +164,7 @@ grammar Pakku::Grammar::Cmd {
 
   proto token pakkuopt { * }
   token pakkuopt:sym<pretty>   { <pretty> }
+  token pakkuopt:sym<force>    { <force> }
   token pakkuopt:sym<async>    { <async> }
   regex pakkuopt:sym<recman>   { <recman> }
   regex pakkuopt:sym<norecman> { <norecman> }
@@ -179,7 +180,6 @@ grammar Pakku::Grammar::Cmd {
   token addopt:sym<build>      { <build>      }
   token addopt:sym<test>       { <test>       }
   token addopt:sym<xtest>      { <xtest>      }
-  token addopt:sym<force>      { <force>      }
   token addopt:sym<serial>     { <serial>     }
   token addopt:sym<precompile> { <precompile> }
   token addopt:sym<to>         { <sym>     <.space>+ <repo> }
@@ -191,7 +191,6 @@ grammar Pakku::Grammar::Cmd {
   token updateopt:sym<build>      { <build>      }
   token updateopt:sym<test>       { <test>       }
   token updateopt:sym<xtest>      { <xtest>      }
-  token updateopt:sym<force>      { <force>      }
   token updateopt:sym<precompile> { <precompile> }
   token updateopt:sym<in>         { <sym>     <.space>+ <repo> }
   token updateopt:sym<exclude>    { <exclude> <.space>+ <spec> }
@@ -867,9 +866,10 @@ class Pakku::Grammar::CmdActions {
   }
 
   method pakkuopt:sym<pretty>   ( $/ ) { make $<pretty>.made               }
+  method pakkuopt:sym<force>    ( $/ ) { make $<force>.made                }
   method pakkuopt:sym<async>    ( $/ ) { make $<async>.made                }
   method pakkuopt:sym<recman>   ( $/ ) { make $<recman>.made               }
-  method pakkuopt:sym<norecman> ( $/ ) { make $<norecman>.made               }
+  method pakkuopt:sym<norecman> ( $/ ) { make $<norecman>.made             }
   method pakkuopt:sym<cache>    ( $/ ) { make $<cache>.made                }
   method pakkuopt:sym<yolo>     ( $/ ) { make ( :yolo )                    }
   method pakkuopt:sym<please>   ( $/ ) { make ( :please )                  }
@@ -881,7 +881,6 @@ class Pakku::Grammar::CmdActions {
   method addopt:sym<build>      ( $/ ) { make $<build>.made      }
   method addopt:sym<test>       ( $/ ) { make $<test>.made       }
   method addopt:sym<xtest>      ( $/ ) { make $<xtest>.made      }
-  method addopt:sym<force>      ( $/ ) { make $<force>.made      }
   method addopt:sym<serial>     ( $/ ) { make $<serial>.made     }
   method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
   method addopt:sym<to>         ( $/ ) { make ( to => $<repo>.Str ) }
@@ -893,7 +892,6 @@ class Pakku::Grammar::CmdActions {
   method updateopt:sym<build>      ( $/ ) { make $<build>.made }
   method updateopt:sym<test>       ( $/ ) { make $<test>.made  }
   method updateopt:sym<xtest>      ( $/ ) { make $<xtest>.made }
-  method updateopt:sym<force>      ( $/ ) { make $<force>.made }
   method updateopt:sym<precompile> ( $/ ) { make $<precompile>.made }
   method updateopt:sym<in>         ( $/ ) { make ( in => $<repo>.Str ) }
   method updateopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }

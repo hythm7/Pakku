@@ -9,8 +9,8 @@ my @tests = (
     ${:add(${:path("./dist".IO)}), :cmd("add")},
   "add /path/to/dist" =>
     ${:add(${:path("/path/to/dist".IO)}), :cmd("add")},
-  "add force /path/to/dist" =>
-    ${:add(${:force, :path("/path/to/dist".IO)}), :cmd("add")},
+  "add /path/to/dist" =>
+    ${:add(${:path("/path/to/dist".IO)}), :cmd("add")},
   "add nodeps" =>
     ${:add(${:spec($["nodeps"])}), :cmd("add")},
   "add nodeps Spec" =>
@@ -33,8 +33,8 @@ my @tests = (
     ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
   "add test Spec" =>
     ${:add(${:spec($["Spec"]), :test}), :cmd("add")},
-  "add force Spec" =>
-    ${:add(${:force, :spec($["Spec"])}), :cmd("add")},
+  "add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add")},
   "add nobuild Spec" =>
     ${:add(${:!build, :spec($["Spec"])}), :cmd("add")},
   "add build Spec" =>
@@ -45,16 +45,16 @@ my @tests = (
     ${:add(${:spec($["Spec"]), :!test}), :cmd("add")},
   "add Spec1 Spec2" =>
     ${:add(${:spec($["Spec1", "Spec2"])}), :cmd("add")},
-  "add noforce Spec" =>
-    ${:add(${:!force, :spec($["Spec"])}), :cmd("add")},
+  "add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add")},
   "add exclude Dep1 Spec" =>
     ${:add(${:exclude($["Dep1"]), :spec($["Spec"])}), :cmd("add")},
   "add exclude Dep1 exclude Dep2 Spec" =>
     ${:add(${:exclude($["Dep1", "Dep2"]), :spec($["Spec"])}), :cmd("add")},
   "add depsforce Spec" =>
     ${:add(${:spec($["depsforce", "Spec"])}), :cmd("add")},
-  "add nodeps force Spec" =>
-    ${:add(${:!deps, :force, :spec($["Spec"])}), :cmd("add")},
+  "add nodeps xtest Spec" =>
+    ${:add(${:!deps, :xtest, :spec($["Spec"])}), :cmd("add")},
   "recman add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman})},
   "recman pretty add Spec" =>
@@ -69,12 +69,12 @@ my @tests = (
     ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
   "nrec rea add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
-  "v 4 add force Spec" =>
-    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
+  "v 4 force add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:force, :verbose("info")})},
   "v 4 add nodeps Spec" =>
     ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
-  "pretty v 4 add force Spec" =>
-    ${:add(${:force, :spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :verbose("info")})},
+  "pretty v 4 noforce add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :!force, :verbose("info")})},
   "update" =>
     ${:update(${}), :cmd("update")},
   "update Dist" =>
@@ -153,8 +153,8 @@ my @tests = (
     ${:cmd("config"), :config(${:operation("reset")})},
   "config add" =>
     ${:cmd("config"), :config(${:module("add"), :operation("view")})},
-  "config add force" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option(Array[Str].new("force"))})},
+  "config pakku force" =>
+    ${:cmd("config"), :config(${:module("pakku"), :operation("view"), :option(Array[Str].new("force"))})},
   "config add view reset" =>
     ${:cmd("config"), :config(${:module("add"), :operation("view"), :option(Array[Str].new("reset"))})},
   "config add reset" =>

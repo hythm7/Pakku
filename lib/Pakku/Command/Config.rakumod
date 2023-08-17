@@ -30,6 +30,7 @@ multi method fly ( 'config', *%config ) {
 my class Pakku {
 
   has Bool $.pretty;
+  has Bool $.force;
   has Bool $.async;
   has Any  $.cache;
   has Bool $.yolo;
@@ -46,7 +47,6 @@ my class Add {
   has Bool $.build;
   has Bool $.test;
   has Bool $.xtest;
-  has Bool $.force;
   has Bool $.serial;
   has Bool $.precompile;
   has Any  $.deps;
@@ -61,7 +61,6 @@ my class Update {
   has Bool $.build;
   has Bool $.test;
   has Bool $.xtest;
-  has Bool $.force;
   has Bool $.precompile;
   has Any  $.deps;
   has Str  $.in;
