@@ -551,7 +551,7 @@ submethod BUILD ( :%!cnf! ) {
 
   $!force  = %!cnf<pakku><force> // False;
 
-  🐝 qq[CNF: ｢force｣   ‹$!force›];
+  🐝 qq[CNF: ｢force｣  ‹$!force›];
 
   $!yolo  = %!cnf<pakku><yolo> // False;
 
