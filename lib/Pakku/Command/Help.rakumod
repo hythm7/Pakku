@@ -21,7 +21,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
     when 'build'    { out self!build-help    }
     when 'test'     { out self!test-help     }
     when 'download' { out self!download-help }
-    when 'nuke'     { out self!nuke          }
+    when 'nuke'     { out self!nuke-help     }
     when 'config'   { out self!config-help   }
     when 'help'     { out self!help-help     }
 
