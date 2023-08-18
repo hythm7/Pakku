@@ -498,6 +498,7 @@ grammar Pakku::Grammar::Cmd {
   token nukable:sym<home>   { <sym> }
   token nukable:sym<site>   { <sym> }
   token nukable:sym<vendor> { <sym> }
+  token nukable:sym<core>   { <sym> }
   token nukable:sym<cache>  { <sym> }
   token nukable:sym<pakku>  { <sym> }
 
@@ -1030,6 +1031,7 @@ class Pakku::Grammar::CmdActions {
   method nukable:sym<home>   ( $/ ) { make 'home'   }
   method nukable:sym<site>   ( $/ ) { make 'site'   }
   method nukable:sym<vendor> ( $/ ) { make 'vendor' }
+  method nukable:sym<core>   ( $/ ) { make 'core' }
   method nukable:sym<cache>  ( $/ ) { make 'cache'  }
   method nukable:sym<stage>  ( $/ ) { make 'stage'  }
   method nukable:sym<tmp>    ( $/ ) { make 'tmp'    }

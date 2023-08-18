@@ -60,6 +60,15 @@ class X::Pakku::Remove is X::Pakku {
 
 }
 
+class X::Pakku::Nuke is X::Pakku {
+
+  has $.dir;
+
+  method message ( ) { "NUK: ｢$!dir｣" }
+
+}
+
+
 class X::Pakku::Archive is X::Pakku {
 
   has $.archive;

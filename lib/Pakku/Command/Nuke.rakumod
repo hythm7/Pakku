@@ -1,3 +1,4 @@
+use X::Pakku;
 use Pakku::Log;
 
 unit role Pakku::Command::Nuke;
@@ -88,6 +89,40 @@ multi method fly (
     }
    
   }
+
+  multi sub nuke ( 'core' ) {
+
+    🦋 qq[NUK: ｢core｣];
+
+    my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'core';
+    my $target = $repo.prefix;
+ 
+    unless $target.d {
+
+      🐛 qq[NUK: ｢$target｣ does not exist!];
+
+      return;
+
+    }
+
+    unless self!force {
+
+      🐞 qq[NUK: ｢core｣ use force to nuke!];
+
+      die X::Pakku::Nuke.new: :dir<core>;
+
+    }
+
+    unless self!dont {
+
+      remove-dir $target;
+
+      🧚 qq[NUK: ｢core｣];
+
+    }
+   
+  }
+
 
   multi sub nuke ( 'cache' ) {
 
