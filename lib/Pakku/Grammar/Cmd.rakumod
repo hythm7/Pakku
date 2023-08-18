@@ -94,10 +94,11 @@ grammar Pakku::Grammar::Cmd {
 
   proto token cmd { * } 
   token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
-  token cmd:sym<update>  { <!before <.space>> ~ <!after <.space>> <update>    }
+  token cmd:sym<update>   { <!before <.space>> ~ <!after <.space>> <update>   }
   token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
   token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
   token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
+  token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
   token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
   token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
   token cmd:sym<nuke>     { <!before <.space>> ~ <!after <.space>> <nuke>     }
