@@ -178,17 +178,18 @@ multi method fly (
 
       @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
 
-    }
+      if $clean {
 
-    if $clean {
+        🧚 qq[CLN: ｢...｣];
 
-      self.state( :!updates ).values
-        ==> grep( *.<cln> )
-        ==> map( *.<meta>.Str )
-        ==> my @spec;
+        self.state( :!updates ).values
+          ==> grep( *.<cln> )
+          ==> map( *.<meta>.Str )
+          ==> my @spec;
 
-      samewith 'remove', :@spec if @spec;
+        samewith 'remove', :@spec if @spec;
 
+      }
     }
   }
 }
