@@ -63,7 +63,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
     } );
 
-  self.build: :$dist unless self!dont;
+  self.build: :$stage :$dist unless self!dont;
 
   $stage.remove-artifacts;
 
@@ -125,7 +125,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
     } );
 
-  self.build: :$dist unless self!dont;
+  self.build: :$stage :$dist unless self!dont;
 
   $stage.remove-artifacts;
 
