@@ -182,6 +182,8 @@ multi method fly (
 
     if $clean {
 
+      🐛 qq[CLN: ｢...｣];
+
       self.state( :!updates ).values
         ==> grep( *.<cln> )
         ==> map( *.<meta>.Str )
