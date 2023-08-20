@@ -397,7 +397,7 @@ multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
 
 method state ( :$updates = True ) {
 
-  🦋 qq[STT: ｢...｣ reading!];
+  🐛 "STT: ｢...｣";
 
   my %state;
 
@@ -408,7 +408,7 @@ method state ( :$updates = True ) {
     ==> map( { Pakku::Meta.new: .meta } )
     ==> map( -> $meta { 
 
-      🦋 qq[STT: ｢$meta｣];
+      🐛 "STT: ｢$meta｣";
 
       unless %state{ $meta }:exists {
 
@@ -432,7 +432,7 @@ method state ( :$updates = True ) {
         ==> sort( -> %left, %right {
 
               quietly ( Version.new( %right<version> ) cmp Version.new( %left<version> ) ) or 
-              quietly ( Version.new( %right<api> )     cmp Version.new( %left<api>     ) );
+              quietly ( Version.new( %right<api> ) cmp Version.new( %left<api> ) );
 
             } )
         ==> map( -> %meta { Pakku::Meta.new: %meta } )
