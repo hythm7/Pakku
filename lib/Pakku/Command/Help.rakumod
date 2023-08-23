@@ -59,10 +59,9 @@ method !add-help ( ) {
   %add<example>.push: 'pakku add serial dist';
   %add<example>.push: 'pakku add deps only dist';
   %add<example>.push: 'pakku add exclude Dep dist';
-  %add<example>.push: 'pakku add contained dist';
   %add<example>.push: 'pakku add noprecomp notest dist';
-  %add<example>.push: 'pakku add to /opt/MyApp dist';
-  %add<example>.push: 'pakku add to home       dist1 dist2';
+  %add<example>.push: 'pakku add to home dist1 dist2';
+  %add<example>.push: 'pakku add contained to /opt/MyApp dist';
 
   %add<opt>.push: ( 'deps'            => 'add all dependencies' );
   %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
