@@ -164,15 +164,15 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token pakkuopt { * }
-  token pakkuopt:sym<pretty>   { <pretty> }
-  token pakkuopt:sym<force>    { <force> }
-  token pakkuopt:sym<async>    { <async> }
-  regex pakkuopt:sym<recman>   { <recman> }
+  token pakkuopt:sym<pretty>   { <pretty>   }
+  token pakkuopt:sym<force>    { <force>    }
+  token pakkuopt:sym<async>    { <async>    }
+  regex pakkuopt:sym<recman>   { <recman>   }
   regex pakkuopt:sym<norecman> { <norecman> }
-  token pakkuopt:sym<cache>    { <cache> }
-  token pakkuopt:sym<yolo>     { <yolo> }
-  token pakkuopt:sym<please>   { <sym>    }
-  token pakkuopt:sym<dont>     { <sym>    }
+  token pakkuopt:sym<cache>    { <cache>    }
+  token pakkuopt:sym<yolo>     { <yolo>     }
+  token pakkuopt:sym<please>   { <sym>      }
+  token pakkuopt:sym<dont>     { <sym>      }
   token pakkuopt:sym<verbose>  { <verbose> <.space>+ <level> }
   token pakkuopt:sym<config>   { <config>  <.space>+ <path> }
 
@@ -287,7 +287,7 @@ grammar Pakku::Grammar::Cmd {
   proto token deps { * }
   token deps:sym<only>    { <dep> <.space>+ <only>    }
   token deps:sym<runtime> { <dep> <.space>+ <runtime> }
-  token deps:sym<test>    { <dep> <.space>+ <tst>    }
+  token deps:sym<test>    { <dep> <.space>+ <tst>     }
   token deps:sym<build>   { <dep> <.space>+ <build>   }
   token deps:sym<deps>    { <sym>                     }
   token deps:sym<nodeps>  { <nodeps>                  }
@@ -891,7 +891,7 @@ class Pakku::Grammar::CmdActions {
   method addopt:sym<test>       ( $/ ) { make $<test>.made       }
   method addopt:sym<xtest>      ( $/ ) { make $<xtest>.made      }
   method addopt:sym<serial>     ( $/ ) { make $<serial>.made     }
-  method addopt:sym<contained>  ( $/ ) { make $<contained>.made     }
+  method addopt:sym<contained>  ( $/ ) { make $<contained>.made  }
   method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
   method addopt:sym<to>         ( $/ ) { make ( to => $<repo>.Str ) }
   method addopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
