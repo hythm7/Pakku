@@ -205,6 +205,10 @@ method build (
 
 multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
+  # File::Which has empty dep name
+  # should be removed after File::Which is fixed
+  next unless $spec.name;
+
   🐛 qq[SPC: ｢$spec｣ satisfying!];
 
   my $meta = try Pakku::Meta.new(
