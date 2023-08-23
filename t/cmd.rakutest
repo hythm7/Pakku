@@ -31,6 +31,10 @@ my @tests = (
     ${:add(${:deps("build"), :spec($["Spec"])}), :cmd("add")},
   "add build Spec" =>
     ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
+  "add serial Spec" =>
+    ${:add(${:serial, :spec($["Spec"])}), :cmd("add")},
+  "add contained Spec" =>
+    ${:add(${:contained, :spec($["Spec"])}), :cmd("add")},
   "add test Spec" =>
     ${:add(${:spec($["Spec"]), :test}), :cmd("add")},
   "add Spec" =>
