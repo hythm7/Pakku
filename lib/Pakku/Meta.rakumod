@@ -22,7 +22,12 @@ multi method deps ( ) { %!deps }
 
 multi method deps ( Bool:D :$deps where *.so ) {
 
-  %!deps<build test runtime>.map( *.values.Slip ).map( *.Slip ).unique.map( -> $spec { Pakku::Spec.new: $spec } );
+  %!deps<build test runtime>
+  ==> map( *.values.Slip )
+  ==> map( *.Slip )
+  ==> unique( )
+  ==> map( -> $spec { Pakku::Spec.new: $spec } )
+  ==> grep( *.name ); # File::Which has empty dep name
 
 }
 

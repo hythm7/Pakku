@@ -17,6 +17,7 @@ multi method fly (
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
   Bool:D :$serial     = False,
+  Bool:D :$contained  = False,
   Str:D  :$to         = 'site',
          :@exclude,
 
@@ -46,7 +47,7 @@ multi method fly (
     ==> map(  -> $spec { self.satisfy: :$spec } )
     ==> map(  -> $meta {
 
-      my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+      my @meta = flat self.get-deps: $meta, :$deps, :$contained, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
       @meta .= unique( as => *.Str );
 
@@ -173,6 +174,7 @@ multi method fly (
   Bool:D :$xtest      = False,
   Bool:D :$precompile = True,
   Bool:D :$serial     = False,
+  Bool:D :$contained  = False,
   Str:D  :$to         = 'site',
          :@exclude,
 
@@ -205,7 +207,7 @@ multi method fly (
 
   my $meta = Pakku::Meta.new: $path;
 
-  my @meta = flat self.get-deps: $meta, :$deps, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
+  my @meta = flat self.get-deps: $meta, :$deps, :$contained, |( exclude => @exclude.map( -> $exclude { Pakku::Spec.new( $exclude ) } )  if @exclude );
 
   @meta .= unique( as => *.Str );
 

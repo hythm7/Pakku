@@ -289,10 +289,6 @@ multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
   my $name = $spec.name;
   my %spec = $spec.spec;
 
-  # File::Which has empty dep name
-  # should be removed after File::Which is fixed
-  return True if $name eq '';
-
   return False unless @!repo.first( *.candidates: $name, |%spec );
 
   🐛 qq[SPC: ｢$spec｣ satisfied!];
@@ -330,26 +326,20 @@ multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
 
 multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samewith :$spec } ) }
 
-method get-deps ( Pakku::Meta:D $meta, :$deps = True, :@exclude ) {
+method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False, :@exclude ) {
 
   state %visited = @exclude.map: *.id => True;
 
   $meta.deps( :$deps )
-    ==> grep( -> $spec { 
-      not ( 
-            %visited{ $spec.?id // @$spec.map( *.id ).any }:exists or
-            self.satisfied( :$spec )
-          )
-      } )
+    ==> grep( -> $spec { %visited{ $spec.?id // @$spec.map( *.id ).any }:!exists } )
+    ==> grep( -> $spec { $contained and $spec ~~ Pakku::Spec::Raku or not self.satisfied( :$spec ) } )
     ==> map(  -> $spec {
-
-    🐛 qq[DEP: ｢$spec｣];
 
     my $meta = self.satisfy: :$spec;
 
     %visited{ $spec.id } = True;
 
-    self.get-deps( $meta, :$deps), $meta;
+    self.get-deps( $meta, :$deps, :$contained ), $meta;
 
   } )
 
@@ -742,6 +732,7 @@ my sub get-env ( ) {
   %env<pakku><add><test>       = %*ENV<PAKKU_ADD_TEST>.Bool                if %*ENV<PAKKU_ADD_TEST>;
   %env<pakku><add><build>      = %*ENV<PAKKU_ADD_BUILD>.Bool               if %*ENV<PAKKU_ADD_BUILD>;
   %env<pakku><add><serial>     = %*ENV<PAKKU_ADD_SERIAL>.Bool              if %*ENV<PAKKU_ADD_SERIAL>;
+  %env<pakku><add><contained>  = %*ENV<PAKKU_ADD_CONTAINED>.Bool           if %*ENV<PAKKU_ADD_CONTAINED>;
   %env<pakku><add><xtest>      = %*ENV<PAKKU_ADD_XTEST>.Bool               if %*ENV<PAKKU_ADD_XTEST>;
   %env<pakku><add><precompile> = %*ENV<PAKKU_ADD_PRECOMPILE>.Bool          if %*ENV<PAKKU_ADD_PRECOMPILE>;
   %env<pakku><add><exclude>    = %*ENV<PAKKU_ADD_EXCLUDE>.split( / \s+ / ) if %*ENV<PAKKU_ADD_EXCLUDE>;
