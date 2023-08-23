@@ -54,11 +54,12 @@ deps    < build >   → build dependencies only
 deps    < test >    → test dependencies only
 deps    < runtime > → runtime dependencies only
 deps    < only >    → install dependencies but not the dist
-exclude < Dep1 >    → exclude Dep1
+exclude < Spec >    → exclude Spec
 test                → test distribution
 xtest               → xTest distribution
 build               → build distribution
 serial              → add distributions in serial order
+contained           → add distributions and all transitive deps (regardless if they are installed)
 precomp             → precompile distribution 
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
 nodeps              → no dependencies
@@ -78,7 +79,7 @@ noprecomp           → no precompile
 <b>pakku add deps only dist</b>                 # add dist dependencies but dont add dist
 <b>pakku add exclude Dep1 dist</b>              # add dist and exclude Dep1 from dependenncies
 <b>pakku add noprecomp notest  dist</b>         # add dist without testing and no precompilation
-<b>pakku add to   /opt/MyApp dist</b>           # add dist to custom repo
+<b>pakku add contained to   /opt/MyApp dist</b> # add dist and all transitive deps to custom repo
 <b>pakku add to   vendor     dist1 dist2</b>    # add dist1 and dist2 to vendor repo even if they are installed
 </pre>
 
