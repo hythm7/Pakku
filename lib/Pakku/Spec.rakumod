@@ -1,5 +1,7 @@
 use X::Pakku;
 
+## TODO: does positional
+
 my role Spec {
 
   has $.name is required;
