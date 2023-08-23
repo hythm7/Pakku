@@ -182,6 +182,7 @@ grammar Pakku::Grammar::Cmd {
   token addopt:sym<test>       { <test>       }
   token addopt:sym<xtest>      { <xtest>      }
   token addopt:sym<serial>     { <serial>     }
+  token addopt:sym<contained>  { <contained>  }
   token addopt:sym<precompile> { <precompile> }
   token addopt:sym<to>         { <sym>     <.space>+ <repo> }
   token addopt:sym<exclude>    { <exclude> <.space>+ <spec> }
@@ -354,6 +355,12 @@ grammar Pakku::Grammar::Cmd {
   token serial:sym<s>        { <sym> }
   token serial:sym<noserial> { <sym> }
   token serial:sym<ns>       { <sym> }
+
+  proto token contained { * }
+  token contained:sym<contained>   { <sym> }
+  token contained:sym<c>           { <sym> }
+  token contained:sym<nocontained> { <sym> }
+  token contained:sym<nc>          { <sym> }
 
   proto token precompile { * }
   token precompile:sym<precompile>   { <sym> }
@@ -884,6 +891,7 @@ class Pakku::Grammar::CmdActions {
   method addopt:sym<test>       ( $/ ) { make $<test>.made       }
   method addopt:sym<xtest>      ( $/ ) { make $<xtest>.made      }
   method addopt:sym<serial>     ( $/ ) { make $<serial>.made     }
+  method addopt:sym<contained>  ( $/ ) { make $<contained>.made     }
   method addopt:sym<precompile> ( $/ ) { make $<precompile>.made }
   method addopt:sym<to>         ( $/ ) { make ( to => $<repo>.Str ) }
   method addopt:sym<exclude>    ( $/ ) { @*exclude.push: $<spec>.made; make ( exclude => @*exclude ) }
@@ -979,6 +987,11 @@ class Pakku::Grammar::CmdActions {
   method serial:sym<s>        ( $/ )  { make ( :serial  ) }
   method serial:sym<noserial> ( $/ )  { make ( :!serial ) }
   method serial:sym<ns>       ( $/ )  { make ( :!serial ) }
+
+  method contained:sym<contained>   ( $/ )  { make ( :contained  ) }
+  method contained:sym<c>           ( $/ )  { make ( :contained  ) }
+  method contained:sym<nocontained> ( $/ )  { make ( :!contained ) }
+  method contained:sym<nc>          ( $/ )  { make ( :!contained ) }
 
   method precompile:sym<precompile>   ( $/ )  { make ( :precompile  ) }
   method precompile:sym<precomp>      ( $/ )  { make ( :precompile  ) }
