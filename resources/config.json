@@ -3,6 +3,7 @@
     "build": true,
     "deps": true,
     "serial": false,
+    "contained": false,
     "precompile": true,
     "test": true,
     "to": "site",
