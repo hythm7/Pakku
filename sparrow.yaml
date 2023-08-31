@@ -12,7 +12,7 @@ tasks:
     code: |
       set -e
       sudo apt-get update
-      sudo apt-get install -y libarchive13 	zlib1g-dev > /dev/null
+      sudo apt-get install -y libarchive13 > /dev/null
       cd source
       raku -I. bin/pakku add .
   -
@@ -20,4 +20,4 @@ tasks:
     language: Bash
     code: |
       set -e
-      pakku async add App::Mi6
+      pakku async add rak
