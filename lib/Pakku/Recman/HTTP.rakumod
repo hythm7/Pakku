@@ -11,26 +11,16 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   🐛 qq[REC: ｢$spec｣ ‹$!name› recommending...];
 
-  my $name = $spec.name;
-  my $ver  = $spec.ver;
-  my $auth = $spec.auth;
-  my $api  = $spec.api;
 
-  my @query;
+  my $uri = $!location ~ '/meta/recommend/' ~ form-query $spec.spec;
 
-  @query.push( 'ver='  ~ url-encode $ver  ) if $ver;
-  @query.push( 'auth=' ~ url-encode $auth ) if $auth;
-  @query.push( 'api='  ~ url-encode $api  ) if $api;
-
-  my $uri = $!location ~ '/meta/recommend/' ~ url-encode $name;
-
-  $uri ~= '?' ~ @query.join( '&') if @query;
 
   🐝 qq[REC: ｢$uri｣];
 
   my $response;
  
   retry {
+
     $response = $!http.get: $uri;
 
     unless $response<success> {
@@ -47,7 +37,6 @@ method recommend ( ::?CLASS:D: :$spec! ) {
   🐛 qq[REC: ｢$spec｣ ‹$!name› found];
 
   $meta;
-  
 }
 
 method search (
@@ -136,6 +125,22 @@ sub retry (
     $max   -= 1;
 
   }
+}
+
+sub form-query( %spec ) {
+
+  my $query = url-encode %spec<name>;
+
+  my @query;
+
+  @query.push( 'ver='  ~ url-encode %spec<ver>  ) if %spec<ver>:exists;
+  @query.push( 'auth=' ~ url-encode %spec<auth> ) if %spec<auth>:exists;
+  @query.push( 'api='  ~ url-encode %spec<api>  ) if %spec<api>:exists;
+
+  $query ~= '?' ~ @query.join( '&') if @query;
+
+  $query;
+
 }
 
 sub url-encode ( Str() $text --> Str ) {
