@@ -120,9 +120,11 @@ method test (
 
     🐞 qq[OLO: ｢$dist｣];
 
-  }
+  } else {
 
-  🧚 qq[TST: ｢$dist｣];
+    🧚 qq[TST: ｢$dist｣];
+
+  }
 
 }
 
@@ -191,15 +193,17 @@ method build (
     }
   }
 
-  if $exitcode { 
+  if $exitcode {
 
     die X::Pakku::Build.new: :$dist;
 
     🐞 qq[OLO: ｢$dist｣];
 
-  }
+  } else {
 
-  🧚 qq[BLD: ｢$dist｣];
+    🧚 qq[BLD: ｢$dist｣];
+
+  }
 
 }
 
@@ -319,6 +323,7 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   True;
 }
+
 multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
 
   return False unless find-perl-module $spec.name;
@@ -343,7 +348,7 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False
 
     %visited{ $spec.id } = True;
 
-    self.get-deps( $meta, :$deps, :$contained ), $meta;
+    self.get-deps( $meta, :$deps, :$contained ), $meta if $meta;
 
   } )
 
