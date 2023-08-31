@@ -4,7 +4,6 @@ use Test;
 
 use Pakku::Spec;
 
-
 my @rakuspec = (
   'Spec',
   'Spec::Spec',
@@ -16,8 +15,9 @@ my @rakuspec = (
 );
 
 
-for @rakuspec -> $spec {
-   isa-ok Pakku::Spec.new( $spec ), Pakku::Spec::Raku, $spec.raku;
+for @rakuspec -> $s {
+   my $spec = Pakku::Spec.new: $s;
+   isa-ok $spec, Pakku::Spec::Raku, ~$spec;
 }
 
 my @binspec = (
@@ -25,8 +25,9 @@ my @binspec = (
   { :from<bin>, :name<spec> },
 );
 
-for @binspec -> $spec {
-   isa-ok Pakku::Spec.new( $spec ), Pakku::Spec::Bin, $spec.raku;
+for @binspec -> $s {
+   my $spec = Pakku::Spec.new: $s;
+   isa-ok $spec, Pakku::Spec::Bin, ~$spec;
 }
 
 my @nativespec = (
@@ -35,22 +36,20 @@ my @nativespec = (
   { :from<native>, :name<spec>, :ver<0.42> },
 );
 
-for @nativespec -> $spec {
-   isa-ok Pakku::Spec.new( $spec ), Pakku::Spec::Native, $spec.raku;
+for @nativespec -> $s {
+   my $spec = Pakku::Spec.new: $s;
+   isa-ok $spec, Pakku::Spec::Native, ~$spec;
 }
 
 
-my @arrayspec = (
-  { any => [ 'spec:ver<1>', 'spec' ] },
-  { any => [ { :from<native>, :name<spec>, :ver<0.42> }, { :from<native>, :name<spec> } ] },
-  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
-  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
-  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
+my @junction-spec = (
+  { any => [ 'spec1:ver<1>', 'spec2' ] },
+  { any => [ { :from<Native>, :name<spec>, :ver<0.42> }, { :from<bin>, :name<spec> } ] },
   { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
 );
 
-for @arrayspec -> $spec {
-   lives-ok { Pakku::Spec.new( $spec ) }, $spec.raku;
+for @junction-spec -> $spec {
+   lives-ok { Pakku::Spec.new: $spec }, ~$spec;
 }
 
 
@@ -65,9 +64,9 @@ my @invalidspec = (
 );
 
 
-for @invalidspec -> $spec {
+for @invalidspec -> $s {
 
-  dies-ok { Pakku::Spec.new( $spec ) }, "{ $spec.raku } is not valid spec";
+  dies-ok { Pakku::Spec.new( $s ) }, "$s is not valid spec";
 
 }
 
@@ -99,19 +98,33 @@ my $meta = q:to/META/;
 META
 
 my @pathspec = (
-  $*TMPDIR.add( 'pakku-test' ).add( 'META.json' ),
+  $*TMPDIR.add( 'pakku-test-' ~ now.Num ).add( 'META6.json' ),
 );
 
-for @pathspec -> $spec {
+for @pathspec -> $path {
 
    next if $*DISTRO.is-win; # fails on windows for some reason
 
-   $spec.dirname.IO.mkdir;
-   $spec.spurt: $meta;
-   isa-ok Pakku::Spec.new( $spec.dirname.IO ), Pakku::Spec::Raku, $spec.raku;
-   $spec.unlink;
-   $spec.dirname.IO.rmdir;
+   $path.dirname.IO.mkdir;
+   $path.spurt: $meta;
+   isa-ok Pakku::Spec.new( $path.dirname.IO ), Pakku::Spec::Raku, 'Spec from META6 file';
+   $path.unlink;
+   $path.dirname.IO.rmdir;
 }
+
+my $spec1 = Pakku::Spec.new: 'foo';
+my $spec2 = Pakku::Spec.new: 'foo:ver<0.0.2+>';
+my @spec3 = Pakku::Spec.new: { any => [ 'bar:ver<0.0.1>', 'foo:ver<0.0.3>' ] };
+my $spec4 = Pakku::Spec.new: 'foo:ver<0.0.4+>';
+my $spec5 = Pakku::Spec.new: 'foo:api<5>';
+
+my $dist-spec = Pakku::Spec.new: 'foo:ver<0.0.3>:auth<bar>:api<3>'; 
+
+ok  $dist-spec ~~ $spec1, "$dist-spec matches $spec1";
+ok  $dist-spec ~~ $spec2, "$dist-spec matches $spec2";
+ok  $dist-spec ~~ any(@spec3), "$dist-spec matches { @spec3.map(~*).join: ' | ' }";
+nok $dist-spec ~~ $spec4, "$dist-spec does not match $spec4";
+nok $dist-spec ~~ $spec5, "$dist-spec does not match $spec5";
 
 
 done-testing;
