@@ -17,7 +17,6 @@ lives-ok {
 
       my @recman = ( %( :name<pakku>, :location<http://recman.pakku.org>, :1priority, :active ), );
 
-
       $!log    = Pakku::Log.new: :verbose<nothing>;
 
 			my $http = Pakku::HTTP.new;
@@ -30,7 +29,7 @@ lives-ok {
   } .new
 }, 'Compose Pakku::Core';
 
-ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "curl:ver<4>:from<native>", "curl:from<native>" ] } ) ), 'Native dependency exists' if $*KERNEL ~~ 'linux';
+ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "archive:ver<13>:from<native>", "archive:from<native>" ] } ) ), 'Native dependency exists' if $*KERNEL ~~ 'linux';
 nok $core.satisfied( spec => Pakku::Spec.new( { :from<native>, :name<missing> } ) ), 'Native dependency missing';
 
 ok  $core.satisfied( spec => Pakku::Spec.new( { :from<bin>, :name<raku>    } ) ), 'Binary dependency exists';
@@ -45,8 +44,12 @@ dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku> 
 
 lives-ok {
 
-$core.satisfy( spec => Pakku::Spec.new( 'Pakku' ) );
+$core.satisfy( spec => Pakku::Spec.new( { any => <foo bar Pakku baz> } ) );
 
 }, 'Can satisfy a dependency';
+
+dies-ok {
+  $core.satisfy( spec => Pakku::Spec.new( 'foobarbaz:from<Native>' ) );
+	}, 'can not satisfy bin dependency';
 
 done-testing;
