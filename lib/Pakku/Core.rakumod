@@ -340,13 +340,13 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False
   state %visited = @exclude.map: *.id => True;
 
   $meta.deps( :$deps )
-    ==> grep( -> $spec { %visited{ $spec.?id // @$spec.map( *.id ).any }:!exists } )
+    ==> grep( -> $spec { quietly %visited{ $spec.?id }:!exists } )
     ==> grep( -> $spec { $contained and $spec ~~ Pakku::Spec::Raku or not self.satisfied( :$spec ) } )
     ==> map(  -> $spec {
 
     my $meta = self.satisfy: :$spec;
 
-    %visited{ $spec.id } = True;
+    quietly %visited{ $spec.?id  } = True;
 
     self.get-deps( $meta, :$deps, :$contained ), $meta if $meta;
 
