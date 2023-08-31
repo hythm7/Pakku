@@ -1,4 +1,3 @@
-use nqp;
 
 use Pakku::Log;
 
@@ -13,7 +12,7 @@ method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
   🐛 qq[CAC: ｢$spec｣ recommending...];
 
-  my $name-hash = nqp::sha1( $spec.name );
+  my $name-hash = sha1 $spec.name;
 
   my $spec-dir = $!cache-dir.add: $name-hash;
 
@@ -39,7 +38,7 @@ method cached ( Pakku::Meta:D :$meta! ) {
 
   🐛 qq[CAC: ｢$meta｣ looking...];
 
-  my $name-hash = nqp::sha1( $meta.name );
+  my $name-hash = sha1( $meta.name );
 
   my $cached = $!cache-dir.add( $name-hash ).add( $meta.id );
 
@@ -58,7 +57,7 @@ method cache ( IO::Path:D :$path! ) {
 
   🐛 qq[CAC: ｢$meta｣ caching...];
 
-  my $name-hash = nqp::sha1( $meta.name );
+  my $name-hash = sha1( $meta.name );
 
   my $dst = $!cache-dir.add( $name-hash ).add( $meta.id );
 
@@ -95,4 +94,4 @@ my sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) {
   }
 }
 
-
+my sub sha1 ( $what ) { use nqp; nqp::sha1( $what ) }
