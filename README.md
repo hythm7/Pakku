@@ -453,7 +453,7 @@ Below is a list of output lines that one can see and their meaning:
 	- 0 `｢nothing｣`    → Nothing
 
 > [!WARNING]
-> Pakku uses emoji and ANSI escape codes, If your terminal doesn't understand them, you can disable colors, bars and spinners,  (eg. `pakku nopretty nobar nospinner add Foo`), or disable permenantely in config file.  also to change emojis, eg. the `debug` emoji, in config file replace `"debug": {"prefix": "🐛"}` with `"debug": {"prefix": "D"}` for example.
+> Pakku uses emoji and ANSI escape codes, If your terminal doesn't support them, you can disable colors, bars and spinners, (eg. `pakku nopretty nobar nospinner add Foo`), or disable permanently in config file. also for emojis, eg. to change the `debug` emoji for example, in config file replace `"debug": {"prefix": "🐛"}` with `"debug": {"prefix": "D"}`.
 
 
 **Command result**:
