@@ -134,6 +134,8 @@ method test (
 
   if $exitcode {
 
+    log '🦗', header => 'TST', msg => "｢$dist｣";
+
     die X::Pakku::Test.new: :$dist;
 
     log '🐞', header => 'OLO', msg => "｢$dist｣";
@@ -213,6 +215,8 @@ method build (
 
   if $exitcode {
 
+    log '🦗', header => 'BLD', msg => "｢$dist｣";
+
     die X::Pakku::Build.new: :$dist;
 
     log '🐞', header => 'OLO', msg => "｢$dist｣";
@@ -241,6 +245,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
   unless $meta {
 
     log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
+    log '🦗', header => 'SPC', msg => "｢$spec｣";
 
     die X::Pakku::Spec.new: :$spec;
 
@@ -256,6 +261,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
 
   log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
+  log '🦗', header => 'SPC', msg => "｢$spec｣";
 
   die X::Pakku::Spec.new: :$spec;
 
@@ -267,6 +273,8 @@ multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
   log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
+
+  log '🦗', header => 'SPC', msg => "｢$spec｣";
 
   die X::Pakku::Spec.new: :$spec;
 
@@ -280,6 +288,8 @@ multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
 
   log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
 
+  log '🦗', header => 'SPC', msg => "｢$spec｣";
+
   die X::Pakku::Spec.new: :$spec;
 
   log '🐞', header => 'OLO', msg => "｢$spec｣";
@@ -289,7 +299,7 @@ multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
 
 multi method satisfy ( :@spec! ) {
 
-  log '🐞', header => 'SPC', msg => "｢{@spec}｣", comment => 'satisfying!';
+  log '🐛', header => 'SPC', msg => "｢{@spec}｣", comment => 'satisfying!';
 
   my $meta =
     @spec.map( -> $spec {

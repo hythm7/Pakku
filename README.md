@@ -6,7 +6,7 @@
 
 Pakku
 =====
-A Package Manager for the Raku Programming Language.
+Package Manager for the Raku Programming Language.
 
 Installation
 ============

@@ -11,7 +11,7 @@
       ]
     }
   },
-  "description": "A Package Manager for the Raku Programming Language",
+  "description": "Package Manager for the Raku Programming Language",
   "license": "Artistic-2.0",
   "name": "Pakku",
   "perl": "6.d",
