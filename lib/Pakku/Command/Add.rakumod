@@ -24,19 +24,19 @@ multi method fly (
 ) {
 
 
-  🧚 qq[ADD: ｢{@spec}｣];
+  log '🧚', header => 'ADD', msg => "｢{@spec}｣";
 
   my $repo = self.repo-from-spec: spec => $to;
 
   unless $repo.can-install {
 
-    🐞 qq[REP: ｢$repo｣ can not install!];
+    log '🐞', header => 'REP', msg => "｢{$repo.prefix}｣", comment => 'can not install!';
 
     $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
 
-    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+    log '🐞', header => 'REP', msg => "｢$repo｣", comment => 'will be used!' if $repo;
 
-    die X::Pakku::Add.new: dist => @spec unless $repo;
+    die X::Pakku::Add.new: dist => ~@spec unless $repo;
 
   }
 
@@ -62,7 +62,7 @@ multi method fly (
 
   unless @meta {
 
-    🧚 qq[ADD: ｢{@spec}｣ already added!];
+    log '🧚', header => 'ADD', msg => "｢{@spec}｣", comment => 'already added!';
 
     return;
 
@@ -70,7 +70,7 @@ multi method fly (
 
   my @dist = @meta.map( -> $meta {
 
-    🦋 qq[FTC: ｢$meta｣];
+    log '🦋', header => 'FTC', msg => "｢$meta｣";
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -86,6 +86,8 @@ multi method fly (
 
       self.fetch: src => $meta.source, dst => $path;
 
+      log '🧚', header => 'FTC', msg => "｢$meta｣";
+
       self!cache.cache: :$path if self!cache;
     }
 
@@ -98,6 +100,12 @@ multi method fly (
     name      => $repo.name,
     next-repo => $*REPO;
 
+  my $precomp-repo = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
+
+  $precomp-repo.mkdir;
+
+  my $supply = watch-recursive( $precomp-repo );
+
   if $serial {
 
     eager @dist 
@@ -105,15 +113,38 @@ multi method fly (
   
         self.build: :$stage :$dist if $build;
 
-        🦋 qq[STG: ｢$dist｣];
+        bar.header: 'STG';
+        bar.length: $dist.Str.chars;
+        bar.sym:    $dist.Str;
+        bar.activate;
+
+        my $i = 0;
+
+        my $tap = $supply.tap( -> $module {
+
+        $i += 1;
+
+        my $percent = $i / $dist.meta<provides>.keys * 100;
+
+        bar.percent: $percent;
+
+        bar.show;
+
+        } );
 
         $stage.install: $dist, :$precompile;
+
+        $tap.close;
+
+        bar.deactivate;
+
+        log '🧚', header => 'STG', msg => "｢$dist｣";
 
         self.test: :$stage :$dist :$xtest if $test;
 
         unless self!dont {
 
-          $stage.remove-artifacts;
+          try $stage.remove-artifacts; # trying for Windows
 
           $stage.deploy;
 
@@ -121,11 +152,13 @@ multi method fly (
 
           my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-          🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+          log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
 
-          @bin.sort.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
+          @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
 
           try $stage.self-destruct; # trying for Windows
+
+          $precomp-repo.mkdir;
 
         }
 
@@ -138,9 +171,32 @@ multi method fly (
   
         self.build: :$stage :$dist if $build;
 
-        🦋 qq[STG: ｢$dist｣];
+        bar.header: 'STG';
+        bar.length: $dist.Str.chars;
+        bar.sym:    $dist.Str;
+        bar.activate;
+
+        my $i = 0;
+
+        my $tap = $supply.tap( -> $module {
+
+        $i += 1;
+
+        my $percent = $i / $dist.meta<provides>.keys * 100;
+
+        bar.percent: $percent;
+
+        bar.show;
+
+        } );
 
         $stage.install: $dist, :$precompile;
+
+        $tap.close;
+
+        bar.deactivate;
+
+        log '🧚', header => 'STG', msg => "｢$dist｣";
 
         self.test: :$stage :$dist :$xtest if $test;
 
@@ -148,7 +204,7 @@ multi method fly (
 
     unless self!dont {
 
-      $stage.remove-artifacts;
+      try $stage.remove-artifacts; # trying for Windows
 
       $stage.deploy if @dist;
 
@@ -156,9 +212,9 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+      log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
 
-      @bin.sort.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
+      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
 
     }
   }
@@ -180,17 +236,17 @@ multi method fly (
 
 ) {
 
-  🧚 qq[ADD: ｢$path｣];
+  log '🧚', header => 'ADD', msg => "｢$path｣";
 
   my $repo = self.repo-from-spec: spec => $to;
 
   unless $repo.can-install {
 
-    🐞 qq[REP: ｢$repo｣ can not install!];
+    log '🐞', header => 'REP', msg => "｢{$repo.prefix}｣", comment => 'can not install!';
 
     $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
 
-    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+    log '🐞', header => 'REP', msg => "｢{$repo.prefix}｣", comment => 'will be used!' if $repo;
 
     die X::Pakku::Add.new: dist => $path unless $repo;
 
@@ -199,9 +255,7 @@ multi method fly (
   my $spec = Pakku::Spec.new: $path;
 
   if not self!force and self.satisfied( :$spec ) {
-
-    🧚 qq[ADD: ｢$spec｣ already added!];
-
+    log '🧚', header => 'ADD', msg => "｢$spec｣", comment => 'already added!';
     return;
   }
 
@@ -215,7 +269,7 @@ multi method fly (
 
   my @dist = @meta.map( -> $meta {
 
-    🦋 qq[FTC: ｢$meta｣];
+    log '🦋', header => 'FTC', msg => "｢$meta｣";
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -245,6 +299,13 @@ multi method fly (
     name      => $repo.name,
     next-repo => $*REPO;
 
+  my $precomp-repo = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
+
+  $precomp-repo.mkdir;
+
+  my $supply = watch-recursive( $precomp-repo );
+
+
   if $serial {
 
     @dist 
@@ -252,15 +313,38 @@ multi method fly (
   
         self.build: :$stage :$dist if $build;
 
-        🦋 qq[STG: ｢$dist｣];
+        bar.header: 'STG';
+        bar.length: $dist.Str.chars;
+        bar.sym:    $dist.Str;
+        bar.activate;
+
+        my $i = 0;
+
+        my $tap = $supply.tap( -> $module {
+
+        $i += 1;
+
+        my $percent = $i / $dist.meta<provides>.keys * 100;
+
+        bar.percent: $percent;
+
+        bar.show;
+
+        } );
 
         $stage.install: $dist, :$precompile;
+
+        $tap.close;
+
+        bar.deactivate;
+
+        log '🧚', header => 'STG', msg => "｢$dist｣";
 
         self.test: :$stage :$dist :$xtest if $test;
 
         unless self!dont {
 
-          $stage.remove-artifacts;
+          try $stage.remove-artifacts; # trying for Windows
 
           $stage.deploy;
 
@@ -268,11 +352,13 @@ multi method fly (
 
           my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-          🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+          log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
 
-          @bin.sort.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
+          @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
 
-          $stage.self-destruct;
+          try $stage.self-destruct; # trying for Windows
+
+          $precomp-repo.mkdir;
 
         }
 
@@ -285,9 +371,32 @@ multi method fly (
   
         self.build: :$stage :$dist if $build;
 
-        🦋 qq[STG: ｢$dist｣];
+        bar.header: 'STG';
+        bar.length: $dist.Str.chars;
+        bar.sym:    $dist.Str;
+        bar.activate;
+
+        my $i = 0;
+
+        my $tap = $supply.tap( -> $module {
+
+        $i += 1;
+
+        my $percent = $i / $dist.meta<provides>.keys * 100;
+
+        bar.percent: $percent;
+
+        bar.show;
+
+        } );
 
         $stage.install: $dist, :$precompile;
+
+        $tap.close;
+
+        bar.deactivate;
+
+        log '🧚', header => 'STG', msg => "｢$dist｣";
 
         self.test: :$stage :$dist :$xtest if $test;
 
@@ -295,7 +404,7 @@ multi method fly (
 
     unless self!dont {
 
-      $stage.remove-artifacts;
+      try $stage.remove-artifacts; # trying for Windows
 
       $stage.deploy if @dist;
 
@@ -303,10 +412,36 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+      log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
 
-      @bin.sort.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
+      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
 
     }
   }
 }
+
+my sub watch-recursive ( IO $start ) {
+
+  supply {
+
+    my sub watch ( IO::Path:D $io ) {
+
+      whenever $io.watch -> $e {
+
+        CATCH { default { .so } }
+
+        next unless $e.event ~~ FileRenamed;
+
+        if $e.path.IO.d {
+          watch( $e.path.IO.resolve );
+          next;
+        }
+
+        emit $e unless $e.path.IO.extension;
+      }
+    }
+
+    watch( $start );
+  }
+}
+

@@ -8,7 +8,7 @@ unit role Pakku::Command::Build;
 
 multi method fly ( 'build', IO::Path:D :$path! ) {
 
-  🧚 qq[BLD: ｢$path｣];
+  log '🧚', header => 'BLD', msg => "｢$path｣";
 
   my $meta = Pakku::Meta.new: $path;
 
@@ -16,13 +16,13 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   @meta .=  unique( as => *.Str );
 
-  @meta.map( -> $meta { 🦋 qq[DEP: ｢$meta｣] } );
+  @meta.map( -> $meta { log '🦋', header => 'DEP', msg => "｢$meta｣" } );
 
   my $dist = $meta.to-dist: $path;
 
   my @dist = @meta.map( -> $meta {
 
-    🦋 qq[FTC: ｢$meta｣];
+    log '🦋', header => 'FTC', msg => "｢$meta｣";
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -56,9 +56,9 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
   
       self.build: :$stage :$dist;
 
-      🦋 qq[STG: ｢$dist｣];
+      log '🦋', header => 'STG', msg => "｢$dist｣";
 
-      $stage.install: $dist;
+      $stage.install: $dist, :!precompile;
 
 
     } );
@@ -72,7 +72,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
 multi method fly ( 'build', Str:D :$spec! ) {
 
-  🧚 qq[BLD: ｢$spec｣];
+  log '🧚', header => 'TST', msg => "｢$spec｣";
 
   my $meta = self.satisfy: spec => Pakku::Spec.new: $spec;
 
@@ -84,7 +84,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   my @dist = @meta.map( -> $meta {
 
-    🦋 qq[FTC: ｢$meta｣];
+    log '🦋', header => 'FTC', msg => "｢$meta｣";
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -119,9 +119,9 @@ multi method fly ( 'build', Str:D :$spec! ) {
   
       self.build: :$stage :$dist;
 
-      🦋 qq[STG: ｢$dist｣];
+      log '🦋', header => 'STG', msg => "｢$dist｣";
 
-      $stage.install: $dist;
+      $stage.install: $dist, :!precompile;
 
     } );
 

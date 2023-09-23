@@ -15,8 +15,6 @@ multi method fly (
 
   ) {
 
-  🧚 qq[STT: ｢...｣];
-
   my %state = self.state: :$updates;
 
   %state.values
@@ -28,7 +26,7 @@ multi method fly (
     ==> map( -> $spec { Pakku::Spec.new: $spec } )
     ==> map( -> $spec { 
         
-      🐛 "STT: ｢$spec｣";
+      log '🐛', header => 'STT', msg => "｢$spec｣";
 
       self!repo
         ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
@@ -39,20 +37,20 @@ multi method fly (
 
       unless @candy {
 
-        🐞 "SPC: ｢$spec｣ not added!";
+        log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'not added!';
 
         next;
       }
 
       eager @candy.map( -> $spec {
 
-        🐛 "SPC: ｢$spec｣";
+        log '🐛', header => 'SPC', msg => "｢$spec｣";
 
         my $state = %state{ $spec };
 
         unless $state {
 
-          🐞 "SPC: ｢$spec｣ not added!";
+          log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'not added!';
 
           next;
 
@@ -64,22 +62,22 @@ multi method fly (
         my @rev     = $state.<rev>.grep( *.defined );
         my @upd = $state.<upd>.grep( *.defined );
 
-        @dep.map( -> $meta { 🐛 "DEP: ｢$meta｣" } );
+        @dep.map( -> $meta { log '🐛', header => 'DEP', msg => "｢$meta｣"} );
 
-        @missing.map( -> $spec { 🐞 "DEP: ｢$spec｣ missing!"  } );
+        @missing.map( -> $spec { log '🐞', header => 'DEP', msg => "｢$spec｣", comment => 'missing!' } );
 
-        @upd.map( -> $meta { 🦋 "UPD: ｢$meta｣" } );
+        @upd.map( -> $meta { log '🦋', header => 'UPD', msg => "｢$meta｣"; } );
 
-        @rev.map( -> $meta { 🐛 "REV: ｢$meta｣"  } );
+        @rev.map( -> $meta { log '🐛', header => 'REV', msg => "｢$meta｣" } );
 
-        🦗 "STT: ｢$spec｣" if     @missing;
-        🧚 "STT: ｢$spec｣" unless @missing;
+        log '🦗',  header => 'STT', msg => "｢$spec｣" if     @missing;
+        log '🧚',  header => 'STT', msg => "｢$spec｣" unless @missing;
 
         eager @clean
           ==> grep( -> $meta { $spec ~~ $meta.dist } )
           ==> map( -> $meta {
 
-            🦋 "CLN: ｢$spec｣";
+            log '🦋', header => 'CLN', msg => "｢$spec｣";
 
             unless self!dont {
               samewith 'remove', spec => $meta.dist.Array if $clean;

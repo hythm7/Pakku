@@ -74,11 +74,15 @@ my @tests = (
   "nrec rea add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
   "v 4 force add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:force, :verbose("info")})},
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:force, :verbose("now")})},
   "v 4 add nodeps Spec" =>
-    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("info")})},
+    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("now")})},
   "pretty v 4 noforce add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :!force, :verbose("info")})},
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :!force, :verbose("now")})},
+  "bar spinner add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:bar, :spinner})},
+  "nobar nospinner add Spec" =>
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${bar => False, spinner => False})},
   "update" =>
     ${:update(${}), :cmd("update")},
   "update Dist" =>

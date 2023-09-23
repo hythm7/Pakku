@@ -332,6 +332,10 @@ method !pakku-help ( ) {
   %pakku<opt>.push: ( 'nopretty'         => 'no color' );
   %pakku<opt>.push: ( 'force'            => 'use force' );
   %pakku<opt>.push: ( 'noforce'          => 'no force' );
+  %pakku<opt>.push: ( 'bar'              => 'use progress bar'  );
+  %pakku<opt>.push: ( 'nobar'            => 'no progress bar' );
+  %pakku<opt>.push: ( 'spinner'          => 'use spinner'  );
+  %pakku<opt>.push: ( 'nospinner'        => 'no spinner' );
   %pakku<opt>.push: ( 'nocache'          => 'disable cache' );
   %pakku<opt>.push: ( 'recman'           => 'use all available recommendation managers' );
   %pakku<opt>.push: ( 'norecman'         => 'disable all recommendation managers' );
@@ -341,7 +345,7 @@ method !pakku-help ( ) {
   %pakku<opt>.push: ( 'async'            => 'run asynchronously when possible' );
   %pakku<opt>.push: ( 'yolo'             => 'dont stop on Pakku exceptions' );
   %pakku<opt>.push: ( 'please'           => 'be nice to butterflies' );
-  %pakku<opt>.push: ( 'verbose <level>'  => 'verbose level <nothing all debug now info warn error>' );
+  %pakku<opt>.push: ( 'verbose <level>'  => 'verbose level <nothing error warn info now debug all>' );
   %pakku<opt>.push: ( 'config  <path>'   => 'specify config file' );
 
   help %pakku;

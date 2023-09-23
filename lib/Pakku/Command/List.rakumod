@@ -34,7 +34,7 @@ multi method fly (
       ==> flat( )
       ==> my @meta;
 
-      🐛 "REP: ｢$repo.name()｣" if @meta;
+      log '🐛', header => 'REP', msg => "｢{ $repo.name }｣" if @meta;
 
       @meta.map( -> $meta { out $meta.gist: :$details} ) unless self!dont;
 

@@ -22,8 +22,6 @@ multi method fly (
 
   ) {
 
-  🧚 "UPD: ｢...｣";
-
   my @add;
 
   my %state = self.state: :updates;
@@ -32,7 +30,7 @@ multi method fly (
    ==> map( -> $spec { Pakku::Spec.new: $spec } )
    ==> map( -> $spec {
 
-     🐛 "SPC: ｢$spec｣";
+     log '🐛', header => 'SPC', msg => "｢$spec｣";
 
      self!repo
        ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
@@ -43,7 +41,7 @@ multi method fly (
 
      unless @candy {
 
-       🐞 "SPC: ｢$spec｣ not added!";
+       log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'not added!';
 
        next;
 
@@ -58,7 +56,7 @@ multi method fly (
          ==> map( *.Str )
          ==> my @missing;
 
-       @missing.map( -> $spec { 🐞 "DEP: ｢$spec｣ missing!"  } );
+       @missing.map( -> $spec { log '🐞', header => 'DEP', msg => "｢$spec｣", comment => 'missing!' } );
 
        @add.append: @missing if @missing;
 
@@ -66,13 +64,13 @@ multi method fly (
 
        unless $upd {
 
-         🐛 "UPD: ｢$spec｣ no updates!";
+         log '🐛', header => 'UPD', msg => "｢$spec｣", comment => 'no updates!';
 
          next;
 
        }
 
-       🦋 "UPD: ｢$upd｣";
+       log '🦋', header => 'UPD', msg => "｢$upd｣";
 
        @add.push: $upd.Str;
 
@@ -80,7 +78,7 @@ multi method fly (
 
    } );
 
-  🧚 qq[UPD: ｢{ @add }｣] if @add;
+  log '🧚', header => 'UPD', msg => "｢{ @add }｣" if @add;
 
   @add 
     ==> map(  -> $spec { Pakku::Spec.new: $spec } )
@@ -104,7 +102,7 @@ multi method fly (
     ==> grep( -> $meta { not self.satisfied: spec => Pakku::Spec.new: ~$meta } )
     ==> map( -> $meta {
 
-    🦋 qq[FTC: ｢$meta｣];
+    log '🦋', header => 'FTC', msg => "｢$meta｣";
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -133,11 +131,11 @@ multi method fly (
 
   unless $repo.can-install {
 
-    🐞 qq[REP: ｢$repo｣ can not install!];
+    log '🐞', header => 'REP', msg => "｢$repo｣", comment => 'can not install!';
 
     $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
 
-    🐞 qq[REP: ｢$repo｣ will be used!] if $repo ;
+    log '🐞', header => 'REP', msg => "｢$repo｣", comment => 'will be used!' if $repo;
 
     die X::Pakku::Add.new: dist => @spec unless $repo;
 
@@ -148,21 +146,49 @@ multi method fly (
     name      => $repo.name,
     next-repo => $*REPO;
 
+  my $precomp-repo = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
+
+  $precomp-repo.mkdir;
+
+  my $supply = watch-recursive( $precomp-repo );
 
   @dist 
     ==> map( -> $dist {
   
       self.build: :$stage :$dist if $build;
 
-      🦋 qq[STG: ｢$dist｣];
+      bar.header: 'STG';
+      bar.length: $dist.Str.chars;
+      bar.sym:    $dist.Str;
+      bar.activate;
+
+      my $i = 0;
+
+      my $tap = $supply.tap( -> $module {
+
+      $i += 1;
+
+      my $percent = $i / $dist.meta<provides>.keys * 100;
+
+      bar.percent: $percent;
+
+      bar.show;
+
+      } );
 
       $stage.install: $dist, :$precompile;
+
+      $tap.close;
+
+      bar.deactivate;
+
+      log '🧚', header => 'STG', msg => "｢$dist｣";
 
       self.test: :$stage :$dist :$xtest if $test;
 
     } );
 
-  $stage.remove-artifacts;
+  try $stage.remove-artifacts;
 
   unless self!dont {
 
@@ -174,15 +200,15 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      🐛 qq[BIN: ｢{ $repo.prefix.add( 'bin' ) }｣ binaries added!] if @bin;
+      log '🐛', header => 'BIN', msg => "｢{ $repo.prefix.add( 'bin' ) }｣", comment => 'binaries added!' if @bin;
 
-      @bin.map( -> $bin { 🧚 qq[BIN: ｢{ $bin.IO.basename }｣] } ).eager;
+      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $$bin.IO.basename }｣" } ).eager;
 
     }
 
     if $clean {
 
-      🐛 qq[CLN: ｢...｣];
+      log '🐛', header => 'CLN', msg => '...';
 
       self.state( :!updates ).values
         ==> grep( *.<cln> )
@@ -194,3 +220,29 @@ multi method fly (
     }
   }
 }
+
+my sub watch-recursive ( IO $start ) {
+
+  supply {
+
+    my sub watch ( IO::Path:D $io ) {
+
+      whenever $io.watch -> $e {
+
+        CATCH { default { .so } }
+
+        next unless $e.event ~~ FileRenamed;
+
+        if $e.path.IO.d {
+          watch( $e.path.IO.resolve );
+          next;
+        }
+
+        emit $e unless $e.path.IO.extension;
+      }
+    }
+
+    watch( $start );
+  }
+}
+

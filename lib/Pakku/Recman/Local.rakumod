@@ -12,7 +12,7 @@ has %!provides;
 
 method recommend ( ::?CLASS:D: :$spec! ) {
 
-  🐛 qq[REC: ｢$spec｣ ‹$!name› recommending...];
+  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: recommending!";
 
   my $name   = $spec.name;
 
@@ -32,7 +32,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   return unless @candy;
 
-  🐛 qq[REC: ｢$spec｣ ‹$!name› found];
+  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: found!";
 
   @candy.reduce( &reduce-latest );
 
@@ -47,7 +47,7 @@ method search (
 
   ) {
 
-  🐛 qq[REC: ｢$spec｣ ‹$!name› searching...];
+  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: searching!";
 
   my $pattern = $spec.name.raku;
 
@@ -66,12 +66,12 @@ method search (
 
   unless @candy {
 
-    🐛 qq[REC: ｢$spec｣ ‹$!name› not found!];
+    log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: not found!";
 
     return;
   }
 
-  🐛 qq[REC: ｢$spec｣ ‹$!name› found];
+  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: found!";
 
   @candy
     ==> sort( -> %left, %right {
@@ -89,7 +89,8 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
   unless $!location.d {
 
-    🐞 qq[REC: ｢$!name｣ ‹$!location› does not exist] unless $!location.d; 
+    log '🐞', header => 'REC', msg => "｢$!name｣", comment => "$!location: does not exist!" unless $!location.d;
+
     return;
   }
 
@@ -99,7 +100,7 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
       unless $dir.add( 'META6.json' ).f {
 
-        🐞 qq[REC: ｢$!name｣ ‹$dir› no META6.json!]; 
+        log '🐞', header => 'REC', msg => "｢$!name｣", comment => "$dir: no META6.json!";
 
         next;
       }

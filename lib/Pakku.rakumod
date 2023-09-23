@@ -35,8 +35,8 @@ proto method fly ( | ) {
   LEAVE self.clear;
 
   CATCH {
-    when X::Pakku { 🦗 .message; .resume if $!yolo; nofun }
-    default       { 🦗 .gist;                       nofun }
+    when X::Pakku { log '🦗', header => 'ERR', msg => "｢{ .message }｣"; .resume if $!yolo; nofun; exit 1 }
+    default       { log '🦗', header => 'ERR', msg => .gist; nofun; exit 1; }
   }
 }
 

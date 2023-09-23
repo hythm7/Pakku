@@ -306,7 +306,9 @@ pretty             → use colors
 force              → use force
 async              → run asynchronously (disabled by default because some dists tests are not async safe) 
 dont               → do everything but dont do it (dry run)
-verbose  < level > → verbosity < all debug now info warn error nothing >
+bar                → use progress bar
+spinner            → use spinner
+verbose  < level > → verbosity < nothing error warn info now debug all >
 config   < path >  → specify config file
 recman             → enable all remote recommendation manager
 recman   < MyRec > → use MyRec recommendation manager only
@@ -314,6 +316,8 @@ norecman           → disable all remote recommendation manager
 norecman < MyRec > → use all recommendation managers excepts MyRec
 nopretty           → no colors
 noforce            → no force
+nobar              → no progress bar
+nospinner          → no spinner
 noasync            → dont run asynchronously
 nocache            → disable cache
 yolo               → proceed if error occured (eg. test failure)
@@ -335,11 +339,11 @@ please             → be nice to butterflies
 Most of `Pakku` commands and options can be written in shorter form, for example:
 <pre>
 add    → a  update   → u  yolo     → y  nopretty → np  nothing → «N 0»
-remove → r  download → d  exclude  → x  nodeps   → nd  all     → «A 1»
-list   → l  help     → h  deps     → d  noforce  → nf  debug   → «D 2»
-search → s  verbose  → v  force    → f  notest   → nt  now     → «N 3»
-build  → b  pretty   → p  details  → d  nobuild  → nb  info    → «I 4»
-test   → t  only     → o  norecman → nr nocache  → nc  warn    → «W 5»
+remove → r  download → d  exclude  → x  nodeps   → nd  all     → «A 6»
+list   → l  help     → h  deps     → d  noforce  → nf  debug   → «D 5»
+search → s  verbose  → v  force    → f  notest   → nt  now     → «N 4»
+build  → b  pretty   → p  details  → d  nobuild  → nb  info    → «I 3»
+test   → t  only     → o  norecman → nr nocache  → nc  warn    → «W 2»
 									     
 </pre>
 
@@ -357,7 +361,7 @@ Options can be set via environment variables as well:
 **General**
 <pre>
 PAKKU_VERBOSE PAKKU_CACHE PAKKU_RECMAN PAKKU_NORECMAN PAKKU_CONFIG PAKKU_DONT
-PAKKU_FORCE PAKKU_PRETTY PAKKU_YOLO 
+PAKKU_FORCE PAKKU_PRETTY PAKKU_BAR PAKKU_SPINNER PAKKU_YOLO 
 </pre>
 
 **Add**
@@ -447,6 +451,10 @@ Below is a list of output lines that one can see and their meaning:
 	- 5 `｢warn ｣`   🐞 → Warnings only
 	- 6 `｢error｣`   🦗 → Errors only
 	- 0 `｢nothing｣`    → Nothing
+
+> [!WARNING]
+> Pakku uses emoji and ANSI escape codes, If your terminal doesn't understand them, you can disable colors, bars and spinners,  (eg. `pakku nopretty nobar nospinner add Foo`), or disable permenantely in config file.  also to change emojis, eg. the `debug` emoji, in config file replace `"debug": {"prefix": "🐛"}` with `"debug": {"prefix": "D"}` for example.
+
 
 **Command result**:
   - `-Ofun` - Success

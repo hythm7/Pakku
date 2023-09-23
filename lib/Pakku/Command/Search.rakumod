@@ -14,12 +14,20 @@ multi method fly (
 
   ) {
 
-  sink @spec
+
+  spinner.header: 'SRC';
+  spinner.activate;
+
+  my $promise = start sink @spec
     ==> map( -> $spec { Pakku::Spec.new: $spec                        } )
     ==> map( -> $spec { self!recman.search( :$spec :$relaxed :$count ).Slip   } )
     ==> grep( *.defined                                            )
     ==> map( -> $meta { Pakku::Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { out $meta unless self!dont } );
+
+  until $promise.status { spinner.next; sleep 0.07 }
+
+  spinner.deactivate;
 
 }
 

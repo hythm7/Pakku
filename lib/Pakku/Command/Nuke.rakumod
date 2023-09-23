@@ -17,14 +17,14 @@ multi method fly (
 
   multi sub nuke ( 'home' ) {
 
-    🦋 qq[NUK: ｢home｣];
+    log '🦋', header => 'NUK', msg => '｢home｣';
 
     my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'home';
     my $target = $repo.prefix;
   
     unless $target.d {
 
-      🐛 qq[NUK: ｢$target｣ does not exist!];
+      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
 
       return;
 
@@ -34,7 +34,7 @@ multi method fly (
 
       remove-dir $target;
 
-      🧚 qq[NUK: ｢home｣];
+      log '🧚', header => 'NUK', msg => '｢home｣';
 
     }
 
@@ -42,14 +42,14 @@ multi method fly (
 
   multi sub nuke ( 'site' ) {
 
-    🦋 qq[NUK: ｢site｣];
+    log '🦋', header => 'NUK', msg => '｢site｣';
 
     my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'site';
     my $target = $repo.prefix;
  
     unless $target.d {
 
-      🐛 qq[NUK: ｢$target｣ does not exist!];
+      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
 
       return;
 
@@ -59,7 +59,7 @@ multi method fly (
 
       remove-dir $target;
 
-      🧚 qq[NUK: ｢site｣];
+      log '🧚', header => 'NUK', msg => '｢site｣';
 
     }
 
@@ -67,14 +67,14 @@ multi method fly (
 
   multi sub nuke ( 'vendor' ) {
 
-    🦋 qq[NUK: ｢vendor｣];
+    log '🦋', header => 'NUK', msg => '｢vendor｣';
 
     my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'vendor';
     my $target = $repo.prefix;
  
     unless $target.d {
 
-      🐛 qq[NUK: ｢$target｣ does not exist!];
+      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
 
       return;
 
@@ -84,7 +84,7 @@ multi method fly (
 
       remove-dir $target;
 
-      🧚 qq[NUK: ｢vendor｣];
+      log '🧚', header => 'NUK', msg => '｢vendor｣';
 
     }
    
@@ -92,14 +92,14 @@ multi method fly (
 
   multi sub nuke ( 'core' ) {
 
-    🦋 qq[NUK: ｢core｣];
+    log '🦋', header => 'NUK', msg => '｢core｣';
 
     my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'core';
     my $target = $repo.prefix;
  
     unless $target.d {
 
-      🐛 qq[NUK: ｢$target｣ does not exist!];
+      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
 
       return;
 
@@ -107,7 +107,7 @@ multi method fly (
 
     unless self!force {
 
-      🐞 qq[NUK: ｢core｣ use force to nuke!];
+      log '🐞', header => 'NUK', msg => '｢core｣', commnet => 'use force to nuke!';
 
       die X::Pakku::Nuke.new: :dir<core>;
 
@@ -117,7 +117,7 @@ multi method fly (
 
       remove-dir $target;
 
-      🧚 qq[NUK: ｢core｣];
+      log '🧚', header => 'NUK', msg => '｢core｣';
 
     }
    
@@ -126,13 +126,13 @@ multi method fly (
 
   multi sub nuke ( 'cache' ) {
 
-    🦋 qq[NUK: ｢cache｣];
+    log '🦋', header => 'NUK', msg => '｢cache｣';
 
     my $cache = self!cache;
 
     unless $cache {
 
-      🐛 qq[NUK: ｢cache｣ no cache!];
+      log '🐛', header => 'NUK', msg => "｢$cache｣", commnet => 'no cache!';
 
       return;
     }
@@ -141,7 +141,7 @@ multi method fly (
     
     unless $target.d {
 
-      🐛 qq[NUK: ｢$target｣ does not exist!];
+      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
 
       return;
 
@@ -151,7 +151,7 @@ multi method fly (
 
       remove-dir $target;
 
-      🧚 qq[NUK: ｢cache｣];
+      log '🧚', header => 'NUK', msg => '｢cache｣';
 
     }
 
@@ -159,13 +159,13 @@ multi method fly (
 
   multi sub nuke ( 'pakku' ) {
 
-    🦋 qq[NUK: ｢pakku｣];
+    log '🦋', header => 'NUK', msg => '｢pakku｣';
 
     my $target = self!home;
 
     unless $target.d {
 
-      🐛 qq[NUK: ｢$target｣ does not exist!];
+      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
 
       return;
 
@@ -175,7 +175,7 @@ multi method fly (
 
       remove-dir $target;
 
-      🧚 qq[NUK: ｢pakku｣];
+      log '🧚', header => 'NUK', msg => '｢pakku｣';
 
     }
 

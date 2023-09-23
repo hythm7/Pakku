@@ -45,8 +45,10 @@
     "please": true,
     "pretty": true,
     "force": false,
+    "bar": true,
+    "spinner": true,
     "recman": true,
-    "verbose": "now",
+    "verbose": "info",
     "yolo": false
   },
   "recman": [

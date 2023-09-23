@@ -6,7 +6,7 @@ unit role Pakku::Command::Remove;
 
 multi method fly ( 'remove', :@spec!, Str :$from ) {
 
-  🧚 qq[RMV: ｢{@spec}｣];
+  log '🧚', header => 'RMV', msg => "｢{ @spec }｣";
 
   # Get the current raku `core` dist name
   my @forced  = CompUnit::RepositoryRegistry.repository-for-name('core').candidates('Test');
@@ -22,13 +22,13 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
         my $spec = Pakku::Spec.new: $str;
         my @dist = $repo.candidates( $spec.name, |$spec.spec );
 
-        🐛 qq[SPC: ｢$spec｣ ‹$repo.prefix()› not added!] unless @dist;
+        log '🐛', header => 'SPC', msg => "｢$spec｣", comment => "{ $repo.prefix}: not added!" unless @dist;
 
         if any( @dist.map( *.meta ) ) ~~ any( @forced.map( *.meta ) ) {
 
           unless self!force {
 
-            🐞 qq[RMV: ｢$spec｣ use force to remove!];
+            log '🐞', header => 'RMV', msg => "｢$spec｣", comment => 'use force to remove!';
 
             die X::Pakku::Remove.new: :$spec;
           }
@@ -39,7 +39,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
 
           $repo.uninstall: $dist;
 
-          🧚 qq[RMV: ｢$dist｣];
+          log '🧚', header => 'RMV', msg => "｢$dist｣";
 
         } ) unless self!dont;
 

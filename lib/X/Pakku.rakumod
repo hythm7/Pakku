@@ -5,7 +5,7 @@ class X::Pakku::Spec is X::Pakku {
 
   has $.spec;
 
-  method message ( ) { "SPC: ｢$!spec｣" }
+  method message ( ) { ~$!spec }
 
 }
 
@@ -14,7 +14,7 @@ class X::Pakku::Meta is X::Pakku {
 
   has $.meta;
 
-  method message ( ) { "MTA: ｢$!meta｣" }
+  method message ( ) { ~$!meta }
 
 }
 
@@ -23,7 +23,7 @@ class X::Pakku::Build is X::Pakku {
 
   has $.dist;
 
-  method message ( ) { "BLD: ｢$!dist｣" }
+  method message ( ) { ~$!dist }
 
 }
 
@@ -32,7 +32,7 @@ class X::Pakku::Test is X::Pakku {
 
   has $.dist;
 
-  method message ( ) { "TST: ｢$!dist｣" }
+  method message ( ) { ~$!dist }
 
 }
 
@@ -40,7 +40,7 @@ class X::Pakku::Stage is X::Pakku {
 
   has $.dist;
 
-  method message ( ) { "STG: ｢$!dist｣" }
+  method message ( ) { ~$!dist }
 
 }
 
@@ -48,7 +48,7 @@ class X::Pakku::Add is X::Pakku {
 
   has $.dist;
 
-  method message ( ) { "ADD: ｢$!dist｣" }
+  method message ( ) { ~$!dist }
 
 }
 
@@ -56,7 +56,7 @@ class X::Pakku::Remove is X::Pakku {
 
   has $.spec;
 
-  method message ( ) { "RMV: ｢$!spec｣" }
+  method message ( ) { ~$!spec }
 
 }
 
@@ -64,7 +64,7 @@ class X::Pakku::Nuke is X::Pakku {
 
   has $.dir;
 
-  method message ( ) { "NUK: ｢$!dir｣" }
+  method message ( ) { ~$!dir }
 
 }
 
@@ -73,15 +73,15 @@ class X::Pakku::Archive is X::Pakku {
 
   has $.archive;
 
-  method message ( ) { "ARC: ｢$!archive｣" }
+  method message ( ) { ~$!archive }
 
 }
 
-class X::Pakku::Upgrade is X::Pakku {
+class X::Pakku::Update is X::Pakku {
 
   has $.spec;
 
-  method message ( ) { "UPG: ｢$!spec｣" }
+  method message ( ) { ~$!spec }
 
 }
 
@@ -90,7 +90,7 @@ class X::Pakku::Native is X::Pakku {
 
   has $.lib;
 
-  method message ( ) { "NTV: ｢$!lib｣" }
+  method message ( ) { ~$!lib }
 
 }
 
@@ -99,11 +99,7 @@ class X::Pakku::Cmd is X::Pakku {
 
   has $.cmd;
 
-  method message ( --> Str:D ) {
-
-    "CMD: ｢$!cmd｣";
-
-  }
+  method message ( --> Str:D ) { ~$!cmd; }
 
 }
 
@@ -113,7 +109,7 @@ class X::Pakku::Cnf is X::Pakku {
 
   method message ( --> Str:D ) {
 
-    "CNF: ｢$!cnf｣";
+    ~$!cnf;
 
   }
 

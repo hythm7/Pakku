@@ -173,6 +173,8 @@ grammar Pakku::Grammar::Cmd {
   token pakkuopt:sym<yolo>     { <yolo>     }
   token pakkuopt:sym<please>   { <sym>      }
   token pakkuopt:sym<dont>     { <sym>      }
+  token pakkuopt:sym<bar>      { <bar>      }
+  token pakkuopt:sym<spinner>  { <spinner>  }
   token pakkuopt:sym<verbose>  { <verbose> <.space>+ <level> }
   token pakkuopt:sym<config>   { <config>  <.space>+ <path> }
 
@@ -239,6 +241,17 @@ grammar Pakku::Grammar::Cmd {
   token async:sym<noasync> { <sym> }
   token async:sym<sync>    { <sym> }
 
+  proto token bar { * }
+  token bar:sym<bar>   { <sym> }
+  token bar:sym<b>     { <sym> }
+  token bar:sym<nobar> { <sym> }
+  token bar:sym<nb>    { <sym> }
+
+  proto token spinner { * }
+  token spinner:sym<spinner>   { <sym> }
+  token spinner:sym<s>         { <sym> }
+  token spinner:sym<nospinner> { <sym> }
+  token spinner:sym<ns>        { <sym> }
 
   regex recman   { <rec>   | <rec>   <.space>+ <recman-name> }
   regex norecman { <norec> | <norec> <.space>+ <recman-name> }
@@ -441,42 +454,42 @@ grammar Pakku::Grammar::Cmd {
   token all:sym<all> { <sym> }
   token all:sym<ALL> { <sym> }
   token all:sym<A>   { <sym> }
-  token all:sym<1>   { <sym> }
+  token all:sym<6>   { <sym> }
   token all:sym<42>  { <sym> }
   token all:sym<🐝>  { <sym> }
 
   proto token debug { * }
   token debug:sym<debug> { <sym> }
   token debug:sym<DEBUG> { <sym> }
-  token debug:sym<2>     { <sym> }
+  token debug:sym<5>     { <sym> }
   token debug:sym<D>     { <sym> }
   token debug:sym<🐛>    { <sym> }
 
   proto token now { * }
   token now:sym<now> { <sym> }
   token now:sym<NOW> { <sym> }
-  token now:sym<3>   { <sym> }
+  token now:sym<4>   { <sym> }
   token now:sym<🦋>  { <sym> }
 
   proto token info { * }
   token info:sym<info> { <sym> }
   token info:sym<INFO> { <sym> }
   token info:sym<I>    { <sym> }
-  token info:sym<4>    { <sym> }
+  token info:sym<3>    { <sym> }
   token info:sym<🧚>   { <sym> }
 
   proto token warn { * }
   token warn:sym<warn> { <sym> }
   token warn:sym<WARN> { <sym> }
   token warn:sym<W>    { <sym> }
-  token warn:sym<5>    { <sym> }
+  token warn:sym<2>    { <sym> }
   token warn:sym<🐞>   { <sym> }
 
   proto token error { * }
   token error:sym<error> { <sym> }
   token error:sym<ERROR> { <sym> }
   token error:sym<E>     { <sym> }
-  token error:sym<6>     { <sym> }
+  token error:sym<1>     { <sym> }
   token error:sym<🦗>    { <sym> }
 
 
@@ -885,6 +898,8 @@ class Pakku::Grammar::CmdActions {
   method pakkuopt:sym<dont>     ( $/ ) { make ( :dont )                    }
   method pakkuopt:sym<verbose>  ( $/ ) { make ( verbose => $<level>.made ) }
   method pakkuopt:sym<config>   ( $/ ) { make ( config  => $<path>.made  ) }
+  method pakkuopt:sym<bar>      ( $/ ) { make $<bar>.made                  }
+  method pakkuopt:sym<spinner>  ( $/ ) { make $<spinner>.made              }
 
   method addopt:sym<deps>       ( $/ ) { make $<deps>.made       }
   method addopt:sym<build>      ( $/ ) { make $<build>.made      }
@@ -942,6 +957,16 @@ class Pakku::Grammar::CmdActions {
   method pretty:sym<℘>        ( $/ )  { make ( :pretty  ) }
   method pretty:sym<nopretty> ( $/ )  { make ( :!pretty ) }
   method pretty:sym<np>       ( $/ )  { make ( :!pretty ) }
+
+  method bar:sym<bar>   ( $/ )  { make ( :bar  ) }
+  method bar:sym<b>     ( $/ )  { make ( :bar  ) }
+  method bar:sym<nobar> ( $/ )  { make ( :!bar ) }
+  method bar:sym<nb>    ( $/ )  { make ( :!bar ) }
+
+  method spinner:sym<spinner>   ( $/ )  { make ( :spinner  ) }
+  method spinner:sym<s>         ( $/ )  { make ( :spinner  ) }
+  method spinner:sym<nospinner> ( $/ )  { make ( :!spinner ) }
+  method spinner:sym<ns>        ( $/ )  { make ( :!spinner ) }
 
   method async:sym<async>   ( $/ )  { make ( :async  ) }
   method async:sym<noasync> ( $/ )  { make ( :!async ) }
