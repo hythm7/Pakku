@@ -14,10 +14,10 @@ tasks:
       sudo apt-get update
       sudo apt-get install -y libarchive13 > /dev/null
       cd source
-      raku -I. bin/pakku nobar nospinner verbose 6 add .
+      raku -I. bin/pakku nobar nospinner verbose all add .
   -
     name: add-dist
     language: Bash
     code: |
       set -e
-      pakku nobar nospinner verbose 6 add rak
+      pakku nobar nospinner verbose all add rak
