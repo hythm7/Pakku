@@ -104,7 +104,7 @@ multi method fly (
 
   $precomp-repo.mkdir;
 
-  my $supply = watch-recursive( $precomp-repo );
+  my $supply = watch-recursive( $precomp-repo ).share;
 
   if $serial {
 
@@ -118,13 +118,14 @@ multi method fly (
         bar.sym:    $dist.Str;
         bar.activate;
 
-        my $i = 0;
+        my $processed = 0;
+        my $total     = +$dist.meta<provides>.keys;
 
         my $tap = $supply.tap( -> $module {
 
-        $i += 1;
+        $processed += 1;
 
-        my $percent = $i / $dist.meta<provides>.keys * 100;
+        my $percent = $processed / $total * 100;
 
         bar.percent: $percent;
 
@@ -135,7 +136,7 @@ multi method fly (
         $stage.install: $dist, :$precompile;
 
         $tap.close;
-
+sleep 1;
         bar.deactivate;
 
         log '🧚', header => 'STG', msg => "｢$dist｣";
@@ -176,13 +177,14 @@ multi method fly (
         bar.sym:    $dist.Str;
         bar.activate;
 
-        my $i = 0;
+        my $processed = 0;
+        my $total     = +$dist.meta<provides>.keys;
 
         my $tap = $supply.tap( -> $module {
 
-        $i += 1;
+        $processed += 1;
 
-        my $percent = $i / $dist.meta<provides>.keys * 100;
+        my $percent = $processed / $total * 100;
 
         bar.percent: $percent;
 
@@ -303,7 +305,7 @@ multi method fly (
 
   $precomp-repo.mkdir;
 
-  my $supply = watch-recursive( $precomp-repo );
+  my $supply = watch-recursive( $precomp-repo ).share;
 
 
   if $serial {
@@ -318,13 +320,14 @@ multi method fly (
         bar.sym:    $dist.Str;
         bar.activate;
 
-        my $i = 0;
+        my $processed = 0;
+        my $total     = +$dist.meta<provides>.keys;
 
         my $tap = $supply.tap( -> $module {
 
-        $i += 1;
+        $processed += 1;
 
-        my $percent = $i / $dist.meta<provides>.keys * 100;
+        my $percent = $processed / $total * 100;
 
         bar.percent: $percent;
 
@@ -376,13 +379,14 @@ multi method fly (
         bar.sym:    $dist.Str;
         bar.activate;
 
-        my $i = 0;
+        my $processed = 0;
+        my $total     = +$dist.meta<provides>.keys;
 
         my $tap = $supply.tap( -> $module {
 
-        $i += 1;
+        $processed += 1;
 
-        my $percent = $i / $dist.meta<provides>.keys * 100;
+        my $percent = $processed / $total * 100;
 
         bar.percent: $percent;
 
