@@ -117,7 +117,7 @@ sub retry (
 
     sleep $delay;
 
-    log '🐞', header => 'REC', msg => ~$!, comment => 'retrying!';
+    log '🐞', header => 'REC', msg => "｢$!｣", comment => 'retrying!';
 
     $delay *= 2;
     $max   -= 1;
