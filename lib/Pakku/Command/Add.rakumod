@@ -136,7 +136,7 @@ multi method fly (
         $stage.install: $dist, :$precompile;
 
         $tap.close;
-sleep 1;
+
         bar.deactivate;
 
         log '🧚', header => 'STG', msg => "｢$dist｣";
