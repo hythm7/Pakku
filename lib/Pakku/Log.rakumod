@@ -255,7 +255,16 @@ submethod BUILD (
 
   if $spinner {
 
-    $!spinner = Spinner.new: :level( $!info ) if info  ≤ $!verbose;
+    my @frame;
+
+    @frame.push: %level<error><prefix> // '🦗';
+    @frame.push: %level<warn><prefix>  // '🐞';
+    @frame.push: %level<info><prefix>  // '🧚';
+    @frame.push: %level<now><prefix>   // '🦋';
+    @frame.push: %level<debug><prefix> // '🐛';
+    @frame.push: %level<all><prefix>   // '🐝';
+
+    $!spinner = Spinner.new: :level( $!info ) :@frame if info  ≤ $!verbose;
 
   }
 
