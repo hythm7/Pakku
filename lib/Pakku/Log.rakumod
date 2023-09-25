@@ -101,19 +101,29 @@ my class Bar {
     $!active = False;
   }
 
+  my $lock = Lock::Async.new;
+
   method show( ) {
 
-    print "\b\r";
+    $lock.protect: {
 
-    $!level.msg: :$!header, msg => ~self; 
+      print "\b\r";
+
+      $!level.msg: :$!header, msg => ~self; 
+
+    }
   }
 
   method hide (  ) {
 
-    my $space = $!length + @!sym.uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
+    $lock.protect: {
 
-    print "\b\r";
-    print " " x $space ~ "\b \b" x $space;
+      my $space = $!length + @!sym.uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
+
+      print "\b\r";
+      print " " x $space ~ "\b \b" x $space;
+
+    }
 
   }
 
