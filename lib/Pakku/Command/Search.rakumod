@@ -25,7 +25,7 @@ multi method fly (
     ==> map( -> $meta { Pakku::Meta.new( $meta ).gist: :$details } )
     ==> map( -> $meta { out $meta unless self!dont } );
 
-  until $promise.status { spinner.next; sleep 0.07 }
+  until $promise.status { spinner.next; sleep 0.1 }
 
   spinner.deactivate;
 
