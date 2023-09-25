@@ -72,7 +72,8 @@ method test (
 
   my Int $exitcode;
 
-  my $i = 0;
+  my $processed = 0;
+  my $total     = +@test;
 
   bar.header: 'TST';
   bar.length: $dist.Str.chars;
@@ -109,9 +110,9 @@ method test (
 
       whenever $proc.start( cwd => $prefix, :%*ENV ) {
 
-        my $percent = $i / +@test * 100;
+        my $percent = $processed / $total * 100;
 
-        $i += 1;
+        $processed += 1;
 
         bar.percent: $percent;
 
