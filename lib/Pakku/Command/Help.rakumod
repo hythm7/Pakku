@@ -346,6 +346,7 @@ method !pakku-help ( ) {
   %pakku<opt>.push: ( 'yolo'             => 'dont stop on Pakku exceptions' );
   %pakku<opt>.push: ( 'please'           => 'be nice to butterflies' );
   %pakku<opt>.push: ( 'verbose <level>'  => 'verbose level <nothing error warn info now debug all>' );
+  %pakku<opt>.push: ( 'cores   <number>'  => 'number of cores to use in async mode' );
   %pakku<opt>.push: ( 'config  <path>'   => 'specify config file' );
 
   help %pakku;
