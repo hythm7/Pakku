@@ -78,7 +78,7 @@ my @tests = (
   "v 4 add nodeps Spec" =>
     ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("now")})},
   "cores 42 add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:verbose(42)})},
+    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:cores(42)})},
   "pretty v 4 noforce add Spec" =>
     ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :!force, :verbose("now")})},
   "bar spinner add Spec" =>
