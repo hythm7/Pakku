@@ -20,4 +20,4 @@ tasks:
     language: Bash
     code: |
       set -e
-      pakku nobar nospinner verbose all add rak
+      pakku nobar nospinner verbose all async add rak
