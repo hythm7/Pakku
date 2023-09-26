@@ -309,7 +309,7 @@ dont                → do everything but dont do it (dry run)
 bar                 → use progress bar
 spinner             → use spinner
 verbose  < level >  → verbosity < nothing error warn info now debug all >
-cores    < number > → number of cores used when running in async mode
+cores    < number > → number of cores used when run in async mode
 config   < path >   → specify config file
 recman              → enable all remote recommendation manager
 recman   < MyRec >  → use MyRec recommendation manager only
