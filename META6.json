@@ -58,5 +58,5 @@
     "raku"
     ],
   "test-depends": [ ],
-  "version": "celastrina"
+  "version": "celastrina.1"
 }
