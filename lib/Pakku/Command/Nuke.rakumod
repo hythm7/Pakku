@@ -24,7 +24,7 @@ multi method fly (
   
     unless $target.d {
 
-      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
+      log '🐛', header => 'NUK', msg => "｢$target｣", comment => 'does not exist!';
 
       return;
 
@@ -49,7 +49,7 @@ multi method fly (
  
     unless $target.d {
 
-      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
+      log '🐛', header => 'NUK', msg => "｢$target｣", comment => 'does not exist!';
 
       return;
 
@@ -74,7 +74,7 @@ multi method fly (
  
     unless $target.d {
 
-      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
+      log '🐛', header => 'NUK', msg => "｢$target｣", comment => 'does not exist!';
 
       return;
 
@@ -99,7 +99,7 @@ multi method fly (
  
     unless $target.d {
 
-      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
+      log '🐛', header => 'NUK', msg => "｢$target｣", comment => 'does not exist!';
 
       return;
 
@@ -107,7 +107,7 @@ multi method fly (
 
     unless self!force {
 
-      log '🐞', header => 'NUK', msg => '｢core｣', commnet => 'use force to nuke!';
+      log '🐞', header => 'NUK', msg => '｢core｣', comment => 'use force to nuke!';
 
       die X::Pakku::Nuke.new: :dir<core>;
 
@@ -132,7 +132,7 @@ multi method fly (
 
     unless $cache {
 
-      log '🐛', header => 'NUK', msg => "｢$cache｣", commnet => 'no cache!';
+      log '🐛', header => 'NUK', msg => "｢$cache｣", comment => 'no cache!';
 
       return;
     }
@@ -141,7 +141,7 @@ multi method fly (
     
     unless $target.d {
 
-      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
+      log '🐛', header => 'NUK', msg => "｢$target｣", comment => 'does not exist!';
 
       return;
 
@@ -165,7 +165,7 @@ multi method fly (
 
     unless $target.d {
 
-      log '🐛', header => 'NUK', msg => "｢$target｣", commnet => 'does not exist!';
+      log '🐛', header => 'NUK', msg => "｢$target｣", comment => 'does not exist!';
 
       return;
 

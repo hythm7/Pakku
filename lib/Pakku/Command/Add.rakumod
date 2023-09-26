@@ -68,7 +68,7 @@ multi method fly (
 
   }
 
-  my @dist = @meta.map( -> $meta {
+  my @dist = @meta.hyper( degree => self!degree, :1batch ).map( -> $meta {
 
     log '🦋', header => 'FTC', msg => "｢$meta｣";
 
