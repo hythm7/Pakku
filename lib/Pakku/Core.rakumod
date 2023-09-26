@@ -600,7 +600,7 @@ submethod BUILD ( :%!cnf! ) {
 
   log '🐝', header => 'CNF', msg => '｢yolo｣', comment => ~$!yolo;
 
-  $!cores  = $*KERNEL.cpu-cores - 1;
+  $!cores  = $*KERNEL.cpu-cores;
 
   log '🐝', header => 'CNF', msg => '｢cores｣', comment => ~$!cores;
 
