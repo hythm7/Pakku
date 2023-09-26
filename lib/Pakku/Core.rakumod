@@ -601,7 +601,7 @@ submethod BUILD ( :%!cnf! ) {
 
   log '🐝', header => 'CNF', msg => '｢yolo｣', comment => ~$!yolo;
 
-  $!cores  = $cores;
+  $!cores  = +$cores;
 
   log '🐝', header => 'CNF', msg => '｢cores｣', comment => ~$!cores;
 
