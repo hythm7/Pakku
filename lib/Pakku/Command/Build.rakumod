@@ -20,7 +20,7 @@ multi method fly ( 'build', IO::Path:D :$path! ) {
 
   my $dist = $meta.to-dist: $path;
 
-  my @dist = @meta.map( -> $meta {
+  my @dist = @meta.hyper( degree => self!degree, :1batch ).map( -> $meta {
 
     log '🦋', header => 'FTC', msg => "｢$meta｣";
 
@@ -82,7 +82,7 @@ multi method fly ( 'build', Str:D :$spec! ) {
 
   @meta.append: $meta;
 
-  my @dist = @meta.map( -> $meta {
+  my @dist = @meta.hyper( degree => self!degree, :1batch ).map( -> $meta {
 
     log '🦋', header => 'FTC', msg => "｢$meta｣";
 
