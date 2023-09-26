@@ -29,18 +29,19 @@ multi method fly ( 'config', *%config ) {
 
 my class Pakku {
 
-  has Bool $.pretty;
-  has Bool $.force;
-  has Bool $.async;
-  has Any  $.cache;
-  has Bool $.yolo;
-  has Bool $.please;
-  has Bool $.dont;
-  has Bool $.bar;
-  has Bool $.spinner;
-  has Any  $.recman;
-  has Any  $.norecman;
-  has Str  $.verbose;
+  has Bool  $.pretty;
+  has Bool  $.force;
+  has Bool  $.async;
+  has Any   $.cache;
+  has Bool  $.yolo;
+  has Bool  $.please;
+  has Bool  $.dont;
+  has Bool  $.bar;
+  has Bool  $.spinner;
+  has Any   $.recman;
+  has Any   $.norecman;
+  has Str   $.verbose;
+  has Int() $.cores;
 
 }
 
