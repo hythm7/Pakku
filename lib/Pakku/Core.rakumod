@@ -773,6 +773,7 @@ my sub get-env ( ) {
 
   %env<pakku><cache>    = %*ENV<PAKKU_CACHE>        if %*ENV<PAKKU_CACHE>;
   %env<pakku><verbose>  = %*ENV<PAKKU_VERBOSE>      if %*ENV<PAKKU_VERBOSE>;
+  %env<pakku><cores>    = %*ENV<PAKKU_CORES>      if %*ENV<PAKKU_CORES>;
   %env<pakku><recman>   = %*ENV<PAKKU_RECMAN>       if %*ENV<PAKKU_RECMAN>;
   %env<pakku><norecman> = %*ENV<PAKKU_NORECMAN>     if %*ENV<PAKKU_NORECMAN>;
   %env<pakku><config >  = %*ENV<PAKKU_CONFIG>.IO    if %*ENV<PAKKU_CONFIG>;
@@ -780,6 +781,7 @@ my sub get-env ( ) {
   %env<pakku><force>    = %*ENV<PAKKU_FORCE>.Bool   if %*ENV<PAKKU_FORCE>;
   %env<pakku><yolo>     = %*ENV<PAKKU_YOLO>.Bool    if %*ENV<PAKKU_YOLO>;
   %env<pakku><pretty>   = %*ENV<PAKKU_PRETTY>.Bool  if %*ENV<PAKKU_PRETTY>;
+  %env<pakku><async>    = %*ENV<PAKKU_ASYNC>.Bool   if %*ENV<PAKKU_ASYNC>;
   %env<pakku><bar>      = %*ENV<PAKKU_BAR>.Bool     if %*ENV<PAKKU_BAR>;
   %env<pakku><spinner>  = %*ENV<PAKKU_SPINNER>.Bool if %*ENV<PAKKU_SPINNER>;
 
