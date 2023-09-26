@@ -175,8 +175,9 @@ grammar Pakku::Grammar::Cmd {
   token pakkuopt:sym<dont>     { <sym>      }
   token pakkuopt:sym<bar>      { <bar>      }
   token pakkuopt:sym<spinner>  { <spinner>  }
-  token pakkuopt:sym<verbose>  { <verbose> <.space>+ <level> }
-  token pakkuopt:sym<config>   { <config>  <.space>+ <path> }
+  token pakkuopt:sym<cores>    { <cores>   <.space>+ <number> }
+  token pakkuopt:sym<verbose>  { <verbose> <.space>+ <level>  }
+  token pakkuopt:sym<config>   { <config>  <.space>+ <path>   }
 
   proto token addopt { * }
   token addopt:sym<deps>       { <deps>       }
@@ -285,6 +286,9 @@ grammar Pakku::Grammar::Cmd {
   token verbose:sym<𝕧>       { <sym> }
   token verbose:sym<👀>      { <sym> }
   token verbose:sym<👓>      { <sym> }
+
+  proto token cores { * }
+  token cores:sym<cores> { <sym> }
 
   proto token config { * }
   token config:sym<config> { <sym> }
@@ -897,6 +901,7 @@ class Pakku::Grammar::CmdActions {
   method pakkuopt:sym<please>   ( $/ ) { make ( :please )                  }
   method pakkuopt:sym<dont>     ( $/ ) { make ( :dont )                    }
   method pakkuopt:sym<verbose>  ( $/ ) { make ( verbose => $<level>.made ) }
+  method pakkuopt:sym<cores>    ( $/ ) { make ( cores => $<number>.Int ) }
   method pakkuopt:sym<config>   ( $/ ) { make ( config  => $<path>.made  ) }
   method pakkuopt:sym<bar>      ( $/ ) { make $<bar>.made                  }
   method pakkuopt:sym<spinner>  ( $/ ) { make $<spinner>.made              }
