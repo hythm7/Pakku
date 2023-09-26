@@ -554,6 +554,7 @@ submethod BUILD ( :%!cnf! ) {
   my $pretty   = %!cnf<pakku><pretty>  // True;
   my $bar      = %!cnf<pakku><bar>     // True;
   my $spinner  = %!cnf<pakku><spinner> // True;
+  my $cores    = %!cnf<pakku><cores>   //  $*KERNEL.cpu-cores;;
   my $verbose  = %!cnf<pakku><verbose> // 'info';
   my %level    = %!cnf<log>            // {};
 
@@ -600,7 +601,7 @@ submethod BUILD ( :%!cnf! ) {
 
   log '🐝', header => 'CNF', msg => '｢yolo｣', comment => ~$!yolo;
 
-  $!cores  = $*KERNEL.cpu-cores;
+  $!cores  = $cores;
 
   log '🐝', header => 'CNF', msg => '｢cores｣', comment => ~$!cores;
 
