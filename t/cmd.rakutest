@@ -202,7 +202,7 @@ my @tests = (
   "config log debug unset" =>
     ${:cmd("config"), :config(${:module("log"), :log-level("debug"), :operation("unset")})},
   "config log info set prefix INFO: color green" =>
-    ${:cmd("config"), :config(${:module("log"), :log-level("info"), :operation("set"), :option($[:prefix("INFO:"), :color("green")])})},
+    ${:cmd("config"), :config(${:module("log"), :log-level("info"), :option(Array[Pair].new("prefix" => "INFO:", "color" => "green"))})},
   "config log reset" =>
     ${:cmd("config"), :config(${:module("log"), :operation("reset")})},
   "pretty config /tmp/config.json config pakku enable dont" =>

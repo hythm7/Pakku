@@ -883,7 +883,6 @@ class Pakku::Grammar::CmdActions {
 
     make %(
       module    => ~$<config-module-log>,
-      #operation => ~$<set>, 
       log-level => ~$<log-level>, 
       :@option
     )
