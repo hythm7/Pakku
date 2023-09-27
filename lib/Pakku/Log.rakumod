@@ -438,16 +438,16 @@ submethod BUILD (
     if $!bar.active {
 
       $!bar.hide;
-      $!info.msg: :$header :$msg;
+      $!info.msg: :$header :$msg :!msg-delimit;
 
     } elsif $!spinner.active {
 
       $!spinner.hide;
-      $!info.msg: :$header :$msg;
+      $!info.msg: :$header :$msg :!msg-delimit;
 
     } else {
 
-      $!info.msg: :$header :$msg;
+      $!info.msg: :$header :$msg :!msg-delimit;
 
     }
 
@@ -458,16 +458,16 @@ submethod BUILD (
     if $!bar.active {
 
       $!bar.hide;
-      $!error.msg: :$header :$msg;
+      $!error.msg: :$header :$msg :!msg-delimit;
 
     } elsif $!spinner.active {
 
       $!spinner.hide;
-      $!error.msg: :$header :$msg;
+      $!error.msg: :$header :$msg :!msg-delimit;
 
     } else {
 
-      $!error.msg: :$header :$msg;
+      $!error.msg: :$header :$msg :!msg-delimit;
 
     }
 
