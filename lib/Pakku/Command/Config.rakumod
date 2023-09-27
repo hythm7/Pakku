@@ -126,10 +126,10 @@ my class Recman {
 my class Log {
 
   has Str $.prefix;
-  has Str $.left-msg-delimit;
-  has Str $.right-msg-delimit;
-  has Str $.left-comment-delimit;
-  has Str $.right-comment-delimit;
+  has Str $.msg-left-delimit;
+  has Str $.msg-right-delimit;
+  has Str $.comment-left-delimit;
+  has Str $.comment-right-delimit;
   has Any $.color;
 
 }
@@ -342,9 +342,9 @@ my class Config {
 
     if $level {
 
-      log '🦋', header => 'LOG', msg => ~$level;
+      log '🦋', header => 'LOG', msg => ~$log-level;
 
-      @option.map( -> $option { out to-json $level{ $option }:p } );
+      sink @option.map( -> $option { out to-json $level{ $option }:p } );
 
     } else {
 

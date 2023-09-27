@@ -86,8 +86,12 @@ grammar Pakku::Grammar::Cmd {
   token log-level:sym<error> { <sym> }
 
   proto token log-level-option { * } 
-  token log-level-option:sym<prefix> { <sym> <.space>+ <value> }
-  token log-level-option:sym<color>  { <sym> <.space>+ <value> }
+  token log-level-option:sym<prefix>               { <sym> <.space>+ <value> }
+  token log-level-option:sym<color>                { <sym> <.space>+ <value> }
+  token log-level-option:sym<msg-left-delimit>     { <sym> <.space>+ <value> }
+  token log-level-option:sym<msg-right-delimit>    { <sym> <.space>+ <value> }
+  token log-level-option:sym<comment-left-delimit> { <sym> <.space>+ <value> }
+  token log-level-option:sym<right-right-delimit>  { <sym> <.space>+ <value> }
 
   token key-option    { <key> }
   token keyval-option { <key> <.space>+ <value> }
@@ -875,11 +879,13 @@ class Pakku::Grammar::CmdActions {
   }
 
   method config-cmd:sym<config-module-log-set>( $/ ) {
+    my Pair @option = @<log-level-option>.map( { ~.<sym> => ~.<value> } ); 
+
     make %(
       module    => ~$<config-module-log>,
-      operation => ~$<set>, 
+      #operation => ~$<set>, 
       log-level => ~$<log-level>, 
-      option    => @<log-level-option>.map( { ~.<sym> => ~.<value> } ).Array, 
+      :@option
     )
   }
 
