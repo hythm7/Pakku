@@ -10,7 +10,7 @@ has IO::Path() $.cache-dir;
 
 method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
-  log '🐛', header => 'CAC', msg => "｢$spec｣", comment => 'recommending!';
+  log '🐛', header => 'CAC', msg => ~$spec, :comment<recommending!>;
 
   my $name-hash = sha1 $spec.name;
 
@@ -28,7 +28,7 @@ method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
   my $candy = @candy.reduce( &reduce-latest );
 
-  log '🐛', header => 'CAC', msg => "｢$candy｣";
+  log '🐛', header => 'CAC', msg => ~$candy;
 
   $candy;
 
@@ -36,7 +36,7 @@ method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
 method cached ( Pakku::Meta:D :$meta! ) {
 
-  log '🐛', header => 'CAC', msg => "｢$meta｣", comment => 'looking!';
+  log '🐛', header => 'CAC', msg => ~$meta, :comment<looking!>;
 
   my $name-hash = sha1( $meta.name );
 
@@ -44,7 +44,7 @@ method cached ( Pakku::Meta:D :$meta! ) {
 
   if $cached.d {
 
-    log '🐛', header => 'CAC', msg => "｢$meta｣", comment => ~$cached;
+    log '🐛', header => 'CAC', msg => ~$meta, comment => ~$cached;
 
     $cached
   }
@@ -55,7 +55,7 @@ method cache ( IO::Path:D :$path! ) {
 
   my $meta = Pakku::Meta.new: $path;
 
-  log '🐛', header => 'CAC', msg => "｢$meta｣", comment => 'caching!';
+  log '🐛', header => 'CAC', msg => ~$meta, :comment<caching!>;
 
   my $name-hash = sha1( $meta.name );
 
@@ -63,7 +63,7 @@ method cache ( IO::Path:D :$path! ) {
 
   copy-dir src => $path, :$dst;
 
-  log '🐛', header => 'CAC', msg => "｢$meta｣", comment => ~$dst;
+  log '🐛', header => 'CAC', msg => ~$meta, comment => ~$dst;
 
 }
 

@@ -24,17 +24,17 @@ multi method fly (
 ) {
 
 
-  log '🧚', header => 'ADD', msg => "｢{@spec}｣";
+  log '🧚', header => 'ADD', msg => ~@spec;
 
   my $repo = self.repo-from-spec: spec => $to;
 
   unless $repo.can-install {
 
-    log '🐞', header => 'REP', msg => "｢{$repo.prefix}｣", comment => 'can not install!';
+    log '🐞', header => 'REP', msg => ~$repo.prefix, comment => 'can not install!';
 
     $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
 
-    log '🐞', header => 'REP', msg => "｢$repo｣", comment => 'will be used!' if $repo;
+    log '🐞', header => 'REP', msg => ~$repo, comment => 'will be used!' if $repo;
 
     die X::Pakku::Add.new: dist => ~@spec unless $repo;
 
@@ -62,7 +62,7 @@ multi method fly (
 
   unless @meta {
 
-    log '🧚', header => 'ADD', msg => "｢{@spec}｣", comment => 'already added!';
+    log '🧚', header => 'ADD', msg => ~@spec, comment => 'already added!';
 
     return;
 
@@ -70,7 +70,7 @@ multi method fly (
 
   my @dist = @meta.hyper( degree => self!degree, :1batch ).map( -> $meta {
 
-    log '🦋', header => 'FTC', msg => "｢$meta｣";
+    log '🦋', header => 'FTC', msg => ~$meta;
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -86,7 +86,7 @@ multi method fly (
 
       self.fetch: src => $meta.source, dst => $path;
 
-      log '🧚', header => 'FTC', msg => "｢$meta｣";
+      log '🧚', header => 'FTC', msg => ~$meta;
 
       self!cache.cache: :$path if self!cache;
     }
@@ -139,7 +139,7 @@ multi method fly (
 
         bar.deactivate;
 
-        log '🧚', header => 'STG', msg => "｢$dist｣";
+        log '🧚', header => 'STG', msg => ~$dist;
 
         self.test: :$stage :$dist :$xtest if $test;
 
@@ -153,9 +153,9 @@ multi method fly (
 
           my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-          log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
+          log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
 
-          @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
+          @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => $bin.IO.basename } ).eager;
 
           try $stage.self-destruct; # trying for Windows
 
@@ -198,7 +198,7 @@ multi method fly (
 
         bar.deactivate;
 
-        log '🧚', header => 'STG', msg => "｢$dist｣";
+        log '🧚', header => 'STG', msg => ~$dist;
 
         self.test: :$stage :$dist :$xtest if $test;
 
@@ -214,9 +214,9 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
+      log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
 
-      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
+      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => $bin.IO.basename } ).eager;
 
     }
   }
@@ -238,17 +238,17 @@ multi method fly (
 
 ) {
 
-  log '🧚', header => 'ADD', msg => "｢$path｣";
+  log '🧚', header => 'ADD', msg => ~$path;
 
   my $repo = self.repo-from-spec: spec => $to;
 
   unless $repo.can-install {
 
-    log '🐞', header => 'REP', msg => "｢{$repo.prefix}｣", comment => 'can not install!';
+    log '🐞', header => 'REP', msg => ~$repo.prefix, comment => 'can not install!';
 
     $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
 
-    log '🐞', header => 'REP', msg => "｢{$repo.prefix}｣", comment => 'will be used!' if $repo;
+    log '🐞', header => 'REP', msg => ~$repo.prefix, comment => 'will be used!' if $repo;
 
     die X::Pakku::Add.new: dist => $path unless $repo;
 
@@ -257,7 +257,7 @@ multi method fly (
   my $spec = Pakku::Spec.new: $path;
 
   if not self!force and self.satisfied( :$spec ) {
-    log '🧚', header => 'ADD', msg => "｢$spec｣", comment => 'already added!';
+    log '🧚', header => 'ADD', msg => ~$spec, comment => 'already added!';
     return;
   }
 
@@ -271,7 +271,7 @@ multi method fly (
 
   my @dist = @meta.hyper( degree => self!degree, :1batch ).map( -> $meta {
 
-    log '🦋', header => 'FTC', msg => "｢$meta｣";
+    log '🦋', header => 'FTC', msg => ~$meta;
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -341,7 +341,7 @@ multi method fly (
 
         bar.deactivate;
 
-        log '🧚', header => 'STG', msg => "｢$dist｣";
+        log '🧚', header => 'STG', msg => ~$dist;
 
         self.test: :$stage :$dist :$xtest if $test;
 
@@ -355,9 +355,9 @@ multi method fly (
 
           my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-          log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
+          log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
 
-          @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
+          @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => $bin.IO.basename } ).eager;
 
           try $stage.self-destruct; # trying for Windows
 
@@ -400,7 +400,7 @@ multi method fly (
 
         bar.deactivate;
 
-        log '🧚', header => 'STG', msg => "｢$dist｣";
+        log '🧚', header => 'STG', msg => ~$dist;
 
         self.test: :$stage :$dist :$xtest if $test;
 
@@ -416,9 +416,9 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      log '🐛', header => 'BIN', msg => "｢{$repo.prefix.add( 'bin' )}｣", comment => 'binaries added!' if @bin;
+      log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
 
-      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $bin.IO.basename }｣" } ).eager;
+      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => $bin.IO.basename } ).eager;
 
     }
   }

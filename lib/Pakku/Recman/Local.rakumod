@@ -12,7 +12,7 @@ has %!provides;
 
 method recommend ( ::?CLASS:D: :$spec! ) {
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: recommending!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: recommending!";
 
   my $name   = $spec.name;
 
@@ -32,7 +32,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   return unless @candy;
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: found!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: found!", :msg-delimit;
 
   @candy.reduce( &reduce-latest );
 
@@ -47,7 +47,7 @@ method search (
 
   ) {
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: searching!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: searching!", :msg-delimit;
 
   my $pattern = $spec.name.raku;
 
@@ -66,12 +66,12 @@ method search (
 
   unless @candy {
 
-    log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: not found!";
+    log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: not found!";
 
     return;
   }
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: found!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: found!";
 
   @candy
     ==> sort( -> %left, %right {
@@ -89,7 +89,7 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
   unless $!location.d {
 
-    log '🐞', header => 'REC', msg => "｢$!name｣", comment => "$!location: does not exist!" unless $!location.d;
+    log '🐞', header => 'REC', msg => ~$!name, comment => "$!location: does not exist!" unless $!location.d;
 
     return;
   }
@@ -100,7 +100,7 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
       unless $dir.add( 'META6.json' ).f {
 
-        log '🐞', header => 'REC', msg => "｢$!name｣", comment => "$dir: no META6.json!";
+        log '🐞', header => 'REC', msg => ~$!name, comment => "$dir: no META6.json!";
 
         next;
       }

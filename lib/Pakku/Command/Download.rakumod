@@ -5,14 +5,14 @@ unit role Pakku::Command::Download;
 
 multi method fly ( 'download', :@spec! ) {
 
-  log '🧚', header => 'DWN', msg => "｢{ @spec }｣";
+  log '🧚', header => 'DWN', msg => ~@spec;
 
   sink @spec
     ==> map( -> $spec { Pakku::Spec.new:      $spec               } )
     ==> map( -> $spec { self.satisfy: :$spec               } )
     ==> map( -> $meta {
 
-        log '🦋', header => 'FTC', msg => "｢$meta｣";
+        log '🦋', header => 'FTC', msg => ~$meta;
 
         my IO::Path $path = $*TMPDIR.add( $meta.id ).add( now.Num );
 
@@ -31,7 +31,7 @@ multi method fly ( 'download', :@spec! ) {
           self!cache.cache: :$path if self!cache;
         }
 
-        log '🧚', header => 'DWN', msg => "｢$path｣" unless self!dont;
+        log '🧚', header => 'DWN', msg => ~$path unless self!dont;
 
       } );
 }

@@ -126,6 +126,10 @@ my class Recman {
 my class Log {
 
   has Str $.prefix;
+  has Str $.left-msg-delimit;
+  has Str $.right-msg-delimit;
+  has Str $.left-comment-delimit;
+  has Str $.right-comment-delimit;
   has Any $.color;
 
 }
@@ -154,7 +158,7 @@ my class Config {
 
   multi method config ( Str:D $module, Pair:D :@option!, Str :$recman-name, Str :$log-level ) {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
@@ -163,7 +167,7 @@ my class Config {
 
       unless try self."$module"().new( |$option ) ~~ $option {
 
-        log '🐞', header => 'CNF', msg => to-json( $option, :!pretty ), comment => 'invalid option!';
+        log '🐞', header => 'CNF', msg => to-json( $option, :!pretty ), comment => 'invalid option!', :!msg-delimit;
 
         die X::Pakku::Cnf.new( cnf => "$module" );
       }
@@ -172,13 +176,13 @@ my class Config {
 
     my %config-key;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣";
+    log '🦋', header => 'CNF', msg => ~$module;
 
     given $module {
 
       when 'recman' {
 
-        log '🦋', header => 'REC', msg => "｢$recman-name｣";
+        log '🦋', header => 'REC', msg => ~$recman-name;
 
         my $index = quietly %!configuration{ $module }.first( *.<name> eq $recman-name, :k );
 
@@ -197,7 +201,7 @@ my class Config {
 
       when 'log' {
 
-        log '🦋', header => 'LOG', msg => "｢$log-level｣";
+        log '🦋', header => 'LOG', msg => ~$log-level;
 
         %config-key := %!configuration{ $module }{ $log-level }
 
@@ -216,7 +220,7 @@ my class Config {
 
       %config-key{ $key }:delete without $value; # remove null values
 
-      log '🦋', header => 'CNF', msg => to-json( $option, :!pretty );
+      log '🦋', header => 'CNF', msg => to-json( $option, :!pretty ), :!msg-delimit;
 
     } );
 
@@ -226,15 +230,15 @@ my class Config {
 
   multi method config ( Str:D $module, 'unset', :$recman-name! ) {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
     my $recman = quietly %!configuration{ $module }.first( *.<name> eq $recman-name );
 
-    log '🐞', header => 'REC', msg => "｢$recman-name｣", comment => 'does not exist!' unless $recman;
+    log '🐞', header => 'REC', msg => ~$recman-name, comment => 'does not exist!' unless $recman;
 
-    quietly log '🦋', header => 'CNF', msg => "｢$recman-name｣", comment => "\n" ~ to-json $recman with $recman;
+    quietly log '🦋', header => 'CNF', msg => ~$recman-name, comment => "\n" ~ to-json $recman with $recman;
 
     %!configuration{ $module } .= grep( not *.<name> eq $recman-name );
 
@@ -261,16 +265,16 @@ my class Config {
 
   multi method config ( Str:D $module, 'unset', :$log-level! ) {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
 
-    log '🐞', header => 'LOG', msg => "｢$log-level｣", comment => 'does not exist!' unless %!configuration{ $module }{ $log-level }:exists;
+    log '🐞', header => 'LOG', msg => ~$log-level, comment => 'does not exist!' unless %!configuration{ $module }{ $log-level }:exists;
 
     my $level = %!configuration{ $module }{ $log-level }:delete;
 
-    quietly log '🦋', header => 'CNF', msg => "｢$log-level｣", comment => "\n" ~ to-json $level with $level;
+    quietly log '🦋', header => 'CNF', msg => ~$log-level, comment => "\n" ~ to-json $level with $level;
 
     self!write-config;
 
@@ -278,23 +282,23 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$recman-name!, Str :@option! )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     self!check-config-file-exists;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣";
+    log '🦋', header => 'CNF', msg => ~$module;
 
     my $recman = quietly %!configuration{ $module }.first( *.<name> eq $recman-name );
 
     if $recman {
 
-      log '🦋', header => 'REC', msg => "｢$recman-name｣";
+      log '🦋', header => 'REC', msg => ~$recman-name;
 
       @option.map( -> $option { out to-json $recman{ $option }:p } );
 
     } else {
 
-      log '🐞', header => 'REC', msg => "｢$recman-name｣", comment => 'does not exist!';
+      log '🐞', header => 'REC', msg => ~$recman-name, comment => 'does not exist!';
 
     }
 
@@ -302,17 +306,17 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$recman-name! )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     self!check-config-file-exists;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣";
+    log '🦋', header => 'CNF', msg => ~$module;
 
     my $recman = quietly %!configuration{ $module }.first( *.<name> eq $recman-name );
 
     if $recman {
 
-      log '🦋', header => 'REC', msg => "｢$recman-name｣";
+      log '🦋', header => 'REC', msg => ~$recman-name;
 
       my Str $json = to-json $recman;
 
@@ -320,7 +324,7 @@ my class Config {
 
     } else {
 
-      log '🐞', header => 'REC', msg => "｢$recman-name｣", comment => 'does not exist!';
+      log '🐞', header => 'REC', msg => ~$recman-name, comment => 'does not exist!';
 
     }
 
@@ -328,23 +332,23 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$log-level!, Str :@option! )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     self!check-config-file-exists;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣";
+    log '🦋', header => 'CNF', msg => ~$module;
 
     my $level = quietly %!configuration{ $module }{ $log-level };
 
     if $level {
 
-      log '🦋', header => 'LOG', msg => "｢$level｣";
+      log '🦋', header => 'LOG', msg => ~$level;
 
       @option.map( -> $option { out to-json $level{ $option }:p } );
 
     } else {
 
-      log '🐞', header => 'LOG', msg => "｢$log-level｣", comment => 'does not exist!';
+      log '🐞', header => 'LOG', msg => ~$log-level, comment => 'does not exist!';
 
     }
 
@@ -352,17 +356,17 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$log-level! )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     self!check-config-file-exists;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣";
+    log '🦋', header => 'CNF', msg => ~$module;
 
     my $level = quietly %!configuration{ $module }{ $log-level };
 
     if $level {
 
-      log '🦋', header => 'LOG', msg => "｢$log-level｣";
+      log '🦋', header => 'LOG', msg => ~$log-level;
 
       my Str $json = to-json $level;
 
@@ -370,7 +374,7 @@ my class Config {
 
     } else {
 
-      log '🐞', header => 'LOG', msg => "｢$log-level｣", comment => 'does not exist!';
+      log '🐞', header => 'LOG', msg => ~$log-level, comment => 'does not exist!';
 
     }
 
@@ -378,11 +382,11 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :@option! )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣";
+    log '🦋', header => 'CNF', msg => ~$module;
 
     sink @option.map( -> $option { out to-json %!configuration{ $module }{ $option }:p } );
 
@@ -390,11 +394,11 @@ my class Config {
 
   multi method config ( Str:D $module, 'view'  )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣";
+    log '🦋', header => 'CNF', msg => ~$module;
 
     my Str $json = to-json %!configuration{ $module };
 
@@ -405,7 +409,7 @@ my class Config {
 
   multi method config ( Str:D $module, 'reset' )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     self!check-config-file-exists;
 
@@ -413,7 +417,7 @@ my class Config {
 
     my Str $json = to-json %!configuration{ $module };
 
-    log '🦋', header => 'CNF', msg => "｢$module｣", comment => "\n$json";
+    log '🦋', header => 'CNF', msg => ~$module, comment => "\n$json";
 
     self!write-config;
     
@@ -421,13 +425,13 @@ my class Config {
 
   multi method config ( Str:D $module, 'unset' )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     self!check-config-file-exists;
 
     my Str $json = to-json %!configuration{ $module }:delete;
 
-    log '🦋', header => 'CNF', msg => "｢$module｣", comment => "\n$json";
+    log '🦋', header => 'CNF', msg => ~$module, comment => "\n$json";
 
     self!write-config;
     
@@ -435,7 +439,7 @@ my class Config {
 
   multi method config ( 'reset' ) {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     self!check-config-file-exists;
 
@@ -447,7 +451,7 @@ my class Config {
 
   multi method config ( 'view' )  {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
@@ -459,11 +463,11 @@ my class Config {
 
   multi method config ( 'new' ) {
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣";
+    log '🐛', header => 'CNF', msg => ~$!config-file;
     
     if $!config-file.e {
 
-      log '🐞', header => 'CNF', msg => "｢$!config-file｣", comment => 'already exists!';
+      log '🐞', header => 'CNF', msg => ~$!config-file, comment => 'already exists!';
 
       die X::Pakku::Cnf.new: cnf => $!config-file; 
 
@@ -475,7 +479,7 @@ my class Config {
 
     self!write-config;
     
-    log '🧚', header => 'CNF', msg => "｢$!config-file｣";
+    log '🧚', header => 'CNF', msg => ~$!config-file;
   }
 
   method !write-config ( ) {
@@ -484,14 +488,14 @@ my class Config {
 
     $!config-file.spurt: $json;
 
-    log '🐛', header => 'CNF', msg => "｢$!config-file｣", comment => "\n$json";
+    log '🐛', header => 'CNF', msg => ~$!config-file, comment => "\n$json";
   }
 
   method !check-config-file-exists ( ) {
 
     unless $!config-file.e {
 
-      log '🐞', header => 'CNF', msg => "｢$!config-file｣", comment => 'does not exist! to create: pakku config new';
+      log '🐞', header => 'CNF', msg => ~$!config-file, comment => 'does not exist! to create: pakku config new';
 
       die X::Pakku::Cnf.new: cnf => $!config-file; 
 

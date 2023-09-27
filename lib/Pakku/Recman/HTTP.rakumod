@@ -9,13 +9,13 @@ has Pakku::HTTP:D $!http     is required is built;
 
 method recommend ( ::?CLASS:D: :$spec! ) {
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: recommending!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: recommending!";
 
 
   my $uri = $!location ~ '/meta/recommend/' ~ form-query $spec.spec;
 
 
-  log '🐝', header => 'REC', msg => "｢$uri｣";
+  log '🐝', header => 'REC', msg => ~$uri;
 
   my $response;
  
@@ -34,7 +34,7 @@ method recommend ( ::?CLASS:D: :$spec! ) {
 
   return unless $meta;
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: found!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: found!";
 
   $meta;
 }
@@ -48,7 +48,7 @@ method search (
 
   ) {
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: searching!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: searching!";
 
   my $name = $spec.name;
   my $ver  = $spec.ver;
@@ -67,7 +67,7 @@ method search (
 
   $uri ~= '?' ~ @query.join( '&') if @query;
 
-  log '🐝', header => 'REC', msg => "｢$uri｣";
+  log '🐝', header => 'REC', msg => ~$uri;
 
   my $response;
 
@@ -87,13 +87,13 @@ method search (
 
   unless $meta {
 
-    log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: not found!";
+    log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: not found!";
 
     return;
 
   }
 
-  log '🐛', header => 'REC', msg => "｢$spec｣", comment => "$!name: found!";
+  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: found!";
 
   Rakudo::Internals::JSON.from-json: $meta;
   
@@ -117,7 +117,7 @@ sub retry (
 
     sleep $delay;
 
-    log '🐞', header => 'REC', msg => "｢$!｣", comment => 'retrying!';
+    log '🐞', header => 'REC', msg => ~$!, :comment<retrying!>;
 
     $delay *= 2;
     $max   -= 1;

@@ -15,27 +15,51 @@
   "log": {
     "all": {
       "color": "reset",
-      "prefix": "🐝"
+      "prefix": "🐝",
+      "msg-left-delimit":      "｢",
+      "msg-right-delimit":     "｣",
+      "comment-left-delimit":  "❨",
+      "comment-right-delimit": "❩"
     },
     "debug": {
       "color": "green",
-      "prefix": "🐛"
+      "prefix": "🐛",
+      "msg-left-delimit":      "｢",
+      "msg-right-delimit":     "｣",
+      "comment-left-delimit":  "❨",
+      "comment-right-delimit": "❩"
     },
     "error": {
       "color": "red",
-      "prefix": "🦗"
+      "prefix": "🦗",
+      "msg-left-delimit":      "｢",
+      "msg-right-delimit":     "｣",
+      "comment-left-delimit":  "❨",
+      "comment-right-delimit": "❩"
     },
     "info": {
       "color": "magenta",
-      "prefix": "🧚"
+      "prefix": "🧚",
+      "msg-left-delimit":      "｢",
+      "msg-right-delimit":     "｣",
+      "comment-left-delimit":  "❨",
+      "comment-right-delimit": "❩"
     },
     "now": {
       "color": "cyan",
-      "prefix": "🦋"
+      "prefix": "🦋",
+      "msg-left-delimit":      "｢",
+      "msg-right-delimit":     "｣",
+      "comment-left-delimit":  "❨",
+      "comment-right-delimit": "❩"
     },
     "warn": {
       "color": "yellow",
-      "prefix": "🐞"
+      "prefix": "🐞",
+      "msg-left-delimit":      "｢",
+      "msg-right-delimit":     "｣",
+      "comment-left-delimit":  "❨",
+      "comment-right-delimit": "❩"
     }
   },
   "pakku": {

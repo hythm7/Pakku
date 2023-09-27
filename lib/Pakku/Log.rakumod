@@ -4,19 +4,55 @@ my class Level {
 
   has Str:D $!prefix is required;
 
+  has Str $!msg-left-delimit;
+  has Str $!msg-right-delimit;
+  has Str $!comment-left-delimit;
+  has Str $!comment-right-delimit;
+
   has Str:D $!color  is required;
   has Str   $!reset-color;
 
   has IO::Handle $!fh is required;
 
 
-  method msg ( Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) {
+  method msg (
 
-    $!fh.put: $!color ~ "$!prefix $header: $msg $comment" ~ $!reset-color;
+    Str:D :$header!,
+    Str:D :$msg!,
+    Str:D :$comment = '',
+
+    Bool  :$msg-delimit     = True,
+    Bool  :$comment-delimit = False,
+
+    ) {
+
+    my ( $msg-left-delimit,     $msg-right-delimit     ) = $msg-delimit     ?? ( $!msg-left-delimit,     $!msg-right-delimit     )     !! ( '', '' );
+    my ( $comment-left-delimit, $comment-right-delimit ) = $comment-delimit ?? ( $!comment-left-delimit, $!comment-right-delimit )     !! ( '', '' );
+
+    $!fh.put: $!color                ~
+              $!prefix               ~
+              " "                    ~
+              $header                ~
+              ": "                   ~
+              $msg-left-delimit      ~
+              $msg                   ~
+              $msg-right-delimit     ~
+              " "                    ~
+              $comment-left-delimit  ~
+              $comment               ~
+              $comment-right-delimit ~
+              $!reset-color;
 
   }
 
-  submethod BUILD ( :$!fh!, :$!prefix!, :$color! ) {
+  submethod BUILD (
+    :$!fh!,
+    :$!prefix!,
+    :$!msg-left-delimit!,
+    :$!msg-right-delimit!,
+    :$!comment-left-delimit!,
+    :$!comment-right-delimit!,
+    :$color! ) {
 
     $!color       = $color  ?? "\e\[" ~ $color ~ "m" !! '';
     $!reset-color = $!color ?? "\e\[0m"              !! '';
@@ -232,7 +268,6 @@ submethod BUILD (
 
 ) {
 
-
   $!verbose = LogLevel::{ $verbose } // info;  
 
   my %color = ( :0reset, :30black, :31red, :32green, :33yellow, :34blue, :35magenta, :36cyan, :37white );
@@ -240,12 +275,60 @@ submethod BUILD (
   
   my $color = '' unless $!pretty;
 
-  $!all   = Level.new: :fh( $*OUT ) :prefix( %level<all><prefix>   // '🐝' ) :color( $color // %color{ %level<all><color>   // 'reset'   } ) if  all   ≤ $!verbose;
-  $!debug = Level.new: :fh( $*OUT ) :prefix( %level<debug><prefix> // '🐛' ) :color( $color // %color{ %level<debug><color> // 'green'   } ) if  debug ≤ $!verbose;
-  $!now   = Level.new: :fh( $*OUT ) :prefix( %level<now><prefix>   // '🦋' ) :color( $color // %color{ %level<now><color>   // 'cyan'    } ) if  now   ≤ $!verbose;
-  $!info  = Level.new: :fh( $*OUT ) :prefix( %level<info><prefix>  // '🧚' ) :color( $color // %color{ %level<info><color>  // 'magenta' } ) if  info  ≤ $!verbose;
-  $!warn  = Level.new: :fh( $*ERR ) :prefix( %level<warn><prefix>  // '🐞' ) :color( $color // %color{ %level<warn><color>  // 'yellow'  } ) if  warn  ≤ $!verbose;
-  $!error = Level.new: :fh( $*ERR ) :prefix( %level<error><prefix> // '🦗' ) :color( $color // %color{ %level<error><color> // 'red'     } ) if  error ≤ $!verbose;
+  $!all   = Level.new(
+    :fh( $*OUT )
+    :prefix( %level<all><prefix>   // '🐝' )
+    :color( $color // %color{ %level<all><color>   // 'reset'   } )
+    :msg-left-delimit(      %level<all><msg-left-delimit>  // '｢' )
+    :msg-right-delimit(     %level<all><msg-right-delimit> // '｣' )
+    :comment-left-delimit(  %level<all><msg-left-delimit>  // '❨' )
+    :comment-right-delimit( %level<all><msg-right-delimit> // '❩' )
+  ) if  all   ≤ $!verbose;
+  $!debug = Level.new(
+    :fh( $*OUT )
+    :prefix( %level<debug><prefix> // '🐛' )
+    :color( $color // %color{ %level<debug><color> // 'green'   } )
+    :msg-left-delimit(      %level<debug><msg-left-delimit>  // '｢' )
+    :msg-right-delimit(     %level<debug><msg-right-delimit> // '｣' )
+    :comment-left-delimit(  %level<debug><msg-left-delimit>  // '❨' )
+    :comment-right-delimit( %level<debug><msg-right-delimit> // '❩' )
+  ) if  debug ≤ $!verbose;
+  $!now   = Level.new(
+    :fh( $*OUT )
+    :prefix( %level<now><prefix>   // '🦋' )
+    :color( $color // %color{ %level<now><color>   // 'cyan'    } )
+    :msg-left-delimit(      %level<now><msg-left-delimit>  // '｢' )
+    :msg-right-delimit(     %level<now><msg-right-delimit> // '｣' )
+    :comment-left-delimit(  %level<now><msg-left-delimit>  // '❨' )
+    :comment-right-delimit( %level<now><msg-right-delimit> // '❩' )
+  ) if  now   ≤ $!verbose;
+  $!info  = Level.new(
+    :fh( $*OUT )
+    :prefix( %level<info><prefix>  // '🧚' )
+    :color( $color // %color{ %level<info><color>  // 'magenta' }  )
+    :msg-left-delimit(      %level<info><msg-left-delimit>  // '｢' )
+    :msg-right-delimit(     %level<info><msg-right-delimit> // '｣' )
+    :comment-left-delimit(  %level<info><msg-left-delimit>  // '❨' )
+    :comment-right-delimit( %level<info><msg-right-delimit> // '❩' )
+  ) if  info  ≤ $!verbose;
+  $!warn  = Level.new(
+    :fh( $*ERR )
+    :prefix( %level<warn><prefix>  // '🐞' )
+    :color( $color // %color{ %level<warn><color>  // 'yellow'  } )
+    :msg-left-delimit(      %level<warn><msg-left-delimit>  // '｢' )
+    :msg-right-delimit(     %level<warn><msg-right-delimit> // '｣' )
+    :comment-left-delimit(  %level<warn><msg-left-delimit>  // '❨' )
+    :comment-right-delimit( %level<warn><msg-right-delimit> // '❩' )
+  ) if  warn  ≤ $!verbose;
+  $!error = Level.new(
+    :fh( $*ERR )
+    :prefix( %level<error><prefix> // '🦗' )
+    :color( $color // %color{ %level<error><color> // 'red'     } )
+    :msg-left-delimit(      %level<error><msg-left-delimit>  // '｢' )
+    :msg-right-delimit(     %level<error><msg-right-delimit> // '｣' )
+    :comment-left-delimit(  %level<error><msg-left-delimit>  // '❨' )
+    :comment-right-delimit( %level<error><msg-right-delimit> // '❩' )
+    ) if  error ≤ $!verbose;
 
   if $bar {
 
@@ -292,37 +375,37 @@ submethod BUILD (
     }
   }
 
-  multi sub log ( '🐝', Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) is export {
+  multi sub log ( '🐝', *%opt ) is export {
 
-    $!all.msg: :$header :$msg :$comment;
+    $!all.msg: |%opt;
   }
 
-  multi sub log ( '🐛', Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) is export {
+  multi sub log ( '🐛', *%opt ) is export {
 
-    $!debug.msg: :$header :$msg :$comment;
-
-  }
-
-  multi sub log ( '🦋', Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) is export {
-
-    $!now.msg: :$header :$msg :$comment;
-  }
-
-  multi sub log ( '🧚', Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) is export {
-
-    $!info.msg: :$header :$msg :$comment;
+    $!debug.msg: |%opt;
 
   }
 
-  multi sub log ( '🐞', Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) is export {
+  multi sub log ( '🦋', *%opt ) is export {
 
-    $!warn.msg: :$header :$msg :$comment;
+    $!now.msg: |%opt;
+  }
+
+  multi sub log ( '🧚', *%opt ) is export {
+
+    $!info.msg: |%opt;
 
   }
 
-  multi sub log ( '🦗', Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) is export {
+  multi sub log ( '🐞', *%opt ) is export {
 
-    $!error.msg: :$header :$msg :$comment;
+    $!warn.msg: |%opt;
+
+  }
+
+  multi sub log ( '🦗', *%opt ) is export {
+
+    $!error.msg: |%opt;
 
   }
 

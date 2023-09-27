@@ -30,7 +30,7 @@ multi method fly (
    ==> map( -> $spec { Pakku::Spec.new: $spec } )
    ==> map( -> $spec {
 
-     log '🐛', header => 'SPC', msg => "｢$spec｣";
+     log '🐛', header => 'SPC', msg => ~$spec;
 
      self!repo
        ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
@@ -41,7 +41,7 @@ multi method fly (
 
      unless @candy {
 
-       log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'not added!';
+       log '🐞', header => 'SPC', msg => ~$spec, comment => 'not added!';
 
        next;
 
@@ -56,7 +56,7 @@ multi method fly (
          ==> map( *.Str )
          ==> my @missing;
 
-       @missing.map( -> $spec { log '🐞', header => 'DEP', msg => "｢$spec｣", comment => 'missing!' } );
+       @missing.map( -> $spec { log '🐞', header => 'DEP', msg => ~$spec, comment => 'missing!' } );
 
        @add.append: @missing if @missing;
 
@@ -64,13 +64,13 @@ multi method fly (
 
        unless $upd {
 
-         log '🐛', header => 'UPD', msg => "｢$spec｣", comment => 'no updates!';
+         log '🐛', header => 'UPD', msg => ~$spec, comment => 'no updates!';
 
          next;
 
        }
 
-       log '🦋', header => 'UPD', msg => "｢$upd｣";
+       log '🦋', header => 'UPD', msg => ~$upd;
 
        @add.push: $upd.Str;
 
@@ -78,7 +78,7 @@ multi method fly (
 
    } );
 
-  log '🧚', header => 'UPD', msg => "｢{ @add }｣" if @add;
+  log '🧚', header => 'UPD', msg => ~@add if @add;
 
   @add 
     ==> map(  -> $spec { Pakku::Spec.new: $spec } )
@@ -102,7 +102,7 @@ multi method fly (
     ==> grep( -> $meta { not self.satisfied: spec => Pakku::Spec.new: ~$meta } )
     ==> map( -> $meta {
 
-    log '🦋', header => 'FTC', msg => "｢$meta｣";
+    log '🦋', header => 'FTC', msg => ~$meta;
 
     my IO::Path $path = self!tmp.add( $meta.id ).add( now.Num );
 
@@ -131,11 +131,11 @@ multi method fly (
 
   unless $repo.can-install {
 
-    log '🐞', header => 'REP', msg => "｢$repo｣", comment => 'can not install!';
+    log '🐞', header => 'REP', msg => ~$repo, comment => 'can not install!';
 
     $repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation ).first( *.can-install );
 
-    log '🐞', header => 'REP', msg => "｢$repo｣", comment => 'will be used!' if $repo;
+    log '🐞', header => 'REP', msg => ~$repo, comment => 'will be used!' if $repo;
 
     die X::Pakku::Add.new: dist => @spec unless $repo;
 
@@ -183,7 +183,7 @@ multi method fly (
 
       bar.deactivate;
 
-      log '🧚', header => 'STG', msg => "｢$dist｣";
+      log '🧚', header => 'STG', msg => ~$dist;
 
       self.test: :$stage :$dist :$xtest if $test;
 
@@ -201,15 +201,13 @@ multi method fly (
 
       my @bin = Rakudo::Internals.DIR-RECURSE: $bin, file => *.ends-with: none <-m -j -js -m.bat -j.bat -js.bat>;
 
-      log '🐛', header => 'BIN', msg => "｢{ $repo.prefix.add( 'bin' ) }｣", comment => 'binaries added!' if @bin;
+      log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
 
-      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => "｢{ $$bin.IO.basename }｣" } ).eager;
+      @bin.sort.map( -> $bin { log '🧚', header => 'BIN', msg => ~$bin.IO.basename } ).eager;
 
     }
 
     if $clean {
-
-      log '🐛', header => 'CLN', msg => '...';
 
       self.state( :!updates ).values
         ==> grep( *.<cln> )

@@ -26,7 +26,7 @@ multi method fly (
     ==> map( -> $spec { Pakku::Spec.new: $spec } )
     ==> map( -> $spec { 
         
-      log '🐛', header => 'STT', msg => "｢$spec｣";
+      log '🐛', header => 'STT', msg => ~$spec;
 
       self!repo
         ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
@@ -37,20 +37,20 @@ multi method fly (
 
       unless @candy {
 
-        log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'not added!';
+        log '🐞', header => 'SPC', msg => ~$spec, comment => 'not added!';
 
         next;
       }
 
       eager @candy.map( -> $spec {
 
-        log '🐛', header => 'SPC', msg => "｢$spec｣";
+        log '🐛', header => 'SPC', msg => ~$spec;
 
         my $state = %state{ $spec };
 
         unless $state {
 
-          log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'not added!';
+          log '🐞', header => 'SPC', msg => ~$spec, comment => 'not added!';
 
           next;
 
@@ -62,22 +62,22 @@ multi method fly (
         my @rev     = $state.<rev>.grep( *.defined );
         my @upd = $state.<upd>.grep( *.defined );
 
-        @dep.map( -> $meta { log '🐛', header => 'DEP', msg => "｢$meta｣"} );
+        @dep.map( -> $meta { log '🐛', header => 'DEP', msg => ~$meta} );
 
-        @missing.map( -> $spec { log '🐞', header => 'DEP', msg => "｢$spec｣", comment => 'missing!' } );
+        @missing.map( -> $spec { log '🐞', header => 'DEP', msg => ~$spec, comment => 'missing!' } );
 
-        @upd.map( -> $meta { log '🦋', header => 'UPD', msg => "｢$meta｣"; } );
+        @upd.map( -> $meta { log '🦋', header => 'UPD', msg => ~$meta; } );
 
-        @rev.map( -> $meta { log '🐛', header => 'REV', msg => "｢$meta｣" } );
+        @rev.map( -> $meta { log '🐛', header => 'REV', msg => ~$meta } );
 
-        log '🦗',  header => 'STT', msg => "｢$spec｣" if     @missing;
-        log '🧚',  header => 'STT', msg => "｢$spec｣" unless @missing;
+        log '🦗',  header => 'STT', msg => ~$spec if     @missing;
+        log '🧚',  header => 'STT', msg => ~$spec unless @missing;
 
         eager @clean
           ==> grep( -> $meta { $spec ~~ $meta.dist } )
           ==> map( -> $meta {
 
-            log '🦋', header => 'CLN', msg => "｢$spec｣";
+            log '🦋', header => 'CLN', msg => ~$spec;
 
             unless self!dont {
               samewith 'remove', spec => $meta.dist.Array if $clean;

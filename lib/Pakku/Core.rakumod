@@ -68,7 +68,7 @@ method test (
 
   my $prefix  = $dist.prefix;
 
-  %*ENV<RAKULIB> = "$stage.path-spec()";
+  %*ENV<RAKULIB> = "$stage.path-spec( )";
 
   my Int $exitcode;
 
@@ -84,25 +84,25 @@ method test (
   @test.hyper( :$!degree :1batch ).map( -> $test {
 
 
-    log '🦋', header => 'TST', msg => "｢{$test.basename}｣";
+    log '🦋', header => 'TST', msg => $test.basename;
 
     react {
 
       my $proc = Proc::Async.new: $*EXECUTABLE, $test.relative: $prefix;
-      whenever $proc.stdout.lines { log '🐝',  :header<TST> :msg( $^out ) }
-      whenever $proc.stderr.lines { log '🐞', :header<TST> :msg( $^err ) }
+      whenever $proc.stdout.lines { log '🐝',  :header<TST> :msg( $^out ), :!msg-delimit }
+      whenever $proc.stderr.lines { log '🐞', :header<TST> :msg( $^err ), :!msg-delimit}
 
-      whenever $proc.stdout.stable( 42 ) { log '🐞', header => 'WAI', msg =>  "｢{$proc.command}｣"; }
+      whenever $proc.stdout.stable( 42 ) { log '🐞', header => 'WAI', msg =>  ~$proc.command }
 
       whenever $proc.stdout.stable( 420 ) {
 
-        log '🐞', header => 'TOT', msg => "｢$dist｣";
+        log '🐞', header => 'TOT', msg => ~$dist;
 
         $proc.kill;
 
         $exitcode =  1;
 
-        log '🦗', header => 'TST', msg => "｢{$test.basename}｣";
+        log '🦗', header => 'TST', msg => $test.basename;
 
         done;
 
@@ -118,7 +118,7 @@ method test (
 
         bar.show;
 
-        if .exitcode { $exitcode = 1; log '🦗', header => 'TST', msg => "｢{$test.basename }｣"}
+        if .exitcode { $exitcode = 1; log '🦗', header => 'TST', msg => $test.basename }
 
         done;
 
@@ -135,15 +135,15 @@ method test (
 
   if $exitcode {
 
-    log '🦗', header => 'TST', msg => "｢$dist｣";
+    log '🦗', header => 'TST', msg => ~$dist;
 
     die X::Pakku::Test.new: :$dist;
 
-    log '🐞', header => 'OLO', msg => "｢$dist｣";
+    log '🐞', header => 'OLO', msg => ~$dist;
 
   } else {
 
-    log '🧚', header => 'TST', msg => "｢$dist｣";
+    log '🧚', header => 'TST', msg => ~$dist;
 
   }
 
@@ -162,7 +162,7 @@ method build (
 
   return unless $file or $builder;
 
-  log '🦋', header => 'BLD', msg => "｢$dist｣";
+  log '🦋', header => 'BLD', msg => ~$dist;
 
   my @cmd; 
 
@@ -182,20 +182,20 @@ method build (
 
   my $proc = Proc::Async.new: @cmd;
 
-  log '🐛', header => 'BLD', msg => "｢{$proc.command}｣";
+  log '🐛', header => 'BLD', msg => ~$proc.command;
 
   my $exitcode;
 
   react {
 
-      whenever $proc.stdout.lines { log '🐝',  :header<BLD> :msg( $^out ) }
-      whenever $proc.stderr.lines { log '🐞', :header<BLD> :msg( $^err ) }
+      whenever $proc.stdout.lines { log '🐝',  :header<BLD> :msg( $^out ), :!msg-delimit }
+      whenever $proc.stderr.lines { log '🐞', :header<BLD> :msg( $^err ), :!msg-delimit}
 
-      whenever $proc.stdout.stable( 42 ) { log '🐞', header => 'WAI', msg =>  "｢{$proc.command}｣"; }
+      whenever $proc.stdout.stable( 42 ) { log '🐞', header => 'WAI', msg =>  ~$proc.command }
 
     whenever $proc.stdout.stable( 420 ) {
 
-      log '🐞', header => 'TOT', msg => "｢$dist｣";
+      log '🐞', header => 'TOT', msg => ~$dist;
 
       $proc.kill;
 
@@ -216,15 +216,15 @@ method build (
 
   if $exitcode {
 
-    log '🦗', header => 'BLD', msg => "｢$dist｣";
+    log '🦗', header => 'BLD', msg => ~$dist;
 
     die X::Pakku::Build.new: :$dist;
 
-    log '🐞', header => 'OLO', msg => "｢$dist｣";
+    log '🐞', header => 'OLO', msg => ~$dist;
 
   } else {
 
-    log '🧚', header => 'BLD', msg => "｢$dist｣";
+    log '🧚', header => 'BLD', msg => ~$dist;
 
   }
 
@@ -236,7 +236,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
   # should be removed after File::Which is fixed
   next unless $spec.name;
 
-  log '🐛', header => 'SPC', msg => "｢$spec｣", comment => 'satisfying!';
+  log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfying!';
 
   my $meta = try Pakku::Meta.new(
     ( $!cache.recommend( :$spec ).meta if $!cache  ) //
@@ -245,15 +245,15 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   unless $meta {
 
-    log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
-    log '🦗', header => 'SPC', msg => "｢$spec｣";
+    log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
+    log '🦗', header => 'SPC', msg => ~$spec;
 
     die X::Pakku::Spec.new: :$spec;
 
-    log '🐞', header => 'OLO', msg => "｢$spec｣";
+    log '🐞', header => 'OLO', msg => ~$spec;
   }
 
-  log '🧚', header => 'MTA', msg => "｢$meta｣";
+  log '🧚', header => 'MTA', msg => ~$meta;
 
   $meta;
 
@@ -261,25 +261,25 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
 multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
 
-  log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
-  log '🦗', header => 'SPC', msg => "｢$spec｣";
+  log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
+  log '🦗', header => 'SPC', msg => ~$spec;
 
   die X::Pakku::Spec.new: :$spec;
 
-  log '🐞', header => 'OLO', msg => "｢$spec｣";
+  log '🐞', header => 'OLO', msg => ~$spec;
 
   Empty;
 
 }
 multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
-  log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
+  log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-  log '🦗', header => 'SPC', msg => "｢$spec｣";
+  log '🦗', header => 'SPC', msg => ~$spec;
 
   die X::Pakku::Spec.new: :$spec;
 
-  log '🐞', header => 'OLO', msg => "｢$spec｣";
+  log '🐞', header => 'OLO', msg => ~$spec;
 
   Empty
 
@@ -287,25 +287,25 @@ multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
 multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
 
-  log '🐞', header => 'SPC', msg => "｢$spec｣", comment => 'could not satisfy!';
+  log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-  log '🦗', header => 'SPC', msg => "｢$spec｣";
+  log '🦗', header => 'SPC', msg => ~$spec;
 
   die X::Pakku::Spec.new: :$spec;
 
-  log '🐞', header => 'OLO', msg => "｢$spec｣";
+  log '🐞', header => 'OLO', msg => ~$spec;
 
   Empty
 }
 
 multi method satisfy ( :@spec! ) {
 
-  log '🐛', header => 'SPC', msg => "｢{@spec}｣", comment => 'satisfying!';
+  log '🐛', header => 'SPC', msg => {~@spec}, comment => 'satisfying!';
 
   my $meta =
     @spec.map( -> $spec {
 
-      log '🐛', header => 'SPC', msg => "｢$spec｣", comment => 'trying!';
+      log '🐛', header => 'SPC', msg => ~$spec, comment => 'trying!';
 
       my $meta = try samewith :$spec;
 
@@ -315,7 +315,7 @@ multi method satisfy ( :@spec! ) {
 
   die X::Pakku::Spec.new: :@spec unless $meta;;
 
-  log '🐞', header => 'OLO', msg => "｢{@spec}｣";
+  log '🐞', header => 'OLO', msg => {~@spec};
 
   Empty
 }
@@ -328,7 +328,7 @@ multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
 
   return False unless @!repo.first( *.candidates: $name, |%spec );
 
-  log '🐛', header => 'SPC', msg => "｢$spec｣", comment => 'satisfied!';
+  log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
   True;
 }
@@ -337,7 +337,7 @@ multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) {
 
   return False unless find-bin $spec.name;
 
-  log '🐛', header => 'SPC', msg => "｢$spec｣", comment => 'satisfied!';
+  log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
   True;
 }
@@ -348,7 +348,7 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   return False unless Pakku::Native.can-load: lib; 
  
-  log '🐛', header => 'SPC', msg => "｢$spec｣", comment => 'satisfied!';
+  log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
   True;
 }
@@ -357,7 +357,7 @@ multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
 
   return False unless find-perl-module $spec.name;
  
-  log '🐛', header => 'SPC', msg => "｢$spec｣", comment => 'satisfied!';
+  log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
   True;
 }
@@ -387,9 +387,9 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False
 # TODO: subset TarGzURL of Str
 multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
-  log '🐛', header => 'FTC', msg => "｢$src｣";
+  log '🐛', header => 'FTC', msg => ~$src;
 
-  log '🐝', header => 'FTC', msg => "｢$src｣", comment => ~$dst;
+  log '🐝', header => 'FTC', msg => ~$src, comment => ~$dst;
 
 
   mkdir $dst;
@@ -398,29 +398,29 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   $!http.download: url-encode( $src ), $archive;
 
-  log '🐛', header => 'EXT', msg => "｢$archive｣";
+  log '🐛', header => 'EXT', msg => ~$archive;
 
   my $extract = extract :$archive, :$dst;
 
   die X::Pakku::Archive.new: :$archive unless $extract;
 
-  log '🐛', header => 'RMV', msg => "｢$archive｣";
+  log '🐛', header => 'RMV', msg => ~$archive;
 
   unlink $archive;
 
-  log '🐛', header => 'FTC', msg => "｢$dst｣";
+  log '🐛', header => 'FTC', msg => ~$dst;
 
 }
 
 multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
 
-  log '🐛', header => 'FTC', msg => "｢$src｣";
+  log '🐛', header => 'FTC', msg => ~$src;
 
-  log '🐝', header => 'FTC', msg => "｢$src｣", comment => $dst;
+  log '🐝', header => 'FTC', msg => ~$src, comment => $dst;
 
   copy-dir :$src :$dst;
 
-  log '🐛', header => 'FTC', msg => "｢$dst｣";
+  log '🐛', header => 'FTC', msg => ~$dst;
 
 }
 
@@ -441,7 +441,7 @@ method state ( :$updates = True ) {
 
     @meta.map( -> $meta { 
 
-      log '🐛', header => 'STT', msg => "｢$meta｣";
+      log '🐛', header => 'STT', msg => ~$meta;
 
       unless %state{ $meta }:exists {
 
@@ -478,7 +478,7 @@ method state ( :$updates = True ) {
 
       sink $meta.deps( :deps ).grep( Pakku::Spec::Raku ).grep( *.name.so ).map( -> $spec {
 
-        log '🐛', header => 'SPC', msg => "｢$spec｣";
+        log '🐛', header => 'SPC', msg => ~$spec;
 
         @!repo
           ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ).head } )
@@ -489,7 +489,7 @@ method state ( :$updates = True ) {
 
         unless $candy {
 
-          log '🐛', header => 'SPC', msg => "｢$spec｣", comment => 'missing!';
+          log '🐛', header => 'SPC', msg => ~$spec, comment => 'missing!';
 
           %state{ $meta }.<dep> .push: $spec;
 
@@ -498,7 +498,7 @@ method state ( :$updates = True ) {
 
         my $dep = Pakku::Meta.new: $candy.read-dist( )( $candy.id );
 
-        log '🐛', header => 'DEP', msg => "｢$dep｣";
+        log '🐛', header => 'DEP', msg => ~$dep;
 
         %state{ $meta }.<dep> .push: $dep;
         %state{ $dep  }.<rev> .push: $meta;
@@ -562,17 +562,17 @@ submethod BUILD ( :%!cnf! ) {
   
   %*ENV
     ==> grep( *.key.starts-with( any <RAKU PAKKU> ) )
-    ==> map( -> $env { log '🐝', header => 'ENV', msg => "｢{$env.key}｣",  comment => $env.value } );
+    ==> map( -> $env { log '🐝', header => 'ENV', msg => $env.key,  comment => $env.value } );
 
-  log '🐝', header => 'CNF', msg => '｢verbose｣', comment => ~$verbose;
-  log '🐝', header => 'CNF', msg => '｢bar｣',     comment => ~$bar;
-  log '🐝', header => 'CNF', msg => '｢spinner｣', comment => ~$spinner;
+  log '🐝', header => 'CNF', msg => 'verbose', comment => ~$verbose;
+  log '🐝', header => 'CNF', msg => 'bar',     comment => ~$bar;
+  log '🐝', header => 'CNF', msg => 'spinner', comment => ~$spinner;
 
-  log '🐝', header => 'CNF', msg => '｢home｣', comment => ~$!home;
+  log '🐝', header => 'CNF', msg => 'home', comment => ~$!home;
 
   $!stage  = $!home.add( '.stage' );
 
-  log '🐝', header => 'CNF', msg => '｢stage｣', comment => ~$!stage;
+  log '🐝', header => 'CNF', msg => 'stage', comment => ~$!stage;
 
   my $cache-conf = %!cnf<pakku><cache>; 
   my $cache-dir  = $!home.add( '.cache' ); 
@@ -583,31 +583,31 @@ submethod BUILD ( :%!cnf! ) {
 
   $!cache = Pakku::Cache.new:  :$cache-dir if $cache-dir;
 
-  log '🐝', header => 'CNF', msg => '｢cache｣', comment => ~$cache-dir;
+  log '🐝', header => 'CNF', msg => 'cache', comment => ~$cache-dir;
 
   $!tmp = $!home.add( '.tmp' );
 
-  log '🐝', header => 'CNF', msg => '｢tmp｣', comment => ~$!tmp;
+  log '🐝', header => 'CNF', msg => 'tmp', comment => ~$!tmp;
 
   $!dont  = %!cnf<pakku><dont> // False;
 
-  log '🐝', header => 'CNF', msg => '｢dont｣', comment => ~$!dont;
+  log '🐝', header => 'CNF', msg => 'dont', comment => ~$!dont;
 
   $!force  = %!cnf<pakku><force> // False;
 
-  log '🐝', header => 'CNF', msg => '｢force｣', comment => ~$!force;
+  log '🐝', header => 'CNF', msg => 'force', comment => ~$!force;
 
   $!yolo  = %!cnf<pakku><yolo> // False;
 
-  log '🐝', header => 'CNF', msg => '｢yolo｣', comment => ~$!yolo;
+  log '🐝', header => 'CNF', msg => 'yolo', comment => ~$!yolo;
 
   $!cores  = +$cores;
 
-  log '🐝', header => 'CNF', msg => '｢cores｣', comment => ~$!cores;
+  log '🐝', header => 'CNF', msg => 'cores', comment => ~$!cores;
 
   $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
 
-  log '🐝', header => 'CNF', msg => '｢degree｣', comment => ~$!degree;
+  log '🐝', header => 'CNF', msg => 'degree', comment => ~$!degree;
 
   my $recman   = %!cnf<pakku><recman>;
   my $norecman = %!cnf<pakku><norecman>;
@@ -621,11 +621,11 @@ submethod BUILD ( :%!cnf! ) {
 
   $!recman = Pakku::Recman.new: :$!http :@recman if @recman;
 
-  @recman.map( -> $recman { log '🐝', header => 'CNF', msg => '｢recman｣', comment => $recman<location> } );
+  @recman.map( -> $recman { log '🐝', header => 'CNF', msg => 'recman', comment => $recman<location> } );
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
-  log '🐝', header => 'CNF', msg => '｢repos｣', comment => ~@!repo;
+  log '🐝', header => 'CNF', msg => 'repos', comment => ~@!repo;
 
 }
 
@@ -642,14 +642,14 @@ method metamorph ( ) {
 
         self.fly: 'help', :$cmd;
 
-        log '🦗', header => 'CMD', msg => "｢{.message}｣";
+        log '🦗', header => 'CMD', msg => .message;
 
         nofun;
       }
 
-      when X::Pakku::Cnf { log '🦗', header => 'CNF', msg => "｢{.message}｣"; nofun; exit 1 }
+      when X::Pakku::Cnf { log '🦗', header => 'CNF', msg => .message; nofun; exit 1 }
 
-      default { log '🦗', header => 'CNF', msg => "｢{.gist}｣" }
+      default { log '🦗', header => 'CNF', msg => .gist }
   }
 
   my $home = $*HOME.add( '.pakku' );

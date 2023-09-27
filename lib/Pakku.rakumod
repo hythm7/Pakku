@@ -39,7 +39,7 @@ proto method fly ( | ) {
     when X::Pakku { .resume if $!yolo; nofun; exit 1 }
 
     default {
-      log '🦗', header => 'ERR', msg => .gist;
+      log '🦗', header => 'ERR', msg => .gist, :!msg-delimit;
       nofun;
       exit 1;
     }
