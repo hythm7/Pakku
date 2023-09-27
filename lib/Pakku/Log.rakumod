@@ -226,7 +226,7 @@ my class Spinner {
 
   method show ( ) {
 
-    $!level.msg: :$!header, msg => "｢{ @!frame[ $!current-frame-index ]; }｣"; 
+    $!level.msg: :$!header, msg => ~@!frame[ $!current-frame-index ];
   }
 
   method hide (  ) {
@@ -284,6 +284,7 @@ submethod BUILD (
     :comment-left-delimit(  %level<all><msg-left-delimit>  // '❨' )
     :comment-right-delimit( %level<all><msg-right-delimit> // '❩' )
   ) if  all   ≤ $!verbose;
+
   $!debug = Level.new(
     :fh( $*OUT )
     :prefix( %level<debug><prefix> // '🐛' )
@@ -293,6 +294,7 @@ submethod BUILD (
     :comment-left-delimit(  %level<debug><msg-left-delimit>  // '❨' )
     :comment-right-delimit( %level<debug><msg-right-delimit> // '❩' )
   ) if  debug ≤ $!verbose;
+
   $!now   = Level.new(
     :fh( $*OUT )
     :prefix( %level<now><prefix>   // '🦋' )
@@ -302,6 +304,7 @@ submethod BUILD (
     :comment-left-delimit(  %level<now><msg-left-delimit>  // '❨' )
     :comment-right-delimit( %level<now><msg-right-delimit> // '❩' )
   ) if  now   ≤ $!verbose;
+
   $!info  = Level.new(
     :fh( $*OUT )
     :prefix( %level<info><prefix>  // '🧚' )
@@ -311,6 +314,7 @@ submethod BUILD (
     :comment-left-delimit(  %level<info><msg-left-delimit>  // '❨' )
     :comment-right-delimit( %level<info><msg-right-delimit> // '❩' )
   ) if  info  ≤ $!verbose;
+
   $!warn  = Level.new(
     :fh( $*ERR )
     :prefix( %level<warn><prefix>  // '🐞' )
@@ -320,6 +324,7 @@ submethod BUILD (
     :comment-left-delimit(  %level<warn><msg-left-delimit>  // '❨' )
     :comment-right-delimit( %level<warn><msg-right-delimit> // '❩' )
   ) if  warn  ≤ $!verbose;
+
   $!error = Level.new(
     :fh( $*ERR )
     :prefix( %level<error><prefix> // '🦗' )
