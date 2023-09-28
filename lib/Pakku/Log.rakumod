@@ -1,5 +1,7 @@
 unit class Pakku::Log;
 
+enum Color is export ( :reset(0) :black(30) :red(31) :green(32) :yellow(33) :blue(34) :magenta(35) :cyan(36) :white(37) );
+
 my class Level {
 
   has Str:D $!prefix is required;
@@ -76,16 +78,45 @@ my class BarLevel {
 
   multi method msg ( BarLevel:D: Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) {
 
-    $!fh.put: $!color ~ "$!prefix $header: $!l-delim" ~ $!reset-color ~ $msg ~ $!color ~ $!r-delim ~ $!reset-color;
+    $!fh.print: $!color ~ "$!prefix $header: $!l-delim" ~ $!reset-color ~ $msg ~ $!color ~ $!r-delim ~ $!reset-color;
 
   }
 
   submethod BUILD ( :$!fh!, :$!prefix!, :$color!, :$complete-color, :$incomplete-color ) {
 
-    $!color = $color  ?? "\e\[" ~ $color ~ "m" !! '';
+    $!color       = $color  ?? "\e\[" ~ $color ~ "m" !! '';
     $!reset-color = $!color ?? "\e\[0m"              !! '';
 
   }
+
+}
+
+my class SpinnerLevel {
+
+  has Str:D $!prefix is required;
+
+  has Str:D $!l-delim = '｢';
+  has Str:D $!r-delim = '｣';
+
+  has Str:D $.color  is required;
+  has Str   $.reset-color;
+
+  has IO::Handle $!fh is required;
+
+
+  multi method msg ( SpinnerLevel:D: Str:D :$header!, Str:D :$msg!, Str:D :$comment = '' ) {
+
+    $!fh.print: $!color ~ "$!prefix $header: $!l-delim" ~ $!reset-color ~ $msg ~ $!color ~ $!r-delim ~ $!reset-color;
+
+  }
+
+  submethod BUILD ( :$!fh!, :$!prefix!, :$color! ) {
+
+    $!color       = $color  ?? "\e\[" ~ $color ~ "m" !! '';
+    $!reset-color = $!color ?? "\e\[0m"              !! '';
+
+  }
+
 
 }
 
@@ -129,7 +160,6 @@ my class Bar {
   method activate   ( ) {
     $!active = True;
     $!percent = 0;
-    say( );
     self.show;
   }
   method deactivate ( ) {
@@ -143,7 +173,7 @@ my class Bar {
 
     $lock.protect: {
 
-      print "\b\r";
+      print "\r";
 
       $!level.msg: :$!header, msg => ~self; 
 
@@ -156,7 +186,7 @@ my class Bar {
 
       my $space = $!length + @!sym.uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
 
-      print "\b\r";
+      print "\r";
       print " " x $space ~ "\b \b" x $space;
 
     }
@@ -177,7 +207,7 @@ my class Bar {
 
 my class Spinner {
 
-  has Level $.level;
+  has SpinnerLevel $.level;
 
   has Str  $.header = 'WAI';
 
@@ -233,7 +263,7 @@ my class Spinner {
 
     my $space = @!frame[ $!current-frame-index ].chars + @!frame[ $!current-frame-index ].uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
 
-    print "\b\r";
+    print "\r";
     print " " x $space ~ "\b \b" x $space;
 
   }
@@ -345,14 +375,14 @@ submethod BUILD (
 
     my @frame;
 
-    @frame.push: %level<error><prefix> // '🦗';
-    @frame.push: %level<warn><prefix>  // '🐞';
-    @frame.push: %level<info><prefix>  // '🧚';
-    @frame.push: %level<now><prefix>   // '🦋';
-    @frame.push: %level<debug><prefix> // '🐛';
-    @frame.push: %level<all><prefix>   // '🐝';
+    @frame.push: $!pretty ?? color( %level<error><prefix> // '🦗', red     ) !! %level<error><prefix> // '🦗';
+    @frame.push: $!pretty ?? color( %level<warn><prefix>  // '🐞', yellow  ) !! %level<warn><prefix>  // '🐞';
+    @frame.push: $!pretty ?? color( %level<info><prefix>  // '🧚', magenta ) !! %level<info><prefix>  // '🧚';
+    @frame.push: $!pretty ?? color( %level<now><prefix>   // '🦋', cyan    ) !! %level<now><prefix>   // '🦋';
+    @frame.push: $!pretty ?? color( %level<debug><prefix> // '🐛', green   ) !! %level<debug><prefix> // '🐛';
+    @frame.push: $!pretty ?? color( %level<all><prefix>   // '🐝', reset   ) !! %level<all><prefix>   // '🐝';
 
-    $!spinner = Spinner.new: :level( $!info ) :@frame if info  ≤ $!verbose;
+    $!spinner = Spinner.new: :level( SpinnerLevel.new: :fh( $*OUT ) :prefix( %level<info><prefix>  // '🧚' ) :color( $color // %color{ %level<info><color>  // 'magenta' } ) ) :@frame if info  ≤ $!verbose;
 
   }
 
@@ -364,7 +394,6 @@ submethod BUILD (
 
       $!bar.hide;
       {*}
-      say( );
       $!bar.show;
 
     } elsif $!spinner.active {
@@ -420,7 +449,6 @@ submethod BUILD (
 
       $!bar.hide;
       $*OUT.put: $!pretty ?? $msg !! $msg.subst(/\e\[ <[0..9;]>+ m/, '', :g);
-      say();
       $!bar.show;
 
     } elsif  $!spinner.active {
@@ -482,21 +510,6 @@ submethod BUILD (
   sub spinner ( ) is export { $!spinner }
 
 }
-
-
-enum Color is export (
-
-  reset   =>  0,
-  black   => 30,
-  red     => 31,
-  green   => 32,
-  yellow  => 33,
-  blue    => 34,
-  magenta => 35,
-  cyan    => 36,
-  white   => 37,
-
-);
 
 
 sub color ( Str:D $text, Color $color ) is export { "\e\[" ~ $color.Int ~ "m" ~ $text ~ "\e\[0m" }
