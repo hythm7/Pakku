@@ -108,6 +108,8 @@ multi method fly (
 
   if $serial {
 
+    my $supply = watch-recursive( $precomp-repo );
+
     eager @dist 
       ==> map( -> $dist {
   
@@ -166,6 +168,8 @@ multi method fly (
       } );
 
   } else {
+
+    my $supply = watch-recursive( $precomp-repo ).share;
 
     @dist 
       ==> map( -> $dist {
@@ -305,10 +309,10 @@ multi method fly (
 
   $precomp-repo.mkdir;
 
-  my $supply = watch-recursive( $precomp-repo ).share;
-
 
   if $serial {
+
+    my $supply = watch-recursive( $precomp-repo );
 
     @dist 
       ==> map( -> $dist {
@@ -368,6 +372,8 @@ multi method fly (
       } );
 
   } else {
+
+    my $supply = watch-recursive( $precomp-repo ).share;
 
     @dist 
       ==> map( -> $dist {
