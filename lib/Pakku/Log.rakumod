@@ -375,12 +375,12 @@ submethod BUILD (
 
     my @frame;
 
-    @frame.push: $!pretty ?? color( %level<error><prefix> // '🦗', red     ) !! %level<error><prefix> // '🦗';
-    @frame.push: $!pretty ?? color( %level<warn><prefix>  // '🐞', yellow  ) !! %level<warn><prefix>  // '🐞';
-    @frame.push: $!pretty ?? color( %level<info><prefix>  // '🧚', magenta ) !! %level<info><prefix>  // '🧚';
-    @frame.push: $!pretty ?? color( %level<now><prefix>   // '🦋', cyan    ) !! %level<now><prefix>   // '🦋';
-    @frame.push: $!pretty ?? color( %level<debug><prefix> // '🐛', green   ) !! %level<debug><prefix> // '🐛';
     @frame.push: $!pretty ?? color( %level<all><prefix>   // '🐝', reset   ) !! %level<all><prefix>   // '🐝';
+    @frame.push: $!pretty ?? color( %level<debug><prefix> // '🐛', green   ) !! %level<debug><prefix> // '🐛';
+    @frame.push: $!pretty ?? color( %level<now><prefix>   // '🦋', cyan    ) !! %level<now><prefix>   // '🦋';
+    @frame.push: $!pretty ?? color( %level<info><prefix>  // '🧚', magenta ) !! %level<info><prefix>  // '🧚';
+    @frame.push: $!pretty ?? color( %level<warn><prefix>  // '🐞', yellow  ) !! %level<warn><prefix>  // '🐞';
+    @frame.push: $!pretty ?? color( %level<error><prefix> // '🦗', red     ) !! %level<error><prefix> // '🦗';
 
     $!spinner = Spinner.new: :level( SpinnerLevel.new: :fh( $*OUT ) :prefix( %level<info><prefix>  // '🧚' ) :color( $color // %color{ %level<info><color>  // 'magenta' } ) ) :@frame if info  ≤ $!verbose;
 
