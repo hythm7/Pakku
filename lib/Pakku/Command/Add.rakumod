@@ -432,6 +432,8 @@ multi method fly (
 
 my sub watch-recursive ( IO $start ) {
 
+  my %precompiled;
+
   supply {
 
     my sub watch ( IO::Path:D $io ) {
@@ -447,7 +449,15 @@ my sub watch-recursive ( IO $start ) {
           next;
         }
 
-        emit $e unless $e.path.IO.extension;
+        unless $e.path.IO.extension {
+
+          my $path = $e.path;
+
+          emit $e unless %precompiled{ $path };
+
+          %precompiled{ $path } = True;
+
+        }
       }
     }
 
