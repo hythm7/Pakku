@@ -44,8 +44,8 @@ for @nativespec -> $s {
 
 my @junction-spec = (
   { any => [ 'spec1:ver<1>', 'spec2' ] },
-  { any => [ { :from<Native>, :name<spec>, :ver<0.42> }, { :from<bin>, :name<spec> } ] },
-  { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
+  { any => [ 'spec:ver<1>:from<bin>', { :from<Bin>, :name<spec> } ] },
+  { any => [ { :from<Native>, :name<spec> }, { :from<bin>, :name<spec> } ] },
 );
 
 for @junction-spec -> %spec {
