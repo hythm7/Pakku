@@ -222,6 +222,8 @@ multi method fly (
 
 my sub watch-recursive ( IO $start ) {
 
+  my %precompiled;
+
   supply {
 
     my sub watch ( IO::Path:D $io ) {
