@@ -48,8 +48,8 @@ my @junction-spec = (
   { any => [ 'spec:ver<1>:from<native>', { :from<native>, :name<spec>, :ver<0.42> } ] },
 );
 
-for @junction-spec -> $spec {
-   lives-ok { Pakku::Spec.new: $spec }, ~$spec;
+for @junction-spec -> %spec {
+   lives-ok { Pakku::Spec.new: %spec }, %spec.raku;
 }
 
 
