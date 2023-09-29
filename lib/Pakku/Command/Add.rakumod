@@ -104,8 +104,6 @@ multi method fly (
 
   $precomp-repo.mkdir;
 
-  my $supply = watch-recursive( $precomp-repo ).share;
-
   if $serial {
 
     my $supply = watch-recursive( $precomp-repo );
