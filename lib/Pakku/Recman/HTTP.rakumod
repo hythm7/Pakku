@@ -65,7 +65,7 @@ method search (
 
   my $uri = $!location ~ '/meta/search/' ~ url-encode $name;
 
-  $uri ~= '?' ~ @query.join( '&') if @query;
+  $uri ~= '?' ~ @query.join( '&' ) if @query;
 
   log '🐝', header => 'REC', msg => ~$uri;
 
