@@ -84,6 +84,7 @@
     }
   ],
   "search": {
+    "latest": false,
     "details": false
   },
   "test": {

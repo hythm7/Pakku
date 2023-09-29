@@ -34,10 +34,11 @@ method search (
     ::?CLASS:D:
     Pakku::Spec::Raku:D :$spec!,
     Bool:D              :$relaxed!,
+    Bool:D              :$latest!,
     Int:D               :$count!,
 
   ) {
 
-  flat @!recman.map: *.search: :$spec :$relaxed :$count;
+  flat @!recman.map: *.search: :$spec :$relaxed :$latest :$count;
 
 }

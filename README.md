@@ -128,6 +128,7 @@ Search available distributions
 **options:**
 
 <pre>
+latest           → latest version
 relaxed          → relaxed search
 details          → details of dist
 count < number > → number of dists to be returned
@@ -137,6 +138,7 @@ norelaxed        → no relaxed search
 <b>Examples:</b>
 <pre>
 <b>pakku search dist</b>               # search distributions matching dist (ignored case) on online recman
+<b>pakku search latest dist</b>        # show latest version
 <b>pakku search norelaxed dist</b>     # no relaxed search
 <b>pakku search count 4 dist</b>       # search dist and return the lates 4 versions only
 <b>pakku search details dist</b>       # search dist and list all details

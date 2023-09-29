@@ -227,6 +227,7 @@ grammar Pakku::Grammar::Cmd {
   proto token searchopt { * }
   token searchopt:sym<details>    { <details> }
   token searchopt:sym<relaxed>    { <relaxed> }
+  token searchopt:sym<latest>     { <latest> }
   token searchopt:sym<count>      { <count> <.space>+ <number> }
 
   proto token nukeopt { * }
@@ -429,6 +430,12 @@ grammar Pakku::Grammar::Cmd {
   token relaxed:sym<norelaxed> { <sym> }
   token relaxed:sym<nr>        { <sym> }
 
+
+  proto token latest { * }
+  token latest:sym<latest>   { <sym> }
+  token latest:sym<l>        { <sym> }
+  token latest:sym<nolatest> { <sym> }
+  token latest:sym<nl>       { <sym> }
 
   proto token count { * }
   token count:sym<count>   { <sym> }
@@ -943,6 +950,7 @@ class Pakku::Grammar::CmdActions {
 
   method searchopt:sym<details>    ( $/ ) { make $<details>.made            }
   method searchopt:sym<relaxed>    ( $/ ) { make $<relaxed>.made            }
+  method searchopt:sym<latest>     ( $/ ) { make $<latest>.made            }
   method searchopt:sym<count>      ( $/ ) { make ( count => $<number>.Int ) }
 
   method stateopt:sym<clean>   ( $/ ) { make $<clean>.made   }
@@ -1056,10 +1064,15 @@ class Pakku::Grammar::CmdActions {
   method details:sym<nd>        ( $/ ) { make ( :!details ) }
 
   method relaxed:sym<relaxed>   ( $/ ) { make ( :relaxed  ) }
-  method relaxed:sym<d>         ( $/ ) { make ( :relaxed  ) }
+  method relaxed:sym<r>         ( $/ ) { make ( :relaxed  ) }
   method relaxed:sym<norelaxed> ( $/ ) { make ( :!relaxed ) }
   method relaxed:sym<nr>        ( $/ ) { make ( :!relaxed ) }
 
+
+  method latest:sym<latest>   ( $/ ) { make ( :latest  ) }
+  method latest:sym<l>        ( $/ ) { make ( :latest  ) }
+  method latest:sym<nolatest> ( $/ ) { make ( :!latest ) }
+  method latest:sym<nl>       ( $/ ) { make ( :!latest ) }
 
   method level:sym<nothing> ( $/ ) { make 'nothing' }
   method level:sym<all>     ( $/ ) { make 'all'     }

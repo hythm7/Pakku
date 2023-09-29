@@ -44,6 +44,7 @@ method search (
     ::?CLASS:D:
     :$spec!,
     :$relaxed!,
+    :$latest!,
     :$count!,
 
   ) {
@@ -60,8 +61,9 @@ method search (
   @query.push( 'ver='     ~ url-encode $ver     ) if $ver;
   @query.push( 'auth='    ~ url-encode $auth    ) if $auth;
   @query.push( 'api='     ~ url-encode $api     ) if $api;
-  @query.push( 'count='   ~ url-encode $count   ) if $count;
+  @query.push( 'latest='  ~ url-encode $latest  ) if $latest;
   @query.push( 'relaxed=' ~ url-encode $relaxed ) if $relaxed;
+  @query.push( 'count='   ~ url-encode $count   ) if $count;
 
   my $uri = $!location ~ '/meta/search/' ~ url-encode $name;
 

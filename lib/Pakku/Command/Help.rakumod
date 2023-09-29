@@ -131,10 +131,12 @@ method !search-help ( ) {
   %search<desc>    = 'Search distribution on Recman';
 
   %search<example>.push: 'pakku search           dist';
+  %search<example>.push: 'pakku search latest    dist';
   %search<example>.push: 'pakku search norelaxed dist';
   %search<example>.push: 'pakku search count 5   dist';
   %search<example>.push: 'pakku search details   dist';
 
+  %search<opt>.push: ( 'latest'  => 'latest version' );
   %search<opt>.push: ( 'relaxed' => 'relaxed search' );
   %search<opt>.push: ( 'count'   => 'distributions count' );
   %search<opt>.push: ( 'details' => 'search details' );

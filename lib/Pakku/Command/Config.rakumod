@@ -110,6 +110,7 @@ my class Search {
 
   has Bool  $.details;
   has Bool  $.relaxed;
+  has Bool  $.latest;
   has Int() $.count;
 
 }
