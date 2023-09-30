@@ -22,13 +22,11 @@ zef install Pakku
 
 Usage
 =====
-Pakku manages Raku distributions via commands such as `add`, `remove`, `update` etc.
+Pakku manages Raku distributions with commands like `add`, `remove`, `update` etc.
 
-Full command is like:
+Full command consists of:
 
-`pakku [general options] [command] [command options] [dists]`
-
-
+`pakku [general-options] <command> [command-options] <dists>`
 
 There are two types of options:
 
