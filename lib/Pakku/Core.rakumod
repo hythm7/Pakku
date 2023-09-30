@@ -804,6 +804,7 @@ my sub get-env ( ) {
   %env<pakku><list><details> = %*ENV<PAKKU_LIST_DETAILS>.Bool if %*ENV<PAKKU_LIST_DETAILS>;
 
   %env<pakku><search><count>   = %*ENV<PAKKU_SEARCH_count>.Int    if %*ENV<PAKKU_SEARCH_COUNT>;
+  %env<pakku><search><latest>  = %*ENV<PAKKU_SEARCH_LATEST>.Bool  if %*ENV<PAKKU_SEARCH_LATEST>;
   %env<pakku><search><details> = %*ENV<PAKKU_SEARCH_DETAILS>.Bool if %*ENV<PAKKU_SEARCH_DETAILS>;
   %env<pakku><search><relaxed> = %*ENV<PAKKU_SEARCH_RELAXED>.Bool if %*ENV<PAKKU_SEARCH_RELAXED>;
 
