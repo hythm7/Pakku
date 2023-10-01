@@ -106,7 +106,7 @@ multi method fly (
 
   if $serial {
 
-    my $supply = watch-recursive( $precomp-repo );
+    my $precomp-supply = watch-recursive( $precomp-repo );
 
     eager @dist 
       ==> map( -> $dist {
@@ -121,7 +121,7 @@ multi method fly (
         my $processed = 0;
         my $total     = +$dist.meta<provides>.keys;
 
-        my $tap = $supply.tap( -> $module {
+        my $precomp-tap = $precomp-supply.tap( -> $event {
 
         $processed += 1;
 
@@ -135,7 +135,7 @@ multi method fly (
 
         $stage.install: $dist, :$precompile;
 
-        $tap.close;
+        $precomp-tap.close;
 
         bar.deactivate;
 
@@ -167,10 +167,16 @@ multi method fly (
 
   } else {
 
-    my $supply = watch-recursive( $precomp-repo ).share;
+    my $precomp-supply = watch-recursive( $precomp-repo ).share;
 
     @dist 
       ==> map( -> $dist {
+
+        my $dist-dir = $stage.prefix.add: 'dist';
+
+        $dist-dir.mkdir;
+
+        my $dist-supply = $dist-dir.watch;
   
         self.build: :$stage :$dist if $build;
 
@@ -182,7 +188,27 @@ multi method fly (
         my $processed = 0;
         my $total     = +$dist.meta<provides>.keys;
 
-        my $tap = $supply.tap( -> $module {
+
+        my $dist-meta-file = $dist-dir.add( $dist.id );
+
+        my %hash-to-name;
+
+        my $dist-tap = $dist-supply.tap( -> $event {
+
+          if $event.path ~~  $dist-meta-file and $event.event ~~ FileChanged { 
+
+            my %provides = Rakudo::Internals::JSON.from-json( $dist-meta-file.slurp ).<provides>;
+
+            %provides.map( { %hash-to-name{ .value.values.head.<file> } = .key } );
+
+          }
+
+
+        } );
+
+        my $precomp-tap = $precomp-supply.tap( -> $event {
+
+        log '🦋', header => 'CMP', msg => %hash-to-name{ $event.path.IO.basename };
 
         $processed += 1;
 
@@ -196,9 +222,12 @@ multi method fly (
 
         $stage.install: $dist, :$precompile;
 
-        $tap.close;
-
         bar.deactivate;
+        
+        $dist-tap.close;
+
+        $precomp-tap.close;
+
 
         log '🧚', header => 'STG', msg => ~$dist;
 
@@ -310,7 +339,7 @@ multi method fly (
 
   if $serial {
 
-    my $supply = watch-recursive( $precomp-repo );
+    my $precomp-supply = watch-recursive( $precomp-repo );
 
     @dist 
       ==> map( -> $dist {
@@ -325,7 +354,7 @@ multi method fly (
         my $processed = 0;
         my $total     = +$dist.meta<provides>.keys;
 
-        my $tap = $supply.tap( -> $module {
+        my $precomp-tap = $precomp-supply.tap( -> $event {
 
         $processed += 1;
 
@@ -339,7 +368,7 @@ multi method fly (
 
         $stage.install: $dist, :$precompile;
 
-        $tap.close;
+        $precomp-tap.close;
 
         bar.deactivate;
 
@@ -371,7 +400,7 @@ multi method fly (
 
   } else {
 
-    my $supply = watch-recursive( $precomp-repo ).share;
+    my $precomp-supply = watch-recursive( $precomp-repo ).share;
 
     @dist 
       ==> map( -> $dist {
@@ -386,7 +415,7 @@ multi method fly (
         my $processed = 0;
         my $total     = +$dist.meta<provides>.keys;
 
-        my $tap = $supply.tap( -> $module {
+        my $precomp-tap = $precomp-supply.tap( -> $event {
 
         $processed += 1;
 
@@ -400,7 +429,7 @@ multi method fly (
 
         $stage.install: $dist, :$precompile;
 
-        $tap.close;
+        $precomp-tap.close;
 
         bar.deactivate;
 
