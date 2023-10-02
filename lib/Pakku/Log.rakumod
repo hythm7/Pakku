@@ -162,34 +162,30 @@ my class Bar {
     $!percent = 0;
     self.show;
   }
+
   method deactivate ( ) {
     self.hide;
     $!active = False;
   }
 
-  my $lock = Lock::Async.new;
-
   method show( ) {
 
-    $lock.protect: {
+    return unless $!active;
 
-      print "\r";
+    print "\r";
 
-      $!level.msg: :$!header, msg => ~self; 
+    $!level.msg: :$!header, msg => ~self; 
 
-    }
   }
 
   method hide (  ) {
 
-    $lock.protect: {
+    return unless $!active;
 
-      my $space = $!length + @!sym.uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
+    my $space = $!length + @!sym.uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
 
-      print "\r";
-      print " " x $space ~ "\b \b" x $space;
-
-    }
+    print "\r";
+    print " " x $space ~ "\b \b" x $space;
 
   }
 
@@ -231,6 +227,8 @@ my class Spinner {
         !! $frame;
 
     } );
+
+    @!frame .= map( -> $frame { color( $frame, cyan ) } ) if $!level.color;
 
   }
 

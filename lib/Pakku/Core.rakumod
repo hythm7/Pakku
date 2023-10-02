@@ -453,7 +453,7 @@ method state ( :$updates = True ) {
 
       %state{ $meta }.<meta> = $meta;
 
-      $!recman.search( :spec( Pakku::Spec.new: $meta.name ) :!relaxed :42count )
+      $!recman.search( :spec( Pakku::Spec.new: $meta.name ) :!relaxed :!latest :42count )
         ==> grep( *.defined )
         ==> grep( -> %meta { $meta.name       ~~ %meta.<name> } )
         ==> grep( -> %meta { $meta.meta<auth> ~~ %meta.<auth> } )

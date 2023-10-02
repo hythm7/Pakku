@@ -100,13 +100,16 @@ multi method fly (
     name      => $repo.name,
     next-repo => $*REPO;
 
-  my $precomp-repo = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
+  my $precomp-dir = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
+  my $dist-dir    = $stage.prefix.add: 'dist';
 
-  $precomp-repo.mkdir;
+  $precomp-dir.mkdir;
+  $dist-dir.mkdir;
 
   if $serial {
 
-    my $precomp-supply = watch-recursive( $precomp-repo );
+    my $precomp-supply = watch-recursive( $precomp-dir );
+    my $dist-supply    = $dist-dir.watch;
 
     eager @dist 
       ==> map( -> $dist {
@@ -120,8 +123,26 @@ multi method fly (
 
         my $processed = 0;
         my $total     = +$dist.meta<provides>.keys;
+        my $dist-meta-file = $dist-dir.add( $dist.id );
+
+        my %hash-to-name;
+
+        my $dist-tap = $dist-supply.tap( -> $event {
+
+          if $event.path ~~  $dist-meta-file and $event.event ~~ FileChanged {
+
+            my %provides = Rakudo::Internals::JSON.from-json( $dist-meta-file.slurp ).<provides>;
+
+            %provides.map( { %hash-to-name{ .value.values.head.<file> } = .key } );
+
+          }
+
+
+        } );
 
         my $precomp-tap = $precomp-supply.tap( -> $event {
+
+        log '🦋', header => 'CMP', msg => %hash-to-name{ $event.path.IO.basename };
 
         $processed += 1;
 
@@ -134,6 +155,8 @@ multi method fly (
         } );
 
         $stage.install: $dist, :$precompile;
+
+        $dist-tap.close;
 
         $precomp-tap.close;
 
@@ -159,7 +182,8 @@ multi method fly (
 
           try $stage.self-destruct; # trying for Windows
 
-          $precomp-repo.mkdir;
+          $precomp-dir.mkdir;
+          $dist-dir.mkdir;
 
         }
 
@@ -167,17 +191,12 @@ multi method fly (
 
   } else {
 
-    my $precomp-supply = watch-recursive( $precomp-repo ).share;
+    my $precomp-supply = watch-recursive( $precomp-dir ).share;
+    my $dist-supply    = $dist-dir.watch;
 
     @dist 
       ==> map( -> $dist {
 
-        my $dist-dir = $stage.prefix.add: 'dist';
-
-        $dist-dir.mkdir;
-
-        my $dist-supply = $dist-dir.watch;
-  
         self.build: :$stage :$dist if $build;
 
         bar.header: 'STG';
@@ -222,12 +241,10 @@ multi method fly (
 
         $stage.install: $dist, :$precompile;
 
-        bar.deactivate;
-        
         $dist-tap.close;
-
         $precomp-tap.close;
 
+        bar.deactivate;
 
         log '🧚', header => 'STG', msg => ~$dist;
 
@@ -332,16 +349,19 @@ multi method fly (
     name      => $repo.name,
     next-repo => $*REPO;
 
-  my $precomp-repo = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
+  my $precomp-dir = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
 
-  $precomp-repo.mkdir;
+  my $dist-dir    = $stage.prefix.add: 'dist';
 
+  $precomp-dir.mkdir;
+  $dist-dir.mkdir;
 
   if $serial {
 
-    my $precomp-supply = watch-recursive( $precomp-repo );
+    my $precomp-supply = watch-recursive( $precomp-dir );
+    my $dist-supply    = $dist-dir.watch;
 
-    @dist 
+    eager @dist 
       ==> map( -> $dist {
   
         self.build: :$stage :$dist if $build;
@@ -354,7 +374,25 @@ multi method fly (
         my $processed = 0;
         my $total     = +$dist.meta<provides>.keys;
 
+        my $dist-meta-file = $dist-dir.add( $dist.id );
+
+        my %hash-to-name;
+
+        my $dist-tap = $dist-supply.tap( -> $event {
+
+          if $event.path ~~  $dist-meta-file and $event.event ~~ FileChanged {
+
+            my %provides = Rakudo::Internals::JSON.from-json( $dist-meta-file.slurp ).<provides>;
+
+            %provides.map( { %hash-to-name{ .value.values.head.<file> } = .key } );
+
+          }
+
+        } );
+
         my $precomp-tap = $precomp-supply.tap( -> $event {
+
+        log '🦋', header => 'CMP', msg => %hash-to-name{ $event.path.IO.basename };
 
         $processed += 1;
 
@@ -368,6 +406,7 @@ multi method fly (
 
         $stage.install: $dist, :$precompile;
 
+        $dist-tap.close;
         $precomp-tap.close;
 
         bar.deactivate;
@@ -392,7 +431,8 @@ multi method fly (
 
           try $stage.self-destruct; # trying for Windows
 
-          $precomp-repo.mkdir;
+          $precomp-dir.mkdir;
+          $dist-dir.mkdir;
 
         }
 
@@ -400,7 +440,8 @@ multi method fly (
 
   } else {
 
-    my $precomp-supply = watch-recursive( $precomp-repo ).share;
+    my $precomp-supply = watch-recursive( $precomp-dir ).share;
+    my $dist-supply    = $dist-dir.watch;
 
     @dist 
       ==> map( -> $dist {
@@ -415,7 +456,26 @@ multi method fly (
         my $processed = 0;
         my $total     = +$dist.meta<provides>.keys;
 
+        my $dist-meta-file = $dist-dir.add( $dist.id );
+
+        my %hash-to-name;
+
+        my $dist-tap = $dist-supply.tap( -> $event {
+
+          if $event.path ~~  $dist-meta-file and $event.event ~~ FileChanged {
+
+            my %provides = Rakudo::Internals::JSON.from-json( $dist-meta-file.slurp ).<provides>;
+
+            %provides.map( { %hash-to-name{ .value.values.head.<file> } = .key } );
+
+          }
+
+
+        } );
+
         my $precomp-tap = $precomp-supply.tap( -> $event {
+
+        log '🦋', header => 'CMP', msg => %hash-to-name{ $event.path.IO.basename };
 
         $processed += 1;
 
@@ -428,6 +488,8 @@ multi method fly (
         } );
 
         $stage.install: $dist, :$precompile;
+
+        $dist-tap.close;
 
         $precomp-tap.close;
 
