@@ -109,7 +109,7 @@ multi method fly (
 
       log '🐞', header => 'NUK', msg => 'core', comment => 'use force to nuke!';
 
-      die X::Pakku::Nuke.new: :dir<core>;
+      die X::Pakku::Nuke.new: :msg<core>;
 
     }
 

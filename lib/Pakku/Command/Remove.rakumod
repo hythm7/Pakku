@@ -30,7 +30,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
 
             log '🐞', header => 'RMV', msg => ~$spec, comment => 'use force to remove!';
 
-            die X::Pakku::Remove.new: :$spec;
+            die X::Pakku::Remove.new: msg => ~$spec;
           }
 
         }

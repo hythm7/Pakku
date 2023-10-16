@@ -137,7 +137,7 @@ class Pakku::Spec {
 
       self.new: $_;
 
-    } else { die X::Pakku::Spec.new: :$spec }
+    } else { die X::Pakku::Spec.new: msg => ~$spec }
 
   }
 
@@ -167,7 +167,7 @@ class Pakku::Spec {
     my $meta-file = @meta.map( -> $file { $path.add: $file } ).first( *.f );
 
 
-    die X::Pakku::Spec.new: spec => $path unless $meta-file;
+    die X::Pakku::Spec.new: msg => ~$path unless $meta-file;
 
     my %meta = Rakudo::Internals::JSON.from-json: $meta-file.slurp;
 

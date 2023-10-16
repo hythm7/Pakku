@@ -36,7 +36,14 @@ proto method fly ( | ) {
 
   CATCH {
 
-    when X::Pakku { .resume if $!yolo; nofun; exit 1 }
+    when X::Pakku {
+
+      .message;
+      .resume if $!yolo;
+      nofun;
+      exit 1
+
+    }
 
     default {
       log '🦗', header => 'ERR', msg => .gist, :!msg-delimit;

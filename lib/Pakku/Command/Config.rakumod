@@ -170,7 +170,7 @@ my class Config {
 
         log '🐞', header => 'CNF', msg => to-json( $option, :!pretty ), comment => 'invalid option!', :!msg-delimit;
 
-        die X::Pakku::Cnf.new( cnf => "$module" );
+        die X::Pakku::Cnf.new: msg => ~$module;
       }
 
     } );
@@ -470,7 +470,7 @@ my class Config {
 
       log '🐞', header => 'CNF', msg => ~$!config-file, comment => 'already exists!';
 
-      die X::Pakku::Cnf.new: cnf => $!config-file; 
+      die X::Pakku::Cnf.new: msg => ~$!config-file; 
 
     }
 
@@ -498,7 +498,7 @@ my class Config {
 
       log '🐞', header => 'CNF', msg => ~$!config-file, comment => 'does not exist! to create: pakku config new';
 
-      die X::Pakku::Cnf.new: cnf => $!config-file; 
+      die X::Pakku::Cnf.new: msg => ~$!config-file; 
 
     }
 

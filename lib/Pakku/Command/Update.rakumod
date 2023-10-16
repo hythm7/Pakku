@@ -137,7 +137,7 @@ multi method fly (
 
     log '🐞', header => 'REP', msg => ~$repo, comment => 'will be used!' if $repo;
 
-    die X::Pakku::Add.new: dist => @spec unless $repo;
+    die X::Pakku::Add.new: msg => ~@spec unless $repo;
 
   }
 

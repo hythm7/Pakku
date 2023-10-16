@@ -135,9 +135,7 @@ method test (
 
   if $exitcode {
 
-    log '🦗', header => 'TST', msg => ~$dist;
-
-    die X::Pakku::Test.new: :$dist;
+    die X::Pakku::Test.new: msg => ~$dist;
 
     log '🐞', header => 'OLO', msg => ~$dist;
 
@@ -216,9 +214,7 @@ method build (
 
   if $exitcode {
 
-    log '🦗', header => 'BLD', msg => ~$dist;
-
-    die X::Pakku::Build.new: :$dist;
+    die X::Pakku::Build.new: msg => ~$dist;
 
     log '🐞', header => 'OLO', msg => ~$dist;
 
@@ -246,9 +242,8 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
   unless $meta {
 
     log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
-    log '🦗', header => 'SPC', msg => ~$spec;
 
-    die X::Pakku::Spec.new: :$spec;
+    die X::Pakku::Spec.new: msg => ~$spec;
 
     log '🐞', header => 'OLO', msg => ~$spec;
   }
@@ -262,9 +257,8 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
 
   log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
-  log '🦗', header => 'SPC', msg => ~$spec;
 
-  die X::Pakku::Spec.new: :$spec;
+  die X::Pakku::Spec.new: msg => ~$spec;
 
   log '🐞', header => 'OLO', msg => ~$spec;
 
@@ -275,9 +269,7 @@ multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
 
   log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-  log '🦗', header => 'SPC', msg => ~$spec;
-
-  die X::Pakku::Spec.new: :$spec;
+  die X::Pakku::Spec.new: msg => ~$spec;
 
   log '🐞', header => 'OLO', msg => ~$spec;
 
@@ -289,9 +281,7 @@ multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
 
   log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-  log '🦗', header => 'SPC', msg => ~$spec;
-
-  die X::Pakku::Spec.new: :$spec;
+  die X::Pakku::Spec.new: msg => ~$spec;
 
   log '🐞', header => 'OLO', msg => ~$spec;
 
@@ -313,7 +303,7 @@ multi method satisfy ( :@spec! ) {
 
     } );
 
-  die X::Pakku::Spec.new: :@spec unless $meta;;
+  die X::Pakku::Spec.new: msg => ~@spec unless $meta;;
 
   log '🐞', header => 'OLO', msg => {~@spec};
 
@@ -396,13 +386,13 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   my $archive = $dst.add( $dst.basename ~ '.tar.gz' );
 
-  $!http.download: url-encode( $src ), $archive;
+  retry { $!http.download: url-encode( $src ), $archive; }
 
   log '🐛', header => 'EXT', msg => ~$archive;
 
   my $extract = extract :$archive, :$dst;
 
-  die X::Pakku::Archive.new: :$archive unless $extract;
+  die X::Pakku::Archive.new: msg => ~$archive unless $extract;
 
   log '🐛', header => 'RMV', msg => ~$archive;
 
@@ -656,7 +646,7 @@ method metamorph ( ) {
 
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::CmdActions );
 
-  die X::Pakku::Cmd.new( cmd => @*ARGS ) unless $cmd;
+  die X::Pakku::Cmd.new: msg => ~@*ARGS unless $cmd;
 
   my %cmd = $cmd.made;
 
@@ -667,7 +657,7 @@ method metamorph ( ) {
 
   if %cnf<pakku><config>:exists {
 
-    die X::Pakku::Cnf.new( cnf => %cnf<pakku><config> ) unless %cnf<pakku><config>.IO.f;
+    die X::Pakku::Cnf.new: msg => ~%cnf<pakku><config> unless %cnf<pakku><config>.IO.f;
 
   }
 
@@ -679,7 +669,7 @@ method metamorph ( ) {
 
     my $cnf = Rakudo::Internals::JSON.from-json: slurp $config-file.IO;
 
-    die X::Pakku::Cnf.new( cnf => $config-file ) unless defined $cnf;
+    die X::Pakku::Cnf.new: msg => ~$config-file unless defined $cnf;
 
     %cnf =  hashmerge $cnf, %cnf;
 
@@ -824,3 +814,30 @@ my sub get-env ( ) {
  %env;
 
 }
+
+sub retry (
+
+  &action,
+  Int:D  :$max   is copy = 4,
+  Real:D :$delay is copy = 0.2
+
+) is export {
+
+  loop {
+
+    my $result = quietly try action();
+
+    return $result unless $!;
+
+    $!.rethrow if $max == 0;
+
+    sleep $delay;
+
+    log '🐞', header => 'REC', msg => ~$!, :comment<retrying!>;
+
+    $delay *= 2;
+    $max   -= 1;
+
+  }
+}
+
