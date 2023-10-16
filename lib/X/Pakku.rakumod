@@ -71,6 +71,14 @@ class X::Pakku::Nuke is X::Pakku {
 
 }
 
+class X::Pakku::Fetch is X::Pakku {
+
+  has Str:D $.msg is required;
+
+  method message { log '🦗', header => 'FTC', :$!msg }
+
+}
+
 
 class X::Pakku::Archive is X::Pakku {
 

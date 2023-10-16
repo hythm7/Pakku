@@ -386,7 +386,17 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   my $archive = $dst.add( $dst.basename ~ '.tar.gz' );
 
-  retry { $!http.download: url-encode( $src ), $archive; }
+   my $response;
+
+  try retry {
+
+    $response = $!http.download: url-encode( $src ), $archive;
+
+    die X::Pakku::HTTP.new: :$response, message => $response<reason>unless $response<success>;
+
+  }
+
+  die X::Pakku::Fetch.new: msg => ~$src unless $response<success>;
 
   log '🐛', header => 'EXT', msg => ~$archive;
 
@@ -817,7 +827,7 @@ my sub get-env ( ) {
 
 sub retry (
 
-  &action,
+          &action,
   Int:D  :$max   is copy = 4,
   Real:D :$delay is copy = 0.2
 
@@ -833,11 +843,11 @@ sub retry (
 
     sleep $delay;
 
-    log '🐞', header => 'REC', msg => ~$!, :comment<retrying!>;
+    log '🐞', header => 'TRY', msg => ~$!, :comment<retrying!>;
 
     $delay *= 2;
     $max   -= 1;
 
   }
-}
 
+}
