@@ -392,7 +392,7 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
     $response = $!http.download: url-encode( $src ), $archive;
 
-    die X::Pakku::HTTP.new: :$response, message => $response<reason>unless $response<success>;
+    die X::Pakku::HTTP.new: :$response, message => $response<reason> unless $response<success>;
 
   }
 
