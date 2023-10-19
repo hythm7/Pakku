@@ -642,7 +642,7 @@ method metamorph ( ) {
 
         self.fly: 'help', :$cmd;
 
-        log '🦗', header => 'CMD', msg => .message;
+        .message;
 
         nofun;
       }
