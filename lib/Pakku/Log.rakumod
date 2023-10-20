@@ -1,5 +1,7 @@
 unit class Pakku::Log;
 
+my Lock::Async $lock .= new;
+
 enum Color is export ( :reset(0) :black(30) :red(31) :green(32) :yellow(33) :blue(34) :magenta(35) :cyan(36) :white(37) );
 
 my class Level {
@@ -170,22 +172,29 @@ my class Bar {
 
   method show( ) {
 
-    return unless $!active;
+    $lock.protect: {
 
-    print "\r";
+      return unless $!active;
 
-    $!level.msg: :$!header, msg => ~self; 
+      print "\r";
 
+      $!level.msg: :$!header, msg => ~self; 
+
+    }
   }
 
   method hide (  ) {
 
-    return unless $!active;
+    $lock.protect: {
 
-    my $space = $!length + @!sym.uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
+      return unless $!active;
 
-    print "\r";
-    print " " x $space ~ "\b \b" x $space;
+      my $space = $!length + @!sym.uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
+
+      print "\r";
+      print " " x $space ~ "\b \b" x $space;
+
+    }
 
   }
 
