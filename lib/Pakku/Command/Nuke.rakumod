@@ -183,7 +183,7 @@ multi method fly (
 
   my sub remove-dir( IO::Path:D $io --> Nil ) {
 
-    .d ?? remove-dir( $_ ) !! .unlink for $io.dir;
+    ( .d && not .l ) ?? remove-dir( $_ ) !! .unlink for $io.dir;
 
     $io.rmdir;
 
