@@ -37,6 +37,8 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
 
         sink @dist.map( -> $dist {
 
+          log '🐞', header => 'RMV', msg => ~$dist unless $dist.meta<name> ~~ $spec.name;
+
           $repo.uninstall: $dist;
 
           log '🧚', header => 'RMV', msg => ~$dist;
