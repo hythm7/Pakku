@@ -1,5 +1,8 @@
 #!/usr/bin/env raku
 
+$*OUT.out-buffer = 0;
+$*ERR.out-buffer = 0;
+
 # needed otherwise get 'SC not yet resolved error'
 use CompUnit::Repository::Staging;
 
