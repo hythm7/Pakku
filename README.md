@@ -2,7 +2,7 @@
 [![macOS](https://github.com/hythm7/Pakku/actions/workflows/mac.yml/badge.svg)](https://github.com/hythm7/Pakku/actions/workflows/mac.yml)
 [![Windows](https://github.com/hythm7/Pakku/actions/workflows/windows.yml/badge.svg)](https://github.com/hythm7/Pakku/actions/workflows/windows.yml)
 
-[![SparrowCI](https://ci.sparrowhub.io/project/git-hythm7-Pakku/badge?foo=bar)](https://ci.sparrowhub.io)
+![Sparky](https://sparky.sparrowhub.io/badge/hythm7-Pakku?foo=bar)
 
 Pakku
 =====
