@@ -4,7 +4,7 @@ use Pakku::Grammar::Cmd;
 
 my @tests = (
   "add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add")},
+    ${:add(${:spec("Spec")}), :cmd("add")},
   "add ./dist" =>
     ${:add(${:path("./dist".IO)}), :cmd("add")},
   "add /path/to/dist" =>
@@ -12,93 +12,93 @@ my @tests = (
   "add /path/to/dist" =>
     ${:add(${:path("/path/to/dist".IO)}), :cmd("add")},
   "add nodeps" =>
-    ${:add(${:spec($["nodeps"])}), :cmd("add")},
+    ${:add(${:spec("nodeps")}), :cmd("add")},
   "add nodeps Spec" =>
-    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:!deps, :spec("Spec")}), :cmd("add")},
   "add deps Spec" =>
-    ${:add(${:deps, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:deps, :spec("Spec")}), :cmd("add")},
   "add deps only Spec" =>
-    ${:add(${:deps("only"), :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:deps("only"), :spec("Spec")}), :cmd("add")},
   "add deps runtime Spec" =>
-    ${:add(${:deps("runtime"), :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:deps("runtime"), :spec("Spec")}), :cmd("add")},
   "add deps notest Spec" =>
-    ${:add(${:deps, :!test, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:deps, :!test, :spec("Spec")}), :cmd("add")},
   "add nodeps test Spec" =>
-    ${:add(${:!deps, :test, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:!deps, :test, :spec("Spec")}), :cmd("add")},
   "add deps test Spec" =>
-    ${:add(${:deps("test"), :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:deps("test"), :spec("Spec")}), :cmd("add")},
   "add deps build Spec" =>
-    ${:add(${:deps("build"), :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:deps("build"), :spec("Spec")}), :cmd("add")},
   "add build Spec" =>
-    ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:build, :spec("Spec")}), :cmd("add")},
   "add serial Spec" =>
-    ${:add(${:serial, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:serial, :spec("Spec")}), :cmd("add")},
   "add contained Spec" =>
-    ${:add(${:contained, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:contained, :spec("Spec")}), :cmd("add")},
   "add test Spec" =>
-    ${:add(${:spec($["Spec"]), :test}), :cmd("add")},
+    ${:add(${:spec("Spec"), :test}), :cmd("add")},
   "add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add")},
+    ${:add(${:spec("Spec")}), :cmd("add")},
   "add nobuild Spec" =>
-    ${:add(${:!build, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:!build, :spec("Spec")}), :cmd("add")},
   "add build Spec" =>
-    ${:add(${:build, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:build, :spec("Spec")}), :cmd("add")},
   "add test Spec" =>
-    ${:add(${:test, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:test, :spec("Spec")}), :cmd("add")},
   "add notest Spec" =>
-    ${:add(${:spec($["Spec"]), :!test}), :cmd("add")},
+    ${:add(${:spec("Spec"), :!test}), :cmd("add")},
   "add Spec1 Spec2" =>
     ${:add(${:spec($["Spec1", "Spec2"])}), :cmd("add")},
   "add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add")},
+    ${:add(${:spec("Spec")}), :cmd("add")},
   "add exclude Dep1 Spec" =>
-    ${:add(${:exclude($["Dep1"]), :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:exclude("Dep1"), :spec("Spec")}), :cmd("add")},
   "add exclude Dep1 exclude Dep2 Spec" =>
-    ${:add(${:exclude($["Dep1", "Dep2"]), :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:exclude($["Dep1", "Dep2"]), :spec("Spec")}), :cmd("add")},
   "add depsforce Spec" =>
     ${:add(${:spec($["depsforce", "Spec"])}), :cmd("add")},
   "add nodeps xtest Spec" =>
-    ${:add(${:!deps, :xtest, :spec($["Spec"])}), :cmd("add")},
+    ${:add(${:!deps, :xtest, :spec("Spec")}), :cmd("add")},
   "recman add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:recman})},
   "recman pretty add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman, :pretty})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:recman, :pretty})},
   "recman rea add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman("rea")})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:recman("rea")})},
   "rec rea add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:recman("rea")})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:recman("rea")})},
   "norecman rea add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:norecman("rea")})},
   "norec rea add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:norecman("rea")})},
   "nrec rea add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:norecman("rea")})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:norecman("rea")})},
   "v 4 force add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:force, :verbose("now")})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:force, :verbose("now")})},
   "v 4 add nodeps Spec" =>
-    ${:add(${:!deps, :spec($["Spec"])}), :cmd("add"), :pakku(${:verbose("now")})},
+    ${:add(${:!deps, :spec("Spec")}), :cmd("add"), :pakku(${:verbose("now")})},
   "cores 42 add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:cores(42)})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:cores(42)})},
   "pretty v 4 noforce add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:pretty, :!force, :verbose("now")})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:pretty, :!force, :verbose("now")})},
   "bar spinner add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${:bar, :spinner})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:bar, :spinner})},
   "nobar nospinner add Spec" =>
-    ${:add(${:spec($["Spec"])}), :cmd("add"), :pakku(${bar => False, spinner => False})},
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${bar => False, spinner => False})},
   "update" =>
     ${:update(${}), :cmd("update")},
   "update Dist" =>
-    ${:update(${:spec($["Dist"])}), :cmd("update")},
+    ${:update(${:spec("Dist")}), :cmd("update")},
   "upgrade Dist" =>
-    ${:update(${:spec($["Dist"])}), :cmd("update")},
+    ${:update(${:spec("Dist")}), :cmd("update")},
   "up Dist" =>
-    ${:update(${:spec($["Dist"])}), :cmd("update")},
+    ${:update(${:spec("Dist")}), :cmd("update")},
   "up clean Dist" =>
-    ${:update(${:spec($["Dist"]), :clean}), :cmd("update")},
+    ${:update(${:spec("Dist"), :clean}), :cmd("update")},
   "up noclean Dist" =>
-    ${:update(${:spec($["Dist"]), :!clean}), :cmd("update")},
+    ${:update(${:spec("Dist"), :!clean}), :cmd("update")},
   "up nc Dist" =>
-    ${:update(${:spec($["Dist"]), :!clean}), :cmd("update")},
+    ${:update(${:spec("Dist"), :!clean}), :cmd("update")},
   "up c" =>
     ${:update(${:clean}), :cmd("update")},
   "remove Spec1 Spec2" =>
@@ -108,31 +108,31 @@ my @tests = (
   "list" =>
     ${:cmd("list")},
   "list details Spec" =>
-    ${:cmd("list"), :list(${:details, :spec($["Spec"])})},
+    ${:cmd("list"), :list(${:details, :spec("Spec")})},
   "list Spec" =>
-    ${:cmd("list"), :list(${:spec($["Spec"])})},
+    ${:cmd("list"), :list(${:spec("Spec")})},
   "search Spec" =>
-    ${:cmd("search"), :search(${:spec($["Spec"])})},
+    ${:cmd("search"), :search(${:spec("Spec")})},
   "search details Spec" =>
-    ${:cmd("search"), :search(${:details, :spec($["Spec"])})},
+    ${:cmd("search"), :search(${:details, :spec("Spec")})},
   "search relaxed Spec" =>
-    ${:cmd("search"), :search(${:relaxed, :spec($["Spec"])})},
+    ${:cmd("search"), :search(${:relaxed, :spec("Spec")})},
   "search norelaxed Spec" =>
-    ${:cmd("search"), :search(${:!relaxed, :spec($["Spec"])})},
+    ${:cmd("search"), :search(${:!relaxed, :spec("Spec")})},
   "download Spec" =>
-    ${:cmd("download"), :download(${:spec($["Spec"])})},
+    ${:cmd("download"), :download(${:spec("Spec")})},
   "down Spec" =>
-    ${:cmd("download"), :download(${:spec($["Spec"])})},
+    ${:cmd("download"), :download(${:spec("Spec")})},
   "nuke home" =>
-    ${:cmd("nuke"), :nuke(${:nuke($["home"])})},
+    ${:cmd("nuke"), :nuke(${:nuke("home")})},
   "nuke site" =>
-    ${:cmd("nuke"), :nuke(${:nuke($["site"])})},
+    ${:cmd("nuke"), :nuke(${:nuke("site")})},
   "nuke vendor" =>
-    ${:cmd("nuke"), :nuke(${:nuke($["vendor"])})},
+    ${:cmd("nuke"), :nuke(${:nuke("vendor")})},
   "nuke cache" =>
-    ${:cmd("nuke"), :nuke(${:nuke($["cache"])})},
+    ${:cmd("nuke"), :nuke(${:nuke("cache")})},
   "nuke pakku" =>
-    ${:cmd("nuke"), :nuke(${:nuke($["pakku"])})},
+    ${:cmd("nuke"), :nuke(${:nuke("pakku")})},
   "st" =>
     ${:cmd("state"), :state({})},
   "state clean" =>
@@ -146,15 +146,15 @@ my @tests = (
   "state updates" =>
     ${:cmd("state"), :state({:updates})},
   "state Spec" =>
-    ${:cmd("state"), :state(${:spec($["Spec"])})},
+    ${:cmd("state"), :state(${:spec("Spec")})},
   "add" =>
     ${:cmd("help"), :help(${:cmd("add")})},
   "cache add Spec" =>
-    ${:cmd("add"), :pakku(${:cache(True)}), :add(${:spec($["Spec"])})},
+    ${:cmd("add"), :pakku(${:cache(True)}), :add(${:spec("Spec")})},
   "nocache add Spec" =>
-    ${:cmd("add"), :pakku(${:cache(False)}), :add(${:spec($["Spec"])})},
+    ${:cmd("add"), :pakku(${:cache(False)}), :add(${:spec("Spec")})},
   "cache /tmp/pakku-cache add Spec" =>
-    ${:cmd("add"), :pakku(${:cache('/tmp/pakku-cache'.IO)}), :add(${:spec($["Spec"])})},
+    ${:cmd("add"), :pakku(${:cache('/tmp/pakku-cache'.IO)}), :add(${:spec("Spec")})},
   "config" =>
     ${:cmd("config"), :config(${:operation("view")})},
   "config new" =>
@@ -164,29 +164,29 @@ my @tests = (
   "config add" =>
     ${:cmd("config"), :config(${:module("add"), :operation("view")})},
   "config pakku force" =>
-    ${:cmd("config"), :config(${:module("pakku"), :operation("view"), :option(Array[Str].new("force"))})},
+    ${:cmd("config"), :config(${:module("pakku"), :operation("view"), :option("force")})},
   "config add view reset" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option(Array[Str].new("reset"))})},
+    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option("reset")})},
   "config add reset" =>
     ${:cmd("config"), :config(${:module("add"), :operation("reset")})},
   "config add enable test" =>
-    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("test" => Bool::True))})},
+    ${:cmd("config"), :config(${:module("add"), :option(:test)})},
   "config add disable test" =>
-    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("test" => Bool::False))})},
+    ${:cmd("config"), :config(${:module("add"), :option(:!test)})},
   "config add set to home" =>
-    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("to" => "home"))})},
+    ${:cmd("config"), :config(${:module("add"), :option(:to("home"))})},
   "config add unset to" =>
-    ${:cmd("config"), :config(${:module("add"), :option(Array[Pair].new("to" => Nil))})},
+    ${:cmd("config"), :config(${:module("add"), :option(:to(Nil))})},
   "config search set count 7" =>
-    ${:cmd("config"), :config(${:module("search"), :option(Array[Pair].new("count" => "7"))})},
+    ${:cmd("config"), :config(${:module("search"), :option(:count("7"))})},
   "config search unset count" =>
-    ${:cmd("config"), :config(${:module("search"), :option(Array[Pair].new("count" => Nil))})},
+    ${:cmd("config"), :config(${:module("search"), :option(:count(Nil))})},
   "config pakku enable dont" =>
-    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("dont" => Bool::True))})},
+    ${:cmd("config"), :config(${:module("pakku"),  :option(:dont)})},
   "config pakku enable pretty please" =>
     ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("pretty" => Bool::True, "please" => Bool::True))})},
-  "config pakku set verbose debug " =>
-    ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("verbose" => "debug"))})},
+  "config pakku set verbose debug" =>
+    ${:cmd("config"), :config(${:module("pakku"),  :option(:verbose("debug"))})},
   "config pakku unset dont verbose async " =>
     ${:cmd("config"), :config(${:module("pakku"),  :option(Array[Pair].new("dont" => Nil, "verbose" => Nil, "async" => Nil))})},
   "config recman default disable" =>
@@ -206,7 +206,7 @@ my @tests = (
   "config log reset" =>
     ${:cmd("config"), :config(${:module("log"), :operation("reset")})},
   "pretty config /tmp/config.json config pakku enable dont" =>
-    ${:config(${:module("pakku"), :option(Array[Pair].new("dont" => Bool::True))}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
+    ${:config(${:module("pakku"), :option(:dont)}), :cmd("config"), :pakku(${:pretty, :config("/tmp/config.json".IO)})},
   "help" =>
     ${:cmd("help"), :help(${:cmd("")})},
   "help add" =>
