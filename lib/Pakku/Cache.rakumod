@@ -67,7 +67,9 @@ method cache ( IO::Path:D :$path! ) {
 
 }
 
-sub reduce-latest ( $left, $right ) {
+multi reduce-latest ( $left ) { $left }
+
+multi reduce-latest ( $left, $right ) {
 
   my $left-ver  = $left.meta<ver>;
   my $left-api  = $left.meta<api>;
@@ -76,7 +78,8 @@ sub reduce-latest ( $left, $right ) {
 
   return $left if Version.new( $left-ver // '' ) > Version.new( $right-ver // '' );
   return $left if Version.new( $left-api // '' ) > Version.new( $right-api // '' );
-  return $right;
+
+  $right;
 }
 
 my sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) {

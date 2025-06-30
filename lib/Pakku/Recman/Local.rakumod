@@ -148,11 +148,14 @@ submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
 
 }
 
-my sub reduce-latest ( %left, %right ) {
+multi reduce-latest ( %left ) { %left }
+
+multi reduce-latest ( %left, %right ) {
 
   return %left if         Version.new( %left<ver> ) > Version.new( %right<ver> );
   return %left if quietly Version.new( %left<api> ) > Version.new( %right<api> );
-  return %right;
+
+  %right;
 
 }
 
