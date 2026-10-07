@@ -42,6 +42,11 @@ my constant @INFIX  = '..', '..^', '^..', '^..^', '<', '<=', '>', '>=', '==', '!
                       '|', '&', '^', '&&', '||', '^^', '//', 'and', 'or', 'xor';
 my constant @PREFIX = '!', 'not', 'so';
 
+# a regex is data too, as long as it carries no code: no { }, <{ }>, <?{ }>, <&f>, $vars, <~~>
+my constant @REGEX-CODE = <Block Interpolation Assertion::InterpolatedBlock Assertion::PredicateBlock
+                           Assertion::Callable Assertion::InterpolatedVar Assertion::Recurse>;
+my constant @RULES = <alpha alnum digit xdigit space blank upper lower punct cntrl graph print ident ws wb ww same before after>;
+
 my sub validate ( $node, Str:D $text --> Nil ) {
 
   my sub refuse ( Str $why ) { die X::Pakku::Spec.new: msg => "($text)", comment => "$why: not a version/auth/api selector" }
@@ -69,7 +74,12 @@ my sub validate ( $node, Str:D $text --> Nil ) {
     when RakuAST::Type::Simple                  { refuse "type { .name.canonicalize }" unless .name.canonicalize eq 'Any' }
     when RakuAST::Call::Name                    { refuse "call to { .name.canonicalize }" unless .name.canonicalize eq any <any all one none> }
     when RakuAST::Name                          { }
-    default                                     { refuse .^name.subst( 'RakuAST::', '' ) unless .^name.starts-with( 'RakuAST::Regex::' ) }
+    when RakuAST::Regex::Assertion::Named       { refuse "<{ .name.canonicalize }> in a regex" unless .name.canonicalize eq any @RULES }
+    default                                     {
+      my $kind = .^name.subst( 'RakuAST::', '' );
+      refuse $kind unless $kind.starts-with( 'Regex::' );
+      refuse "code inside a regex ({ $kind.subst( 'Regex::', '' ) })" if $kind.subst( 'Regex::', '' ) eq any @REGEX-CODE;
+    }
   }
 
   $node.visit-children( -> $child { validate $child, $text } );

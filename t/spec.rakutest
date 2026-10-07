@@ -165,9 +165,16 @@ for (
 
 ok { name => 'Foo', version => 'v0.0.5' } ~~ Pakku::Spec.new( 'Foo:ver<0.0.5>' ), 'a leading v in a META version is tolerated';
 
-for 'Foo:ver({ .substr(0,5) eq "cpan:" })', 'Foo:ver(say "pwned"; v1)', 'Foo:auth($*HOME)', 'Foo:ver(Version.new("1"))', 'Foo:ver(* > )' -> $bad {
+for 'Foo:ver({ .substr(0,5) eq "cpan:" })', 'Foo:ver(say "pwned"; v1)', 'Foo:auth($*HOME)', 'Foo:ver(Version.new("1"))', 'Foo:ver(* > )',
+    'Foo:ver(* < 2 & * > 1)',
+    'Foo:auth(/ { say 1 } /)', 'Foo:auth(/ <{ "x" }> /)', 'Foo:auth(/ <?{ 1 }> /)', 'Foo:auth(/ <&say> /)', 'Foo:auth(/ $*CWD /)', 'Foo:auth(/ <~~> /)', 'Foo:auth(/ <EVAL> /)' -> $bad {
   throws-like { Pakku::Spec.new: $bad }, X::Pakku::Spec, "$bad is refused";
 }
+
+# a regex without code is data
+ok  %( name => 'Foo', auth => 'zef:abc' ) ~~ Pakku::Spec.new( 'Foo:auth(/ ^ zef ":" <[a..z]>+ $ /)' ), 'a plain regex selector matches';
+nok %( name => 'Foo', auth => 'cpan:ABC' ) ~~ Pakku::Spec.new( 'Foo:auth(/ ^ zef ":" <[a..z]>+ $ /)' ), 'and does not match what it should not';
+ok  %( name => 'Foo', auth => 'zef:abc' ) ~~ Pakku::Spec.new( 'Foo:auth(/ <alpha>+ /)' ),          'built-in named rules are fine';
 
 # --- S22 hash form and alternatives ---
 
