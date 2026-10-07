@@ -4,6 +4,9 @@ use Test;
 
 use Pakku::Core;
 
+# A Core wired to the offline fixture ecosystem under t/fixtures (no network, see GitHub issue #40).
+my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+
 my $core;
 
 lives-ok {
@@ -13,23 +16,19 @@ lives-ok {
 
     submethod BUILD( :%!cnf ) {
 
-      my $stage  = $*TMPDIR.add( '.pakku' ).add( 'stage' ).add( rand );
-
-      my @recman = ( %( :name<pakku>, :location<http://recman.pakku.org>, :1priority, :active ), );
+      my @recman = ( %( :name<fixture>, :location($fixtures), :1priority, :active ), );
 
       $!log    = Pakku::Log.new: :verbose<nothing>;
 
-			my $http = Pakku::HTTP.new;
+      $!recman = Pakku::Recman.new: :http(Any) :@recman;
 
-			$!recman = Pakku::Recman.new: :$http :@recman;
-
-			@!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
+      @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
     }
   } .new
 }, 'Compose Pakku::Core';
 
-ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "archive:ver<13>:from<native>", "archive:from<native>" ] } ) ), 'Native dependency exists' if $*KERNEL ~~ 'linux';
+ok  $core.satisfied( spec => Pakku::Spec.new( { any => [ "archive:ver<13>:from<native>", "archive:from<native>", "archiveint:from<native>" ] } ) ), 'Native dependency exists';
 nok $core.satisfied( spec => Pakku::Spec.new( { :from<native>, :name<missing> } ) ), 'Native dependency missing';
 
 ok  $core.satisfied( spec => Pakku::Spec.new( { :from<bin>, :name<raku>    } ) ), 'Binary dependency exists';
@@ -41,15 +40,15 @@ nok $core.satisfied( spec => Pakku::Spec.new( 'rakudo:ver<-42>' ) ), 'Raku depen
 dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<native>, :name<archive> } ) ) }, 'Native dependency no satisfy';
 dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku>    } ) ) }, 'Binary dependency no satisfy';
 
+my $meta;
+lives-ok { $meta = $core.satisfy( spec => Pakku::Spec.new( { any => <Fixture::Nope Fixture::Foo Fixture::Baz> } ) ) }, 'Can satisfy a dependency from the fixture recman';
+is $meta.name, 'Fixture::Foo', 'first available alternative wins';
 
-lives-ok {
+dies-ok { $core.satisfy( spec => Pakku::Spec.new( 'foobarbaz:from<Native>' ) ) }, 'can not satisfy native dependency';
+dies-ok { $core.satisfy( spec => Pakku::Spec.new( 'Fixture::Nope' ) ) }, 'can not satisfy unknown dependency';
 
-$core.satisfy( spec => Pakku::Spec.new( { any => <foo bar Pakku baz> } ) );
-
-}, 'Can satisfy a dependency';
-
-dies-ok {
-  $core.satisfy( spec => Pakku::Spec.new( 'foobarbaz:from<Native>' ) );
-	}, 'can not satisfy bin dependency';
+my @deps = $core.get-deps( $core.satisfy( spec => Pakku::Spec.new( 'Fixture::Bar' ) ) ).flat;
+ok @deps.map( *.name ).grep( 'Fixture::Foo' ), 'get-deps resolves Fixture::Bar -> Fixture::Foo';
+ok @deps.map( *.name ).first( 'Fixture::Qux' | 'Fixture::Baz' ), 'get-deps resolves one alternative of the any-group';
 
 done-testing;

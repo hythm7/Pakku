@@ -1,0 +1,40 @@
+#!/usr/bin/env raku
+
+use Test;
+
+# needed otherwise get 'SC not yet resolved error'
+use CompUnit::Repository::Staging;
+
+use Pakku;
+
+# End-to-end: add Fixture::Bar (and its dependencies) from the offline fixture recman into a temporary repo.
+my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+my $tmp      = $*TMPDIR.add( 'pakku-add-test-' ~ $*PID );
+my $home     = $tmp.add('home');
+my $repo     = $tmp.add('repo');
+
+$home.mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+my %cnf =
+  pakku  => %( home => $home, cache => False, verbose => ( %*ENV<PAKKU_TEST_VERBOSE> // 'nothing' ), pretty => False, bar => False, spinner => False, async => False ),
+  recman => [ %( name => 'fixture', location => $fixtures, priority => 1, active => True ), ];
+
+my $pakku;
+
+lives-ok { $pakku = Pakku.new: :%cnf }, 'Create Pakku with the fixture recman';
+
+lives-ok { $pakku.fly: 'add', spec => [ 'Fixture::Bar' ], to => ~$repo }, 'add Fixture::Bar to a temporary repo';
+
+my $inst = CompUnit::Repository::Installation.new: prefix => $repo;
+
+ok $inst.candidates( 'Fixture::Bar' ),                 'Fixture::Bar is installed';
+ok $inst.candidates( 'Fixture::Foo', ver => '0.2+' ),  'Fixture::Foo:ver<0.2+> dependency is installed';
+ok $inst.candidates( 'Fixture::Qux' ) || $inst.candidates( 'Fixture::Baz' ), 'one alternative of the any-group is installed';
+ok $repo.add( 'bin' ).add( 'bar' ).e,                  'bin wrapper for bar was deployed';
+
+my $meta = $inst.candidates( 'Fixture::Bar' ).head.meta;
+is $meta<ver>, '1.0', 'installed Fixture::Bar has the expected version';
+
+done-testing;

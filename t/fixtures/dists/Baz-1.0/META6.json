@@ -1,0 +1,3 @@
+{ "name": "Fixture::Baz", "version": "1.0", "api": 1, "description": "Fixture Baz: no auth, integer api, hash-form depends with recommends", "license": "Artistic-2.0",
+  "provides": { "Fixture::Baz": "lib/Fixture/Baz.rakumod" },
+  "depends": { "runtime": { "requires": [ "Fixture::Foo" ] }, "test": { "requires": [], "recommends": [ "Fixture::Nope::Not::Available" ] } } }

@@ -1,0 +1,149 @@
+[
+  {
+    "api": "1",
+    "auth": "zef:a",
+    "depends": [
+      "Fixture::Foo:ver<0.2+>:auth<zef:a>",
+      {
+        "any": [
+          "Fixture::Qux",
+          "Fixture::Baz"
+        ]
+      }
+    ],
+    "description": "Fixture Bar: deps with a version range and an any-group, a bin script and a resource",
+    "dist": "Fixture::Bar:ver<1.0>:auth<zef:a>",
+    "license": "Artistic-2.0",
+    "name": "Fixture::Bar",
+    "path": "mirror/Bar-1.0.tar.gz",
+    "provides": {
+      "Fixture::Bar": "lib/Fixture/Bar.rakumod"
+    },
+    "resources": [
+      "bar.txt"
+    ],
+    "tags": [
+      "fixture"
+    ],
+    "version": "1.0"
+  },
+  {
+    "api": 1,
+    "depends": {
+      "runtime": {
+        "requires": [
+          "Fixture::Foo"
+        ]
+      },
+      "test": {
+        "recommends": [
+          "Fixture::Nope::Not::Available"
+        ],
+        "requires": [
+        ]
+      }
+    },
+    "description": "Fixture Baz: no auth, integer api, hash-form depends with recommends",
+    "dist": "Fixture::Baz:ver<1.0>:auth<>",
+    "license": "Artistic-2.0",
+    "name": "Fixture::Baz",
+    "path": "mirror/Baz-1.0.tar.gz",
+    "provides": {
+      "Fixture::Baz": "lib/Fixture/Baz.rakumod"
+    },
+    "version": "1.0"
+  },
+  {
+    "api": "0",
+    "auth": "zef:a",
+    "depends": [
+    ],
+    "description": "Fixture Foo 0.1",
+    "dist": "Fixture::Foo:ver<0.1>:auth<zef:a>",
+    "license": "Artistic-2.0",
+    "name": "Fixture::Foo",
+    "path": "mirror/Foo-0.1.tar.gz",
+    "provides": {
+      "Fixture::Foo": "lib/Fixture/Foo.rakumod"
+    },
+    "tags": [
+      "fixture"
+    ],
+    "version": "0.1"
+  },
+  {
+    "api": "0",
+    "auth": "zef:a",
+    "depends": [
+    ],
+    "description": "Fixture Foo 0.2",
+    "dist": "Fixture::Foo:ver<0.2>:auth<zef:a>",
+    "license": "Artistic-2.0",
+    "name": "Fixture::Foo",
+    "path": "mirror/Foo-0.2.tar.gz",
+    "provides": {
+      "Fixture::Foo": "lib/Fixture/Foo.rakumod",
+      "Fixture::Foo::Util": "lib/Fixture/Foo/Util.rakumod"
+    },
+    "tags": [
+      "fixture"
+    ],
+    "version": "0.2"
+  },
+  {
+    "api": "0",
+    "auth": "zef:a",
+    "depends": [
+    ],
+    "description": "Fixture Foo 0.2",
+    "dist": "Fixture::Foo:ver<0.2>:auth<zef:a>",
+    "license": "Artistic-2.0",
+    "name": "Fixture::Foo",
+    "path": "mirror/Foo-0.2.tar.gz",
+    "provides": {
+      "Fixture::Foo": "lib/Fixture/Foo.rakumod",
+      "Fixture::Foo::Util": "lib/Fixture/Foo/Util.rakumod"
+    },
+    "tags": [
+      "fixture"
+    ],
+    "version": "0.2"
+  },
+  {
+    "api": "0",
+    "auth": "zef:b",
+    "depends": [
+    ],
+    "description": "Fixture Foo 0.3 by another author",
+    "dist": "Fixture::Foo:ver<0.3>:auth<zef:b>",
+    "license": "Artistic-2.0",
+    "name": "Fixture::Foo",
+    "path": "mirror/Foo-0.3.tar.gz",
+    "provides": {
+      "Fixture::Foo": "lib/Fixture/Foo.rakumod"
+    },
+    "version": "0.3"
+  },
+  {
+    "api": "0",
+    "auth": "zef:a",
+    "depends": [
+      {
+        "by-kernel.name": {
+          "": "Fixture::Foo:ver<0.2+>:auth<zef:a>",
+          "win32": "Fixture::Foo:ver<0.2+>:auth<zef:a>"
+        }
+      }
+    ],
+    "description": "Fixture Qux: Build.rakumod builder, release-date, by-kernel collapsed dependency",
+    "dist": "Fixture::Qux:ver<2.0>:auth<zef:a>",
+    "license": "Artistic-2.0",
+    "name": "Fixture::Qux",
+    "path": "mirror/Qux-2.0.tar.gz",
+    "provides": {
+      "Fixture::Qux": "lib/Fixture/Qux.rakumod"
+    },
+    "release-date": "2026-01-01",
+    "version": "2.0"
+  }
+]

@@ -290,7 +290,7 @@ multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
 
 multi method satisfy ( :@spec! ) {
 
-  log '🐛', header => 'SPC', msg => {~@spec}, comment => 'satisfying!';
+  log '🐛', header => 'SPC', msg => ~@spec, comment => 'satisfying!';
 
   my $meta =
     @spec.map( -> $spec {
@@ -305,7 +305,7 @@ multi method satisfy ( :@spec! ) {
 
   die X::Pakku::Spec.new: msg => ~@spec unless $meta;;
 
-  log '🐞', header => 'OLO', msg => {~@spec};
+  log '🐞', header => 'OLO', msg => ~@spec;
 
   Empty
 }

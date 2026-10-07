@@ -1,0 +1,3 @@
+{ "name": "Fixture::Qux", "version": "2.0", "auth": "zef:a", "api": "0", "description": "Fixture Qux: Build.rakumod builder, release-date, by-kernel collapsed dependency", "license": "Artistic-2.0", "release-date": "2026-01-01",
+  "provides": { "Fixture::Qux": "lib/Fixture/Qux.rakumod" },
+  "depends": [ { "by-kernel.name": { "": "Fixture::Foo:ver<0.2+>:auth<zef:a>", "win32": "Fixture::Foo:ver<0.2+>:auth<zef:a>" } } ] }
