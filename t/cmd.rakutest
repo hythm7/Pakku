@@ -248,6 +248,22 @@ my @tests = (
     ${:cmd("test"), :test(${:spec("Spec"), :timeout(600)})},
   "build timeout 0 ./dist" =>
     ${:build(${:path("./dist".IO), :timeout(0)}), :cmd("build")},
+  "add https://x.org/Foo-1.0.tar.gz" =>
+    ${:add(${:url("https://x.org/Foo-1.0.tar.gz")}), :cmd("add")},
+  "add notest git@github.com:x/y.git" =>
+    ${:add(${:test(False), :url("git@github.com:x/y.git")}), :cmd("add")},
+  "add https://github.com/x/y.git#v1.2" =>
+    ${:add(${:url("https://github.com/x/y.git#v1.2")}), :cmd("add")},
+  "add ./Foo-1.0.tar.gz" =>
+    ${:add(${:path("./Foo-1.0.tar.gz".IO)}), :cmd("add")},
+  "info Foo" =>
+    ${:cmd("info"), :info(${:spec("Foo")})},
+  "i Foo Bar" =>
+    ${:cmd("info"), :info(${:spec($["Foo", "Bar"])})},
+  "help info" =>
+    ${:cmd("help"), :help(${:cmd("info")})},
+  "info" =>
+    ${:cmd("help"), :help(${:cmd("info")})},
   "notest Spec" => 'NO PARSE',
   "nt Spec" => 'NO PARSE',
   "nobuild Spec" => 'NO PARSE',

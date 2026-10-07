@@ -571,6 +571,60 @@ method !try-out ( Pakku::Meta:D $meta, &do, :$dist is copy, Bool:D :$build = Tru
 
 }
 
+# a path from the command line: a dist directory as it is, a tarball extracted, a .git directory cloned
+method !dist-path ( IO::Path:D $path --> IO::Path:D ) {
+
+  return self!fetch-path( ~$path ) if $path.f;
+  return self!fetch-path( ~$path ) if $path.d and $path.basename.ends-with( '.git' );
+
+  $path;
+
+}
+
+# a dist from somewhere else than the ecosystem: a tarball (local or URL) or a git repository
+method !fetch-path ( Str:D $src --> IO::Path:D ) {
+
+  my $dst = $!tmp.add( sha1( $src ) ).add( now.Num );
+
+  $src ~~ / ^ 'git@' | ^ 'git://' | '.git' [ '#' <-[\s]>* ]? $ /
+    ?? $!fetch.clone( url => $src, :$dst )
+    !! self.fetch( src => $src, :$dst );
+
+  $dst;
+
+}
+
+# fez names a tarball after its SHA-1: compare, when a sha1 tool is around (A10)
+method !verify ( IO::Path:D $archive, Str:D $expected --> Nil ) {
+
+  my @cmd = find-bin( 'sha1sum'  ) ?? ( 'sha1sum', ~$archive )
+         !! find-bin( 'shasum'   ) ?? ( 'shasum', '-a', '1', ~$archive )
+         !! find-bin( 'certutil' ) ?? ( 'certutil', '-hashfile', ~$archive, 'SHA1' )
+         !! ();
+
+  unless @cmd {
+    log '🐛', header => 'FTC', msg => ~$archive, comment => 'no sha1 tool, not verified';
+    return;
+  }
+
+  my $out = run( |@cmd, :out, :err ).out.slurp( :close );
+
+  my $got = $out.lines.map( *.lc.subst( / \s /, '', :g ) ).first( / ^ <xdigit> ** 40 / ).?substr( 0, 40 );
+
+  without $got {
+    log '🐛', header => 'FTC', msg => ~$archive, comment => 'no sha1 from ' ~ @cmd.head ~ ', not verified';
+    return;
+  }
+
+  if $got ne $expected.lc {
+    try unlink $archive;
+    die X::Pakku::Fetch.new: msg => ~$archive, comment => "checksum mismatch! expected $expected, got $got";
+  }
+
+  log '🐛', header => 'FTC', msg => ~$archive, comment => 'sha1 ok';
+
+}
+
 # the repo to install into: the one asked for, or the first in the chain that takes dists
 method !install-repo ( Str:D $spec, Str:D $what ) {
 
@@ -603,6 +657,8 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   # index sources are already valid URLs (REA's are even pre-encoded): never re-encode them
   retry { $!fetch.download: url => $src, dst => $archive, progress => $!degree == 1 };
+
+  self!verify( $archive, ~$0 ) if $src ~~ / ( <xdigit> ** 40 ) '.tar.gz' $ /;
 
   log '🐛', header => 'EXT', msg => ~$archive;
 

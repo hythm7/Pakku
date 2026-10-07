@@ -11,6 +11,7 @@ use Pakku::Command::Update;
 use Pakku::Command::Download;
 use Pakku::Command::Nuke;
 use Pakku::Command::Config;
+use Pakku::Command::Info;
 use Pakku::Command::Help;
 use Pakku::Command::Refresh;
 
@@ -27,6 +28,7 @@ unit class Pakku;
   also does Pakku::Command::Download;
   also does Pakku::Command::Nuke;
   also does Pakku::Command::Config;
+  also does Pakku::Command::Info;
   also does Pakku::Command::Help;
   also does Pakku::Command::Refresh;
 

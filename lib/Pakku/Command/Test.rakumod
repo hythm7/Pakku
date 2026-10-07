@@ -4,9 +4,11 @@ use Pakku::Meta;
 
 unit role Pakku::Command::Test;
 
-multi method fly ( 'test', IO::Path:D :$path!, Bool:D :$xtest = False, Bool:D :$build = True, Int :$timeout ) {
+multi method fly ( 'test', IO::Path:D :$path! is copy, Bool:D :$xtest = False, Bool:D :$build = True, Int :$timeout ) {
 
   log '🧚', header => 'TST', msg => ~$path;
+
+  $path = self!dist-path: $path;
 
   my $meta = Pakku::Meta.new: $path;
 

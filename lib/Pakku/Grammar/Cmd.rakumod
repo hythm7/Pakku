@@ -1,7 +1,7 @@
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> 'spec'? [ <specs> || <path> ]    }
+  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> 'spec'? [ <url> || <specs> || <path> ] }
   rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> 'spec'? <specs>? }
 
   rule TOP:sym<build>    { <pakkuopt>* % <.space> <build-cmd> <buildopt>*   % <.space> 'spec'? [ <spec> || <path> ] }
@@ -16,6 +16,8 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd> }
 
   rule TOP:sym<refresh>  { <pakkuopt>* % <.space> <refresh-cmd> <recman-names>? $ }
+
+  rule TOP:sym<info>     { <pakkuopt>* % <.space> <info-cmd> 'spec'? <specs> }
 
   rule TOP:sym<help>     { <pakkuopt>* % <.space> [ <help> <cmd>? | <cmd> ]? $ }
 
@@ -100,7 +102,7 @@ grammar Pakku::Grammar::Cmd {
   token keyval-option { <key> <.space>+ <value> }
 
   # a whole word that is a command (or one of its aliases)
-  token cmd { [ <add> | <update> | <build-cmd> | <test-cmd> | <remove> | <list> | <download> | <search> | <nuke> | <state> | <config> | <refresh-cmd> | <help> ] <?before <.space> | $ > }
+  token cmd { [ <add> | <update> | <build-cmd> | <test-cmd> | <remove> | <list> | <download> | <search> | <nuke> | <state> | <config> | <refresh-cmd> | <info-cmd> | <help> ] <?before <.space> | $ > }
 
   token test-cmd    { 'test'    | 't' }
   token build-cmd   { 'build'   | 'b' }
@@ -154,6 +156,8 @@ grammar Pakku::Grammar::Cmd {
   proto token nuke { * }
   token nuke:sym<nuke> { <sym> }
   token nuke:sym<n>    { <sym> }
+
+  token info-cmd { 'info' | 'i' | 'ℹ' }
 
   proto token help { * }
   token help:sym<help> { <sym> }
@@ -494,6 +498,9 @@ grammar Pakku::Grammar::Cmd {
   token spec { <name> <spec-pair>* }
   token path { <[./\\]> <[ a..z A..Z 0..9 \-_.!~*'<>():@&=+$,/\\ ]>* }
 
+  # a tarball or a git repository: https://host/Foo.tar.gz, https://host/x/y.git#tag, git@host:x/y.git
+  token url  { [ \w+ '://' | 'git@' ] <-[\s]>+ }
+
   token name { [<-[./:<>()\h]>+]+ % '::' }
 
   token spec-pair { ':' <spec-key> <spec-value> }
@@ -533,6 +540,7 @@ class Pakku::Grammar::CmdActions {
     %cmd<add>       = $<addopt>».made.hash   if defined $<addopt>;
     %cmd<add><spec> = $<specs>.made          if defined $<specs>;
     %cmd<add><path> = $<path>.made           if defined $<path>;
+    %cmd<add><url>  = ~$<url>                if defined $<url>;
 
     make %cmd;
 
@@ -683,6 +691,18 @@ class Pakku::Grammar::CmdActions {
     %cmd<cmd>             = 'refresh';
     %cmd<pakku>           = $<pakkuopt>».made.hash if defined $<pakkuopt>;
     %cmd<refresh><recman> = $<recman-names><recman-name>».Str.Array if $<recman-names>;
+
+    make %cmd;
+
+  }
+
+  method TOP:sym<info> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>        = 'info';
+    %cmd<pakku>      = $<pakkuopt>».made.hash if defined $<pakkuopt>;
+    %cmd<info><spec> = $<specs>.made;
 
     make %cmd;
 

@@ -51,6 +51,43 @@ method download (
 
 }
 
+# a git repository into a directory: url, url#tag, url#branch or url#sha (needs the git binary)
+method clone ( ::?CLASS:D: Str:D :$url!, IO::Path:D :$dst! --> IO::Path:D ) {
+
+  my $git = ( IS-WIN ?? <git.exe git> !! <git> ).first( -> $bin { find-bin $bin } )
+    // die X::Pakku::Fetch.new: msg => redact( $url ), comment => 'git not found!';
+
+  my ( $repo, $ref ) = $url.split( '#', 2 );
+
+  my $sha = so $ref and $ref ~~ / ^ <xdigit> ** 7..40 $ /;
+
+  $dst.parent.mkdir;
+
+  log '🐛', header => 'FTC', msg => redact( $repo ), comment => $ref ?? "git $ref" !! 'git';
+
+  self!git: $git, 'clone', '--quiet', |( '--depth', '1' unless $sha ), |( '--branch', $ref if $ref and not $sha ), '--', $repo, ~$dst;
+  self!git: $git, '-C', ~$dst, 'checkout', '--quiet', $ref if $sha;
+
+  try remove-dir $dst.add( '.git' );   # the dist, not its history
+
+  $dst;
+
+}
+
+method !git ( *@cmd --> Nil ) {
+
+  log '🐛', header => 'FTC', msg => ~@cmd;
+
+  my $proc = run |@cmd, :out, :err;
+
+  my $err = $proc.err.slurp( :close );
+
+  $proc.out.slurp( :close );
+
+  die X::Pakku::Fetch.new: msg => 'git', comment => ( $err.trim.lines.tail // "exit { $proc.exitcode }" ) if $proc.exitcode;
+
+}
+
 method !local ( IO::Path:D :$src!, IO::Path:D :$dst! --> IO::Path:D ) {
 
   die X::Pakku::Fetch.new: msg => ~$src, comment => 'no such file!' unless $src.f;

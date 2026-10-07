@@ -102,6 +102,8 @@ my class Remove {
 
 my class Download { }
 
+my class Info { }
+
 my class Nuke { }
 
 my class Build {
@@ -195,6 +197,7 @@ my class Config {
   has Test     $.test;
   has List     $.list;
   has Download $.download;
+  has Info     $.info;
   has Nuke     $.nuke;
   has State    $.state;
   has Recman   $.recman;

@@ -52,7 +52,7 @@ multi method fly (
 multi method fly (
 
          'add',
-  IO:D   :$path!,
+  IO:D   :$path! is copy,
          :$deps       = True,
   Bool:D :$build      = True,
   Bool:D :$test       = True,
@@ -66,6 +66,8 @@ multi method fly (
 ) {
 
   log '🧚', header => 'ADD', msg => ~$path;
+
+  $path = self!dist-path: $path;   # a tarball or a .git directory becomes a dist directory
 
   my $repo = self!install-repo: $to, ~$path;
 
@@ -119,5 +121,14 @@ method !check-provides ( Pakku::Meta:D $meta, IO::Path:D $path ) {
     log '🐞', header => 'MTA', msg => $rel, comment => 'not in provides!' unless $rel eq any @provided;
 
   }
+
+}
+
+# a tarball by URL, or a git repository: fetched, then added like a path
+multi method fly ( 'add', Str:D :$url!, *%opt ) {
+
+  log '🧚', header => 'ADD', msg => $url;
+
+  samewith 'add', path => self!fetch-path( $url ), |%opt;
 
 }

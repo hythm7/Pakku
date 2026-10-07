@@ -24,6 +24,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
     when 'nuke'     { out self!nuke-help     }
     when 'config'   { out self!config-help   }
     when 'refresh'  { out self!refresh-help  }
+    when 'info'     { out self!info-help     }
     when 'help'     { out self!help-help     }
 
 
@@ -41,6 +42,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
         self!nuke-help,
         self!config-help,
         self!refresh-help,
+        self!info-help,
         self!pakku-help,
         self!help-help,
       ).Str;
@@ -64,6 +66,11 @@ method !add-help ( ) {
   %add<example>.push: 'pakku add noprecomp notest dist';
   %add<example>.push: 'pakku add to home dist1 dist2';
   %add<example>.push: 'pakku add contained to /opt/MyApp dist';
+  %add<example>.push: 'pakku add ./dist';
+  %add<example>.push: 'pakku add ./dist-1.0.tar.gz';
+  %add<example>.push: 'pakku add https://host/dist-1.0.tar.gz';
+  %add<example>.push: 'pakku add https://github.com/user/dist.git#v1.0';
+  %add<example>.push: "pakku add 'dist:ver(* > 1.2):auth<zef:user>'";
 
   %add<opt>.push: ( 'deps'            => 'add all dependencies' );
   %add<opt>.push: ( 'nodeps'          => 'dont add dependencies' );
@@ -326,6 +333,21 @@ method !refresh-help ( ) {
   %refresh<example>.push: 'pakku norefresh add dist';
 
   help %refresh;
+
+}
+
+method !info-help ( ) {
+
+  my %info;
+
+  %info<cmd>     = 'Info';
+  %info<desc>    = 'Everything about a dist: releases in the ecosystem, what is installed where, who depends on it';
+
+  %info<example>.push: 'pakku info dist';
+  %info<example>.push: 'pakku info dist:auth<zef:user>';
+  %info<example>.push: 'pakku i dist1 dist2';
+
+  help %info;
 
 }
 

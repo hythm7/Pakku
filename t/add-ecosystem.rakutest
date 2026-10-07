@@ -6,6 +6,7 @@ use Test;
 use CompUnit::Repository::Staging;
 
 use Pakku;
+use Pakku::Util;
 
 # End-to-end through an ecosystem index with tarballs: fetch + extract + install.
 # (Its own process: a custom repo is registered as 'custom-lib', once per process.)
@@ -35,5 +36,29 @@ ok $inst2.candidates( 'Fixture::Bar' ),                'Fixture::Bar is installe
 ok $inst2.candidates( 'Fixture::Foo', ver => '0.2+' ), 'its dependency too';
 ok $home2.add( '.index' ).add( 'fix' ).add( 'index.json' ).e, 'the index was stored under home/.index';
 ok $tmp.add( 'cache2' ).dir.elems, 'fetched dists were cached';
+
+# other sources of a dist: a tarball on disk, a tarball by URL, a git repository
+my $mirror = $fixtures.IO.parent.add( 'mirror' );
+
+lives-ok { $pakku2.fly: 'add', path => $mirror.add( 'Foo-0.3.tar.gz' ), to => ~$repo2 }, 'add a local tarball';
+ok $inst2.candidates( 'Fixture::Foo', auth => 'zef:b' ), 'the dist from the tarball is installed';
+
+lives-ok { $pakku2.fly: 'add', url => 'file://' ~ $mirror.add( 'Foo-0.1.tar.gz' ).absolute, to => ~$repo2 }, 'add a tarball by URL';
+ok $inst2.candidates( 'Fixture::Foo', ver => '0.1' ), 'the dist from the URL is installed';
+
+if find-bin( 'git' ) {
+
+  my $git = $tmp.add( 'baz.git' );
+
+  run 'cp', '-r', $fixtures.IO.add( 'Baz-1.0' ), $git;
+  run 'git', '-C', ~$git, 'init', '-q';
+  run 'git', '-C', ~$git, 'add', '-A';
+  run 'git', '-C', ~$git, '-c', 'user.name=fixture', '-c', 'user.email=fixture@example.org', 'commit', '-q', '-m', 'fixture';
+
+  lives-ok { $pakku2.fly: 'add', url => ~$git, to => ~$repo2 }, 'add a git repository';
+  ok $inst2.candidates( 'Fixture::Baz' ), 'the dist from the repository is installed';
+
+}
+else { skip 'no git', 2 }
 
 done-testing;
