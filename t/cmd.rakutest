@@ -165,8 +165,7 @@ my @tests = (
     ${:cmd("config"), :config(${:module("add"), :operation("view")})},
   "config pakku force" =>
     ${:cmd("config"), :config(${:module("pakku"), :operation("view"), :option("force")})},
-  "config add view reset" =>
-    ${:cmd("config"), :config(${:module("add"), :operation("view"), :option("reset")})},
+  "config add view reset" => 'NO PARSE',
   "config add reset" =>
     ${:cmd("config"), :config(${:module("add"), :operation("reset")})},
   "config add enable test" =>
@@ -213,10 +212,47 @@ my @tests = (
     ${:cmd("help"), :help(${:cmd("add")})},
   "a" =>
     ${:cmd("help"), :help(${:cmd("add")})},
-  "no cmd" =>
-    ${:cmd("help"), :help(${:cmd("")})},
-  "help no cmd" =>
-    ${:cmd("help"), :help(${:cmd("")})},
+  "no cmd" => 'NO PARSE',
+  "help no cmd" => 'NO PARSE',
+  "help state" =>
+    ${:cmd("help"), :help(${:cmd("state")})},
+  "help refresh" =>
+    ${:cmd("help"), :help(${:cmd("refresh")})},
+  "refresh" =>
+    ${:cmd("refresh")},
+  "rfr" =>
+    ${:cmd("refresh")},
+  "refresh rea" =>
+    ${:cmd("refresh"), :refresh(${:recman("rea")})},
+  "refresh fez rea" =>
+    ${:cmd("refresh"), :refresh(${:recman(["fez", "rea"])})},
+  "refresh add Spec" =>
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:refresh})},
+  "norefresh add Spec" =>
+    ${:add(${:spec("Spec")}), :cmd("add"), :pakku(${:refresh(False)})},
+  "nrfr search Spec" =>
+    ${:cmd("search"), :pakku(${:refresh(False)}), :search(${:spec("Spec")})},
+  "nuke index" =>
+    ${:cmd("nuke"), :nuke(${:nuke("index")})},
+  "add p Spec" =>
+    ${:add(${:precompile, :spec("Spec")}), :cmd("add")},
+  "t Spec" =>
+    ${:cmd("test"), :test(${:spec("Spec")})},
+  "b ./dist" =>
+    ${:build(${:path("./dist".IO)}), :cmd("build")},
+  "config recman fez set mirrors https://a/,https://b/" =>
+    ${:cmd("config"), :config(${:module("recman"), :recman-name("fez"), :option(:mirrors(["https://a/", "https://b/"]))})},
+  "config log info set comment-right-delimit X" =>
+    ${:cmd("config"), :config(${:module("log"), :log-level("info"), :option(:comment-right-delimit("X"))})},
+  "notest Spec" => 'NO PARSE',
+  "nt Spec" => 'NO PARSE',
+  "nobuild Spec" => 'NO PARSE',
+  "nr add Spec" => 'NO PARSE',
+  "addd Spec" => 'NO PARSE',
+  "config add set to" => 'NO PARSE',
+  "config add enable" => 'NO PARSE',
+  "add" =>
+    ${:cmd("help"), :help(${:cmd("add")})},
 );
 
 
@@ -227,8 +263,14 @@ for @tests {
 
   my $parser  = Pakku::Grammar::Cmd;
   my $actions = Pakku::Grammar::CmdActions;
-  my $got     = $parser.parse( $cmd, :$actions ).made;
+  my $match   = $parser.parse( $cmd, :$actions );
 
+  if $expected eq 'NO PARSE' {
+    nok $match, "$cmd: no parse";
+    next;
+  }
+
+  my $got = $match.made;
 
   $got<pakku>:delete unless $got<pakku>;
   $got<list>:delete  unless $got<list>;

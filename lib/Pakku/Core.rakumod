@@ -623,7 +623,7 @@ submethod BUILD ( :%!cnf! ) {
 
   }
 
-  @recman.map( -> $recman { log '🐝', header => 'CNF', msg => 'recman', comment => $recman<name> ~ ' ' ~ ( $recman<mirrors> // $recman<location> // '' ) } );
+  @recman.map( -> $recman { log '🐝', header => 'CNF', msg => 'recman', comment => $recman<name> ~ ' ' ~ ( $recman<mirrors> // $recman<location> // '' ).List.map( { redact ~$_ } ).join( ' ' ) } );
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
@@ -638,27 +638,18 @@ method metamorph ( ) {
 
     Pakku::Log.new: :pretty :verbose<debug>;
 
-      when X::Pakku::Cmd {
-
-        my $cmd = Pakku::Grammar::Cmd.subparse( @*ARGS, actions => Pakku::Grammar::CmdActions ).made<cmd>;
-
-        self.fly: 'help', :$cmd;
-
-        .log;
-
-        nofun;
-      }
+      when X::Pakku::Cmd { .log; nofun; exit 1 }
 
       when X::Pakku::Cnf { .log; nofun; exit 1 }
 
-      default { log '🦗', header => 'CNF', msg => .gist }
+      default { log '🦗', header => 'CNF', msg => .gist, :!msg-delimit; nofun; exit 1 }
   }
 
   my $home = $*HOME.add( '.pakku' );
 
   my $cmd = Pakku::Grammar::Cmd.parse( @*ARGS, actions => Pakku::Grammar::CmdActions );
 
-  die X::Pakku::Cmd.new: msg => ~@*ARGS unless $cmd;
+  die X::Pakku::Cmd.new: msg => ~@*ARGS, comment => 'unknown command or option, see: pakku help' unless $cmd;
 
   my %cmd = $cmd.made;
 
@@ -698,14 +689,12 @@ method metamorph ( ) {
 }
 
 # borrowed from Hash::Merge:cpan:TYIL to fix #6
+# deep merge, the source wins; a hash only merges into a hash (a null in a config file replaces, it does not crash)
 my sub hashmerge ( %merge-into, %merge-source ) {
 
   for %merge-source.keys -> $key {
-    if %merge-into{ $key } :exists {
-      given %merge-source{ $key } {
-        when Hash { hashmerge %merge-into{ $key }, %merge-source{ $key } }
-        default { %merge-into{ $key } = %merge-source{ $key } }
-      }
+    if %merge-into{ $key } ~~ Hash and %merge-source{ $key } ~~ Hash {
+      hashmerge %merge-into{ $key }, %merge-source{ $key };
     }
     else { %merge-into{ $key } = %merge-source{ $key } }
   }
@@ -736,62 +725,62 @@ my sub find-perl-module ( Str:D $name --> Bool:D ) {
   return False;
 }
 
+# PAKKU_* environment variables, lowest precedence after the built-in defaults
 my sub get-env ( ) {
 
   my %env;
 
-  %env<pakku><cache>    = %*ENV<PAKKU_CACHE>        if %*ENV<PAKKU_CACHE>;
-  %env<pakku><verbose>  = %*ENV<PAKKU_VERBOSE>      if %*ENV<PAKKU_VERBOSE>;
-  %env<pakku><cores>    = %*ENV<PAKKU_CORES>        if %*ENV<PAKKU_CORES>;
-  %env<pakku><recman>   = %*ENV<PAKKU_RECMAN>       if %*ENV<PAKKU_RECMAN>;
-  %env<pakku><norecman> = %*ENV<PAKKU_NORECMAN>     if %*ENV<PAKKU_NORECMAN>;
-  %env<pakku><refresh>  = %*ENV<PAKKU_REFRESH>.Bool if %*ENV<PAKKU_REFRESH>:exists;
-  %env<pakku><config >  = %*ENV<PAKKU_CONFIG>.IO    if %*ENV<PAKKU_CONFIG>;
-  %env<pakku><dont>     = %*ENV<PAKKU_DONT>.Bool    if %*ENV<PAKKU_DONT>;
-  %env<pakku><force>    = %*ENV<PAKKU_FORCE>.Bool   if %*ENV<PAKKU_FORCE>;
-  %env<pakku><yolo>     = %*ENV<PAKKU_YOLO>.Bool    if %*ENV<PAKKU_YOLO>;
-  %env<pakku><pretty>   = %*ENV<PAKKU_PRETTY>.Bool  if %*ENV<PAKKU_PRETTY>;
-  %env<pakku><async>    = %*ENV<PAKKU_ASYNC>.Bool   if %*ENV<PAKKU_ASYNC>;
-  %env<pakku><bar>      = %*ENV<PAKKU_BAR>.Bool     if %*ENV<PAKKU_BAR>;
-  %env<pakku><spinner>  = %*ENV<PAKKU_SPINNER>.Bool if %*ENV<PAKKU_SPINNER>;
+  my sub bool ( Str:D $name, Str:D $value ) {
+    given $value.lc {
+      when '1' | 'true'  | 'yes' | 'on'  { True  }
+      when '0' | 'false' | 'no'  | 'off' | '' { False }
+      default { die X::Pakku::Cnf.new: msg => $name, comment => "$value: not a boolean (true/false)!" }
+    }
+  }
 
-  %env<pakku><add><to>         = %*ENV<PAKKU_ADD_TO>                       if %*ENV<PAKKU_ADD_TO>;
-  %env<pakku><add><deps>       = %*ENV<PAKKU_ADD_DEPS>                     if %*ENV<PAKKU_ADD_DEPS>;
-  %env<pakku><add><test>       = %*ENV<PAKKU_ADD_TEST>.Bool                if %*ENV<PAKKU_ADD_TEST>;
-  %env<pakku><add><build>      = %*ENV<PAKKU_ADD_BUILD>.Bool               if %*ENV<PAKKU_ADD_BUILD>;
-  %env<pakku><add><serial>     = %*ENV<PAKKU_ADD_SERIAL>.Bool              if %*ENV<PAKKU_ADD_SERIAL>;
-  %env<pakku><add><contained>  = %*ENV<PAKKU_ADD_CONTAINED>.Bool           if %*ENV<PAKKU_ADD_CONTAINED>;
-  %env<pakku><add><xtest>      = %*ENV<PAKKU_ADD_XTEST>.Bool               if %*ENV<PAKKU_ADD_XTEST>;
-  %env<pakku><add><precompile> = %*ENV<PAKKU_ADD_PRECOMPILE>.Bool          if %*ENV<PAKKU_ADD_PRECOMPILE>;
-  %env<pakku><add><exclude>    = %*ENV<PAKKU_ADD_EXCLUDE>.split( / \s+ / ) if %*ENV<PAKKU_ADD_EXCLUDE>;
+  my sub deps ( Str:D $value ) { $value eq 'only' ?? 'only' !! bool( 'deps', $value ) }
 
-  %env<pakku><test><build> = %*ENV<PAKKU_TEST_BUILD>.Bool if %*ENV<PAKKU_TEST_BUILD>;
-  %env<pakku><test><xtest> = %*ENV<PAKKU_TEST_XTEST>.Bool if %*ENV<PAKKU_TEST_XTEST>;
+  my sub positive ( Str:D $name, Str:D $value ) { $value ~~ / ^ \d+ $ / && +$value > 0 ?? +$value !! die X::Pakku::Cnf.new: msg => $name, comment => "$value: not a positive integer!" }
 
-  %env<pakku><remove><from> = %*ENV<PAKKU_REMOVE_FROM> if %*ENV<PAKKU_REMOVE_FROM>;
+  # general: name => [ config key, converter ]
+  my %general =
+    PAKKU_VERBOSE  => [ 'verbose',  { $_ } ],
+    PAKKU_CORES    => [ 'cores',    { positive 'PAKKU_CORES', $_ } ],
+    PAKKU_RECMAN   => [ 'recman',   { $_ ~~ / ^ [ true | 1 ] $ / ?? True !! $_ } ],
+    PAKKU_NORECMAN => [ 'norecman', { $_ ~~ / ^ [ true | 1 ] $ / ?? True !! $_ } ],
+    PAKKU_CONFIG   => [ 'config',   { .IO } ],
+    PAKKU_CACHE    => [ 'cache',    { $_ ~~ / ^ [ 0 | 1 | true | false | yes | no | on | off ] $ / ?? bool( 'PAKKU_CACHE', $_ ) !! $_ } ],
+    PAKKU_DONT     => [ 'dont',     { bool 'PAKKU_DONT',    $_ } ],
+    PAKKU_FORCE    => [ 'force',    { bool 'PAKKU_FORCE',   $_ } ],
+    PAKKU_YOLO     => [ 'yolo',     { bool 'PAKKU_YOLO',    $_ } ],
+    PAKKU_PRETTY   => [ 'pretty',   { bool 'PAKKU_PRETTY',  $_ } ],
+    PAKKU_ASYNC    => [ 'async',    { bool 'PAKKU_ASYNC',   $_ } ],
+    PAKKU_BAR      => [ 'bar',      { bool 'PAKKU_BAR',     $_ } ],
+    PAKKU_SPINNER  => [ 'spinner',  { bool 'PAKKU_SPINNER', $_ } ],
+    PAKKU_REFRESH  => [ 'refresh',  { bool 'PAKKU_REFRESH', $_ } ];
 
-  %env<pakku><list><repo>    = %*ENV<PAKKU_LIST_REPO>         if %*ENV<PAKKU_LIST_REPO>;
-  %env<pakku><list><details> = %*ENV<PAKKU_LIST_DETAILS>.Bool if %*ENV<PAKKU_LIST_DETAILS>;
+  for %general.sort -> ( :key($name), :value(( $key, &convert )) ) {
+    %env<pakku>{ $key } = convert( %*ENV{ $name } ) if %*ENV{ $name }:exists;
+  }
 
-  %env<pakku><search><count>   = %*ENV<PAKKU_SEARCH_count>.Int    if %*ENV<PAKKU_SEARCH_COUNT>;
-  %env<pakku><search><latest>  = %*ENV<PAKKU_SEARCH_LATEST>.Bool  if %*ENV<PAKKU_SEARCH_LATEST>;
-  %env<pakku><search><details> = %*ENV<PAKKU_SEARCH_DETAILS>.Bool if %*ENV<PAKKU_SEARCH_DETAILS>;
-  %env<pakku><search><relaxed> = %*ENV<PAKKU_SEARCH_RELAXED>.Bool if %*ENV<PAKKU_SEARCH_RELAXED>;
+  # per command: PAKKU_<COMMAND>_<OPTION>, stored under the command (that is where fly() reads them)
+  my %command =
+    add      => %( to => { $_ }, deps => &deps, test => &bool.assuming( 'PAKKU_ADD_TEST' ), build => &bool.assuming( 'PAKKU_ADD_BUILD' ), serial => &bool.assuming( 'PAKKU_ADD_SERIAL' ), contained => &bool.assuming( 'PAKKU_ADD_CONTAINED' ), xtest => &bool.assuming( 'PAKKU_ADD_XTEST' ), precompile => &bool.assuming( 'PAKKU_ADD_PRECOMPILE' ), exclude => { .split( / \s+ / ).Array } ),
+    update   => %( in => { $_ }, deps => &deps, test => &bool.assuming( 'PAKKU_UPDATE_TEST' ), build => &bool.assuming( 'PAKKU_UPDATE_BUILD' ), xtest => &bool.assuming( 'PAKKU_UPDATE_XTEST' ), clean => &bool.assuming( 'PAKKU_UPDATE_CLEAN' ), precompile => &bool.assuming( 'PAKKU_UPDATE_PRECOMPILE' ), exclude => { .split( / \s+ / ).Array } ),
+    test     => %( build => &bool.assuming( 'PAKKU_TEST_BUILD' ), xtest => &bool.assuming( 'PAKKU_TEST_XTEST' ) ),
+    remove   => %( from => { $_ } ),
+    list     => %( repo => { $_ }, details => &bool.assuming( 'PAKKU_LIST_DETAILS' ) ),
+    search   => %( count => { positive 'PAKKU_SEARCH_COUNT', $_ }, latest => &bool.assuming( 'PAKKU_SEARCH_LATEST' ), details => &bool.assuming( 'PAKKU_SEARCH_DETAILS' ), relaxed => &bool.assuming( 'PAKKU_SEARCH_RELAXED' ) ),
+    state    => %( clean => &bool.assuming( 'PAKKU_STATE_CLEAN' ), updates => &bool.assuming( 'PAKKU_STATE_UPDATES' ) );
 
-  %env<pakku><update><in>         = %*ENV<PAKKU_UPDATE_IN>                       if %*ENV<PAKKU_UPDATE_IN>;
-  %env<pakku><update><deps>       = %*ENV<PAKKU_UPDATE_DEPS>                     if %*ENV<PAKKU_UPDATE_DEPS>;
-  %env<pakku><update><test>       = %*ENV<PAKKU_UPDATE_TEST>.Bool                if %*ENV<PAKKU_UPDATE_TEST>;
-  %env<pakku><update><xtest>      = %*ENV<PAKKU_UPDATE_XTEST>.Bool               if %*ENV<PAKKU_UPDATE_XTEST>;
-  %env<pakku><update><build>      = %*ENV<PAKKU_UPDATE_BUILD>.Bool               if %*ENV<PAKKU_UPDATE_BUILD>;
-  %env<pakku><update><clean>      = %*ENV<PAKKU_UPDATE_CLEAN>.Bool               if %*ENV<PAKKU_UPDATE_CLEAN>;
-  %env<pakku><update><precompile> = %*ENV<PAKKU_UPDATE_PRECOMPILE>.Bool          if %*ENV<PAKKU_UPDATE_PRECOMPILE>;
-  %env<pakku><update><exclude>    = %*ENV<PAKKU_UPDATE_EXCLUDE>.split( / \s+ / ) if %*ENV<PAKKU_UPDATE_EXCLUDE>;
+  for %command.sort -> ( :key($command), :value(%option) ) {
+    for %option.sort -> ( :key($option), :value(&convert) ) {
+      my $name = 'PAKKU_' ~ $command.uc ~ '_' ~ $option.uc;
+      %env{ $command }{ $option } = convert( %*ENV{ $name } ) if %*ENV{ $name }:exists;
+    }
+  }
 
-
-  %env<pakku><state><clean>   = %*ENV<PAKKU_STATE_CLEAN>.Bool   if %*ENV<PAKKU_STATE_CLEAN>;
-  %env<pakku><state><updates> = %*ENV<PAKKU_STATE_UPDATES>.Bool if %*ENV<PAKKU_STATE_UPDATES>;
-
- %env;
+  %env;
 
 }
 

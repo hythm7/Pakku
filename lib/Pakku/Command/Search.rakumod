@@ -10,7 +10,7 @@ multi method fly (
            :@spec!,
     Int:D  :$count   = 666,
     Bool:D :$relaxed = True,
-    Bool:D :$latest  = False,
+    Bool:D :$latest  = True,
     Bool:D :$details = False,
 
   ) {
@@ -29,6 +29,8 @@ multi method fly (
   until $promise.status { spinner.next; sleep 0.1 }
 
   spinner.deactivate;
+
+  await $promise;   # rethrows what the search died of
 
 }
 

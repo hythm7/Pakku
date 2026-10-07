@@ -106,3 +106,6 @@ sub version ( $v --> Version:D ) is export {
   Version.new( ( $v // 0 ).Str.subst( / ^ 'v' <?before \d> /, '' ) );
 
 }
+
+# a URL fit for a log line: https://user:secret@host/ -> https://***@host/
+sub redact ( Str:D $url --> Str:D ) is export { $url.subst( / ^ ( \w+ '://' ) <-[/@]>+ '@' /, { $0 ~ '***@' } ) }

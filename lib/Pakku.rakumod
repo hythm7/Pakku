@@ -12,6 +12,7 @@ use Pakku::Command::Download;
 use Pakku::Command::Nuke;
 use Pakku::Command::Config;
 use Pakku::Command::Help;
+use Pakku::Command::Refresh;
 
 unit class Pakku;
   also does Pakku::Core;
@@ -27,6 +28,7 @@ unit class Pakku;
   also does Pakku::Command::Nuke;
   also does Pakku::Command::Config;
   also does Pakku::Command::Help;
+  also does Pakku::Command::Refresh;
 
 proto method fly ( | ) {
 

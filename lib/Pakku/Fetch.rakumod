@@ -65,7 +65,7 @@ method !remote ( Str:D :$url!, IO::Path:D :$dst!, Int:D :$timeout!, Bool:D :$pro
 
   my $part = $dst.sibling( $dst.basename ~ ".$*PID.part" );
 
-  log '🐛', header => 'FTC', msg => $url, comment => self.backend;
+  log '🐛', header => 'FTC', msg => redact( $url ), comment => self.backend;
 
   {
     CATCH { default { try unlink $part; .rethrow } }
@@ -102,6 +102,6 @@ method !shell ( Str:D $tool, Str:D :$url!, IO::Path:D :$dst!, Int:D :$timeout! -
 
   my $err  = $proc.err.slurp( :close );
 
-  die X::Pakku::Fetch.new: msg => $url, comment => ( $err.trim || "exit { $proc.exitcode }" ) if $proc.exitcode;
+  die X::Pakku::Fetch.new: msg => redact( $url ), comment => ( $err.trim || "exit { $proc.exitcode }" ) if $proc.exitcode;
 
 }

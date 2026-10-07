@@ -1,6 +1,7 @@
 use NativeCall;
 
 use X::Pakku;
+use Pakku::Util;
 use Pakku::Log;
 use Pakku::Native;
 
@@ -97,7 +98,7 @@ method download (
 
   unless $curl {
     fclose $fh;
-    die X::Pakku::Fetch.new: msg => $url, comment => 'curl_easy_init failed!';
+    die X::Pakku::Fetch.new: msg => redact( $url ), comment => 'curl_easy_init failed!';
   }
 
   my &xfer = sub ( Pointer $u, int64 $dltotal, int64 $dlnow, int64 $ultotal, int64 $ulnow --> int32 ) {
@@ -140,7 +141,7 @@ method download (
 
   bar.deactivate if $progress;
 
-  die X::Pakku::Fetch.new: msg => $url, comment => "curl: ($rc) " ~ curl_easy_strerror( $rc ) ~ ( " HTTP $code" if $code ) if $rc;
+  die X::Pakku::Fetch.new: msg => redact( $url ), comment => "curl: ($rc) " ~ curl_easy_strerror( $rc ) ~ ( " HTTP $code" if $code ) if $rc;
 
   $dst;
 

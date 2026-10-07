@@ -46,6 +46,7 @@
     "Pakku::Command::Help":      "lib/Pakku/Command/Help.rakumod",
     "Pakku::Command::Config":    "lib/Pakku/Command/Config.rakumod",
     "Pakku::Command::Download":  "lib/Pakku/Command/Download.rakumod",
+    "Pakku::Command::Refresh":   "lib/Pakku/Command/Refresh.rakumod",
     "X::Pakku":                  "lib/X/Pakku.rakumod"
   },
   "resources": [ "config.json" ],

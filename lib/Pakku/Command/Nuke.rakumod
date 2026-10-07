@@ -1,194 +1,49 @@
 use X::Pakku;
 use Pakku::Log;
+use Pakku::Util;
 
 unit role Pakku::Command::Nuke;
 
-multi method fly (
+# the directories a repo owns; the prefix itself may hold other things (~/.raku has the REPL history)
+my constant @repo-dir = <dist sources short precomp bin resources version repo.lock>;
 
-  'nuke',
-  :@nuke!,
+multi method fly ( 'nuke', :@nuke! ) {
 
-  ) {
+  for @nuke -> $what {
 
-  eager @nuke.map( &nuke );
+    log '🦋', header => 'NUK', msg => $what;
 
+    my @target = do given $what {
 
-  ## TODO: check permissions
+      when 'home' | 'site' | 'vendor' | 'core' {
+        my $prefix = CompUnit::RepositoryRegistry.repository-for-name( $what ).prefix;
+        @repo-dir.map( { $prefix.add: $_ } ).grep( *.e );
+      }
 
-  multi sub nuke ( 'home' ) {
-
-    log '🦋', header => 'NUK', msg => 'home';
-
-    my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'home';
-    my $target = $repo.prefix;
-  
-    unless $target.d {
-
-      log '🐛', header => 'NUK', msg => ~$target, comment => 'does not exist!';
-
-      return;
+      when 'cache' { ( self!cache andthen .cache-dir ) // Empty }
+      when 'index' { self!home.add( '.index' ) }
+      when 'pakku' { self!home }
 
     }
 
-    unless self!dont {
-
-      remove-dir $target;
-
-      log '🧚', header => 'NUK', msg => 'home';
-
+    unless @target.grep( *.e ) {
+      log '🐛', header => 'NUK', msg => $what, comment => 'nothing to nuke!';
+      next;
     }
 
-  }
-
-  multi sub nuke ( 'site' ) {
-
-    log '🦋', header => 'NUK', msg => 'site';
-
-    my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'site';
-    my $target = $repo.prefix;
- 
-    unless $target.d {
-
-      log '🐛', header => 'NUK', msg => ~$target, comment => 'does not exist!';
-
-      return;
-
-    }
-
-    unless self!dont {
-
-      remove-dir $target;
-
-      log '🧚', header => 'NUK', msg => 'site';
-
-    }
-
-  }
-
-  multi sub nuke ( 'vendor' ) {
-
-    log '🦋', header => 'NUK', msg => 'vendor';
-
-    my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'vendor';
-    my $target = $repo.prefix;
- 
-    unless $target.d {
-
-      log '🐛', header => 'NUK', msg => ~$target, comment => 'does not exist!';
-
-      return;
-
-    }
-
-    unless self!dont {
-
-      remove-dir $target;
-
-      log '🧚', header => 'NUK', msg => 'vendor';
-
-    }
-   
-  }
-
-  multi sub nuke ( 'core' ) {
-
-    log '🦋', header => 'NUK', msg => 'core';
-
-    my $repo = CompUnit::RepositoryRegistry.repository-for-name: 'core';
-    my $target = $repo.prefix;
- 
-    unless $target.d {
-
-      log '🐛', header => 'NUK', msg => ~$target, comment => 'does not exist!';
-
-      return;
-
-    }
-
-    unless self!force {
-
+    if $what eq 'core' and not self!force {
       log '🐞', header => 'NUK', msg => 'core', comment => 'use force to nuke!';
-
-      die X::Pakku::Nuke.new: :msg<core>;
-
+      die X::Pakku::Nuke.new: msg => 'core';
     }
 
-    unless self!dont {
+    next if self!dont;
 
-      remove-dir $target;
-
-      log '🧚', header => 'NUK', msg => 'core';
-
-    }
-   
-  }
-
-
-  multi sub nuke ( 'cache' ) {
-
-    log '🦋', header => 'NUK', msg => 'cache';
-
-    my $cache = self!cache;
-
-    unless $cache {
-
-      log '🐛', header => 'NUK', msg => ~$cache, comment => 'no cache!';
-
-      return;
+    for @target.grep( *.e ) -> $target {
+      $target.d ?? remove-dir( $target ) !! $target.unlink;
     }
 
-    my $target = $cache.cache-dir;
-    
-    unless $target.d {
-
-      log '🐛', header => 'NUK', msg => ~$target, comment => 'does not exist!';
-
-      return;
-
-    }
-
-    unless self!dont {
-
-      remove-dir $target;
-
-      log '🧚', header => 'NUK', msg => 'cache';
-
-    }
-
-  }
-
-  multi sub nuke ( 'pakku' ) {
-
-    log '🦋', header => 'NUK', msg => 'pakku';
-
-    my $target = self!home;
-
-    unless $target.d {
-
-      log '🐛', header => 'NUK', msg => ~$target, comment => 'does not exist!';
-
-      return;
-
-    }
-
-    unless self!dont {
-
-      remove-dir $target;
-
-      log '🧚', header => 'NUK', msg => 'pakku';
-
-    }
-
-  }
-
-  my sub remove-dir( IO::Path:D $io --> Nil ) {
-
-    ( .d && not .l ) ?? remove-dir( $_ ) !! .unlink for $io.dir;
-
-    $io.rmdir;
+    log '🧚', header => 'NUK', msg => $what;
 
   }
 
 }
-
-

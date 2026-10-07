@@ -23,6 +23,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
     when 'download' { out self!download-help }
     when 'nuke'     { out self!nuke-help     }
     when 'config'   { out self!config-help   }
+    when 'refresh'  { out self!refresh-help  }
     when 'help'     { out self!help-help     }
 
 
@@ -39,6 +40,7 @@ multi method fly ( 'help',  Str:D :$cmd ) {
         self!download-help,
         self!nuke-help,
         self!config-help,
+        self!refresh-help,
         self!pakku-help,
         self!help-help,
       ).Str;
@@ -128,7 +130,7 @@ method !search-help ( ) {
   my %search;
 
   %search<cmd>     = 'Search';
-  %search<desc>    = 'Search distribution on Recman';
+  %search<desc>    = 'Search distributions in the ecosystem indexes (local, instant)';
 
   %search<example>.push: 'pakku search           dist';
   %search<example>.push: 'pakku search latest    dist';
@@ -136,8 +138,10 @@ method !search-help ( ) {
   %search<example>.push: 'pakku search count 5   dist';
   %search<example>.push: 'pakku search details   dist';
 
-  %search<opt>.push: ( 'latest'  => 'latest version' );
-  %search<opt>.push: ( 'relaxed' => 'relaxed search' );
+  %search<opt>.push: ( 'latest'  => 'one row per dist and author, the newest (default)' );
+  %search<opt>.push: ( 'nolatest' => 'every version ever published' );
+  %search<opt>.push: ( 'relaxed' => 'match anywhere in the name (default)' );
+  %search<opt>.push: ( 'norelaxed' => 'match the exact name' );
   %search<opt>.push: ( 'count'   => 'distributions count' );
   %search<opt>.push: ( 'details' => 'search details' );
 
@@ -262,6 +266,16 @@ method !nuke-help ( ) {
   %nuke<example>.push: 'pakku nuke home';
   %nuke<example>.push: 'pakku nuke site';
   %nuke<example>.push: 'pakku nuke vendor';
+  %nuke<example>.push: 'pakku nuke index';
+  %nuke<example>.push: 'pakku force nuke core';
+
+  %nuke<opt>.push: ( 'cache'  => 'downloaded dists' );
+  %nuke<opt>.push: ( 'index'  => 'ecosystem indexes (refreshed on next use)' );
+  %nuke<opt>.push: ( 'home'   => 'dists installed in the home repo' );
+  %nuke<opt>.push: ( 'site'   => 'dists installed in the site repo' );
+  %nuke<opt>.push: ( 'vendor' => 'dists installed in the vendor repo' );
+  %nuke<opt>.push: ( 'core'   => 'Rakudo core modules (needs force, you have been warned)' );
+  %nuke<opt>.push: ( 'pakku'  => 'the whole ~/.pakku (cache, indexes, config)' );
 
   help %nuke;
 
@@ -282,7 +296,9 @@ method !config-help ( ) {
   %config<example>.push: 'pakku config add disable precompile';
   %config<example>.push: 'pakku config add set to home';
   %config<example>.push: 'pakku config pakku unset verbose';
-  %config<example>.push: 'pakku config recman MyRec disable';
+  %config<example>.push: 'pakku config recman rea disable';
+  %config<example>.push: 'pakku config recman fez set refresh 24';
+  %config<example>.push: 'pakku config recman mine set type ecosystem mirrors https://mirror.example/';
   %config<example>.push: 'pakku config add reset';
 
   %config<opt>.push: ( 'enable'      => 'enable option' );
@@ -291,6 +307,22 @@ method !config-help ( ) {
   %config<opt>.push: ( 'unset'       => 'unset option' );
 
   help %config;
+
+}
+
+method !refresh-help ( ) {
+
+  my %refresh;
+
+  %refresh<cmd>     = 'Refresh';
+  %refresh<desc>    = 'Refresh ecosystem indexes (fez, rea ...) without waiting for them to go stale';
+
+  %refresh<example>.push: 'pakku refresh';
+  %refresh<example>.push: 'pakku refresh rea';
+  %refresh<example>.push: 'pakku refresh add dist';
+  %refresh<example>.push: 'pakku norefresh add dist';
+
+  help %refresh;
 
 }
 
@@ -343,6 +375,10 @@ method !pakku-help ( ) {
   %pakku<opt>.push: ( 'norecman'         => 'disable all recommendation managers' );
   %pakku<opt>.push: ( 'recman   <MyRec>' => 'use MyRec recommendation manager only' );
   %pakku<opt>.push: ( 'norecman <MyRec>' => 'use all available recommendation managers except MyRec' );
+  %pakku<opt>.push: ( 'refresh'          => 'refresh ecosystem indexes first' );
+  %pakku<opt>.push: ( 'norefresh'        => 'never refresh ecosystem indexes (offline)' );
+  %pakku<opt>.push: ( 'cache <path>'     => 'use path as the cache directory' );
+  %pakku<opt>.push: ( 'noasync'          => 'dont run asynchronously' );
   %pakku<opt>.push: ( 'dont'             => 'do everything but dont do it' );
   %pakku<opt>.push: ( 'async'            => 'run asynchronously when possible' );
   %pakku<opt>.push: ( 'yolo'             => 'dont stop on Pakku exceptions' );

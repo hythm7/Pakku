@@ -2,6 +2,7 @@
 
 use Test;
 
+use X::Pakku;
 use Pakku::Log;
 use Pakku::Command::Config;
 
@@ -46,7 +47,11 @@ is-deeply from-json(slurp $config-file )<add><to>, Any, 'confirm unset option in
 
 @option = count => '42';
 lives-ok { $config.fly( 'config', :module<search>, :@option ) }, 'set Int option';
-ok from-json(slurp $config-file )<search><count> ~~ 42, 'confirm set Int option in config file';
+is-deeply from-json(slurp $config-file )<search><count>, 42, 'confirm Int option stored as Int in config file';
+@option = count => 'many';
+throws-like { $config.fly( 'config', :module<search>, :@option ) }, X::Pakku::Cnf, 'a non Int count is refused';
+@option = nosuch => 'x';
+throws-like { $config.fly( 'config', :module<search>, :@option ) }, X::Pakku::Cnf, 'an unknown option is refused';
 
 @option = exclude => ["Dep1", "Dep2"];
 lives-ok { $config.fly( 'config', :module<add>, :@option ) }, 'set Array option';
@@ -54,9 +59,34 @@ is-deeply from-json(slurp $config-file )<add><exclude>, ["Dep1", "Dep2"], 'confi
 
 my $recman-name = 'my-recman';
 @option = priority => 7, location => 'http://my-recman.com';
-lives-ok { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, 'set new recman';
+throws-like { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, X::Pakku::Cnf, 'a new recman needs mirrors or a local directory';
+quietly is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name ), Nil, 'confirm the invalid recman was not written';
+
+@option = priority => '7', mirrors => ['https://my-recman.com/'];
+lives-ok { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, 'set new ecosystem recman';
+my %recman = from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name );
+is %recman<type>, 'ecosystem', 'type inferred from mirrors';
+is-deeply %recman<priority>, 7, 'priority stored as Int';
+is-deeply %recman<mirrors>, ['https://my-recman.com/'], 'mirrors stored as list';
+is-deeply %recman<active>, True, 'new recman active';
+
+@option = refresh => '24';
+lives-ok { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, 'set recman refresh hours';
+is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<refresh>, 24, 'refresh stored as Int';
+@option = refresh => 'false';
+lives-ok { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, 'set recman refresh false';
+is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<refresh>, False, 'refresh stored as Bool';
+@option = refresh => 'sometimes';
+throws-like { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, X::Pakku::Cnf, 'refresh must be hours, true or false';
+@option = type => 'nope';
+throws-like { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, X::Pakku::Cnf, 'unknown recman type refused';
+@option = source => 'nope';
+throws-like { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, X::Pakku::Cnf, 'unknown recman source refused';
+@option = source => 'source-url', index => 'META.json';
+lives-ok { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, 'set recman source and index';
 
 lives-ok { $config.fly( 'config', :module<recman>, :operation<disable>, :$recman-name ) }, 'recman disable';
+is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<active>, False, 'confirm recman inactive in config file';
 lives-ok { $config.fly( 'config', :module<recman>, :operation<enable>,  :$recman-name ) }, 'recman enable';
 is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<active>, True, 'confirm recman active in config file';
 
@@ -67,11 +97,19 @@ is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name
 lives-ok { $config.fly( 'config', :module<recman>, :$recman-name, :@option ) }, 'unset recman option';
 is-deeply from-json(slurp $config-file )<recman>.first( *.<name> eq $recman-name )<priority>, Any, 'confirm unset recman option in config file';
 
+my $local-name = 'my-dists';
+@option = location => ~$*TMPDIR;
+lives-ok { $config.fly( 'config', :module<recman>, recman-name => $local-name, :@option ) }, 'set new local recman';
+is from-json(slurp $config-file )<recman>.first( *.<name> eq $local-name )<type>, 'local', 'type inferred from location';
+
 lives-ok { $config.fly( 'config', :module<recman>, :operation<unset>, :$recman-name ) }, 'unset recman name';
 quietly is-deeply from-json(slurp $config-file )<recman>.first(  *.<name> eq $recman-name ), Nil, 'confirm unset recman name in config file';
 
 lives-ok { $config.fly( 'config', :module<recman>, :operation<unset> ) }, 'unset recman';
 is-deeply from-json(slurp $config-file )<recman>, Any, 'confirm unset recman in config file';
+
+lives-ok { $config.fly( 'config', :module<build>, :operation<reset> ) }, 'reset a module without options';
+is-deeply from-json(slurp $config-file )<build>, {}, 'confirm empty module in config file';
 
 my $log-level = 'debug';
 @option = prefix => 'DEBUG: ', color => 'blue';

@@ -5,6 +5,16 @@ unit role Pakku::Command::Config;
 
 my class Config { ... }
 
+# config values arrive as strings from the command line
+my sub boolish ( $value ) {
+  return $value unless $value ~~ Str:D;
+  given $value.lc {
+    when 'true'  | 'yes' | 'on'  | '1' { True  }
+    when 'false' | 'no'  | 'off' | '0' { False }
+    default { $value }
+  }
+}
+
 multi method fly ( 'config', *%config ) {
 
   my @arg;
@@ -57,6 +67,8 @@ my class Add {
   has Str  $.to;
   has Str  @.exclude;
 
+  submethod TWEAK ( ) { $!deps = boolish( $!deps ); die "deps: true, false, only, runtime, test or build!" unless $!deps ~~ Bool | 'only' | 'runtime' | 'test' | 'build' | 'all' | Any:U }
+
 }
 
 my class Update {
@@ -69,6 +81,8 @@ my class Update {
   has Any  $.deps;
   has Str  $.in;
   has Str  @.exclude;
+
+  submethod TWEAK ( ) { $!deps = boolish( $!deps ); die "deps: true, false, only, runtime, test or build!" unless $!deps ~~ Bool | 'only' | 'runtime' | 'test' | 'build' | 'all' | Any:U }
 
 }
 
@@ -115,12 +129,42 @@ my class Search {
 
 }
 
+# a recommendation manager: an ecosystem (mirrors serving an index) or a local directory of dists
 my class Recman {
 
   has Str   $.name;
+  has Str   $.type     where { !.defined or $_ eq 'ecosystem' | 'local' };
   has Str   $.location;
+  has Str   @.mirrors;
+  has Str   $.index;
+  has Str   $.source   where { !.defined or $_ eq 'path' | 'source-url' };
+  has Any   $.refresh;
   has Int() $.priority;
   has Bool  $.active;
+
+  submethod TWEAK ( ) {
+
+    $!refresh = boolish( $!refresh );
+    $!refresh = +$!refresh if $!refresh ~~ Str:D and $!refresh ~~ / ^ \d+ $ /;
+
+    die "refresh: hours, true or false!" unless $!refresh ~~ Bool | Int | Any:U;
+
+  }
+
+  # what the entry is when nobody said: mirrors make an ecosystem, a location a local recman
+  method kind ( ) { $!type // ( @!mirrors ?? 'ecosystem' !! 'local' ) }
+
+  # does the whole entry make sense
+  method check ( ) {
+
+    die "type: ecosystem (set mirrors) or local (set location)!" unless $!type.defined or @!mirrors or $!location;
+    die "mirrors: an ecosystem needs mirrors!"                    if self.kind eq 'ecosystem' and not @!mirrors;
+    die "location: a local recman needs a directory!"            if self.kind eq 'local'     and not $!location;
+    die "location: not a directory! (an ecosystem takes mirrors)" if $!location and not $!location.IO.d;
+
+    self;
+
+  }
 
 }
 
@@ -163,19 +207,24 @@ my class Config {
 
     self!check-config-file-exists;
 
-    # smart match against pair
-    @option.map( -> $option {
+    # validate each option on its own and keep the typed value (Int, Bool, list), not the command line string
+    my Pair @typed = @option.map( -> $option {
 
-      unless try self."$module"().new( |$option ) ~~ $option {
+      my $value = try self!typed( $module, $option );
 
-        log '🐞', header => 'CNF', msg => to-json( $option, :!pretty ), comment => 'invalid option!', :!msg-delimit;
+      if $! {
+
+        log '🐞', header => 'CNF', msg => to-json( $option, :!pretty ), comment => 'invalid option! ' ~ $!.message.lines.head, :!msg-delimit;
 
         die X::Pakku::Cnf.new: msg => ~$module;
       }
 
+      $option.key => $value;
+
     } );
 
     my %config-key;
+    my $new-recman = False;
 
     log '🦋', header => 'CNF', msg => ~$module;
 
@@ -197,6 +246,8 @@ my class Config {
 
           %config-key := %!configuration{ $module }[ 0 ];
 
+          $new-recman = True;
+
         }
       }
 
@@ -212,7 +263,7 @@ my class Config {
 
     }
 
-    @option.map( -> $option {
+    @typed.map( -> $option {
 
       my $key   = $option.key;
       my $value = $option.value; 
@@ -225,7 +276,38 @@ my class Config {
 
     } );
 
+    # a recman entry must make sense as a whole: new ones, and edits of what it is made of
+    if $module eq 'recman' and ( $new-recman or @typed.map( *.key ).any eq any <type mirrors location source index refresh> ) {
+
+      # hash values are itemized: a Map hands the list attributes real lists
+      my $recman = try Recman.new( |Map.new( %config-key.kv.map( -> $k, $v { $k => $v<> } ) ) ).check;
+
+      without $recman {
+
+        log '🐞', header => 'REC', msg => ~$recman-name, comment => 'invalid recman! ' ~ $!.message.lines.head ~ ' (set mirrors https://mirror/ or location /dists)';
+
+        die X::Pakku::Cnf.new: msg => ~$recman-name;
+
+      }
+
+      %config-key<type> = $recman.kind;
+
+    }
+
     self!write-config;
+
+  }
+
+  # the attribute value after validation: 42 for "42", ["a", "b"] for a list, False for "false"
+  method !typed ( Str:D $module, Pair:D $option ) {
+
+    my $validator = self."$module"().new( |$option );
+
+    die "no such option!" unless $validator.can( $option.key );
+
+    my $value = $validator."{ $option.key }"();
+
+    $value ~~ Positional ?? $value.Array !! $value;
 
   }
 
@@ -414,11 +496,22 @@ my class Config {
     
     self!check-config-file-exists;
 
-    %!configuration{ $module } = %!default-configuration{ $module };
+    # back to the built-in default; a module without one is simply gone
+    if %!default-configuration{ $module }:exists {
 
-    my Str $json = to-json %!configuration{ $module };
+      %!configuration{ $module } = %!default-configuration{ $module };
 
-    log '🦋', header => 'CNF', msg => ~$module, comment => "\n$json";
+      my Str $json = to-json %!configuration{ $module };
+
+      log '🦋', header => 'CNF', msg => ~$module, comment => "\n$json";
+
+    } else {
+
+      %!configuration{ $module }:delete;
+
+      log '🦋', header => 'CNF', msg => ~$module, comment => 'no default, removed';
+
+    }
 
     self!write-config;
     
@@ -474,7 +567,7 @@ my class Config {
 
     }
 
-    $!config-file.dirname.IO.mkdir unless $!config-file.dirname.IO.e;
+    $!config-file.dirname.IO.mkdir( :mode( 0o700 ) ) unless $!config-file.dirname.IO.e;
 
     %!configuration = %!default-configuration;
 
@@ -488,6 +581,9 @@ my class Config {
     my Str:D $json = to-json %!configuration;
 
     $!config-file.spurt: $json;
+
+    # mirrors may carry credentials
+    try $!config-file.chmod: 0o600;
 
     log '🐛', header => 'CNF', msg => ~$!config-file, comment => "\n$json";
   }

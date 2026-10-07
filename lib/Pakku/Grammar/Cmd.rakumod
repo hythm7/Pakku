@@ -4,8 +4,8 @@ grammar Pakku::Grammar::Cmd {
   rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> 'spec'? [ <specs> || <path> ]    }
   rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> 'spec'? <specs>? }
 
-  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build>    <buildopt>*    % <.space> 'spec'? [ <spec> || <path> ] }
-  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test>     <testopt>*     % <.space> 'spec'? [ <spec> || <path> ] }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build-cmd> <buildopt>*   % <.space> 'spec'? [ <spec> || <path> ] }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test-cmd>  <testopt>*    % <.space> 'spec'? [ <spec> || <path> ] }
   rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>   <removeopt>*   % <.space> 'spec'?   <specs>            }
   rule TOP:sym<download> { <pakkuopt>* % <.space> <download> <downloadopt>* % <.space> 'spec'?   <specs>            }
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>   <searchopt>*   % <.space> 'spec'?   <specs>            }
@@ -15,7 +15,9 @@ grammar Pakku::Grammar::Cmd {
 
   rule TOP:sym<config>   { <pakkuopt>* % <.space> <config-cmd> }
 
-  rule TOP:sym<help>     { <pakkuopt>* % <.space> <help>? <cmd>? <anything> }
+  rule TOP:sym<refresh>  { <pakkuopt>* % <.space> <refresh-cmd> <recman-names>? $ }
+
+  rule TOP:sym<help>     { <pakkuopt>* % <.space> [ <help> <cmd>? | <cmd> ]? $ }
 
 
   proto token config-cmd { * } 
@@ -75,7 +77,8 @@ grammar Pakku::Grammar::Cmd {
   token view       { 'view'   }
   token config-new { 'new'     } # looks like token new is reserved
 
-  token recman-name   { <key> }
+  token recman-name   { <!cmd> <key> }
+  token recman-names  { <recman-name>+ % <.space> }
 
   proto token log-level { * } 
   token log-level:sym<all>   { <sym> }
@@ -91,24 +94,17 @@ grammar Pakku::Grammar::Cmd {
   token log-level-option:sym<msg-left-delimit>     { <sym> <.space>+ <value> }
   token log-level-option:sym<msg-right-delimit>    { <sym> <.space>+ <value> }
   token log-level-option:sym<comment-left-delimit> { <sym> <.space>+ <value> }
-  token log-level-option:sym<right-right-delimit>  { <sym> <.space>+ <value> }
+  token log-level-option:sym<comment-right-delimit> { <sym> <.space>+ <value> }
 
-  token key-option    { <key> }
+  token key-option    { <!before [ <set> | <enable> | <disable> | <unset> | <reset> | <view> ] [ <.space> | $ ] > <key> }
   token keyval-option { <key> <.space>+ <value> }
 
-  proto token cmd { * } 
-  token cmd:sym<add>      { <!before <.space>> ~ <!after <.space>> <add>      }
-  token cmd:sym<update>   { <!before <.space>> ~ <!after <.space>> <update>   }
-  token cmd:sym<build>    { <!before <.space>> ~ <!after <.space>> <build>    }
-  token cmd:sym<test>     { <!before <.space>> ~ <!after <.space>> <test>     }
-  token cmd:sym<remove>   { <!before <.space>> ~ <!after <.space>> <remove>   }
-  token cmd:sym<list>     { <!before <.space>> ~ <!after <.space>> <list>     }
-  token cmd:sym<download> { <!before <.space>> ~ <!after <.space>> <download> }
-  token cmd:sym<search>   { <!before <.space>> ~ <!after <.space>> <search>   }
-  token cmd:sym<nuke>     { <!before <.space>> ~ <!after <.space>> <nuke>     }
-  token cmd:sym<state>    { <!before <.space>> ~ <!after <.space>> <state>    }
-  token cmd:sym<config>   { <!before <.space>> ~ <!after <.space>> <config>   }
-  token cmd:sym<help>     { <!before <.space>> ~ <!after <.space>> <help>     }
+  # a whole word that is a command (or one of its aliases)
+  token cmd { [ <add> | <update> | <build-cmd> | <test-cmd> | <remove> | <list> | <download> | <search> | <nuke> | <state> | <config> | <refresh-cmd> | <help> ] <?before <.space> | $ > }
+
+  token test-cmd    { 'test'    | 't' }
+  token build-cmd   { 'build'   | 'b' }
+  token refresh-cmd { 'refresh' | 'rfr' | '🔄' }
 
   token key   { <-[\s]>+ }
   token value { <-[\s]>+ }
@@ -182,6 +178,7 @@ grammar Pakku::Grammar::Cmd {
   token pakkuopt:sym<cores>    { <cores>   <.space>+ <number> }
   token pakkuopt:sym<verbose>  { <verbose> <.space>+ <level>  }
   token pakkuopt:sym<config>   { <config>  <.space>+ <path>   }
+  token pakkuopt:sym<refresh>  { <refreshing> }
 
   proto token addopt { * }
   token addopt:sym<deps>       { <deps>       }
@@ -292,6 +289,11 @@ grammar Pakku::Grammar::Cmd {
   token verbose:sym<👀>      { <sym> }
   token verbose:sym<👓>      { <sym> }
 
+  proto token refreshing { * }
+  token refreshing:sym<refresh>   { <sym> }
+  token refreshing:sym<norefresh> { <sym> }
+  token refreshing:sym<nrfr>      { <sym> }
+
   proto token cores { * }
   token cores:sym<cores> { <sym> }
 
@@ -331,18 +333,6 @@ grammar Pakku::Grammar::Cmd {
   proto token tst { * }
   token tst:sym<test> { <sym> }
   token tst:sym<t>    { <sym> }
-
-  proto token requires { * }
-  token requires:sym<requires> { <sym> }
-  token requires:sym<req>      { <sym> }
-
-  proto token recommends { * }
-  token recommends:sym<recommends> { <sym> }
-  token recommends:sym<rec>        { <sym> }
-
-  proto token suggests { * }
-  token suggests:sym<suggests> { <sym> }
-  token suggests:sym<sug>      { <sym> }
 
   proto token only { * }
   token only:sym<only>   { <sym> }
@@ -406,18 +396,6 @@ grammar Pakku::Grammar::Cmd {
   token from:sym<from> { <sym> }
   token from:sym<f>    { <sym> }
 
-  proto token remote { * }
-  token remote:sym<remote>   { <sym> }
-  token remote:sym<r>        { <sym> }
-  token remote:sym<noremote> { <sym> }
-  token remote:sym<nr>       { <sym> }
-
-  proto token local { * }
-  token local:sym<local>   { <sym> }
-  token local:sym<l>       { <sym> }
-  token local:sym<nolocal> { <sym> }
-  token local:sym<nl>      { <sym> }
-
   proto token details { * }
   token details:sym<details>   { <sym> }
   token details:sym<d>         { <sym> }
@@ -443,8 +421,6 @@ grammar Pakku::Grammar::Cmd {
 
   token repo { <-[\s]>+ }
 
-  token ver { <-[\s]>+ }
-   
   token number { <digit>+ }
 
   proto token level { * }
@@ -537,11 +513,7 @@ grammar Pakku::Grammar::Cmd {
   token nukable:sym<core>   { <sym> }
   token nukable:sym<cache>  { <sym> }
   token nukable:sym<pakku>  { <sym> }
-
-  token anything { {} .* }
-
-  token lt  { '<' }
-  token gt  { '>' }
+  token nukable:sym<index>  { <sym> }
 
 }
 
@@ -699,6 +671,18 @@ class Pakku::Grammar::CmdActions {
   }
 
 
+  method TOP:sym<refresh> ( $/ ) {
+
+    my %cmd;
+
+    %cmd<cmd>             = 'refresh';
+    %cmd<pakku>           = $<pakkuopt>».made.hash if defined $<pakkuopt>;
+    %cmd<refresh><recman> = $<recman-names><recman-name>».Str.Array if $<recman-names>;
+
+    make %cmd;
+
+  }
+
   method TOP:sym<help> ( $/ ) {
 
     my %cmd;
@@ -711,17 +695,7 @@ class Pakku::Grammar::CmdActions {
 
   }
 
-  method cmd:sym<add>      ( $/ ) { make 'add'      }
-  method cmd:sym<update>   ( $/ ) { make 'update'  }
-  method cmd:sym<build>    ( $/ ) { make 'build'    }
-  method cmd:sym<test>     ( $/ ) { make 'test'     }
-  method cmd:sym<remove>   ( $/ ) { make 'remove'   }
-  method cmd:sym<download> ( $/ ) { make 'download' }
-  method cmd:sym<list>     ( $/ ) { make 'list'     }
-  method cmd:sym<search>   ( $/ ) { make 'search'   }
-  method cmd:sym<nuke>     ( $/ ) { make 'nuke'     }
-  method cmd:sym<config>   ( $/ ) { make 'config'   }
-  method cmd:sym<help>     ( $/ ) { make 'help'     }
+  method cmd ( $/ ) { make $/.caps.head.key.subst( / '-cmd' $ /, '' ) }
 
 
   method config-cmd:sym<config-view>( $/ ) { 
@@ -851,7 +825,8 @@ class Pakku::Grammar::CmdActions {
 
   method config-cmd:sym<config-module-recman-set>( $/ ) {
 
-    my Pair @option = @<keyval-option>.map( { ~.<key> => ~.<value> } ); 
+    # mirrors is a list: pakku config recman fez set mirrors https://a/,https://b/
+    my Pair @option = @<keyval-option>.map( { ~.<key> eq 'mirrors' ?? ( 'mirrors' => ( ~.<value> ).split( ',' ).Array ) !! ( ~.<key> => ~.<value> ) } );
 
     make %(
       module      => ~$<config-module-recman>,
@@ -917,6 +892,11 @@ class Pakku::Grammar::CmdActions {
   method pakkuopt:sym<config>   ( $/ ) { make ( config  => $<path>.made  ) }
   method pakkuopt:sym<bar>      ( $/ ) { make $<bar>.made                  }
   method pakkuopt:sym<spinner>  ( $/ ) { make $<spinner>.made              }
+  method pakkuopt:sym<refresh>  ( $/ ) { make $<refreshing>.made           }
+
+  method refreshing:sym<refresh>   ( $/ ) { make ( :refresh  ) }
+  method refreshing:sym<norefresh> ( $/ ) { make ( :!refresh ) }
+  method refreshing:sym<nrfr>      ( $/ ) { make ( :!refresh ) }
 
   method addopt:sym<deps>       ( $/ ) { make $<deps>.made       }
   method addopt:sym<build>      ( $/ ) { make $<build>.made      }
@@ -993,9 +973,6 @@ class Pakku::Grammar::CmdActions {
   method recman   ( $/ )  { make ( $<recman-name> ?? :recman(   ~$<recman-name> ) !! :recman   ) }
   method norecman ( $/ )  { make ( $<recman-name> ?? :norecman( ~$<recman-name> ) !! :norecman ) }
 
-  method recman:sym<norecman> ( $/ )  { make ( :!recman ) }
-  method recman:sym<nr>       ( $/ )  { make ( :!recman ) }
-
   method cache:sym<cache-path>   ( $/ )  { make ( cache => $<path>.made ) }
   method cache:sym<c-path>       ( $/ )  { make ( cache => $<path>.made ) }
   method cache:sym<cache> ( $/ )  { make ( :cache ) }
@@ -1038,6 +1015,7 @@ class Pakku::Grammar::CmdActions {
 
   method precompile:sym<precompile>   ( $/ )  { make ( :precompile  ) }
   method precompile:sym<precomp>      ( $/ )  { make ( :precompile  ) }
+  method precompile:sym<p>            ( $/ )  { make ( :precompile  ) }
   method precompile:sym<noprecompile> ( $/ )  { make ( :!precompile ) }
   method precompile:sym<noprecomp>    ( $/ )  { make ( :!precompile ) }
   method precompile:sym<np>           ( $/ )  { make ( :!precompile ) }
@@ -1046,17 +1024,6 @@ class Pakku::Grammar::CmdActions {
   method clean:sym<c>       ( $/ ) { make ( :clean  ) }
   method clean:sym<noclean> ( $/ ) { make ( :!clean ) }
   method clean:sym<nc>      ( $/ ) { make ( :!clean ) }
-
-  method remote:sym<remote>   ( $/ )  { make ( :remote  ) }
-  method remote:sym<r>        ( $/ )  { make ( :remote  ) }
-  method remote:sym<🌎>       ( $/ )  { make ( :remote  ) }
-  method remote:sym<noremote> ( $/ )  { make ( :!remote ) }
-  method remote:sym<nr>       ( $/ )  { make ( :!remote ) }
-
-  method local:sym<local>   ( $/ ) { make ( :local  ) }
-  method local:sym<l>       ( $/ ) { make ( :local  ) }
-  method local:sym<nolocal> ( $/ ) { make ( :!local ) }
-  method local:sym<nl>      ( $/ ) { make ( :!local ) }
 
   method details:sym<details>   ( $/ ) { make ( :details  ) }
   method details:sym<d>         ( $/ ) { make ( :details  ) }
@@ -1095,8 +1062,7 @@ class Pakku::Grammar::CmdActions {
   method nukable:sym<vendor> ( $/ ) { make 'vendor' }
   method nukable:sym<core>   ( $/ ) { make 'core' }
   method nukable:sym<cache>  ( $/ ) { make 'cache'  }
-  method nukable:sym<stage>  ( $/ ) { make 'stage'  }
-  method nukable:sym<tmp>    ( $/ ) { make 'tmp'    }
   method nukable:sym<pakku>  ( $/ ) { make 'pakku'  }
+  method nukable:sym<index>  ( $/ ) { make 'index'  }
 
 }

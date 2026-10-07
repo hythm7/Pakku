@@ -56,7 +56,7 @@ method refresh ( Bool:D :$force = False --> Bool:D ) {
       my $url  = $mirror.ends-with( '/' ) ?? $mirror ~ $!index !! "$mirror/$!index";
       my $part = $!store.add: "index.json.$*PID.part";
 
-      log '🦋', header => 'IDX', msg => $!name, comment => $url;
+      log '🦋', header => 'IDX', msg => $!name, comment => redact $url;
 
       {
         CATCH { when X::Pakku::Fetch { log '🐞', header => 'IDX', msg => $!name, comment => .message; next } }
@@ -67,7 +67,7 @@ method refresh ( Bool:D :$force = False --> Bool:D ) {
       my $list = $text.trim.starts-with( '[' ) ?? ( try Rakudo::Internals::JSON.from-json: $text ) !! Nil;
 
       unless $list ~~ Positional and $list.elems {
-        log '🐞', header => 'IDX', msg => $!name, comment => "$url: not an index!";
+        log '🐞', header => 'IDX', msg => $!name, comment => "{ redact $url }: not an index!";
         try unlink $part;
         next;
       }

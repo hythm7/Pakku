@@ -9,19 +9,38 @@ use Pakku::Util;
 #   Foo:ver(* > 0.2):auth(/^zef/)      (...) is code: any smartmatch selector
 #   { "name": "Foo", "ver": "1.2+" }   hash form, name may carry adverbs
 #   { "any": [ ... ] }                 alternatives, recursive
-# Selectors are parsed with Rakudo's own parser (RakuAST), reduced to a
-# whitelist of literal/operator nodes, then evaluated; matching is plain ~~.
+# Selectors are parsed with Rakudo's own parser (RakuAST) and evaluated by Raku;
+# matching is plain ~~. They must be data (literals, versions, ranges, junctions,
+# regexes, Whatever code, Any), never code that runs (blocks, calls, variables):
+# a spec also comes from other people's META files and the ecosystem index.
 
-# numbers inside a selector mean versions: :ver(* > 0.2)
-my multi sub infix:«>»  ( Version:D \a, Numeric:D \b ) { a >  Version.new( ~b ) }
-my multi sub infix:«>=» ( Version:D \a, Numeric:D \b ) { a >= Version.new( ~b ) }
-my multi sub infix:«<»  ( Version:D \a, Numeric:D \b ) { a <  Version.new( ~b ) }
-my multi sub infix:«<=» ( Version:D \a, Numeric:D \b ) { a <= Version.new( ~b ) }
-my multi sub infix:«==» ( Version:D \a, Numeric:D \b ) { a == Version.new( ~b ) }
-my multi sub infix:«!=» ( Version:D \a, Numeric:D \b ) { a != Version.new( ~b ) }
+# inside :ver( ) and :api( ) a bare number is a version: * > 0.2 is * > v0.2
+# (the literals are found through Rakudo's parse, so "1.2" and /2/ are left alone)
+my sub versionise ( Str:D $text, $ast --> Str:D ) {
 
-my constant @INFIX = '..', '..^', '^..', '^..^', '<', '<=', '>', '>=', '==', '!=',
-                     'eq', 'ne', 'lt', 'le', 'gt', 'ge', '|', '&', '^', '&&', '||';
+  my @at;
+
+  my sub walk ( $node ) {
+    if $node ~~ RakuAST::IntLiteral | RakuAST::RatLiteral | RakuAST::NumLiteral {
+      with $node.origin { @at.push: .from if $text.substr( .from, .to - .from ) ~~ / ^ \d+ [ '.' \d+ ]* $ / }
+    }
+    $node.visit-children( &walk );
+  }
+
+  walk $ast;
+
+  my $code = $text;
+
+  $code.substr-rw( $_, 0 ) = 'v' for @at.sort.reverse;   # from the end, so the offsets stay right
+
+  $code;
+
+}
+
+my constant @INFIX  = '..', '..^', '^..', '^..^', '<', '<=', '>', '>=', '==', '!=', '===', 'eqv', '~~',
+                      'eq', 'ne', 'lt', 'le', 'gt', 'ge', 'before', 'after',
+                      '|', '&', '^', '&&', '||', '^^', '//', 'and', 'or', 'xor';
+my constant @PREFIX = '!', 'not', 'so';
 
 my sub validate ( $node, Str:D $text --> Nil ) {
 
@@ -34,7 +53,7 @@ my sub validate ( $node, Str:D $text --> Nil ) {
     when RakuAST::ApplyListInfix                { }
     when RakuAST::Infix                         { refuse "operator { .operator }" unless .operator eq any @INFIX }
     when RakuAST::ApplyPrefix                   { }
-    when RakuAST::Prefix                        { refuse "operator { .operator }" unless .operator eq '!' }
+    when RakuAST::Prefix                        { refuse "operator { .operator }" unless .operator eq any @PREFIX }
     when RakuAST::ArgList                       { }
     when RakuAST::WhateverCode::Argument        { }
     when RakuAST::Term::Whatever                { }
@@ -58,15 +77,35 @@ my sub validate ( $node, Str:D $text --> Nil ) {
 }
 
 # the (...) form of :ver / :auth / :api, evaluated once
-my sub selector ( Str:D $text ) {
+# any smartmatch selector that is data, not code: Raku parses it, Raku evaluates it
+my sub selector ( Str:D $text, Bool:D :$versions = False ) {
 
-  my $ast = try $text.AST;
+  # 1.2.3 is not a Raku literal, v1.2.3 is: be nice to version numbers (outside quotes and regexes)
+  my $code = $versions ?? $text.subst( / <!after <[\w.'"/]>> ( \d+ [ '.' \d+ ] ** 2..* ) <!before <[\w.'"/]>> /, { "v$0" }, :g ) !! $text;
+
+  my $ast = try $code.AST;
 
   die X::Pakku::Spec.new: msg => "($text)", comment => 'can not parse selector' ~ ( ": { $!.message.lines.head }" if $! ) without $ast;
 
   validate $ast, $text;
 
-  EVAL $ast;
+  if $versions {
+
+    my $versioned = versionise $code, $ast;
+
+    $ast = $versioned.AST unless $versioned eq $code;
+
+    validate $ast, $text;
+
+  }
+
+  my $selector = EVAL $ast;
+
+  # (* < 2) & (* > 1) is fine, * < 2 & * > 1 is one code with two stars: it can never match one version
+  die X::Pakku::Spec.new: msg => "($text)", comment => "a selector takes one value, this one takes { $selector.arity } (use parens: (* > 1) & (* < 2))"
+    if $selector ~~ Code and $selector.arity > 1;
+
+  $selector;
 
 }
 
@@ -136,9 +175,9 @@ class Pakku::Spec::Raku does Spec {
 
   submethod TWEAK ( ) {
 
-    $!ver-matcher  = $!ver-code  ?? selector( $!ver  ) !! version-matcher( ~$!ver  ) with $!ver;
+    $!ver-matcher  = $!ver-code  ?? selector( $!ver, :versions ) !! version-matcher( ~$!ver ) with $!ver;
     $!auth-matcher = $!auth-code ?? selector( $!auth ) !! auth-matcher(    ~$!auth ) with $!auth;
-    $!api-matcher  = $!api-code  ?? selector( $!api  ) !! version-matcher( ~$!api  ) with $!api;
+    $!api-matcher  = $!api-code  ?? selector( $!api, :versions ) !! version-matcher( ~$!api ) with $!api;
 
     $!id = sha1 ~self;   # a class TWEAK shadows the role's
 
