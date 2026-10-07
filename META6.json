@@ -31,6 +31,8 @@
     "Pakku::Archive":            "lib/Pakku/Archive.rakumod",
     "Pakku::Recman":             "lib/Pakku/Recman.rakumod",
     "Pakku::Recman::Local":      "lib/Pakku/Recman/Local.rakumod",
+    "Pakku::Recman::Index":      "lib/Pakku/Recman/Index.rakumod",
+    "Pakku::Recman::Ecosystem":  "lib/Pakku/Recman/Ecosystem.rakumod",
     "Pakku::Grammar::Cmd":       "lib/Pakku/Grammar/Cmd.rakumod",
     "Pakku::Command::Add":       "lib/Pakku/Command/Add.rakumod",
     "Pakku::Command::Test":      "lib/Pakku/Command/Test.rakumod",

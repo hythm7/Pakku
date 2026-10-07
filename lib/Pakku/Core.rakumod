@@ -236,9 +236,10 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfying!';
 
+  # the index is local and newest-first; the cache only answers when it can not (norecman, offline)
   my $meta = try Pakku::Meta.new(
-    ( $!cache.recommend( :$spec ).meta if $!cache  ) //
-    ( $!recman.recommend: :$spec       if $!recman )
+    ( $!recman.recommend( :$spec )      if $!recman ) //
+    ( $!cache.recommend( :$spec ).?meta if $!cache  )
   );
 
   unless $meta {
@@ -446,24 +447,19 @@ method state ( :$updates = True ) {
 
       %state{ $meta }.<meta> = $meta;
 
-      $!recman.search( :spec( Pakku::Spec.new: $meta.name ) :!relaxed :!latest :42count )
-        ==> grep( *.defined )
-        ==> grep( -> %meta { $meta.name       ~~ %meta.<name> } )
-        ==> grep( -> %meta { $meta.meta<auth> ~~ %meta.<auth> } )
-        ==> grep( -> %meta {
-              ( quietly Version.new( %meta<version> ) cmp Version.new( $meta.meta<version> ) or  
-                quietly Version.new( %meta<api>     ) cmp Version.new( $meta.meta<api>     )  
-              ) ~~ More
-            } )
-        ==> sort( -> %left, %right {
+      my @upd;
 
-              quietly ( Version.new( %right<version> ) cmp Version.new( %left<version> ) ) or 
-              quietly ( Version.new( %right<api> )     cmp Version.new( %left<api> ) );
+      if $updates and $!recman {
 
-            } )
-        ==> map( -> %meta { Pakku::Meta.new: %meta } )
-        ==> grep( -> $meta { not self.satisfied: spec => Pakku::Spec.new: ~$meta } )
-        ==> my @upd if $updates and $!recman;
+        my $spec  = Pakku::Spec.new: $meta.name ~ ( ":auth<{ $meta.auth }>" if $meta.auth );
+        my $found = $!recman.recommend: :$spec;
+
+        with $found {
+          my $newer = Pakku::Meta.new: $found;
+          @upd.push: $newer if latest-first( $found, $meta ) ~~ Less and not self.satisfied( spec => Pakku::Spec.new: ~$newer );
+        }
+
+      }
 
       if @upd {
         %state{ $meta  }.<upd> .append: @upd;
@@ -594,6 +590,8 @@ submethod BUILD ( :%!cnf! ) {
 
   log '🐝', header => 'CNF', msg => 'yolo', comment => ~$!yolo;
 
+  die X::Pakku::Cnf.new: msg => 'cores', comment => "$cores: not a positive integer!" unless $cores ~~ Int:D | /^ \d+ $/ and +$cores > 0;
+
   $!cores  = +$cores;
 
   log '🐝', header => 'CNF', msg => 'cores', comment => ~$!cores;
@@ -605,16 +603,16 @@ submethod BUILD ( :%!cnf! ) {
   my $recman   = %!cnf<pakku><recman>;
   my $norecman = %!cnf<pakku><norecman>;
 
-  my @recman = %!cnf<recman> ?? %!cnf<recman>.flat !! ( %( :name<pakku>, :location<http://recman.pakku.org>, :1priority, :active ), );
+  my @recman = ( %!cnf<recman> // [] ).flat;
 
   @recman .= grep: { .<name> !~~ $norecman } if $norecman;
   @recman .= grep: { .<name>  ~~ $recman   } if $recman;
 
   $!fetch  = Pakku::Fetch.new;
 
-  $!recman = Pakku::Recman.new: :$!fetch :@recman if @recman;
+  $!recman = Pakku::Recman.new: :$!fetch, store => $!home.add( '.index' ), :@recman, refresh => %!cnf<pakku><refresh> if @recman;
 
-  @recman.map( -> $recman { log '🐝', header => 'CNF', msg => 'recman', comment => $recman<location> } );
+  @recman.map( -> $recman { log '🐝', header => 'CNF', msg => 'recman', comment => $recman<name> ~ ' ' ~ ( $recman<mirrors> // $recman<location> // '' ) } );
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
@@ -657,6 +655,8 @@ method metamorph ( ) {
 
   my %cnf = hashmerge %env, %cmd;
 
+  my %default = Rakudo::Internals::JSON.from-json: %?RESOURCES<config.json>.slurp;
+
 
   if %cnf<pakku><config>:exists {
 
@@ -677,6 +677,8 @@ method metamorph ( ) {
     %cnf =  hashmerge $cnf, %cnf;
 
   }
+
+  %cnf = hashmerge %default, %cnf;
 
   %cnf<pakku><home> = $home;
 
@@ -732,6 +734,7 @@ my sub get-env ( ) {
   %env<pakku><cores>    = %*ENV<PAKKU_CORES>        if %*ENV<PAKKU_CORES>;
   %env<pakku><recman>   = %*ENV<PAKKU_RECMAN>       if %*ENV<PAKKU_RECMAN>;
   %env<pakku><norecman> = %*ENV<PAKKU_NORECMAN>     if %*ENV<PAKKU_NORECMAN>;
+  %env<pakku><refresh>  = %*ENV<PAKKU_REFRESH>.Bool if %*ENV<PAKKU_REFRESH>:exists;
   %env<pakku><config >  = %*ENV<PAKKU_CONFIG>.IO    if %*ENV<PAKKU_CONFIG>;
   %env<pakku><dont>     = %*ENV<PAKKU_DONT>.Bool    if %*ENV<PAKKU_DONT>;
   %env<pakku><force>    = %*ENV<PAKKU_FORCE>.Bool   if %*ENV<PAKKU_FORCE>;

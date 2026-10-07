@@ -1,161 +1,51 @@
 use Pakku::Log;
 use Pakku::Meta;
+use Pakku::Util;
+use Pakku::Recman::Index;
 
+# A directory of extracted distributions (each in its own sub-directory).
 unit class Pakku::Recman::Local;
+  also does Pakku::Recman::Index;
 
-has $.name;
-has $!location;
+has IO::Path:D() $.location is required;
 
-has %!meta;
+has %!meta;       # dist name => [ metas ]
+has %!provides;   # unit      => [ metas ]
 
-has %!provides;
+method by-name     ( Str:D $name ) { ( %!meta{ $name }     // Empty ).List }
+method by-provides ( Str:D $unit ) { ( %!provides{ $unit } // Empty ).List }
+method names       ( )             { %!meta.keys.List }
+method units       ( )             { %!provides.keys.List }
 
-method recommend ( ::?CLASS:D: :$spec! ) {
-
-  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: recommending!";
-
-  my $name   = $spec.name;
-
-  my @candy;
-
-  @candy = flat %!meta{ $name  } if %!meta{ $name }:exists;
-
-  @candy .= grep( -> %candy { %candy ~~ $spec } );
-
-  unless @candy {
-
-    @candy = flat %!provides{ $name } if %!provides{ $name }:exists;
-
-    @candy .= grep( -> %candy {  %candy ~~ $spec } );
-
-  }
-
-  return unless @candy;
-
-  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: found!", :msg-delimit;
-
-  @candy.reduce( &reduce-latest );
-
-}
-
-method search (
-
-    ::?CLASS:D:
-    :$spec!,
-    :$relaxed!,
-    :$count!,
-
-  ) {
-
-  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: searching!", :msg-delimit;
-
-  my $pattern = $spec.name.raku;
-
-  $pattern = "^ $pattern \$" unless $relaxed;
-
-  my $rx   = rx/ :i <$pattern> /;
-
-  my @candy;
-
-  @candy = flat %!meta{ $rx  } if %!meta{ $rx }:exists;
-
-  @candy.append:  flat %!provides{ $rx } if %!provides{ $rx }:exists;
-  @candy .= unique;
-
-  @candy .= grep( -> %candy {  %candy ~~ $spec } );
-
-  unless @candy {
-
-    log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: not found!";
-
-    return;
-  }
-
-  log '🐛', header => 'REC', msg => ~$spec, comment => "$!name: found!";
-
-  @candy
-    ==> sort( -> %left, %right {
-      quietly (%right<name> ~~ $rx ) cmp (%left<name> ~~ $rx ) ||
-      quietly (%right<name> ~~ $rx ) cmp (%left<name> ~~ $rx ) ||
-      %left<name> cmp %right<name>                                                   ||
-      quietly ( Version.new( %right<ver> ) cmp Version.new( %left<ver> ) ) or
-      quietly ( Version.new( %right<api> ) cmp Version.new( %left<api> ) );
-    })
-    ==> head( $count );
-
-}
-
-submethod BUILD ( Str:D :$!name!, IO::Path:D() :$!location! ) {
+submethod TWEAK ( ) {
 
   unless $!location.d {
-
-    log '🐞', header => 'REC', msg => ~$!name, comment => "$!location: does not exist!" unless $!location.d;
-
+    log '🐞', header => 'REC', msg => ~$!name, comment => "$!location: does not exist!";
     return;
   }
 
-  eager dir $!location
-    ==> grep( *.d )
-    ==> map( -> $dir {
+  for $!location.dir.grep( *.d ).sort -> $dir {
 
-      unless $dir.add( 'META6.json' ).f {
+    my $meta-file = meta-file $dir;
 
-        log '🐞', header => 'REC', msg => ~$!name, comment => "$dir: no META6.json!";
-
-        next;
-      }
-
-      my $meta = Pakku::Meta.new: $dir;
-
-      my $name = $meta.name;
-      my %meta = $meta.meta;
-
-      %meta<source> = $dir;
-
-      %!meta{ $name }.push: %meta;
-
-      for %meta<provides>.keys -> $unit {
-        %!provides{ $unit }.push: %meta;
-      }
-
-    } );
-
-  my role LookupRegex {
-
-    has Str @!key = self.keys;
-
-    multi method EXISTS-KEY( Regex:D $rx ) {
-
-      so @!key.first( -> $key { $key ~~ $rx } );
-
+    unless $meta-file {
+      log '🐞', header => 'REC', msg => ~$!name, comment => "$dir: no META6.json!";
+      next;
     }
 
-    multi method AT-KEY( Regex:D $rx ) {
+    my $raw = try Rakudo::Internals::JSON.from-json: $meta-file.slurp;
 
-      my @key = @!key.grep( -> $key { $key ~~ $rx } );
-
-      return Any unless @key;
-
-      @key.map( -> $key { flat samewith $key } );
-
+    unless $raw ~~ Associative and $raw<name> {
+      log '🐞', header => 'REC', msg => ~$!name, comment => "$meta-file: invalid META!";
+      next;
     }
-    
+
+    my %meta = self.normalise( $raw, source => $dir ) orelse next;
+
+    %!meta{ %meta<name> }.push: %meta;
+
+    %!provides{ $_ }.push: %meta for ( %meta<provides> // {} ).keys;
+
   }
 
-
-  %!meta     does LookupRegex;
-  %!provides does LookupRegex;
-
 }
-
-multi reduce-latest ( %left ) { %left }
-
-multi reduce-latest ( %left, %right ) {
-
-  return %left if         Version.new( %left<ver> ) > Version.new( %right<ver> );
-  return %left if quietly Version.new( %left<api> ) > Version.new( %right<api> );
-
-  %right;
-
-}
-

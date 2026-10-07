@@ -12,6 +12,10 @@
   "list": {
     "details": false
   },
+  "build": { },
+  "remove": { },
+  "nuke": { },
+  "download": { },
   "log": {
     "all": {
       "color": "reset",
@@ -77,10 +81,24 @@
   },
   "recman": [
     {
+      "name": "fez",
+      "type": "ecosystem",
       "active": true,
-      "name": "pakku",
       "priority": 1,
-      "location": "http://recman.pakku.org"
+      "mirrors": [ "https://360.zef.pm/" ],
+      "index": "index.json",
+      "source": "path",
+      "refresh": 1
+    },
+    {
+      "name": "rea",
+      "type": "ecosystem",
+      "active": true,
+      "priority": 2,
+      "mirrors": [ "https://raw.githubusercontent.com/Raku/REA/main/" ],
+      "index": "META.json",
+      "source": "source-url",
+      "refresh": 24
     }
   ],
   "search": {

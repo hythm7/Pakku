@@ -1,0 +1,127 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use X::Pakku;
+use Pakku::Log;
+use Pakku::Spec;
+use Pakku::Fetch;
+use Pakku::Recman;
+use Pakku::Recman::Local;
+use Pakku::Recman::Ecosystem;
+
+Pakku::Log.new: verbose => 'nothing';
+
+my $fixtures = $*PROGRAM.parent.add( 'fixtures' ).absolute.IO;
+my $tmp      = $*TMPDIR.add( 'pakku-recman-test-' ~ $*PID );
+
+$tmp.mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+sub spec ( $s ) { Pakku::Spec.new: $s }
+
+# --- Recman::Local: a directory of extracted dists ---
+
+my $local = Pakku::Recman::Local.new: name => 'local', location => $fixtures.add( 'dists' );
+
+is $local.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.3', 'local: newest version wins regardless of directory order';
+is $local.recommend( spec => spec( 'Fixture::Foo:ver<0.2+>:auth<zef:a>' ) )<ver>, '0.2', 'local: version range and auth constraint';
+is $local.recommend( spec => spec( 'Fixture::Foo::Util' ) )<ver>, '0.2', 'local: lookup by provided unit';
+is $local.recommend( spec => spec( 'Fixture::Baz:api<1>' ) )<name>, 'Fixture::Baz', 'local: Int api in META matches api<1>';
+ok $local.recommend( spec => spec( 'Fixture::Foo' ) )<source> ~~ IO::Path, 'local: source is the dist directory';
+nok $local.recommend( spec => spec( 'Fixture::Nope' ) ).defined, 'local: unknown dist is Nil';
+nok $local.recommend( spec => spec( 'Fixture::Foo:ver<9+>' ) ).defined, 'local: unsatisfiable version is Nil';
+
+is $local.search( spec => spec( 'foo' ), :relaxed, :!latest, :666count ).map( *<ver> ).join( ' ' ), '0.3 0.2 0.1', 'local: relaxed search, newest first';
+is $local.search( spec => spec( 'Fixture::Foo' ), :!relaxed, :!latest, :666count ).elems, 3, 'local: strict search by name';
+is $local.search( spec => spec( 'foo' ), :relaxed, :latest, :666count ).map( { .<ver> ~ '/' ~ .<auth> } ).join( ' ' ), '0.3/zef:b 0.2/zef:a', 'local: latest folds to one row per name and auth';
+is $local.search( spec => spec( 'foo' ), :relaxed, :!latest, :1count ).elems, 1, 'local: count';
+is $local.search( spec => spec( 'fixture' ), :relaxed, :!latest, :666count ).map( *<name> ).unique.elems, 4, 'local: relaxed search matches several names';
+is $local.search( spec => spec( 'Nope' ), :relaxed, :!latest, :666count ).elems, 0, 'local: nothing found is an empty list';
+
+# --- Recman::Ecosystem: an index with tarballs, served here from a local directory mirror ---
+
+my $fetch = Pakku::Fetch.new;
+
+sub ecosystem ( *%extra ) {
+  Pakku::Recman::Ecosystem.new: name => 'fix', mirrors => [ ~$fixtures ~ '/' ], index => 'index.json', source => 'path', refresh => 1, store => $tmp.add( 'store' ), :$fetch, |%extra;
+}
+
+my $eco = ecosystem;
+
+ok $eco.stale, 'ecosystem: stale before the first refresh';
+nok $tmp.add( 'store' ).e, 'ecosystem: nothing is fetched or parsed until first use';
+
+my $foo = $eco.recommend( spec => spec( 'Fixture::Foo' ) );
+
+is $foo<ver>, '0.3', 'ecosystem: newest version';
+ok $tmp.add( 'store' ).add( 'index.json' ).e, 'ecosystem: the index was stored on first use';
+nok $eco.stale, 'ecosystem: fresh after the refresh';
+is $foo<source>, ~$fixtures ~ '/mirror/Foo-0.3.tar.gz', 'ecosystem: source is mirror ~ path';
+is $foo<recman>, 'fix', 'ecosystem: the meta remembers its recman';
+
+is $eco.recommend( spec => spec( 'Fixture::Foo:ver<0.2+>:auth<zef:a>' ) )<ver>, '0.2', 'ecosystem: version range and auth';
+is $eco.recommend( spec => spec( 'Fixture::Foo:ver(* < 0.3)' ) )<ver>, '0.2', 'ecosystem: code selector';
+is $eco.recommend( spec => spec( 'Fixture::Foo::Util' ) )<ver>, '0.2', 'ecosystem: lookup by provided unit';
+is $eco.recommend( spec => spec( 'Fixture::Baz:api<1>' ) )<api>, '1', 'ecosystem: Int api normalised to a string';
+nok $eco.recommend( spec => spec( 'Fixture::Baz:auth<zef:a>' ) ).defined, 'ecosystem: an auth-less entry does not match an auth constraint';
+is $eco.search( spec => spec( 'Fixture::Foo' ), :!relaxed, :!latest, :666count ).grep( *<ver> eq '0.2' ).elems, 1, 'ecosystem: the duplicated index entry is collapsed';
+is $eco.search( spec => spec( 'fixture' ), :relaxed, :latest, :666count ).elems, 5, 'ecosystem: latest search, one row per name and auth';
+
+# refresh policy
+my $never = ecosystem( refresh => False, store => $tmp.add( 'never' ) );
+throws-like { $never.recommend( spec => spec( 'Fixture::Foo' ) ) }, X::Pakku::Index, 'ecosystem: norefresh with no local index dies';
+
+my $always = ecosystem( refresh => True, store => $tmp.add( 'always' ) );
+ok $always.refresh, 'ecosystem: refresh => True fetches';
+ok $always.stale, 'ecosystem: and is always stale again';
+nok $always.refresh, 'ecosystem: refresh only when stale or forced' unless $always.stale;
+ok $always.refresh( :force ), 'ecosystem: forced refresh';
+
+# a mirror serving junk keeps the old index; a missing first mirror falls through to the next
+$tmp.add( 'junk' ).mkdir;
+$tmp.add( 'junk' ).add( 'index.json' ).spurt: '<html>captive portal</html>';
+my $junk = ecosystem( mirrors => [ ~$tmp.add( 'junk' ) ~ '/' ], refresh => True, store => $tmp.add( 'store' ) );
+nok $junk.refresh, 'ecosystem: an index that is not a JSON array is refused';
+is $junk.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.3', 'ecosystem: and the previous index keeps working';
+
+my $second = ecosystem( mirrors => [ ~$tmp.add( 'missing' ) ~ '/', ~$fixtures ~ '/' ], store => $tmp.add( 'second' ) );
+is $second.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.3', 'ecosystem: the second mirror is used when the first fails';
+
+my $nothing = ecosystem( mirrors => [ ~$tmp.add( 'missing' ) ~ '/' ], store => $tmp.add( 'nothing' ) );
+throws-like { $nothing.recommend( spec => spec( 'Fixture::Foo' ) ) }, X::Pakku::Index, 'ecosystem: no index and no working mirror dies';
+
+# source-url mode (REA style)
+my $rea = $tmp.add( 'rea' );
+$rea.mkdir;
+my @index = Rakudo::Internals::JSON.from-json( $fixtures.add( 'index.json' ).slurp ).List;
+$rea.add( 'META.json' ).spurt: Rakudo::Internals::JSON.to-json( @index.map( { my %m = $_; %m<source-url> = ~$fixtures.add( %m<path> ); %m<path>:delete; %m } ).Array );
+my $urls = Pakku::Recman::Ecosystem.new: name => 'rea', mirrors => [ ~$rea ~ '/' ], index => 'META.json', source => 'source-url', refresh => 24, store => $tmp.add( 'rea-store' ), :$fetch;
+is $urls.recommend( spec => spec( 'Fixture::Bar' ) )<source>, ~$fixtures.add( 'mirror' ).add( 'Bar-1.0.tar.gz' ), 'ecosystem: source-url mode uses the entry url as is';
+
+# --- Pakku::Recman: dispatch by priority, lazily ---
+
+my @config =
+  %( name => 'legacy',  location => 'http://recman.pakku.org', priority => 1, active => True ),
+  %( name => 'nodir',   type => 'local', location => ~$tmp.add( 'nope' ), priority => 1, active => True ),
+  %( name => 'off',     type => 'ecosystem', mirrors => [ ~$fixtures ~ '/' ], priority => 0, active => False ),
+  %( name => 'second',  type => 'ecosystem', mirrors => [ ~$fixtures ~ '/' ], priority => 2, active => True, refresh => 1 ),
+  %( name => 'first',   type => 'local', location => ~$fixtures.add( 'dists' ), priority => 1, active => True ),
+  %( name => 'strings', type => 'ecosystem', mirrors => [ ~$fixtures ~ '/' ], priority => 3, active => 'true', refresh => 1 );
+
+my $recman = Pakku::Recman.new: :$fetch, store => $tmp.add( 'dispatch' ), recman => @config;
+
+is-deeply $recman.names, ( 'first', 'second', 'strings' ), 'dispatcher: legacy, missing-directory and inactive entries are dropped, the rest sorted by priority';
+ok $recman.recommend( spec => spec( 'Fixture::Foo' ) )<source> ~~ IO::Path, 'dispatcher: the first recman answers';
+nok $tmp.add( 'dispatch' ).add( 'second' ).e, 'dispatcher: the second recman was not touched';
+nok $recman.recommend( spec => spec( 'Fixture::Nope' ) ).defined, 'dispatcher: Nil when nobody has it';
+ok $tmp.add( 'dispatch' ).add( 'second' ).add( 'index.json' ).e, 'dispatcher: the fallback ecosystem loaded its index on the miss';
+is $recman.search( spec => spec( 'Fixture::Bar' ), :!relaxed, :!latest, :666count ).elems, 3, 'dispatcher: search aggregates every recman';
+is $recman.refresh( name => [ 'second' ] ).elems, 1, 'dispatcher: refresh by name';
+is $recman.refresh.elems, 2, 'dispatcher: refresh all ecosystems';
+
+my $override = Pakku::Recman.new: :$fetch, store => $tmp.add( 'override' ), recman => [ %( name => 'eco', type => 'ecosystem', mirrors => [ ~$fixtures ~ '/' ], priority => 1, active => True ), ], refresh => False;
+throws-like { $override.recommend( spec => spec( 'Fixture::Foo' ) ) }, X::Pakku::Index, 'dispatcher: the norefresh override applies to every ecosystem';
+
+done-testing;

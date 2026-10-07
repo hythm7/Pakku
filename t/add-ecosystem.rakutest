@@ -1,0 +1,39 @@
+#!/usr/bin/env raku
+
+use Test;
+
+# needed otherwise get 'SC not yet resolved error'
+use CompUnit::Repository::Staging;
+
+use Pakku;
+
+# End-to-end through an ecosystem index with tarballs: fetch + extract + install.
+# (Its own process: a custom repo is registered as 'custom-lib', once per process.)
+my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+my $tmp      = $*TMPDIR.add( 'pakku-add-eco-test-' ~ $*PID );
+
+$tmp.mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+my $home2 = $tmp.add( 'home2' );
+my $repo2 = $tmp.add( 'repo2' );
+
+$home2.mkdir;
+
+my %cnf2 =
+  pakku  => %( home => $home2, cache => $tmp.add( 'cache2' ), verbose => ( %*ENV<PAKKU_TEST_VERBOSE> // 'nothing' ), pretty => False, bar => False, spinner => False, async => False ),
+  recman => [ %( name => 'fix', type => 'ecosystem', mirrors => [ $fixtures.IO.parent.absolute ~ '/' ], index => 'index.json', source => 'path', refresh => 1, priority => 1, active => True ), ];
+
+my $pakku2 = Pakku.new: cnf => %cnf2;
+
+lives-ok { $pakku2.fly: 'add', spec => [ 'Fixture::Bar' ], to => ~$repo2 }, 'add Fixture::Bar from an ecosystem index';
+
+my $inst2 = CompUnit::Repository::Installation.new: prefix => $repo2;
+
+ok $inst2.candidates( 'Fixture::Bar' ),                'Fixture::Bar is installed from the tarball';
+ok $inst2.candidates( 'Fixture::Foo', ver => '0.2+' ), 'its dependency too';
+ok $home2.add( '.index' ).add( 'fix' ).add( 'index.json' ).e, 'the index was stored under home/.index';
+ok $tmp.add( 'cache2' ).dir.elems, 'fetched dists were cached';
+
+done-testing;

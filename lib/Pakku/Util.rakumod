@@ -83,7 +83,7 @@ sub lock-file ( IO::Path:D $path, &code, Bool :$shared = False ) is export {
 
   $path.parent.mkdir;
 
-  my $fh = $path.open( :a );
+  my $fh = $path.open( :rw, :create );
 
   LEAVE $fh.close;
 

@@ -20,7 +20,7 @@ lives-ok {
 
       $!log    = Pakku::Log.new: :verbose<nothing>;
 
-      $!recman = Pakku::Recman.new: :fetch(Any) :@recman;
+      $!recman = Pakku::Recman.new: :@recman;
 
       @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );
 
