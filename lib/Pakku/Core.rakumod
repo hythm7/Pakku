@@ -391,9 +391,12 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   log '🐛', header => 'EXT', msg => ~$archive;
 
-  my $extract = extract :$archive, :$dst;
+  {
+    # a rejected or corrupt archive must not leave a half-extracted dist behind
+    CATCH { when X::Pakku::Archive { try remove-dir $dst; .rethrow } }
 
-  die X::Pakku::Archive.new: msg => ~$archive unless $extract;
+    extract :$archive, :$dst;
+  }
 
   log '🐛', header => 'RMV', msg => ~$archive;
 
@@ -633,12 +636,12 @@ method metamorph ( ) {
 
         self.fly: 'help', :$cmd;
 
-        .message;
+        .log;
 
         nofun;
       }
 
-      when X::Pakku::Cnf { log '🦗', header => 'CNF', msg => .message; nofun; exit 1 }
+      when X::Pakku::Cnf { .log; nofun; exit 1 }
 
       default { log '🦗', header => 'CNF', msg => .gist }
   }

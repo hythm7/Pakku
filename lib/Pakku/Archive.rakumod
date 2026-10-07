@@ -1,127 +1,263 @@
 use NativeCall;
 
+use X::Pakku;
+use Pakku::Log;
 use Pakku::Native;
 
+# Extract a distribution archive (tar.gz, but anything libarchive reads) into
+# a directory, safely: entries are validated before anything touches the disk
+# and data is streamed block by block, never buffered whole.
 unit module Pakku::Archive;
 
-constant LIB = (
-  $*VM.platform-library-name( 'archive'.IO, version =>  v13 ).Str,
-  $*VM.platform-library-name( 'archive'.IO                  ).Str, 
-  $*VM.platform-library-name( 'archiveint'.IO               ).Str,
-).first( -> \lib { Pakku::Native.can-load: lib } );
+constant ARCHIVE_EOF    =   1;
+constant ARCHIVE_OK     =   0;
+constant ARCHIVE_WARN   = -20;
 
+# TIME | SECURE_NODOTDOT. Absolute paths, '..' and link entries are rejected
+# by validate() below, so SECURE_NOABSOLUTEPATHS (our targets are absolute)
+# and SECURE_SYMLINKS (a symlinked $HOME is legitimate) are not needed.
+constant EXT_FLAGS = 0x0004 +| 0x0200;
 
-constant ARCHIVE_OK  = 0;
-constant ARCHIVE_EOF = 1;
-constant EXT_FLAGS   = 0x0002 +| 0x0004 +| 0x0010 +| 0x0020 +| 0x0040;
- 
+constant AE_IFMT  = 0o170000;
+constant AE_IFREG = 0o100000;
+constant AE_IFDIR = 0o040000;
 
-class archive       is repr('CPointer') { * }
-class archive_entry is repr('CPointer') { * }
+constant MAX-BYTES = 2 * 1024 ** 3;   # refuse to extract more than 2 GiB from one dist
 
-sub archive_read_new(  --> archive       ) is native( LIB ) { * }
-sub archive_entry_new( --> archive_entry ) is native( LIB ) { * }
-sub archive_write_finish_entry( archive $archive --> int32 ) is native( LIB ) { * }
+class archive       is repr('CPointer') { }
+class archive_entry is repr('CPointer') { }
 
+# resolved on first use, so Pakku loads (help, list, config ...) without libarchive
+my sub lib ( --> Str:D ) {
 
-sub archive_read_free(  archive $archive --> int32 ) is native( LIB ) { * }
-sub archive_read_close( archive $archive --> int32 ) is native( LIB ) { * }
+  state $lib = (
+    $*VM.platform-library-name( 'archive'.IO, version =>  v13 ).Str,
+    $*VM.platform-library-name( 'archive'.IO                  ).Str,
+    $*VM.platform-library-name( 'archiveint'.IO               ).Str,
+  ).first( -> $lib { Pakku::Native.can-load: $lib } );
 
-sub archive_read_support_format_tar(  archive $archive --> int32 ) is native( LIB ) { * }
-sub archive_read_support_filter_gzip( archive $archive --> int32 ) is native( LIB ) { * }
+  $lib // die X::Pakku::Native.new: msg => 'libarchive', comment => 'not found!';
 
-sub archive_read_open_memory( archive $archive, Buf $data, size_t $size --> int32 ) is native( LIB ) { * }
-sub archive_read_data(archive $archive, Blob $buf, size_t $len --> size_t) is native(LIB) is export { * }
+}
 
-sub archive_read_next_header( archive $archive, archive_entry $entry is rw --> int32 ) is native( LIB ) { * }
-sub archive_read_data_skip( archive $archive --> int32 ) is native( LIB ) { * }
+sub archive_read_new                    ( --> archive                             ) is native( &lib ) { * }
+sub archive_read_support_format_all     ( archive --> int32                       ) is native( &lib ) { * }
+sub archive_read_support_filter_all     ( archive --> int32                       ) is native( &lib ) { * }
+sub archive_read_open_filename          ( archive, Str, size_t --> int32          ) is native( &lib ) { * }
+sub archive_read_next_header            ( archive, archive_entry is rw --> int32  ) is native( &lib ) { * }
+sub archive_read_data_block             ( archive, Pointer is rw, size_t is rw, int64 is rw --> int32 ) is native( &lib ) { * }
+sub archive_read_data_skip              ( archive --> int32                       ) is native( &lib ) { * }
+sub archive_read_close                  ( archive --> int32                       ) is native( &lib ) { * }
+sub archive_read_free                   ( archive --> int32                       ) is native( &lib ) { * }
 
-sub archive_entry_clone( archive_entry --> archive_entry ) is native( LIB ) is export { * }
+sub archive_write_disk_new              ( --> archive                             ) is native( &lib ) { * }
+sub archive_write_disk_set_options      ( archive, int32 --> int32                ) is native( &lib ) { * }
+sub archive_write_disk_set_standard_lookup ( archive --> int32                    ) is native( &lib ) { * }
+sub archive_write_header                ( archive, archive_entry --> int32        ) is native( &lib ) { * }
+sub archive_write_data_block            ( archive, Pointer, size_t, int64 --> ssize_t ) is native( &lib ) { * }
+sub archive_write_finish_entry          ( archive --> int32                       ) is native( &lib ) { * }
+sub archive_write_close                 ( archive --> int32                       ) is native( &lib ) { * }
+sub archive_write_free                  ( archive --> int32                       ) is native( &lib ) { * }
 
-sub archive_entry_size(     archive_entry $archive_entry --> int64 ) is native( LIB ) { * }
-sub archive_entry_pathname( archive_entry $archive_entry --> Str   ) is native( LIB ) { * }
+sub archive_error_string                ( archive --> Str                         ) is native( &lib ) { * }
 
-sub archive_entry_free( archive_entry $archive_entry ) is native( LIB ) { * }
+sub archive_entry_pathname              ( archive_entry --> Str                   ) is native( &lib ) { * }
+sub archive_entry_set_pathname          ( archive_entry, Str                      ) is native( &lib ) { * }
+sub archive_entry_filetype              ( archive_entry --> uint32                ) is native( &lib ) { * }
+sub archive_entry_hardlink              ( archive_entry --> Str                   ) is native( &lib ) { * }
+sub archive_entry_size                  ( archive_entry --> int64                 ) is native( &lib ) { * }
 
-sub archive_entry_set_pathname( archive_entry $archive_entry, Str $filename ) is native( LIB ) { * }
+my sub open-archive ( IO::Path:D $archive --> archive ) {
 
-sub archive_write_disk_new( --> archive ) is native( LIB ) { * }
+  my $a = archive_read_new;
 
-sub archive_write_disk_set_options( archive $archive, int32 $flags --> int32 ) is native( LIB ) { * }
-sub archive_write_disk_set_standard_lookup( archive $archive --> int32 ) is native( LIB ) { * }
+  archive_read_support_format_all $a;
+  archive_read_support_filter_all $a;
 
-sub archive_write_header( archive $archive, archive_entry $entry --> int32 ) is native( LIB ) { * }
+  if archive_read_open_filename( $a, ~$archive, 65536 ) != ARCHIVE_OK {
 
-sub archive_write_data(archive $archive, Buf $data, size_t $size --> size_t) is native(LIB) is export { * }
+    my $error = archive_error_string( $a );
 
-sub archive_write_close( archive $archive --> int32 ) is native( LIB ) { * }
-sub archive_write_free(  archive $archive --> int32 ) is native( LIB ) { * }
+    archive_read_free $a;
 
-sub archive_error_string( archive $archive --> Str ) is native( LIB ) { * }
-
-
-my class Data { has size_t $.size; has Blob   $.buf; }
-
-sub extract( IO::Path:D :$archive!, IO::Path:D :$dst! --> Bool ) is export {
-
-  my $buffer      = slurp $archive, :bin;
-  my $buffer-size = $archive.s;
-
-  my archive $a = archive_read_new;
-
-  archive_read_support_format_tar $a;
-  archive_read_support_filter_gzip $a;
-  archive_read_open_memory( $a, $buffer, $buffer-size ) == ARCHIVE_OK or die "Unable to open $archive";
-
-  my %entries;
-
-  my int64 $res;
-
-  my archive_entry $entry .= new;
-
-  while archive_read_next_header($a, $entry) == ARCHIVE_OK {
-
-    my size_t $size = archive_entry_size( $entry );
-
-    my $pathname = archive_entry_pathname( $entry );
-
-    my $buf = buf8.allocate( $size ); 
-
-    $res = archive_read_data $a, $buf, $size;
-
-    my $data = Data.new: :$size :$buf;
-
-    %entries{ archive_entry_pathname( $entry ) } =  ( archive_entry_clone( $entry ), $data );
+    die X::Pakku::Archive.new: msg => ~$archive, comment => $error // 'can not open!';
 
   }
 
-    my archive $e = archive_write_disk_new;
+  $a;
 
-    archive_write_disk_set_options $e, EXT_FLAGS;
-    archive_write_disk_set_standard_lookup $e;
-  
-  
-    # get root dir from META file path
-    my $root = %entries.keys.first( { .ends-with( any <META6.json META.info> ) and $*SPEC.splitdir( .IO.dirname ) == 1 } ).IO.dirname;
-  
-    for %entries.kv -> $pathname,  ( $entry, $data ) {
-  
-      archive_entry_set_pathname $entry, $dst.add( $pathname.IO.relative( $root ) ).Str;
-  
-      my $res = archive_write_header($e, $entry);
-  
-      $res = archive_write_data $e, $data.buf, $data.size if $data.size;
-  
-      $res = archive_write_finish_entry $e;
-  
-      die if $res > ARCHIVE_OK;
-    }
-  
-  archive_read_close  $a;
-  archive_read_free   $a;
-  archive_write_close $e;
-  archive_write_free  $e;
-
-  return True;
 }
 
+# libarchive returns negative codes on trouble: WARN is logged, worse is fatal
+my sub check ( archive $a, Int $rc, Str $what, IO::Path $archive --> Nil ) {
+
+  return if $rc >= ARCHIVE_OK;
+
+  my $error = archive_error_string( $a ) // "error $rc";
+
+  if $rc == ARCHIVE_WARN {
+
+    log '🐞', header => 'ARC', msg => $what, comment => $error;
+
+    return;
+
+  }
+
+  die X::Pakku::Archive.new: msg => ~$archive, comment => "$what: $error";
+
+}
+
+my sub components ( Str:D $path ) { $path.split( / <[ / \\ ]> / ).grep( * ne '' ).grep( * ne '.' ) }
+
+# pass 1: every header, validated, nothing written
+my sub entries ( IO::Path:D $archive ) {
+
+  my $a = open-archive $archive;
+
+  LEAVE { if $a { archive_read_close $a; archive_read_free $a } }
+
+  my @entry;
+
+  loop {
+
+    my archive_entry $entry .= new;
+
+    my $rc = archive_read_next_header( $a, $entry );
+
+    last if $rc == ARCHIVE_EOF;
+
+    check $a, $rc, 'read header', $archive;
+
+    my $path = archive_entry_pathname( $entry ) // '';
+    my $type = archive_entry_filetype( $entry ) +& AE_IFMT;
+
+    die X::Pakku::Archive.new: msg => ~$archive, comment => "$path: absolute path!"
+      if $path.starts-with( '/' ) or $path.starts-with( '\\' ) or $path ~~ / ^ <alpha> ':' /;
+
+    die X::Pakku::Archive.new: msg => ~$archive, comment => "$path: '..' in path!"
+      if components( $path ).first( '..' );
+
+    die X::Pakku::Archive.new: msg => ~$archive, comment => "$path: link or special entry!"
+      if $type != AE_IFREG | AE_IFDIR or archive_entry_hardlink( $entry );
+
+    @entry.push: %( :$path, :$type, size => archive_entry_size( $entry ) );
+
+    check $a, archive_read_data_skip( $a ), "$path: skip data", $archive;
+
+  }
+
+  @entry;
+
+}
+
+# the root is the directory holding the shallowest META6.json / META.info
+my sub root-of ( @entry, IO::Path:D $archive ) {
+
+  my @meta = @entry.grep( { .<type> == AE_IFREG and components( .<path> ).tail ~~ 'META6.json' | 'META.info' } )
+                   .map(  { components( .<path> ).head( *-1 ).List } );
+
+  die X::Pakku::Archive.new: msg => ~$archive, comment => 'no META6.json!' unless @meta;
+
+  my $depth = @meta.map( *.elems ).min;
+
+  my @root  = @meta.grep( *.elems == $depth ).unique( :with(&[eqv]) );
+
+  die X::Pakku::Archive.new: msg => ~$archive, comment => "more than one dist root: { @root.map( *.join( '/' ) ).join( ', ' ) }" if @root > 1;
+
+  @root.head;
+
+}
+
+sub extract ( IO::Path:D :$archive!, IO::Path:D :$dst! --> Bool:D ) is export {
+
+  my @entry = entries $archive;
+  my @root  = root-of( @entry, $archive ).flat;
+
+  # path inside the archive => path relative to the dist root ('' for the root itself)
+  my %relative;
+
+  for @entry -> %e {
+
+    my @c = components %e<path>;
+
+    die X::Pakku::Archive.new: msg => ~$archive, comment => "{ %e<path> }: outside the dist root { @root.join( '/' ) }!"
+      unless @c.head( +@root ).List eqv @root.List;
+
+    %relative{ %e<path> } = @c[ +@root .. * ].join( '/' );
+
+  }
+
+  $dst.mkdir;
+
+  # pass 2: stream the data to disk
+  my $a = open-archive $archive;
+  my $e = archive_write_disk_new;
+
+  archive_write_disk_set_options $e, EXT_FLAGS;
+  archive_write_disk_set_standard_lookup $e;
+
+  LEAVE {
+    if $e { archive_write_close $e; archive_write_free $e }
+    if $a { archive_read_close  $a; archive_read_free  $a }
+  }
+
+  my $total = 0;
+
+  loop {
+
+    my archive_entry $entry .= new;
+
+    my $rc = archive_read_next_header( $a, $entry );
+
+    last if $rc == ARCHIVE_EOF;
+
+    check $a, $rc, 'read header', $archive;
+
+    my $path     = archive_entry_pathname( $entry );
+    my $relative = %relative{ $path } // '';
+
+    unless $relative.chars {
+
+      check $a, archive_read_data_skip( $a ), "$path: skip data", $archive;
+
+      next;
+
+    }
+
+    archive_entry_set_pathname $entry, ~$dst.add( $relative );
+
+    check $e, archive_write_header( $e, $entry ), "$path: write header", $archive;
+
+    if ( archive_entry_filetype( $entry ) +& AE_IFMT ) == AE_IFREG {
+
+      loop {
+
+        my Pointer $buff  .= new;
+        my size_t  $size   = 0;
+        my int64   $offset = 0;
+
+        my $r = archive_read_data_block( $a, $buff, $size, $offset );
+
+        last if $r == ARCHIVE_EOF;
+
+        check $a, $r, "$path: read data", $archive;
+
+        $total += $size;
+
+        die X::Pakku::Archive.new: msg => ~$archive, comment => "more than { MAX-BYTES div 1024 ** 3 } GiB, refusing!" if $total > MAX-BYTES;
+
+        my $w = archive_write_data_block( $e, $buff, $size, $offset );
+
+        die X::Pakku::Archive.new: msg => ~$archive, comment => "$path: write data: " ~ ( archive_error_string( $e ) // "error $w" ) if $w < ARCHIVE_OK;
+
+      }
+
+    }
+
+    check $e, archive_write_finish_entry( $e ), "$path: finish entry", $archive;
+
+  }
+
+  True;
+
+}

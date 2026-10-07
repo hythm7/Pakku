@@ -14,7 +14,9 @@ class X::Pakku is Exception {
 
   method header ( --> Str:D ) { %header{ self.^name.split( '::' ).tail } // 'ERR' }
 
-  method message { log '🦗', header => self.header, :$!msg, |( :$!comment if $!comment ) }
+  method message ( --> Str:D ) { $!msg ~ ( " ❨$!comment❩" if $!comment ) }
+
+  method log ( --> Nil ) { log '🦗', header => self.header, :$!msg, |( :$!comment if $!comment ) }
 
 }
 

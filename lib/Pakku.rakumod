@@ -38,7 +38,7 @@ proto method fly ( | ) {
 
     when X::Pakku {
 
-      .message;
+      .log;
       .resume if $!yolo;
       nofun;
       exit 1

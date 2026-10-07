@@ -1,0 +1,58 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use X::Pakku;
+use Pakku::Log;
+use Pakku::Archive;
+
+Pakku::Log.new: verbose => 'nothing';
+
+my $fixtures = $*PROGRAM.parent.add( 'fixtures' );
+my $tmp      = $*TMPDIR.add( 'pakku-archive-test-' ~ $*PID );
+
+$tmp.mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+sub evil ( $name ) { $fixtures.add( 'evil' ).add( $name ) }
+
+# the three real-world layouts: dist/ (fez), root-level files and <repo>-master/ (REA)
+for <Foo-0.2 Baz-1.0 Qux-2.0> -> $name {
+
+  my $dst = $tmp.add( $name );
+
+  ok extract( archive => $fixtures.add( 'mirror' ).add( "$name.tar.gz" ), :$dst ), "extract $name.tar.gz";
+  ok $dst.add( 'META6.json' ).f, "META6.json lands at the destination root ($name layout)";
+
+}
+
+ok $tmp.add( 'Foo-0.2' ).add( 'lib' ).add( 'Fixture' ).add( 'Foo' ).add( 'Util.rakumod' ).f, 'nested files are extracted';
+ok $tmp.add( 'Qux-2.0' ).add( 'Build.rakumod' ).f, 'files next to META6.json are extracted';
+
+ok extract( archive => evil( 'good.tar' ), dst => $tmp.add( 'good' ) ), 'a plain (uncompressed) tar extracts';
+is $tmp.add( 'good' ).add( 'lib' ).dir.elems, 20, 'all 20 modules of the plain tar are there';
+is $tmp.add( 'good' ).add( 'lib' ).add( 'M3.rakumod' ).slurp.lines.elems, 50, 'file contents are complete';
+
+# hostile or broken archives are rejected before anything escapes
+for <dotdot.tar absolute.tar symlink.tar hardlink.tar nometa.tar twometa.tar shortread.tar hugesize.tar truncated.tar truncated.tar.gz> -> $name {
+
+  my $dst = $tmp.add( "evil-$name" );
+
+  throws-like { extract( archive => evil( $name ), :$dst ) }, X::Pakku::Archive, "$name is rejected";
+
+}
+
+nok $tmp.add( 'escaped.txt' ).e,            'the .. entry wrote nothing above the destination';
+nok '/tmp/pakku-evil-escaped.txt'.IO.e,     'the absolute entry wrote nothing';
+nok $tmp.add( 'evil-symlink' ).add( 'evil' ).e, 'the symlink entry was not created';
+
+my $suid = $tmp.add( 'suid' );
+
+ok extract( archive => evil( 'suid.tar' ), dst => $suid ), 'an archive with a setuid file extracts';
+nok $suid.add( 'bin' ).add( 'tool' ).mode +& 0o4000, 'but the setuid bit is not restored';
+ok  $suid.add( 'bin' ).add( 'tool' ).x, 'while the executable bit is kept' unless $*DISTRO.is-win;
+
+throws-like { extract( archive => $tmp.add( 'nope.tar.gz' ), :dst( $tmp.add( 'x' ) ) ) }, X::Pakku::Archive, 'a missing archive throws X::Pakku::Archive';
+
+done-testing;
