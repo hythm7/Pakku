@@ -24,7 +24,7 @@ multi method fly (
         ==> sort( )
         ==> map( -> $spec { Pakku::Spec.new: $spec } )
         ==> map( -> $spec {
-          $repo.candidates( $spec.name, |$spec.spec )
+          $repo.candidates( $spec.dependency-specification )
             ==> map( -> $dist { $dist.id } )
             ==> map( -> $id   { $repo.distribution: $id } )
             ==> map( -> $dist { $dist.meta.item } )

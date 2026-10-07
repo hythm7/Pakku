@@ -20,7 +20,7 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
       sink @spec.map( -> $str {
 
         my $spec = Pakku::Spec.new: $str;
-        my @dist = $repo.candidates( $spec.name, |$spec.spec );
+        my @dist = $repo.candidates( $spec.dependency-specification );
 
         log '🐛', header => 'SPC', msg => ~$spec, comment => "{ $repo.prefix}: not added!" unless @dist;
 

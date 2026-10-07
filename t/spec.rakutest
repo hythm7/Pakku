@@ -114,7 +114,7 @@ for @pathspec -> $path {
 
 my $spec1 = Pakku::Spec.new: 'foo';
 my $spec2 = Pakku::Spec.new: 'foo:ver<0.0.2+>';
-my @spec3 = Pakku::Spec.new: { any => [ 'bar:ver<0.0.1>', 'foo:ver<0.0.3>' ] };
+my $spec3 = Pakku::Spec.new: { any => [ 'bar:ver<0.0.1>', 'foo:ver<0.0.3>' ] };
 my $spec4 = Pakku::Spec.new: 'foo:ver<0.0.4+>';
 my $spec5 = Pakku::Spec.new: 'foo:api<5>';
 
@@ -122,9 +122,86 @@ my $dist-spec = Pakku::Spec.new: 'foo:ver<0.0.3>:auth<bar>:api<3>';
 
 ok  $dist-spec ~~ $spec1, "$dist-spec matches $spec1";
 ok  $dist-spec ~~ $spec2, "$dist-spec matches $spec2";
-ok  $dist-spec ~~ any(@spec3), "$dist-spec matches { @spec3.map(~*).join: ' | ' }";
+ok  $dist-spec ~~ $spec3, "$dist-spec matches $spec3";
 nok $dist-spec ~~ $spec4, "$dist-spec does not match $spec4";
 nok $dist-spec ~~ $spec5, "$dist-spec does not match $spec5";
 
+
+# --- S11 selectors: <...> is a string, (...) is any smartmatch selector ---
+
+my %foo = name => 'Foo', version => '1.5', auth => 'zef:a', api => 4;
+my %old = name => 'Foo', version => '0.1', auth => 'cpan:b', api => 0;
+
+for (
+  'Foo'                              => ( True,  True  ),
+  'Foo:ver<1.5>'                     => ( True,  False ),
+  'Foo:ver<1>'                       => ( True,  False ),   # a prefix, like Rakudo
+  'Foo:ver<0.1+>'                    => ( True,  True  ),
+  'Foo:ver<1.*>'                     => ( True,  False ),
+  'Foo:ver(* > 0.2)'                 => ( True,  False ),   # numbers mean versions
+  'Foo:ver(* > 0.2):api(* > 3)'      => ( True,  False ),
+  'Foo:ver(v1..v2)'                  => ( True,  False ),
+  'Foo:ver(1..*)'                    => ( True,  False ),
+  'Foo:ver(v0.1^..^v1.5)'            => ( False, False ),
+  'Foo:ver(v0.1 | v1.5)'             => ( True,  True  ),
+  'Foo:ver(Any)'                     => ( True,  True  ),
+  'Foo:ver(any(v1.5, v9))'           => ( True,  False ),
+  'Foo:auth<zef:a>'                  => ( True,  False ),
+  'Foo:auth<zef:*>'                  => ( True,  False ),
+  'Foo:auth(/^zef/)'                 => ( True,  False ),
+  'Foo:auth(/^ "cpan:" /)'           => ( False, True  ),
+  'Foo:api<4>'                       => ( True,  False ),
+  'Foo:api<4.0>'                     => ( True,  False ),   # api compared as a Version, like Rakudo
+  'Foo:api(* >= 1)'                  => ( True,  False ),
+) -> ( :key($text), :value(( $new, $old )) ) {
+
+  my $spec = Pakku::Spec.new: $text;
+
+  is $spec.gist, $text, "$text round-trips";
+  is ( %foo ~~ $spec ), $new, "$text vs Foo 1.5 zef:a api 4";
+  is ( %old ~~ $spec ), $old, "$text vs Foo 0.1 cpan:b api 0";
+
+}
+
+ok { name => 'Foo', version => 'v0.0.5' } ~~ Pakku::Spec.new( 'Foo:ver<0.0.5>' ), 'a leading v in a META version is tolerated';
+
+for 'Foo:ver({ .substr(0,5) eq "cpan:" })', 'Foo:ver(say "pwned"; v1)', 'Foo:auth($*HOME)', 'Foo:ver(Version.new("1"))', 'Foo:ver(* > )' -> $bad {
+  throws-like { Pakku::Spec.new: $bad }, X::Pakku::Spec, "$bad is refused";
+}
+
+# --- S22 hash form and alternatives ---
+
+is Pakku::Spec.new( { name => 'Foo', version => '1.2' } ).gist, 'Foo:ver<1.2>', 'hash form accepts a version key';
+is Pakku::Spec.new( { name => 'Foo', ver => '1.2', auth => 'zef:x', api => '1' } ).gist, 'Foo:ver<1.2>:auth<zef:x>:api<1>', 'hash form with ver auth api';
+
+my $native = Pakku::Spec.new( { name => 'archive:from<native>', hints => { url => 'https://example.org/libarchive.dll' } } );
+isa-ok $native, Pakku::Spec::Native, 'a name carrying adverbs is parsed (S22 hints example)';
+is $native.name, 'archive', 'and the bare name is kept';
+is $native.hints<url>, 'https://example.org/libarchive.dll', 'hints are kept on the spec';
+
+is Pakku::Spec.new( { name => 'Foo:ver<1>', ver => '2' } ).gist, 'Foo:ver<2>', 'explicit keys win over adverbs in the name';
+
+throws-like { Pakku::Spec.new( 'Foo:from<java>' ) }, X::Pakku::Spec, 'an unknown from<> dies instead of returning False';
+isa-ok Pakku::Spec.new( 'Foo:from<perl6>' ), Pakku::Spec::Raku, 'from<perl6> is Raku';
+isa-ok Pakku::Spec.new( 'Mojolicious:from<Perl5>' ), Pakku::Spec::Perl, 'from<Perl5> is case-insensitive';
+
+my $any = Pakku::Spec.new( { any => [ 'A:ver<1>', { name => 'B', from => 'bin' }, { any => [ 'C', 'D' ] } ] } );
+isa-ok $any, Pakku::Spec::Any, 'any gives a Pakku::Spec::Any';
+is $any.gist, 'any(A:ver<1> | B:from<bin> | any(C | D))', 'alternatives are recursive';
+ok $any.id.chars, 'alternatives have an id';
+isnt $any.id, Pakku::Spec.new( { any => [ 'A:ver<2>', 'B' ] } ).id, 'different alternatives have different ids';
+
+# --- Rakudo does the matching for installed dists ---
+
+my $repo = CompUnit::Repository::Installation.new: prefix => $*TMPDIR.add( 'pakku-spec-test-' ~ $*PID );
+END { run 'rm', '-rf', $repo.prefix if $repo.prefix.e }
+$repo.install: Distribution::Path.new( $*PROGRAM.parent.add( 'fixtures' ).add( 'dists' ).add( 'Foo-0.2' ) );
+
+for 'Fixture::Foo', 'Fixture::Foo:ver<0.1+>', 'Fixture::Foo:ver(* > 0.1)', 'Fixture::Foo:ver(v0.1..*)', 'Fixture::Foo:auth(/^zef/)', 'Fixture::Foo:auth<zef:*>', 'Fixture::Foo:api(* >= 0)' -> $text {
+  ok $repo.candidates( Pakku::Spec.new( $text ).dependency-specification ), "$text finds the installed Fixture::Foo 0.2";
+}
+for 'Fixture::Foo:ver<0.3>', 'Fixture::Foo:ver(* > 5)', 'Fixture::Foo:ver(v0.1^..^v0.2)', 'Fixture::Foo:auth(/^cpan/)', 'Fixture::Foo:api(* > 0)' -> $text {
+  nok $repo.candidates( Pakku::Spec.new( $text ).dependency-specification ), "$text does not match the installed Fixture::Foo 0.2";
+}
 
 done-testing;

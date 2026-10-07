@@ -1,6 +1,6 @@
 
 use Pakku::Log;
-
+use Pakku::Util;
 use Pakku::Spec;
 use Pakku::Meta;
 
@@ -26,7 +26,7 @@ method recommend ( Pakku::Spec::Raku:D :$spec! ) {
 
   return unless @candy;
 
-  my $candy = @candy.reduce( &reduce-latest );
+  my $candy = latest @candy;
 
   log '🐛', header => 'CAC', msg => ~$candy;
 
@@ -67,34 +67,3 @@ method cache ( IO::Path:D :$path! ) {
 
 }
 
-multi reduce-latest ( $left ) { $left }
-
-multi reduce-latest ( $left, $right ) {
-
-  my $left-ver  = $left.meta<ver>;
-  my $left-api  = $left.meta<api>;
-  my $right-ver = $right.meta<ver>;
-  my $right-api = $right.meta<api>;
-
-  return $left if Version.new( $left-ver // '' ) > Version.new( $right-ver // '' );
-  return $left if Version.new( $left-api // '' ) > Version.new( $right-api // '' );
-
-  $right;
-}
-
-my sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst --> Nil) {
-
-  my $relpath := $src.chars;
-
-  for Rakudo::Internals.DIR-RECURSE( ~$src ) -> $path {
-
-    my $destination := $dst.add( $path.substr( $relpath ) );
-
-    $destination.parent.mkdir;
-
-    $path.IO.copy: $destination;
-
-  }
-}
-
-my sub sha1 ( $what ) { use nqp; nqp::sha1( $what ) }

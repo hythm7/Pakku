@@ -290,7 +290,9 @@ multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
   Empty
 }
 
-multi method satisfy ( :@spec! ) {
+multi method satisfy ( Pakku::Spec::Any:D :$spec! ) {
+
+  my @spec = $spec.spec;
 
   log '🐛', header => 'SPC', msg => ~@spec, comment => 'satisfying!';
 
@@ -315,10 +317,7 @@ multi method satisfy ( :@spec! ) {
 
 multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
 
-  my $name = $spec.name;
-  my %spec = $spec.spec;
-
-  return False unless @!repo.first( *.candidates: $name, |%spec );
+  return False unless @!repo.first( *.candidates( $spec.dependency-specification ) );
 
   log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
@@ -354,20 +353,20 @@ multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
   True;
 }
 
-multi method satisfied ( :@spec! --> Bool:D ) { so @spec.first( -> $spec { samewith :$spec } ) }
+multi method satisfied ( Pakku::Spec::Any:D :$spec! --> Bool:D ) { so $spec.spec.first( -> $spec { samewith :$spec } ) }
 
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False, :@exclude ) {
 
   state %visited = @exclude.map: *.id => True;
 
   $meta.deps( :$deps )
-    ==> grep( -> $spec { quietly %visited{ $spec.?id }:!exists } )
+    ==> grep( -> $spec { %visited{ $spec.id }:!exists } )
     ==> grep( -> $spec { $contained and $spec ~~ Pakku::Spec::Raku or not self.satisfied( :$spec ) } )
     ==> map(  -> $spec {
 
     my $meta = self.satisfy: :$spec;
 
-    quietly %visited{ $spec.?id  } = True;
+    %visited{ $spec.id } = True;
 
     self.get-deps( $meta, :$deps, :$contained ), $meta if $meta;
 
@@ -475,7 +474,7 @@ method state ( :$updates = True ) {
         log '🐛', header => 'SPC', msg => ~$spec;
 
         @!repo
-          ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ).head } )
+          ==> map( -> $repo { $repo.candidates( $spec.dependency-specification ).head } )
           ==> grep( *.defined )
           ==> my @candy;
 

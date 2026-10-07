@@ -21,6 +21,7 @@
     "Pakku::Log":                "lib/Pakku/Log.rakumod",
     "Pakku::Core":               "lib/Pakku/Core.rakumod",
     "Pakku::Spec":               "lib/Pakku/Spec.rakumod",
+    "Pakku::Collapse":           "lib/Pakku/Collapse.rakumod",
     "Pakku::Meta":               "lib/Pakku/Meta.rakumod",
     "Pakku::Util":               "lib/Pakku/Util.rakumod",
     "Pakku::Curl":               "lib/Pakku/Curl.rakumod",

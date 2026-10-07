@@ -77,11 +77,79 @@ ok $meta.dist ~~ $dist, 'dist is correct';
 ok $meta.name ~~ %meta<name>, 'name is correct';
 
 
-todo 'Build   dependencies';
-todo 'Test    dependencies';
-todo 'Runtime dependencies';
-#ok $meta.deps( :deps<runtime> ).map( *.Str ) ~~ 'soso:from<lib>',                'Runtime dependencies';
-#ok $meta.deps( :deps<test>    ).map( *.Str ) ~~ 'Dodo::Xoxo',                    'Test dependencies';
-#ok $meta.deps( :deps<build>   ).map( *.Str ) ~~ 'soso:from<lib> koko:from<bin>', 'Build dependencies';
+is $meta.ver, '0.1', 'ver accessor';
+is $meta.api, '42', 'api accessor';
+
+# --- phases: only "requires" are hard dependencies ---
+
+my $m = Pakku::Meta.new: {
+  name => 'X', version => '1', auth => 'zef:x', api => 1,
+  depends => { runtime => { requires => [ 'A' ] }, test => { requires => [ 'T' ], recommends => [ 'R' ], suggests => [ 'S' ] } },
+  'build-depends' => { requires => [ 'BD' ] },
+  'test-depends'  => [ 'TD' ],
+};
+
+is $m.Str, 'X:ver<1>:auth<zef:x>:api<1>', 'dist string (Int api)';
+is-deeply $m.deps( :deps ).map( *.gist ).sort, <A BD T TD>.List, 'all phases, requires only';
+is-deeply $m.deps( :deps<test> ).map( *.gist ).sort, <T TD>.List, 'test phase';
+is-deeply $m.deps( :deps<build> ).map( *.gist ), ( 'BD', ), 'build phase, hash form of build-depends';
+is-deeply $m.deps( :deps<runtime> ).map( *.gist ), ( 'A', ), 'runtime phase';
+is-deeply $m.recommends.map( *.gist ), ( 'R', ), 'recommends are available on request';
+is $m.deps( :!deps ).elems, 0, 'no deps';
+throws-like { $m.deps( :deps<bogus> ) }, X::Pakku::Meta, 'an unknown deps value dies';
+
+# --- S22 system specific values ---
+
+my $c = Pakku::Meta.new: { name => 'C', version => '1', depends => [
+  { 'by-vm.name'        => { moar => 'Low::Moar', jvm => 'Low::JVM', '' => 'Low::Generic' } },
+  { name => { 'by-distro.name' => { '' => 'D::Generic' } } },
+  { 'by-kernel.name'    => { $*KERNEL.name => 'K::This', '' => 'K::Other' } },
+  { 'by-raku.version'   => { $*RAKU.version.Str => 'R::This', '' => 'R::Generic' } },
+  { 'by-env-exists.PAKKU_TEST_SET' => { yes => 'E::Yes', no => 'E::No' } },
+  { 'by-env.PAKKU_TEST_VALUE' => { hello => 'V::Hello', '' => 'V::Default' } },
+  { 'by-distro.version' => { '0+' => 'DV::AtLeast0', '' => 'DV::Fallback' } },
+  { 'by-backend.name'   => { $*VM.name => 'B::Legacy' } },
+] };
+
+is-deeply $c.deps( :deps ).map( *.gist ).List,
+  ( $*VM.name eq 'moar' ?? 'Low::Moar' !! $*VM.name eq 'jvm' ?? 'Low::JVM' !! 'Low::Generic', 'D::Generic', 'K::This', 'R::This', 'E::No', 'V::Default', 'DV::AtLeast0', 'B::Legacy' ),
+  'by-vm, by-distro (inside name), by-kernel, by-raku, by-env-exists, by-env, Version-keyed by-distro.version, legacy by-backend';
+
+{
+  temp %*ENV<PAKKU_TEST_SET>   = '1';
+  temp %*ENV<PAKKU_TEST_VALUE> = 'hello';
+  my $e = Pakku::Meta.new: { name => 'E', version => '1', depends => [ { 'by-env-exists.PAKKU_TEST_SET' => { yes => 'E::Yes', no => 'E::No' } }, { 'by-env.PAKKU_TEST_VALUE' => { hello => 'V::Hello', '' => 'V::Default' } } ] };
+  is-deeply $e.deps( :deps ).map( *.gist ).List, ( 'E::Yes', 'V::Hello' ), 'by-env-exists yes and by-env value';
+}
+
+is-deeply Pakku::Meta.new( { name => 'W', version => '1', depends => { 'by-distro.name' => { '' => [ 'D::Generic' ], mswin32 => [ 'D::Win' ] } } } ).deps( :deps ).map( *.gist ).List,
+  ( $*DISTRO.name eq 'mswin32' ?? 'D::Win' !! 'D::Generic', ), 'the whole depends section may be a by-* switch';
+
+is Pakku::Meta.new( { name => 'N', version => '1', depends => [ { any => [ 'A', { any => [ 'B', 'C' ] } ] }, 'E' ] } ).deps( :deps ).map( *.gist ).join( ', ' ),
+  'any(A | any(B | C)), E', 'nested any alternatives';
+
+throws-like { Pakku::Meta.new( { name => 'B', version => '1', depends => [ { 'by-moon.phase' => { '' => 'X' } } ] } ) }, X::Pakku::Meta, 'an unknown by-* source dies';
+throws-like { Pakku::Meta.new( { name => 'B', version => '1', depends => [ { 'by-kernel.name' => { nope => 'X' } } ] } ) }, X::Pakku::Meta, 'no alternative and no default dies';
+throws-like { Pakku::Meta.new( { name => 'B', version => '1', depends => [ %( 'by-kernel.name' => { '' => 'X' }, name => 'Y' ), ] } ) }, X::Pakku::Meta, 'a by-* key mixed with other keys dies';
+
+# --- ordering ---
+
+is latest( [ { name => 'F', version => '0.9', auth => 'zef:a' }, { name => 'F', version => '0.10', auth => 'cpan:b' }, { name => 'F', version => '0.10', auth => 'zef:b' } ] )<auth>, 'zef:b',
+  'latest: highest version, zef: auth breaks the tie';
+is latest( [ { name => 'F', version => '1', api => '1' }, { name => 'F', version => '1', api => 2 } ] )<api>, 2, 'latest: api breaks a version tie (Int api too)';
+is latest( [ { name => 'F', version => 'v0.9' }, { name => 'F', version => '0.10' } ] )<version>, '0.10', 'latest: a leading v does not confuse the order';
+
+# --- META files ---
+
+my $dir = $*TMPDIR.add( 'pakku-meta-test-' ~ $*PID );
+$dir.mkdir;
+END { run 'rm', '-rf', $dir if $dir.e }
+$dir.add( 'META.info' ).spurt: '{ "name": "Old::Style", "version": "0.1", "auth": "github:x" }';
+is Pakku::Meta.new( $dir ).Str, 'Old::Style:ver<0.1>:auth<github:x>:api<>', 'META.info is accepted like Spec.new does';
+$dir.add( 'META.info' ).spurt: '{ not json';
+throws-like { Pakku::Meta.new( $dir ) }, X::Pakku::Meta, 'invalid JSON dies with X::Pakku::Meta';
+
+my $g = Pakku::Meta.new( { name => 'X', version => '1', depends => [ 'Zed', { any => [ 'elinks:from<bin>', 'lynx:from<bin>' ] }, 'Abc' ], provides => { 'X' => 'lib/X.rakumod' } } ).gist( :details ).subst( / \e \[ \d+ m /, '', :g );
+is $g, "MTA: ｢X:ver<1>:auth<>:api<>｣\nDEP: ｢Abc｣\nDEP: ｢Zed｣\nDEP: ｢any(elinks:from<bin> | lynx:from<bin>)｣\nPRV: ｢X｣", 'details gist: no stray spaces, alternatives on one line';
 
 done-testing;

@@ -33,7 +33,7 @@ multi method fly (
      log '🐛', header => 'SPC', msg => ~$spec;
 
      self!repo
-       ==> map( -> $repo { $repo.candidates( $spec.name , |$spec.spec ) } )
+       ==> map( -> $repo { $repo.candidates( $spec.dependency-specification ) } )
        ==> flat( )
        ==> grep( *.defined )
        ==> map( *.Str )

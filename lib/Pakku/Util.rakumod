@@ -92,3 +92,17 @@ sub lock-file ( IO::Path:D $path, &code, Bool :$shared = False ) is export {
   code();
 
 }
+
+# The META file of a dist directory (S22 allows four names).
+sub meta-file ( IO::Path:D $dir --> IO::Path ) is export {
+
+  <META6.json META6.info META.json META.info>.map( { $dir.add: $_ } ).first( *.f );
+
+}
+
+# A Version from META data: a leading 'v' is tolerated, absent means 0 (as Rakudo's repos do).
+sub version ( $v --> Version:D ) is export {
+
+  Version.new( ( $v // 0 ).Str.subst( / ^ 'v' <?before \d> /, '' ) );
+
+}
