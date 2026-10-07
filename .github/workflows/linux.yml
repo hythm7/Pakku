@@ -13,6 +13,7 @@ jobs:
         os:
           - ubuntu-latest
         raku-version:
+          - '2025.06'
           - 'latest'
     runs-on: ${{ matrix.os }}
     steps:
@@ -22,7 +23,16 @@ jobs:
           raku-version: ${{ matrix.raku-version }}
       - name: Test
         run: prove -e 'raku -I.' --ext .rakutest t
+        env:
+          PAKKU_TEST_NETWORK: 1
       - name: Add Pakku
         run: raku -I. bin/pakku nobar nospinner verbose all add .
-      - name: Add Distribution
+      - name: Add a dist from fez
         run: pakku nobar nospinner verbose all add rak
+      - name: Add a dist that lives in REA only
+        run: pakku nobar nospinner verbose all add Hash::Merge
+      - name: Search, info, state
+        run: |
+          pakku nobar nospinner search Cro::HTTP
+          pakku nobar nospinner info rak
+          pakku nobar nospinner state

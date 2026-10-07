@@ -13,6 +13,7 @@ jobs:
         os:
           - windows-latest
         raku-version:
+          - '2025.06'
           - 'latest'
     runs-on: ${{ matrix.os }}
     steps:
@@ -24,5 +25,10 @@ jobs:
         run: prove -e 'raku -I.' --ext .rakutest t
       - name: Add Pakku
         run: raku -I. bin/pakku nobar nospinner verbose all add .
-      - name: Add Distribution
+      - name: Add a dist from fez
         run: pakku nobar nospinner verbose all add rak
+      - name: Search, info, state
+        run: |
+          pakku nobar nospinner search Cro::HTTP
+          pakku nobar nospinner info rak
+          pakku nobar nospinner state

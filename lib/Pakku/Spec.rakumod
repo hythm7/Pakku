@@ -274,11 +274,11 @@ grammar SpecGrammar {
   token key:sym<from>    { <sym> }
   token key:sym<version> { <sym> }
 
-  # Thx to Jo King on SO.
   proto token value { * }
-  token value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>?] }
+  token value:sym<angles> { '<' $<val>=<angled>   '>' }
   token value:sym<parens> { '(' $<val>=<balanced> ')' }
 
+  token angled   { [ <-[<>]> | '<' <angled>   '>' ]* }
   token balanced { [ <-[()]> | '(' <balanced> ')' ]* }
 
 }

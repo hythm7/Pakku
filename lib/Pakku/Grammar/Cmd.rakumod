@@ -19,7 +19,7 @@ grammar Pakku::Grammar::Cmd {
 
   rule TOP:sym<info>     { <pakkuopt>* % <.space> <info-cmd> 'spec'? <specs> }
 
-  rule TOP:sym<help>     { <pakkuopt>* % <.space> [ <help> <cmd>? | <cmd> ]? $ }
+  rule TOP:sym<help>     { <pakkuopt>* % <.space> [ <help> <cmd>? | <needy-cmd> ]? $ }
 
 
   proto token config-cmd { * } 
@@ -79,7 +79,7 @@ grammar Pakku::Grammar::Cmd {
   token view       { 'view'   }
   token config-new { 'new'     } # looks like token new is reserved
 
-  token recman-name   { <!cmd> <key> }
+  token recman-name   { <!cmd> <!before <pakkuopt> [ <.space> | $ ] > <key> }   # a recman is not a command nor a general option
   token recman-names  { <recman-name>+ % <.space> }
 
   proto token log-level { * } 
@@ -100,6 +100,9 @@ grammar Pakku::Grammar::Cmd {
 
   token key-option    { <!before [ <set> | <enable> | <disable> | <unset> | <reset> | <view> ] [ <.space> | $ ] > <key> }
   token keyval-option { <key> <.space>+ <value> }
+
+  # a command that needs something after it: on its own it means help
+  token needy-cmd { [ <add> | <remove> | <download> | <search> | <nuke> | <build-cmd> | <test-cmd> | <info-cmd> ] <?before <.space> | $ > }
 
   # a whole word that is a command (or one of its aliases)
   token cmd { [ <add> | <update> | <build-cmd> | <test-cmd> | <remove> | <list> | <download> | <search> | <nuke> | <state> | <config> | <refresh-cmd> | <info-cmd> | <help> ] <?before <.space> | $ > }
@@ -714,13 +717,14 @@ class Pakku::Grammar::CmdActions {
 
     %cmd<cmd>       = 'help';
     %cmd<pakku>     = $<pakkuopt>».made.hash if defined $<pakkuopt>;
-    %cmd<help><cmd> = $<cmd>.so ?? $<cmd>.made !! '';
+    %cmd<help><cmd> = $<cmd>.so ?? $<cmd>.made !! $<needy-cmd>.so ?? $<needy-cmd>.made !! '';
 
     make %cmd;
 
   }
 
-  method cmd ( $/ ) { make $/.caps.head.key.subst( / '-cmd' $ /, '' ) }
+  method cmd       ( $/ ) { make $/.caps.head.key.subst( / '-cmd' $ /, '' ) }
+  method needy-cmd ( $/ ) { make $/.caps.head.key.subst( / '-cmd' $ /, '' ) }
 
 
   method config-cmd:sym<config-view>( $/ ) { 
@@ -886,7 +890,7 @@ class Pakku::Grammar::CmdActions {
   }
 
   method config-cmd:sym<config-module-log-set>( $/ ) {
-    my Pair @option = @<log-level-option>.map( { ~.<sym> => ~.<value> } ); 
+    my Pair @option = @<log-level-option>.map( { .Str.words.head => ~.<value> } );   # the key is the first word, <sym> is not captured on every Rakudo
 
     make %(
       module    => ~$<config-module-log>,

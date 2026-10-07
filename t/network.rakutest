@@ -1,0 +1,60 @@
+#!/usr/bin/env raku
+
+use Test;
+
+# The real ecosystems: only when asked for (PAKKU_TEST_NETWORK=1), they need the network.
+plan :skip-all<set PAKKU_TEST_NETWORK=1 to talk to fez and REA> unless %*ENV<PAKKU_TEST_NETWORK>;
+
+use Pakku::Log;
+use Pakku::Spec;
+use Pakku::Meta;
+use Pakku::Fetch;
+use Pakku::Archive;
+use Pakku::Recman::Ecosystem;
+
+Pakku::Log.new: verbose => ( %*ENV<PAKKU_TEST_VERBOSE> // 'nothing' ), :!pretty, :!bar, :!spinner;
+
+my $tmp = $*TMPDIR.add( 'pakku-network-test-' ~ $*PID );
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+my $fetch = Pakku::Fetch.new;
+
+ok $fetch.backend, "a fetch backend is available ({ $fetch.backend })";
+
+# fez: index, recommend, tarball
+my $fez = Pakku::Recman::Ecosystem.new: name => 'fez', mirrors => [ 'https://360.zef.pm/' ], index => 'index.json', source => 'path', refresh => True, store => $tmp.add( 'fez' ), :$fetch;
+
+ok $fez.refresh( :force ), 'fez index downloaded';
+ok $tmp.add( 'fez' ).add( 'index.json' ).s > 1_000_000, 'the fez index is a real index';
+
+my $meta = $fez.recommend: spec => Pakku::Spec.new( 'fez' );
+
+ok $meta, 'fez recommends fez';
+like $meta<source>, / ^ 'https://360.zef.pm/' .+ '.tar.gz' $ /, 'the source is a tarball on the mirror';
+
+my $archive = $tmp.add( 'fez.tar.gz' );
+my $dist    = $tmp.add( 'fez-dist' );
+
+lives-ok { $fetch.download: url => $meta<source>, dst => $archive }, 'the fez tarball downloads';
+lives-ok { extract archive => $archive, dst => $dist },               'and extracts';
+ok $dist.add( 'META6.json' ).e,                                       'with its META6.json at the root';
+
+# REA: index, a dist fez does not have, pre-encoded source-url
+my $rea = Pakku::Recman::Ecosystem.new: name => 'rea', mirrors => [ 'https://raw.githubusercontent.com/Raku/REA/main/' ], index => 'META.json', source => 'source-url', refresh => True, store => $tmp.add( 'rea' ), :$fetch;
+
+ok $rea.refresh( :force ), 'REA index downloaded';
+
+my $legacy = $rea.recommend: spec => Pakku::Spec.new( 'JSON::Tiny' );
+
+ok $legacy, 'REA recommends JSON::Tiny';
+like $legacy<source>, / ^ 'https://raw.githubusercontent.com/' /, 'the source is on GitHub';
+
+my $rea-archive = $tmp.add( 'legacy.tar.gz' );
+my $rea-dist    = $tmp.add( 'legacy-dist' );
+
+lives-ok { $fetch.download: url => $legacy<source>, dst => $rea-archive }, 'the REA tarball downloads (URL not re-encoded)';
+lives-ok { extract archive => $rea-archive, dst => $rea-dist },             'and extracts';
+ok $rea-dist.add( 'META6.json' ).e || $rea-dist.add( 'META.info' ).e,      'with its META at the root';
+
+done-testing;

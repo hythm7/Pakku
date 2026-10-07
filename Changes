@@ -1,0 +1,88 @@
+Revision history for Pakku
+
+chou  2026-10-07
+
+  The ecosystem release. recman.pakku.org is gone; Pakku now lives where the dists live.
+
+  Ecosystems
+    - fez (https://360.zef.pm) is the recommendation manager, the Raku Ecosystem Archive
+      (REA) answers when fez has nothing, and is only loaded then. Both indexes are kept under
+      ~/.pakku/.index and refreshed when stale (fez 1 h, rea 24 h), on `pakku refresh`, or once
+      when a dist is missing from an index older than ten minutes. `norefresh` keeps Pakku off
+      the network. `pakku nuke index` forgets every index.
+    - Resolution, search and info are local: no server round trips, newest release first,
+      versions honoured by local recmans too.
+    - HTTPS through a NativeCall libcurl binding, with the curl or wget binary as fallback
+      (curl.exe on Windows). Pakku::HTTP and the recman.pakku.org protocol are gone; an old
+      config entry is ignored with a hint to run `pakku config recman reset`.
+    - fez tarballs are verified against the SHA-1 in their name when a sha1 tool is around.
+
+  Specs (S11 / S22)
+    - `<...>` adverbs are strings with Raku's rules (ver<1.2> is a prefix, ver<1.2+>, ver<1.*>,
+      auth<zef:*>); `(...)` adverbs are smartmatch selectors evaluated by Raku: ranges,
+      junctions, regexes, Whatever code, Any; numbers inside ver( ) and api( ) are versions.
+      Selectors are data, never code (no blocks, calls or variables): a spec also comes from
+      other people's META files. Installed dists are matched by Rakudo's own candidates().
+    - META `depends` in every S22 form: hash form (name/ver/auth/api/from/hints, adverbs inside
+      name), `any` alternatives (first one the recman can serve wins), phased
+      runtime/build/test x requires/recommends/suggests (requires are the hard ones),
+      by-env / by-env-exists / by-distro / by-kernel / by-raku / by-vm switches with Version
+      keys (+ / - suffixes), legacy build-depends / test-depends lists and hashes,
+      :from<bin>, :from<native>, :from<Perl5>. Unknown `from` values die instead of returning False.
+
+  Commands
+    - `pakku refresh [recman ...]` (rfr), general options `refresh` / `norefresh` (nrfr).
+    - `pakku info dist` (i): newest release, every release by author, what is installed where,
+      who depends on it.
+    - `pakku add ./dist-1.0.tar.gz`, `pakku add https://host/dist.tar.gz`,
+      `pakku add https://host/user/dist.git#tag` (git, also #branch / #sha); the same sources
+      work for `test` and `build`.
+    - `pakku search` defaults to `latest` (one row per dist and author) and `relaxed`;
+      `nolatest` shows every release; search errors reach the exit code.
+    - `pakku test timeout <sec>`, `pakku build timeout <sec>`: a child quiet for that long is
+      killed (default 420, 0 never); the clock starts with the process, silent processes count.
+    - `pakku nuke index`; `nuke home|site|vendor` remove only the repo directories;
+      `nuke core` is documented and needs force.
+    - A path add warns about lib/ modules missing from provides (issue #36).
+
+  Fixes
+    - Archive extraction validates every entry (no absolute paths, .., links or device files,
+      nothing outside the dist root), streams data instead of trusting declared sizes, checks
+      every libarchive return value and removes half extracted dists.
+    - Dependency resolution: one visited set per run, `exclude` by name, a spec satisfied by a
+      dist chosen earlier in the same run (one Foo for Foo:ver<0.2+> and a bare Foo),
+      recommends/suggests are no longer hard requirements, Int apis match, leading `v` versions
+      match and sort, `any` groups after the first are not dropped.
+    - Builders get their META as JSON (the .raku literal was parsed as a block, every dist with
+      a `builder` failed to build).
+    - `pakku update` no longer removes another author's dist of the same name; an installed
+      dist without api is not an update every time.
+    - yolo works inside parallel fetches; errors exit 1 after cleaning .tmp / .stage; a failing
+      test stops further tests from starting; symlinks are never followed or copied.
+    - Command line: `notest Foo` / `nt Foo` / `nb Foo` no longer run test / build, `add p`,
+      `help state`, malformed config commands are rejected, unknown commands and options exit 1
+      with a hint instead of printing the help with -Ofun.
+    - Config: values keep their type (Int, Bool, list); recman entries are validated as a whole
+      (type ecosystem|local, mirrors, index, source, refresh, priority); reset of a module
+      without a default removes it; config.json is written 0600 and mirror credentials are
+      redacted in logs; `comment-*-delimit` keys work.
+    - Environment: command options under their command (PAKKU_ADD_TO works), booleans parse
+      true/false/yes/no/on/off, PAKKU_CACHE takes true/false or a path, PAKKU_SEARCH_COUNT,
+      PAKKU_REFRESH, PAKKU_TEST_TIMEOUT, PAKKU_BUILD_TIMEOUT.
+    - `pakku list repo <path>` lists that repo, `dont download` works, `add to` / `contained`
+      decide "already added" against the target repo, build logs BLD.
+    - Pakku loads on hosts without libarchive or libcurl (native libraries are resolved when
+      used, with a hint when missing); dlopen uses RTLD_NOW only.
+
+  Internals
+    - Pakku::Util, Pakku::Fetch, Pakku::Curl, Pakku::Collapse, Pakku::Recman::Index,
+      Pakku::Recman::Ecosystem, Pakku::Command::Refresh, Pakku::Command::Info are new;
+      Pakku::HTTP and Pakku::Recman::HTTP are gone. The commands share the core's resolve,
+      fetch, stage and deploy helpers (about 900 lines of copies removed).
+    - Offline test suite with a fixture ecosystem (index, tarballs, crafted evil archives) and
+      an optional network test (PAKKU_TEST_NETWORK=1); CI runs the suite on Rakudo 2025.06 and
+      latest and installs a fez dist and a REA-only dist.
+
+celastrina.6  2026-10-06
+
+  - The last release against recman.pakku.org.

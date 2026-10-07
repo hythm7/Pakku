@@ -285,7 +285,7 @@ for @tests {
   my $actions = Pakku::Grammar::CmdActions;
   my $match   = $parser.parse( $cmd, :$actions );
 
-  if $expected eq 'NO PARSE' {
+  if $expected ~~ Str and $expected eq 'NO PARSE' {
     nok $match, "$cmd: no parse";
     next;
   }
@@ -295,9 +295,18 @@ for @tests {
   $got<pakku>:delete unless $got<pakku>;
   $got<list>:delete  unless $got<list>;
 
-  $got .= deepmap( -> $_ { $_ ~~ Pakku::Spec::Raku ?? .name !! $_ } );
+  is-deeply plain( $got ), $expected, $cmd;
+}
 
-  is-deeply  $got, $expected, $cmd;
+# one element lists are written as the element, specs as their name
+sub plain ( $x ) {
+  given $x {
+    when Pakku::Spec::Raku { .name }
+    when Pair              { .key => plain( .value ) }
+    when Positional        { .elems == 1 ?? plain( .[0] ) !! .^name.starts-with( 'Array[' ) ?? .WHAT.new( .map( { plain $_ } ) ) !! .map( { plain $_ } ).Array }
+    when Associative       { .kv.map( -> $k, $v { $k => plain( $v ) } ).hash }
+    default                { $x }
+  }
 }
 
 done-testing;
