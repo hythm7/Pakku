@@ -22,7 +22,7 @@ sub LoadLibraryA(  Str         --> DLLib ) is native( k32 ) { * }
 
 method !dlLoadLibrary( Str $libname --> DLLib ) {
 
-  IS-WIN ?? LoadLibraryA( $libname ) !!  dyncall ?? dlLoadLibrary( $libname ) !!  dlopen( $libname, 0x102 );
+  IS-WIN ?? LoadLibraryA( $libname ) !!  dyncall ?? dlLoadLibrary( $libname ) !!  dlopen( $libname, 0x2 )   # RTLD_NOW, the one value every libc agrees on;
 
 }
 

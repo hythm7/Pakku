@@ -208,8 +208,6 @@ my class Config {
 
   multi method config ( Str:D $module, Pair:D :@option!, Str :$recman-name, Str :$log-level ) {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-
     self!check-config-file-exists;
 
     # validate each option on its own and keep the typed value (Int, Bool, list), not the command line string
@@ -318,8 +316,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'unset', :$recman-name! ) {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-
     self!check-config-file-exists;
 
     my $recman = quietly %!configuration{ $module }.first( *.<name> eq $recman-name );
@@ -353,8 +349,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'unset', :$log-level! ) {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-
     self!check-config-file-exists;
 
 
@@ -370,8 +364,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$recman-name!, Str :@option! )  {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-    
     self!check-config-file-exists;
 
     log '🦋', header => 'CNF', msg => ~$module;
@@ -394,8 +386,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$recman-name! )  {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-    
     self!check-config-file-exists;
 
     log '🦋', header => 'CNF', msg => ~$module;
@@ -420,8 +410,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$log-level!, Str :@option! )  {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-    
     self!check-config-file-exists;
 
     log '🦋', header => 'CNF', msg => ~$module;
@@ -444,8 +432,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :$log-level! )  {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-    
     self!check-config-file-exists;
 
     log '🦋', header => 'CNF', msg => ~$module;
@@ -470,8 +456,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'view', Str :@option! )  {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-
     self!check-config-file-exists;
 
     log '🦋', header => 'CNF', msg => ~$module;
@@ -481,8 +465,6 @@ my class Config {
   }
 
   multi method config ( Str:D $module, 'view'  )  {
-
-    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
@@ -497,8 +479,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'reset' )  {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-    
     self!check-config-file-exists;
 
     # back to the built-in default; a module without one is simply gone
@@ -524,8 +504,6 @@ my class Config {
 
   multi method config ( Str:D $module, 'unset' )  {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-    
     self!check-config-file-exists;
 
     my Str $json = to-json %!configuration{ $module }:delete;
@@ -538,8 +516,6 @@ my class Config {
 
   multi method config ( 'reset' ) {
 
-    log '🐛', header => 'CNF', msg => ~$!config-file;
-    
     self!check-config-file-exists;
 
     %!configuration = %!default-configuration;
@@ -549,8 +525,6 @@ my class Config {
   }
 
   multi method config ( 'view' )  {
-
-    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     self!check-config-file-exists;
 
@@ -594,6 +568,8 @@ my class Config {
   }
 
   method !check-config-file-exists ( ) {
+
+    log '🐛', header => 'CNF', msg => ~$!config-file;
 
     unless $!config-file.e {
 

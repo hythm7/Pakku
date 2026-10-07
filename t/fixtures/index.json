@@ -130,8 +130,8 @@
     "depends": [
       {
         "by-kernel.name": {
-          "": "Fixture::Foo:ver<0.2+>:auth<zef:a>",
-          "win32": "Fixture::Foo:ver<0.2+>:auth<zef:a>"
+          "": "Fixture::Foo",
+          "win32": "Fixture::Foo"
         }
       }
     ],

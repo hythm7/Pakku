@@ -31,6 +31,7 @@ my $inst = CompUnit::Repository::Installation.new: prefix => $repo;
 
 ok $inst.candidates( 'Fixture::Bar' ),                 'Fixture::Bar is installed';
 ok $inst.candidates( 'Fixture::Foo', ver => '0.2+' ),  'Fixture::Foo:ver<0.2+> dependency is installed';
+is $inst.candidates( 'Fixture::Foo' ).elems, 1,        'Bar wants Foo:ver<0.2+>, Qux a bare Foo: one Foo is installed (B17)';
 ok $inst.candidates( 'Fixture::Qux' ) || $inst.candidates( 'Fixture::Baz' ), 'one alternative of the any-group is installed';
 ok $repo.add( 'bin' ).add( 'bar' ).e,                  'bin wrapper for bar was deployed';
 
