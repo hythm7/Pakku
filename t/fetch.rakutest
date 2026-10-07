@@ -1,0 +1,70 @@
+#!/usr/bin/env raku
+
+use Test;
+
+use X::Pakku;
+use Pakku::Log;
+use Pakku::Fetch;
+
+Pakku::Log.new: verbose => 'nothing';
+
+my $fixtures = $*PROGRAM.parent.add('fixtures');
+my $tmp      = $*TMPDIR.add( 'pakku-fetch-test-' ~ $*PID );
+
+$tmp.mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+my $fetch = Pakku::Fetch.new;
+
+ok $fetch.backend ~~ 'libcurl' | 'curl' | 'curl.exe' | 'wget' | 'wget.exe', "a backend was probed: { $fetch.backend }";
+
+my $src = $fixtures.add( 'mirror' ).add( 'Foo-0.1.tar.gz' );
+my $dst = $tmp.add( 'a' ).add( 'Foo.tar.gz' );
+
+is $fetch.download( url => ~$src, :$dst ), $dst, 'a plain path is copied';
+is $dst.s, $src.s, 'copied file has the same size';
+
+my $dst2 = $tmp.add( 'b.tar.gz' );
+
+$fetch.download: url => 'file://' ~ $src.absolute, dst => $dst2;
+
+ok $dst2.e, 'a file:// url is copied';
+
+throws-like { $fetch.download: url => ~$tmp.add( 'nope.tar.gz' ), dst => $tmp.add( 'x' ) }, X::Pakku::Fetch, 'a missing file throws X::Pakku::Fetch';
+
+if $*DISTRO.is-win {
+
+  skip 'fake curl script is POSIX only', 4;
+
+} else {
+
+  temp %*ENV<PATH> = $fixtures.add( 'bin' ).absolute ~ ':' ~ %*ENV<PATH>;
+
+  my $shell = Pakku::Fetch.new: backend => 'curl';
+  my $dst3  = $tmp.add( 'c' ).add( 'Foo-0.2.tar.gz' );
+
+  lives-ok { $shell.download: url => 'https://example.invalid/mirror/Foo-0.2.tar.gz', dst => $dst3 }, 'curl binary backend downloads (fake curl)';
+  is $dst3.s, $fixtures.add( 'mirror' ).add( 'Foo-0.2.tar.gz' ).s, 'fake curl delivered the fixture';
+
+  throws-like { $shell.download: url => 'https://example.invalid/mirror/Nope.tar.gz', dst => $tmp.add( 'd.tar.gz' ) }, X::Pakku::Fetch, 'a failing curl throws X::Pakku::Fetch';
+  nok $tmp.dir.grep( *.basename.ends-with( '.part' ) ), 'no .part file is left behind';
+
+}
+
+if %*ENV<PAKKU_TEST_NETWORK> {
+
+  my $net = $tmp.add( 'net' ).add( 'fez.tar.gz' );
+
+  lives-ok { $fetch.download: url => 'https://360.zef.pm/_/_/8dd4f26016c40477ba5b7883e9329b555b455f87.tar.gz', dst => $net }, 'real https download';
+  is $net.s, 24383, 'downloaded the whole tarball';
+
+  throws-like { $fetch.download: url => 'https://360.zef.pm/does-not-exist.tar.gz', dst => $tmp.add( '404.tar.gz' ) }, X::Pakku::Fetch, 'a 404 throws X::Pakku::Fetch';
+
+} else {
+
+  skip 'set PAKKU_TEST_NETWORK=1 to exercise a real https download', 3;
+
+}
+
+done-testing;

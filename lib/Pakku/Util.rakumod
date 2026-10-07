@@ -1,0 +1,94 @@
+use Pakku::Log;
+
+unit module Pakku::Util;
+
+# Retry an action with exponential back-off; rethrows the last error.
+sub retry ( &action, Int:D :$max is copy = 4, Real:D :$delay is copy = 0.2 ) is export {
+
+  loop {
+
+    my $result = quietly try action();
+
+    return $result unless $!;
+
+    $!.rethrow if $max == 0;
+
+    sleep $delay;
+
+    log '🐞', header => 'TRY', msg => ~$!, :comment<retrying!>;
+
+    $delay *= 2;
+    $max   -= 1;
+
+  }
+
+}
+
+# Copy a directory tree. Symlinks are never followed (a dist could point one at
+# the user's home); they are skipped with a debug line.
+sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil ) is export {
+
+  for $src.dir -> $path {
+
+    my $destination = $dst.add( $path.basename );
+
+    if $path.l {
+
+      log '🐛', header => 'CPY', msg => ~$path, comment => 'symlink skipped!';
+
+    } elsif $path.d {
+
+      $destination.mkdir;
+
+      copy-dir src => $path, dst => $destination;
+
+    } else {
+
+      $destination.parent.mkdir;
+
+      $path.copy: $destination;
+
+    }
+  }
+
+}
+
+# Remove a directory tree without descending into symlinked directories.
+sub remove-dir ( IO::Path:D $io --> Nil ) is export {
+
+  for $io.dir { ( .l or not .d ) ?? .unlink !! remove-dir( $_ ) }
+
+  $io.rmdir;
+
+}
+
+sub sha1 ( Str:D $what --> Str:D ) is export { use nqp; nqp::sha1( $what ) }
+
+# Is an executable called $name on PATH? Absolute PATH entries only, and the
+# file must be executable (.exe/.bat/.cmd via PATHEXT on Windows).
+sub find-bin ( Str:D $name --> Bool:D ) is export {
+
+  my @ext = $*DISTRO.is-win ?? ( '', |( %*ENV<PATHEXT> // '.COM;.EXE;.BAT;.CMD' ).split( ';' ) ) !! ( '', );
+
+  so $*SPEC.path.grep( *.IO.is-absolute ).first( -> $dir {
+
+    defined @ext.first( -> $ext { my $file = $dir.IO.add( $name ~ $ext ); $file.f and ( $*DISTRO.is-win or $file.x ) } )
+
+  } );
+
+}
+
+# Run &code while holding an advisory lock on $path (blocks until free).
+sub lock-file ( IO::Path:D $path, &code, Bool :$shared = False ) is export {
+
+  $path.parent.mkdir;
+
+  my $fh = $path.open( :a );
+
+  LEAVE $fh.close;
+
+  $fh.lock: :$shared;
+
+  code();
+
+}

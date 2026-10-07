@@ -5,6 +5,8 @@ use Pakku::Log;
 use Pakku::Spec;
 use Pakku::Meta;
 use Pakku::Cache;
+use Pakku::Util;
+use Pakku::Fetch;
 use Pakku::Native;
 use Pakku::Recman;
 use Pakku::Archive;
@@ -27,7 +29,7 @@ has Bool $!yolo;
 
 has Pakku::Log    $!log;
 has Pakku::Cache  $!cache;
-has Pakku::HTTP   $!http;
+has Pakku::Fetch  $!fetch;
 has Pakku::Recman $!recman;
 
 has CompUnit::Repository @!repo;
@@ -41,7 +43,7 @@ method !force  { $!force  }
 method !yolo   { $!yolo   }
 method !stage  { $!stage  }
 method !cache  { $!cache  }
-method !http   { $!http   }
+method !fetch  { $!fetch  }
 method !recman { $!recman }
 method !repo   { @!repo   }
 
@@ -374,29 +376,18 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False
 }
 
 
-# TODO: subset TarGzURL of Str
 multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
 
   log '🐛', header => 'FTC', msg => ~$src;
 
   log '🐝', header => 'FTC', msg => ~$src, comment => ~$dst;
 
-
   mkdir $dst;
 
   my $archive = $dst.add( $dst.basename ~ '.tar.gz' );
 
-   my $response;
-
-  try retry {
-
-    $response = $!http.download: url-encode( $src ), $archive;
-
-    die X::Pakku::HTTP.new: :$response, message => $response<reason> unless $response<success>;
-
-  }
-
-  die X::Pakku::Fetch.new: msg => ~$src unless $response<success>;
+  # index sources are already valid URLs (REA's are even pre-encoded): never re-encode them
+  retry { $!fetch.download: url => $src, dst => $archive, progress => $!degree == 1 };
 
   log '🐛', header => 'EXT', msg => ~$archive;
 
@@ -617,9 +608,9 @@ submethod BUILD ( :%!cnf! ) {
   @recman .= grep: { .<name> !~~ $norecman } if $norecman;
   @recman .= grep: { .<name>  ~~ $recman   } if $recman;
 
-  $!http  = Pakku::HTTP.new;
+  $!fetch  = Pakku::Fetch.new;
 
-  $!recman = Pakku::Recman.new: :$!http :@recman if @recman;
+  $!recman = Pakku::Recman.new: :$!fetch :@recman if @recman;
 
   @recman.map( -> $recman { log '🐝', header => 'CNF', msg => 'recman', comment => $recman<location> } );
 
@@ -723,48 +714,11 @@ my sub repo-from-spec ( Str $spec ) {
   $repo;
 }
 
-my sub find-bin ( Str:D $name --> Bool:D ) {
-
-  so $*SPEC.path.first( -> $path {
-    $*SPEC.catfile( $path, $name ).IO.f or ( $*SPEC.catfile( $path, $name ~ '.exe'  ).IO.f if $*DISTRO.is-win )
-  } )
-
-}
-
 my sub find-perl-module ( Str:D $name --> Bool:D ) {
 
   return True if run('perl', "-M$name", '-e 1', :err).exitcode == 0;
 
   return False;
-}
-
-sub copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil ) {
-
-  my $relpath := $src.chars;
-
-  for Rakudo::Internals.DIR-RECURSE( ~$src ) -> $path {
-
-    my $destination := $dst.add( $path.substr( $relpath ) );
-
-    $destination.parent.mkdir;
-
-    $path.IO.copy: $destination;
-
-  }
-}
-
-my sub remove-dir( IO::Path:D $io --> Nil ) is export {
-  .d ?? remove-dir( $_ ) !! .unlink for $io.dir;
-  $io.rmdir;
-}
-
-my sub url-encode ( Str() $text --> Str ) {
-  return $text.subst:
-    /<-[
-      ! ' ( ) ; : @ $ , / ? # \[ \]
-      0..9 A..Z a..z . ~ _
-    ]> /,
-      { .Str.encode».fmt('%%%02X').join }, :g;
 }
 
 my sub get-env ( ) {
@@ -825,29 +779,3 @@ my sub get-env ( ) {
 
 }
 
-sub retry (
-
-          &action,
-  Int:D  :$max   is copy = 4,
-  Real:D :$delay is copy = 0.2
-
-) is export {
-
-  loop {
-
-    my $result = quietly try action();
-
-    return $result unless $!;
-
-    $!.rethrow if $max == 0;
-
-    sleep $delay;
-
-    log '🐞', header => 'TRY', msg => ~$!, :comment<retrying!>;
-
-    $delay *= 2;
-    $max   -= 1;
-
-  }
-
-}

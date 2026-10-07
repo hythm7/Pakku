@@ -1,0 +1,18 @@
+#!/bin/sh
+# Fake curl for t/fetch.rakutest: "downloads" t/fixtures/mirror/<basename of the url>.
+out=''; url=''
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --output) out="$2"; shift ;;
+    -*) ;;
+    *) url="$1" ;;
+  esac
+  shift
+done
+src="$(dirname "$0")/../mirror/$(basename "$url")"
+if [ -f "$src" ]; then
+  cp "$src" "$out"
+else
+  echo "curl: (22) The requested URL returned error: 404" >&2
+  exit 22
+fi

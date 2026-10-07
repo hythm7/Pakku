@@ -1,7 +1,6 @@
 use Pakku::Log;
 use Pakku::Spec;
 
-use Pakku::Recman::HTTP;
 use Pakku::Recman::Local;
 
 
@@ -9,7 +8,7 @@ unit class Pakku::Recman;
 
 has @!recman;
  
-submethod BUILD ( :$http!, :@recman! ) {
+submethod BUILD ( :$fetch!, :@recman! ) {
 
   @recman
     ==> grep( *.<active> )
@@ -17,9 +16,13 @@ submethod BUILD ( :$http!, :@recman! ) {
     ==> map( -> %recman {
       my $name     = %recman<name>;
       my $location = %recman<location>;
-    $location.starts-with( 'http')
-      ?? Pakku::Recman::HTTP.new(  :$http, |%recman )
-      !! Pakku::Recman::Local.new( |%recman );
+    if $location.defined and $location.starts-with( 'http' ) {
+      # the old recman.pakku.org protocol is gone; index-based ecosystems arrive with Pakku::Recman::Ecosystem
+      log '🐞', header => 'REC', msg => ~$name, comment => "$location: recman protocol no longer supported, run: pakku config recman reset";
+      Empty
+    } else {
+      Pakku::Recman::Local.new( |%recman )
+    }
     } )
     ==> @!recman;
 }
