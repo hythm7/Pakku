@@ -47,184 +47,165 @@ method !fetch  { $!fetch  }
 method !recman { $!recman }
 method !repo   { @!repo   }
 
-method test (
-  CompUnit::Repository::Staging:D :$stage!,
-  Distribution::Locally:D :$dist!,
-  Bool :$xtest
-  ) {
+# what a failed step means: yolo logs it and carries on, otherwise the run ends here
+method !olo ( X::Pakku:D $x --> Nil ) { $x.log; log '🐞', header => 'OLO', msg => $x.msg; Nil }
+method !die ( X::Pakku:D $x )         { $!yolo ?? self!olo( $x ) !! $x.throw }
 
-  my @dir =  <tests t>;
+# the installed dists of @repo, as identity strings
+method !installed ( :@repo = @!repo ) { @repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } ) }
 
-  @dir.append: <xtest xt> if $xtest;
+# does this dist (by name or by one of its modules) satisfy the spec?
+multi sub provided-by ( Pakku::Meta:D $meta, Pakku::Spec::Raku:D $spec --> Bool:D ) {
+  ( $meta.name eq $spec.name or ( $meta.meta<provides> // {} ){ $spec.name }:exists ) and $spec.ACCEPTS( $meta.meta );
+}
+multi sub provided-by ( Pakku::Meta:D $meta, Pakku::Spec::Any:D $spec --> Bool:D ) { so $spec.spec.first( { provided-by $meta, $_ } ) }
+multi sub provided-by ( $, $ --> Bool:D ) { False }
 
-  @dir
-    ==> map( -> $dir { $dist.prefix.add: $dir } )
-    ==> grep( *.d )
-    ==> map( -> $dir { Rakudo::Internals.DIR-RECURSE: ~$dir, file => *.ends-with: any <.rakutest .t> } )
-    ==> flat( )
-    ==> sort( )
-    ==> map( *.IO )
-    ==> my @test;
 
-  return unless @test;
+# run a command, stream its output to the log, kill it after $timeout seconds of silence (0: never);
+# the clock starts with the process, so a child that never prints is caught too
+method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$timeout = 420 --> Int:D ) {
 
-  my $prefix  = $dist.prefix;
+  my $proc = Proc::Async.new: @cmd;
 
-  %*ENV<RAKULIB> = "$stage.path-spec( )";
+  log '🐛', header => $header, msg => ~$proc.command;
 
+  my $last = now;
   my Int $exitcode;
 
-  my $processed = 0;
-  my $total     = +@test;
+  react {
 
-  bar.header: 'TST';
-  bar.length: $dist.Str.chars;
-  bar.sym: $dist.Str;
+    whenever $proc.stdout.lines { $last = now; log '🐝', :$header, msg => $_, :!msg-delimit }
+    whenever $proc.stderr.lines { $last = now; log '🐞', :$header, msg => $_, :!msg-delimit }
 
-  bar.activate;
+    whenever Supply.interval( 42, 42 ) {
 
-  @test.hyper( :$!degree :1batch ).map( -> $test {
+      my $quiet = now - $last;
 
+      if $timeout and $quiet >= $timeout {
 
-    log '🦋', header => 'TST', msg => $test.basename;
+        log '🐞', header => 'TOT', msg => $what, comment => "no output for { $timeout }s, killed!";
 
-    react {
+        $proc.kill: SIGKILL;
 
-      my $proc = Proc::Async.new: $*EXECUTABLE, $test.relative: $prefix;
-      whenever $proc.stdout.lines { log '🐝',  :header<TST> :msg( $^out ), :!msg-delimit }
-      whenever $proc.stderr.lines { log '🐞', :header<TST> :msg( $^err ), :!msg-delimit}
-
-      whenever $proc.stdout.stable( 42 ) { log '🐞', header => 'WAI', msg =>  ~$proc.command }
-
-      whenever $proc.stdout.stable( 420 ) {
-
-        log '🐞', header => 'TOT', msg => ~$dist;
-
-        $proc.kill;
-
-        $exitcode =  1;
-
-        log '🦗', header => 'TST', msg => $test.basename;
+        $exitcode //= 1;
 
         done;
 
       }
-
-      whenever $proc.start( cwd => $prefix, :%*ENV ) {
-
-        my $percent = $processed / $total * 100;
-
-        $processed += 1;
-
-        bar.percent: $percent;
-
-        bar.show;
-
-        if .exitcode { $exitcode = 1; log '🦗', header => 'TST', msg => $test.basename }
-
-        done;
-
-      }
+      elsif $quiet >= 42 { log '🐞', header => 'WAI', msg => ~$proc.command }
 
     }
 
+    whenever $proc.start( :$cwd, :%*ENV ) {
 
-    last if $exitcode;
+      $exitcode //= .exitcode;
 
-  } );
-    
-  bar.deactivate;
+      done;
 
-  if $exitcode {
+      QUIT { default { log '🦗', :$header, msg => $what, comment => .message; $exitcode //= 1; done } }
 
-    die X::Pakku::Test.new: msg => ~$dist;
-
-    log '🐞', header => 'OLO', msg => ~$dist;
-
-  } else {
-
-    log '🧚', header => 'TST', msg => ~$dist;
+    }
 
   }
+
+  $exitcode // 1;
+
+}
+
+method test (
+  CompUnit::Repository::Staging:D :$stage!,
+  Distribution::Locally:D         :$dist!,
+  Bool                            :$xtest,
+  ) {
+
+  my @dir = <tests t>;
+
+  @dir.append: <xtest xt> if $xtest;
+
+  my $prefix = $dist.prefix;
+
+  my @test = @dir
+    .map( { $prefix.add: $_ } )
+    .grep( *.d )
+    .map( { Rakudo::Internals.DIR-RECURSE( ~$_, file => *.ends-with( any <.rakutest .t> ) ).Slip } )
+    .sort
+    .map( *.IO );
+
+  return unless @test;
+
+  %*ENV<RAKULIB> = $stage.path-spec;
+
+  my Int $timeout   = ( %!cnf<test><timeout> // 420 ).Int;
+  my     $failed    = False;
+  my     $processed = 0;
+
+  bar.header: 'TST';
+  bar.length: $dist.Str.chars;
+  bar.sym:    $dist.Str;
+  bar.activate;
+
+  # one failure is enough: tests already running finish, no new one starts (C5)
+  sink @test.hyper( :$!degree :1batch ).map( -> $test {
+
+    unless $failed {
+
+      log '🦋', header => 'TST', msg => $test.basename;
+
+      my $exitcode = self!run: [ $*EXECUTABLE, $test.relative( $prefix ) ], cwd => $prefix, header => 'TST', what => $test.basename, :$timeout;
+
+      $processed += 1;
+
+      bar.percent: $processed / @test * 100;
+      bar.show;
+
+      if $exitcode { $failed = True; log '🦗', header => 'TST', msg => $test.basename }
+
+    }
+
+  } );
+
+  bar.deactivate;
+
+  if $failed { self!die( X::Pakku::Test.new: msg => ~$dist ) }
+  else       { log '🧚', header => 'TST', msg => ~$dist }
 
 }
 
 method build (
-
   CompUnit::Repository::Staging:D :$stage!,
-  Distribution::Locally:D :$dist!
+  Distribution::Locally:D         :$dist!,
   ) {
 
   my $prefix  = $dist.prefix.absolute.IO;
   my $builder = $dist.meta<builder>;
-
-  my $file = <Build.rakumod Build.pm6 Build.pm>.map( -> $file { $prefix.add: $file } ).first( *.f );
+  my $file    = <Build.rakumod Build.pm6 Build.pm>.map( { $prefix.add: $_ } ).first( *.f );
 
   return unless $file or $builder;
 
   log '🦋', header => 'BLD', msg => ~$dist;
 
-  my @cmd; 
+  my @cmd = $*EXECUTABLE.absolute;
 
   if $builder {
 
-    @cmd =
-      $*EXECUTABLE.absolute,
-      '-I', $prefix,
-      '-e', "require $builder; my %meta := { $dist.meta.raku }; ::( '$builder' ).new( :%meta ).build( '$prefix' );"
-  } else {
-    @cmd =
-      $*EXECUTABLE.absolute,
-      '-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
-  }
+    # the META travels as JSON: its .raku needed the parser to guess block or hash, and it guessed block (C10)
+    %*ENV<PAKKU_META> = Rakudo::Internals::JSON.to-json: $dist.meta;
 
-  %*ENV<RAKULIB> = "$stage.path-spec()";
-
-  my $proc = Proc::Async.new: @cmd;
-
-  log '🐛', header => 'BLD', msg => ~$proc.command;
-
-  my $exitcode;
-
-  react {
-
-      whenever $proc.stdout.lines { log '🐝',  :header<BLD> :msg( $^out ), :!msg-delimit }
-      whenever $proc.stderr.lines { log '🐞', :header<BLD> :msg( $^err ), :!msg-delimit}
-
-      whenever $proc.stdout.stable( 42 ) { log '🐞', header => 'WAI', msg =>  ~$proc.command }
-
-    whenever $proc.stdout.stable( 420 ) {
-
-      log '🐞', header => 'TOT', msg => ~$dist;
-
-      $proc.kill;
-
-      $exitcode = 1;
-
-      done;
-
-    }
-
-    whenever $proc.start( cwd => $prefix, :%*ENV ) {
-
-      $exitcode = .exitcode;
-
-      done;
-
-    }
-  }
-
-  if $exitcode {
-
-    die X::Pakku::Build.new: msg => ~$dist;
-
-    log '🐞', header => 'OLO', msg => ~$dist;
+    @cmd.append: '-I', $prefix, '-e', "require $builder; my %meta := Rakudo::Internals::JSON.from-json( %*ENV<PAKKU_META> ); ::( '$builder' ).new( :%meta ).build( '$prefix' );";
 
   } else {
 
-    log '🧚', header => 'BLD', msg => ~$dist;
+    @cmd.append: '-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
 
   }
+
+  %*ENV<RAKULIB> = $stage.path-spec;
+
+  my $exitcode = self!run: @cmd, cwd => $prefix, header => 'BLD', what => ~$dist, timeout => ( %!cnf<build><timeout> // 420 ).Int;
+
+  if $exitcode { self!die( X::Pakku::Build.new: msg => ~$dist ) }
+  else         { log '🧚', header => 'BLD', msg => ~$dist }
 
 }
 
@@ -232,7 +213,7 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   # File::Which has empty dep name
   # should be removed after File::Which is fixed
-  next unless $spec.name;
+  return Nil unless $spec.name;
 
   log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfying!';
 
@@ -246,9 +227,8 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
     log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-    die X::Pakku::Spec.new: msg => ~$spec;
+    return self!die( X::Pakku::Spec.new: msg => ~$spec );
 
-    log '🐞', header => 'OLO', msg => ~$spec;
   }
 
   log '🧚', header => 'MTA', msg => ~$meta;
@@ -257,75 +237,47 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
 }
 
-multi method satisfy ( Pakku::Spec::Bin:D    :$spec! ) {
+# a bin, native library or Perl module is not a Raku dist: pakku can check for it, not install it
+multi method satisfy ( :$spec! where Pakku::Spec::Bin | Pakku::Spec::Native | Pakku::Spec::Perl ) {
 
   log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-  die X::Pakku::Spec.new: msg => ~$spec;
-
-  log '🐞', header => 'OLO', msg => ~$spec;
-
-  Empty;
-
-}
-multi method satisfy ( Pakku::Spec::Native:D :$spec! ) {
-
-  log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
-
-  die X::Pakku::Spec.new: msg => ~$spec;
-
-  log '🐞', header => 'OLO', msg => ~$spec;
-
-  Empty
+  self!die( X::Pakku::Spec.new: msg => ~$spec, comment => 'not a Raku dist, install it yourself' );
 
 }
 
-multi method satisfy ( Pakku::Spec::Perl:D :$spec! ) {
-
-  log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
-
-  die X::Pakku::Spec.new: msg => ~$spec;
-
-  log '🐞', header => 'OLO', msg => ~$spec;
-
-  Empty
-}
-
+# alternatives: the first one the recman can recommend, in the order written (S22)
 multi method satisfy ( Pakku::Spec::Any:D :$spec! ) {
 
-  my @spec = $spec.spec;
+  log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfying!';
 
-  log '🐛', header => 'SPC', msg => ~@spec, comment => 'satisfying!';
+  for $spec.spec -> $alternative {
 
-  my $meta =
-    @spec.map( -> $spec {
+    log '🐛', header => 'SPC', msg => ~$alternative, comment => 'trying!';
 
-      log '🐛', header => 'SPC', msg => ~$spec, comment => 'trying!';
+    my $meta = try samewith spec => $alternative;
 
-      my $meta = try samewith :$spec;
+    return $meta if $meta;
 
-      return $meta if $meta;
+  }
 
-    } );
+  log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-  die X::Pakku::Spec.new: msg => ~@spec unless $meta;;
+  self!die( X::Pakku::Spec.new: msg => ~$spec );
 
-  log '🐞', header => 'OLO', msg => ~@spec;
-
-  Empty
 }
 
 
-multi method satisfied ( Pakku::Spec::Raku:D   :$spec! --> Bool:D ) {
+multi method satisfied ( Pakku::Spec::Raku:D :$spec!, :@repo = @!repo --> Bool:D ) {
 
-  return False unless @!repo.first( *.candidates( $spec.dependency-specification ) );
+  return False unless @repo.first( *.candidates( $spec.dependency-specification ) );
 
   log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
   True;
 }
 
-multi method satisfied ( Pakku::Spec::Bin:D    :$spec! --> Bool:D ) {
+multi method satisfied ( Pakku::Spec::Bin:D :$spec! --> Bool:D ) {
 
   return False unless find-bin $spec.name;
 
@@ -338,40 +290,303 @@ multi method satisfied ( Pakku::Spec::Native:D :$spec! --> Bool:D ) {
 
   my \lib = $*VM.platform-library-name( $spec.name.IO, |( version => Version.new( $_ ) with $spec.ver ) ).Str;
 
-  return False unless Pakku::Native.can-load: lib; 
- 
+  return False unless Pakku::Native.can-load: lib;
+
   log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
   True;
 }
 
-multi method satisfied ( Pakku::Spec::Perl:D    :$spec! --> Bool:D ) {
+multi method satisfied ( Pakku::Spec::Perl:D :$spec! --> Bool:D ) {
 
   return False unless find-perl-module $spec.name;
- 
+
   log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfied!';
 
   True;
 }
 
-multi method satisfied ( Pakku::Spec::Any:D :$spec! --> Bool:D ) { so $spec.spec.first( -> $spec { samewith :$spec } ) }
+multi method satisfied ( Pakku::Spec::Any:D :$spec!, :@repo = @!repo --> Bool:D ) { so $spec.spec.first( -> $spec { samewith :$spec, :@repo } ) }
 
+
+# the dependencies of a dist, as the dists to install for them (see !resolve)
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False, :@exclude ) {
 
-  state %visited = @exclude.map: *.id => True;
+  self!resolve: $meta.deps( :$deps ), :$deps, :$contained, :@exclude;
 
-  $meta.deps( :$deps )
-    ==> grep( -> $spec { %visited{ $spec.id }:!exists } )
-    ==> grep( -> $spec { $contained and $spec ~~ Pakku::Spec::Raku or not self.satisfied( :$spec ) } )
-    ==> map(  -> $spec {
+}
+
+# the dists to install for @spec: dependencies first, each one once, nothing that is already
+# installed (unless contained); a spec may be satisfied by a dist chosen earlier in this very
+# resolution, so Foo:ver<0.2+> and a bare Foo end up as one Foo (B17)
+method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude --> Array ) {
+
+  my @meta;
+  my %done;
+  my @excluded = @exclude.map( *.name );   # by name: Foo:ver<1+> in a META is still Foo (B11)
+
+  my sub resolve ( $spec, Bool:D :$top = False ) {
+
+    return if %done{ $spec.id }++;
+    return if $spec ~~ Pakku::Spec::Raku and $spec.name eq any @excluded;
+    return if @meta.first( -> $meta { provided-by $meta, $spec } );
+    return if not $top and not ( $contained and $spec ~~ Pakku::Spec::Raku | Pakku::Spec::Any ) and self.satisfied( :$spec );
 
     my $meta = self.satisfy: :$spec;
 
-    %visited{ $spec.id } = True;
+    return without $meta;   # yolo: carry on without it
 
-    self.get-deps( $meta, :$deps, :$contained ), $meta if $meta;
+    resolve $_ for $meta.deps( :$deps );
 
-  } )
+    @meta.push: $meta unless $top and $deps ~~ 'only';
+
+  }
+
+  resolve $_, :top for @spec;
+
+  @meta;
+
+}
+
+# a dist's files, from the cache or the ecosystem, as a Distribution ready to stage
+method !fetch-dist ( Pakku::Meta:D $meta, IO::Path:D :$tmp = $!tmp ) {
+
+  log '🦋', header => 'FTC', msg => ~$meta;
+
+  my $path = $tmp.add( $meta.id ).add( now.Num );
+
+  my $cached = $!cache.cached( :$meta ) if $!cache;
+
+  if $cached {
+
+    copy-dir src => $cached, dst => $path;
+
+  } else {
+
+    self.fetch: src => $meta.source, dst => $path;
+
+    $!cache.cache: :$path if $!cache;
+
+  }
+
+  log '🧚', header => 'FTC', msg => ~$meta;
+
+  $meta.to-dist: $path;
+
+}
+
+# all of them, in parallel; a failed fetch ends the run, unless yolo
+method !fetch-dists ( @meta --> Array ) {
+
+  my @fetched = @meta.hyper( degree => $!degree, :1batch ).map( -> $meta { ( try self!fetch-dist: $meta ) // $! } );
+
+  for @fetched.grep( Exception ) { $_ ~~ X::Pakku ?? self!die( $_ ) !! .rethrow }
+
+  my @dist = @fetched.grep( Distribution );
+
+  @dist;
+
+}
+
+# precomp files land in directories that appear as the stage fills: watch each one as it shows up,
+# and list what landed in it before the watch was armed (the first file of a bucket, C6)
+method !watch-recursive ( IO::Path:D $start --> Supply:D ) {
+
+  my %seen;
+
+  supply {
+
+    my sub file ( IO::Path:D $file, Bool:D :$emit ) {
+      return if $file.extension;                       # precomp files have none; .lock, .repo-id ... do
+      emit $file.Str if $emit and not %seen{ $file.Str };
+      %seen{ $file.Str } = True;
+    }
+
+    my sub watch ( IO::Path:D $dir, Bool:D :$emit ) {
+
+      whenever $dir.watch -> $e {
+
+        CATCH { default { .so } }
+
+        next unless $e.event ~~ FileRenamed;
+
+        my $path = $e.path.IO;
+
+        if $path.d { watch $path.resolve, :emit; next }
+
+        file $path, :emit;
+
+      }
+
+      # already there: what was created before this watch (silently for the start directory, those are older dists)
+      for $dir.dir -> $entry { $entry.d ?? watch( $entry.resolve, :$emit ) !! file( $entry, :$emit ) }
+
+    }
+
+    watch $start, :!emit;
+
+  }
+
+}
+
+# install one dist into the staging repo, with its build before and its tests after
+method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile! ) {
+
+  self.build: :$stage, :$dist if $build;
+
+  my $precomp-dir = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
+  my $dist-dir    = $stage.prefix.add: 'dist';
+
+  $precomp-dir.mkdir;
+  $dist-dir.mkdir;
+
+  my @tap;
+
+  if $precompile {
+
+    bar.header: 'STG';
+    bar.length: $dist.Str.chars;
+    bar.sym:    $dist.Str;
+    bar.activate;
+
+    my $processed      = 0;
+    my $total          = +$dist.meta<provides>.keys || 1;
+    my $dist-meta-file = $dist-dir.add( $dist.id );
+
+    my %hash-to-name;
+
+    # the dist's META lands in dist/<id> during install: it maps precomp hashes back to module names
+    @tap.push: $dist-dir.watch.tap( -> $event {
+
+      if $event.path ~~ $dist-meta-file and $event.event ~~ FileChanged {
+
+        my %provides = try Rakudo::Internals::JSON.from-json( $dist-meta-file.slurp ).<provides>;
+
+        %provides.map( { %hash-to-name{ .value.values.head.<file> } = .key } );
+
+      }
+
+    } );
+
+    @tap.push: self!watch-recursive( $precomp-dir ).tap( -> $path {
+
+      log '🦋', header => 'CMP', msg => %hash-to-name{ $path.IO.basename } // $path.IO.basename;
+
+      $processed += 1;
+
+      bar.percent: $processed / $total * 100;
+      bar.show;
+
+    } );
+
+  }
+
+  $stage.install: $dist, :$precompile;
+
+  .close for @tap;
+
+  bar.deactivate if $precompile;
+
+  log '🧚', header => 'STG', msg => ~$dist;
+
+  self.test: :$stage, :$dist, :$xtest if $test;
+
+}
+
+# move the staged dists into the target repo; reset keeps the staging repo for the next dist (serial)
+method !deploy ( $stage, $repo, Bool:D :$reset = False ) {
+
+  return if $!dont;
+
+  try $stage.remove-artifacts; # trying for Windows
+
+  $stage.deploy;
+
+  my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str, file => *.ends-with( none <-m -j -js -m.bat -j.bat -js.bat> ) ).sort;
+
+  log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
+
+  log '🧚', header => 'BIN', msg => .IO.basename for @bin;
+
+  if $reset {
+
+    try $stage.self-destruct; # trying for Windows
+
+    $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id ).mkdir;
+    $stage.prefix.add( 'dist' ).mkdir;
+
+  }
+
+}
+
+# a staging repo named after the target: dists are built, installed and tested there, then deployed
+method !stage-dists (
+  @dist,
+         :$repo!,
+  Bool:D :$serial     = False,
+  Bool:D :$build      = True,
+  Bool:D :$test       = True,
+  Bool:D :$xtest      = False,
+  Bool:D :$precompile = True,
+  Bool:D :$deploy     = True,
+  ) {
+
+  my $stage := CompUnit::Repository::Staging.new:
+    prefix    => $!stage.add( now.Num ),
+    name      => $repo.name,
+    next-repo => $*REPO;
+
+  for @dist -> $dist {
+
+    self!stage-dist: $stage, $dist, :$build, :$test, :$xtest, :$precompile;
+
+    self!deploy( $stage, $repo, :reset ) if $serial and $deploy;
+
+  }
+
+  self!deploy( $stage, $repo ) if $deploy and not $serial and @dist;
+
+  $stage;
+
+}
+
+# stage a dist with its dependencies, without deploying, and do something with it there: test it, build it
+method !try-out ( Pakku::Meta:D $meta, &do, :$dist is copy, Bool:D :$build = True, Bool:D :$build-target = $build ) {
+
+  my @meta = self!resolve: $meta.deps( :deps );
+
+  log '🦋', header => 'DEP', msg => ~$_ for @meta;
+
+  my @dist = self!fetch-dists: @meta;
+
+  $dist //= self!fetch-dist: $meta;
+
+  my $stage = self!stage-dists: @dist, repo => CompUnit::RepositoryRegistry.repository-for-name( 'home' ), :$build, :!test, :!precompile, :!deploy;
+
+  self!stage-dist: $stage, $dist, build => $build-target, :!test, :!xtest, :!precompile;
+
+  do( $stage, $dist ) unless $!dont;
+
+  try $stage.remove-artifacts;
+
+}
+
+# the repo to install into: the one asked for, or the first in the chain that takes dists
+method !install-repo ( Str:D $spec, Str:D $what ) {
+
+  my $repo = repo-from-spec $spec;
+
+  return $repo if $repo.can-install;
+
+  log '🐞', header => 'REP', msg => ~$repo.prefix, comment => 'can not install!';
+
+  $repo = @!repo.first( *.can-install );
+
+  die X::Pakku::Add.new: msg => $what, comment => 'no repo to install into!' unless $repo;
+
+  log '🐞', header => 'REP', msg => ~$repo.prefix, comment => 'will be used!';
+
+  $repo;
 
 }
 
@@ -415,6 +630,18 @@ multi method fetch ( IO::Path:D :$src!, IO::Path:D :$dst! ) {
   copy-dir :$src :$dst;
 
   log '🐛', header => 'FTC', msg => ~$dst;
+
+}
+
+# is $a an older release of the same dist than $b? (api counts only when both have one, C15)
+my sub older ( Pakku::Meta:D $a, Pakku::Meta:D $b --> Bool:D ) {
+
+  my $ver = version( $a.ver ) cmp version( $b.ver );
+
+  return True  if $ver ~~ Less;
+  return False if $ver ~~ More;
+
+  $a.api.defined and $b.api.defined and version( $a.api ) < version( $b.api );
 
 }
 
@@ -500,32 +727,21 @@ method state ( :$updates = True ) {
 
   spinner.deactivate;
 
-  my %meta;
+  # an older release of a dist nobody depends on is cleanable: same name and the same author (C12)
+  my %release;
 
-  %state.values
-    ==> map( *.<meta> )
-    ==> map( -> $meta { %meta{ $meta.name }.push: $meta } );
+  %release{ .name ~ '|' ~ ( .auth // '' ) }.push: $_ for %state.values.map( *.<meta> );
 
   %state.values
     ==> grep( *.<rev>.not )
     ==> map( *.<meta> )
-    ==> grep( -> $meta {
-       any %meta{ $meta.name }.map( {
-         ( quietly Version.new( $meta.meta.<version> ) cmp Version.new( .meta<version> ) or  
-           quietly Version.new( $meta.meta.<api>     ) cmp Version.new( .meta<api>     )  
-         ) ~~ Less
-       } ) 
-    } )
+    ==> grep( -> $meta { so %release{ $meta.name ~ '|' ~ ( $meta.auth // '' ) }.first( -> $other { older $meta, $other } ) } )
     ==> map( -> $meta { %state{ $meta }<cln> = True } );
 
   %state;
 }
 
 method repo-from-spec ( Str :$spec ) { repo-from-spec $spec }
-
-method copy-dir ( IO::Path:D :$src!, IO::Path:D :$dst! --> Nil ) {
-  copy-dir :$src, :$dst;
-}
 
 method clear ( ) {
 
@@ -740,6 +956,8 @@ my sub get-env ( ) {
 
   my sub deps ( Str:D $value ) { $value eq 'only' ?? 'only' !! bool( 'deps', $value ) }
 
+  my sub seconds ( Str:D $name, Str:D $value ) { $value ~~ / ^ \d+ $ / ?? +$value !! die X::Pakku::Cnf.new: msg => $name, comment => "$value: not a number of seconds!" }
+
   my sub positive ( Str:D $name, Str:D $value ) { $value ~~ / ^ \d+ $ / && +$value > 0 ?? +$value !! die X::Pakku::Cnf.new: msg => $name, comment => "$value: not a positive integer!" }
 
   # general: name => [ config key, converter ]
@@ -767,7 +985,8 @@ my sub get-env ( ) {
   my %command =
     add      => %( to => { $_ }, deps => &deps, test => &bool.assuming( 'PAKKU_ADD_TEST' ), build => &bool.assuming( 'PAKKU_ADD_BUILD' ), serial => &bool.assuming( 'PAKKU_ADD_SERIAL' ), contained => &bool.assuming( 'PAKKU_ADD_CONTAINED' ), xtest => &bool.assuming( 'PAKKU_ADD_XTEST' ), precompile => &bool.assuming( 'PAKKU_ADD_PRECOMPILE' ), exclude => { .split( / \s+ / ).Array } ),
     update   => %( in => { $_ }, deps => &deps, test => &bool.assuming( 'PAKKU_UPDATE_TEST' ), build => &bool.assuming( 'PAKKU_UPDATE_BUILD' ), xtest => &bool.assuming( 'PAKKU_UPDATE_XTEST' ), clean => &bool.assuming( 'PAKKU_UPDATE_CLEAN' ), precompile => &bool.assuming( 'PAKKU_UPDATE_PRECOMPILE' ), exclude => { .split( / \s+ / ).Array } ),
-    test     => %( build => &bool.assuming( 'PAKKU_TEST_BUILD' ), xtest => &bool.assuming( 'PAKKU_TEST_XTEST' ) ),
+    test     => %( build => &bool.assuming( 'PAKKU_TEST_BUILD' ), xtest => &bool.assuming( 'PAKKU_TEST_XTEST' ), timeout => &seconds.assuming( 'PAKKU_TEST_TIMEOUT' ) ),
+    build    => %( timeout => &seconds.assuming( 'PAKKU_BUILD_TIMEOUT' ) ),
     remove   => %( from => { $_ } ),
     list     => %( repo => { $_ }, details => &bool.assuming( 'PAKKU_LIST_DETAILS' ) ),
     search   => %( count => { positive 'PAKKU_SEARCH_COUNT', $_ }, latest => &bool.assuming( 'PAKKU_SEARCH_LATEST' ), details => &bool.assuming( 'PAKKU_SEARCH_DETAILS' ), relaxed => &bool.assuming( 'PAKKU_SEARCH_RELAXED' ) ),

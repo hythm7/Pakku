@@ -11,9 +11,11 @@ multi method fly (
     :$clean   = False,
     :$updates = True,
 
-    :@spec = self!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } )
+    :@spec,
 
   ) {
+
+  my @want = @spec || self!installed;
 
   my %state = self.state: :$updates;
 
@@ -22,7 +24,7 @@ multi method fly (
     ==> map( *.<meta> )
     ==> my @clean;
 
-  sink @spec.sort
+  sink @want.sort
     ==> map( -> $spec { Pakku::Spec.new: $spec } )
     ==> map( -> $spec { 
         

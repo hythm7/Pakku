@@ -30,25 +30,23 @@ unit class Pakku;
   also does Pakku::Command::Help;
   also does Pakku::Command::Refresh;
 
+# every command; an error ends the run with exit 1, after the temporary directories are gone (C4)
 proto method fly ( | ) {
 
   {*}
 
-  LEAVE self.clear;
-
   CATCH {
 
     when X::Pakku {
-
       .log;
-      .resume if $!yolo;
+      self.clear;
       nofun;
-      exit 1
-
+      exit 1;
     }
 
     default {
       log '🦗', header => 'ERR', msg => .gist, :!msg-delimit;
+      self.clear;
       nofun;
       exit 1;
     }
@@ -57,13 +55,13 @@ proto method fly ( | ) {
 
 multi method fly ( ) {
 
-  LEAVE self.clear;
-
   self.clear;
 
   my $cmd = %!cnf<cmd>;
 
   samewith $cmd, |%!cnf{ $cmd };
+
+  self.clear;
 
   ofun;
 

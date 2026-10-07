@@ -203,11 +203,16 @@ grammar Pakku::Grammar::Cmd {
 
 
   proto token downloadopt { * }
-  proto token buildopt    { * }
+  proto token buildopt { * }
+  token buildopt:sym<timeout> { <timeout> <.space>+ <number> }
 
   proto token testopt { * }
-  token testopt:sym<build> { <build> }
-  token testopt:sym<xtest> { <xtest> }
+  token testopt:sym<build>   { <build> }
+  token testopt:sym<xtest>   { <xtest> }
+  token testopt:sym<timeout> { <timeout> <.space>+ <number> }
+
+  proto token timeout { * }
+  token timeout:sym<timeout> { <sym> }
 
   proto token removeopt { * }
   token removeopt:sym<from> { <from> <.space>+ <repo> }
@@ -921,8 +926,10 @@ class Pakku::Grammar::CmdActions {
 
   method removeopt:sym<from> ( $/ ) { make ( from => $<repo>.Str ) }
 
-  method testopt:sym<build> ( $/ ) { make $<build>.made }
-  method testopt:sym<xtest> ( $/ ) { make $<xtest>.made }
+  method testopt:sym<build>    ( $/ ) { make $<build>.made }
+  method testopt:sym<xtest>    ( $/ ) { make $<xtest>.made }
+  method testopt:sym<timeout>  ( $/ ) { make ( timeout => $<number>.Int ) }
+  method buildopt:sym<timeout> ( $/ ) { make ( timeout => $<number>.Int ) }
 
   method listopt:sym<details> ( $/ ) { make $<details>.made }
 

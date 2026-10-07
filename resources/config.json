@@ -12,7 +12,9 @@
   "list": {
     "details": false
   },
-  "build": { },
+  "build": {
+    "timeout": 420
+  },
   "remove": { },
   "nuke": { },
   "download": { },
@@ -107,6 +109,7 @@
     "details": false
   },
   "test": {
+    "timeout": 420,
     "build": true,
     "xtest": false
   },

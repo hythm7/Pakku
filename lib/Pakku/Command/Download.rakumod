@@ -7,31 +7,18 @@ multi method fly ( 'download', :@spec! ) {
 
   log '🧚', header => 'DWN', msg => ~@spec;
 
-  sink @spec
-    ==> map( -> $spec { Pakku::Spec.new:      $spec               } )
-    ==> map( -> $spec { self.satisfy: :$spec               } )
-    ==> map( -> $meta {
+  for @spec.map( { Pakku::Spec.new: $_ } ) -> $spec {
 
-        log '🦋', header => 'FTC', msg => ~$meta;
+    my $meta = self.satisfy: :$spec;
 
-        my IO::Path $path = $*TMPDIR.add( $meta.id ).add( now.Num );
+    next without $meta;
 
-        my $cached = self!cache.cached( :$meta ) if self!cache;
+    next if self!dont;   # the recommended dist is known, that is the dry run (D8)
 
-        if $cached {
+    my $dist = self!fetch-dist: $meta, tmp => $*TMPDIR;
 
-          self.copy-dir: src => $cached, dst => $path unless self!dont;
+    log '🧚', header => 'DWN', msg => ~$dist.prefix;
 
-        } else {
+  }
 
-          my $src = $meta.source;
-
-          self.fetch: src => $meta.source, dst => $path unless self!dont;
-
-          self!cache.cache: :$path if self!cache;
-        }
-
-        log '🧚', header => 'DWN', msg => ~$path unless self!dont;
-
-      } );
 }

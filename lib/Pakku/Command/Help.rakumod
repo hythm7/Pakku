@@ -216,6 +216,8 @@ method !build-help ( ) {
   %build<example>.push: 'pakku build dist';
   %build<example>.push: 'pakku build .';
 
+  %build<opt>.push: ( 'timeout <sec>' => 'kill a build quiet for that long (default 420, 0 never)' );
+
   help %build;
 
 }
@@ -236,6 +238,7 @@ method !test-help ( ) {
   %test<opt>.push: ( 'noxtest' => 'bypass xtest' );
   %test<opt>.push: ( 'build'   => 'build distribution' );
   %test<opt>.push: ( 'nobuild' => 'dont build distribution' );
+  %test<opt>.push: ( 'timeout <sec>' => 'kill a test quiet for that long (default 420, 0 never)' );
 
   help %test;
 

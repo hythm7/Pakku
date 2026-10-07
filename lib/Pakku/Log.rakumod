@@ -312,65 +312,38 @@ submethod BUILD (
   
   my $color = '' unless $!pretty;
 
-  $!all   = Level.new(
-    :fh( $*OUT )
-    :prefix( %level<all><prefix>   // '🐝' )
-    :color( $color // %color{ %level<all><color>   // 'reset'   } )
-    :msg-left-delimit(      %level<all><msg-left-delimit>  // '｢' )
-    :msg-right-delimit(     %level<all><msg-right-delimit> // '｣' )
-    :comment-left-delimit(  %level<all><msg-left-delimit>  // '❨' )
-    :comment-right-delimit( %level<all><msg-right-delimit> // '❩' )
-  ) if  all   ≤ $!verbose;
+  # fh, prefix, color of each level; config may override prefix, color and delimiters per level
+  my %default =
+    all   => ( $*OUT, '🐝', 'reset'   ),
+    debug => ( $*OUT, '🐛', 'green'   ),
+    now   => ( $*OUT, '🦋', 'cyan'    ),
+    info  => ( $*OUT, '🧚', 'magenta' ),
+    warn  => ( $*ERR, '🐞', 'yellow'  ),
+    error => ( $*ERR, '🦗', 'red'     );
 
-  $!debug = Level.new(
-    :fh( $*OUT )
-    :prefix( %level<debug><prefix> // '🐛' )
-    :color( $color // %color{ %level<debug><color> // 'green'   } )
-    :msg-left-delimit(      %level<debug><msg-left-delimit>  // '｢' )
-    :msg-right-delimit(     %level<debug><msg-right-delimit> // '｣' )
-    :comment-left-delimit(  %level<debug><msg-left-delimit>  // '❨' )
-    :comment-right-delimit( %level<debug><msg-right-delimit> // '❩' )
-  ) if  debug ≤ $!verbose;
+  my sub level ( Str:D $name ) {
 
-  $!now   = Level.new(
-    :fh( $*OUT )
-    :prefix( %level<now><prefix>   // '🦋' )
-    :color( $color // %color{ %level<now><color>   // 'cyan'    } )
-    :msg-left-delimit(      %level<now><msg-left-delimit>  // '｢' )
-    :msg-right-delimit(     %level<now><msg-right-delimit> // '｣' )
-    :comment-left-delimit(  %level<now><msg-left-delimit>  // '❨' )
-    :comment-right-delimit( %level<now><msg-right-delimit> // '❩' )
-  ) if  now   ≤ $!verbose;
+    my ( $fh, $prefix, $default-color ) = %default{ $name }.list;
 
-  $!info  = Level.new(
-    :fh( $*OUT )
-    :prefix( %level<info><prefix>  // '🧚' )
-    :color( $color // %color{ %level<info><color>  // 'magenta' }  )
-    :msg-left-delimit(      %level<info><msg-left-delimit>  // '｢' )
-    :msg-right-delimit(     %level<info><msg-right-delimit> // '｣' )
-    :comment-left-delimit(  %level<info><msg-left-delimit>  // '❨' )
-    :comment-right-delimit( %level<info><msg-right-delimit> // '❩' )
-  ) if  info  ≤ $!verbose;
+    my %l = %level{ $name } // {};
 
-  $!warn  = Level.new(
-    :fh( $*ERR )
-    :prefix( %level<warn><prefix>  // '🐞' )
-    :color( $color // %color{ %level<warn><color>  // 'yellow'  } )
-    :msg-left-delimit(      %level<warn><msg-left-delimit>  // '｢' )
-    :msg-right-delimit(     %level<warn><msg-right-delimit> // '｣' )
-    :comment-left-delimit(  %level<warn><msg-left-delimit>  // '❨' )
-    :comment-right-delimit( %level<warn><msg-right-delimit> // '❩' )
-  ) if  warn  ≤ $!verbose;
+    Level.new:
+      :$fh,
+      :prefix( %l<prefix> // $prefix ),
+      :color( $color // %color{ %l<color> // $default-color } ),
+      :msg-left-delimit(      %l<msg-left-delimit>      // '｢' ),
+      :msg-right-delimit(     %l<msg-right-delimit>     // '｣' ),
+      :comment-left-delimit(  %l<comment-left-delimit>  // '❨' ),
+      :comment-right-delimit( %l<comment-right-delimit> // '❩' );
 
-  $!error = Level.new(
-    :fh( $*ERR )
-    :prefix( %level<error><prefix> // '🦗' )
-    :color( $color // %color{ %level<error><color> // 'red'     } )
-    :msg-left-delimit(      %level<error><msg-left-delimit>  // '｢' )
-    :msg-right-delimit(     %level<error><msg-right-delimit> // '｣' )
-    :comment-left-delimit(  %level<error><msg-left-delimit>  // '❨' )
-    :comment-right-delimit( %level<error><msg-right-delimit> // '❩' )
-    ) if  error ≤ $!verbose;
+  }
+
+  $!all   = level( 'all'   ) if all   ≤ $!verbose;
+  $!debug = level( 'debug' ) if debug ≤ $!verbose;
+  $!now   = level( 'now'   ) if now   ≤ $!verbose;
+  $!info  = level( 'info'  ) if info  ≤ $!verbose;
+  $!warn  = level( 'warn'  ) if warn  ≤ $!verbose;
+  $!error = level( 'error' ) if error ≤ $!verbose;
 
   if $bar {
 

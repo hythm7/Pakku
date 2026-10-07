@@ -48,6 +48,9 @@ is-deeply from-json(slurp $config-file )<add><to>, Any, 'confirm unset option in
 @option = count => '42';
 lives-ok { $config.fly( 'config', :module<search>, :@option ) }, 'set Int option';
 is-deeply from-json(slurp $config-file )<search><count>, 42, 'confirm Int option stored as Int in config file';
+@option = timeout => '600';
+lives-ok { $config.fly( 'config', :module<test>, :@option ) }, 'set test timeout';
+is-deeply from-json(slurp $config-file )<test><timeout>, 600, 'confirm test timeout stored as Int';
 @option = count => 'many';
 throws-like { $config.fly( 'config', :module<search>, :@option ) }, X::Pakku::Cnf, 'a non Int count is refused';
 @option = nosuch => 'x';
@@ -108,8 +111,8 @@ quietly is-deeply from-json(slurp $config-file )<recman>.first(  *.<name> eq $re
 lives-ok { $config.fly( 'config', :module<recman>, :operation<unset> ) }, 'unset recman';
 is-deeply from-json(slurp $config-file )<recman>, Any, 'confirm unset recman in config file';
 
-lives-ok { $config.fly( 'config', :module<build>, :operation<reset> ) }, 'reset a module without options';
-is-deeply from-json(slurp $config-file )<build>, {}, 'confirm empty module in config file';
+lives-ok { $config.fly( 'config', :module<download>, :operation<reset> ) }, 'reset a module without options';
+is-deeply from-json(slurp $config-file )<download>, {}, 'confirm empty module in config file';
 
 my $log-level = 'debug';
 @option = prefix => 'DEBUG: ', color => 'blue';

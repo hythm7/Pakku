@@ -4,42 +4,25 @@ use Pakku::Meta;
 
 unit role Pakku::Command::List;
 
-multi method fly (
-
-  'list',
-
-  Str    :$repo,
-  Bool:D :$details = False,
-
-  :@spec = self!repo.map( *.installed ).flat.grep( *.defined ).map( { Pakku::Meta.new( .meta ).Str } ),
-  ) { 
+multi method fly ( 'list', Str :$repo, Bool:D :$details = False, :@spec ) {
 
   my @repo = $repo ?? self.repo-from-spec( spec => $repo ) !! self!repo;
 
-    
-  eager @repo
-    ==> map( -> $repo {
+  # everything in the repos we list, not in the chain (D9)
+  my @want = @spec || self!installed( :@repo );
 
-      @spec
-        ==> sort( )
-        ==> map( -> $spec { Pakku::Spec.new: $spec } )
-        ==> map( -> $spec {
-          $repo.candidates( $spec.dependency-specification )
-            ==> map( -> $dist { $dist.id } )
-            ==> map( -> $id   { $repo.distribution: $id } )
-            ==> map( -> $dist { $dist.meta.item } )
-            ==> flat( )
-            ==> map( -> $meta { Pakku::Meta.new: $meta } )
-      } )
-      ==> flat( )
-      ==> my @meta;
+  for @repo -> $repo {
 
-      log '🐛', header => 'REP', msg => $repo.name if @meta;
+    my @meta = @want.sort
+      .map( { Pakku::Spec.new: $_ } )
+      .map( -> $spec { $repo.candidates( $spec.dependency-specification ).map( { Pakku::Meta.new: $repo.distribution( .id ).meta } ).Slip } );
 
-      @meta.map( -> $meta { out $meta.gist: :$details} ) unless self!dont;
+    log '🐛', header => 'REP', msg => $repo.name if @meta;
 
-    } )
-    ==> flat( );
+    unless self!dont {
+      out .gist( :$details ) for @meta;
+    }
+
+  }
 
 }
-

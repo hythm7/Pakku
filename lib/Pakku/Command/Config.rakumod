@@ -104,12 +104,17 @@ my class Download { }
 
 my class Nuke { }
 
-my class Build    { }
+my class Build {
+
+  has Int() $.timeout;   # quiet seconds before a build is killed, 0 never
+
+}
 
 my class Test {
 
-  has Bool $.build;
-  has Bool $.xtest;
+  has Bool  $.build;
+  has Bool  $.xtest;
+  has Int() $.timeout;   # quiet seconds before a test is killed, 0 never
 
 }
 

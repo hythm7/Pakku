@@ -244,6 +244,10 @@ my @tests = (
     ${:cmd("config"), :config(${:module("recman"), :recman-name("fez"), :option(:mirrors(["https://a/", "https://b/"]))})},
   "config log info set comment-right-delimit X" =>
     ${:cmd("config"), :config(${:module("log"), :log-level("info"), :option(:comment-right-delimit("X"))})},
+  "test timeout 600 Spec" =>
+    ${:cmd("test"), :test(${:spec("Spec"), :timeout(600)})},
+  "build timeout 0 ./dist" =>
+    ${:build(${:path("./dist".IO), :timeout(0)}), :cmd("build")},
   "notest Spec" => 'NO PARSE',
   "nt Spec" => 'NO PARSE',
   "nobuild Spec" => 'NO PARSE',
