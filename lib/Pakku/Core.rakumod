@@ -1016,17 +1016,6 @@ submethod BUILD ( :%!cnf! ) {
 
   $!recman = Pakku::Recman.new: :$!fetch, store => $!home.add( '.index' ), :@recman, :$refresh if @recman;
 
-  # an old config file may list only the retired recman.pakku.org: fall back to the built-in ecosystems
-  if @recman and not $!recman.names and not ( $recman ~~ Str or $norecman ) {
-
-    log '🐞', header => 'REC', msg => 'config', comment => 'no usable recman configured, using the built-in ecosystems (pakku config recman reset)';
-
-    @recman = Rakudo::Internals::JSON.from-json( %?RESOURCES<config.json>.slurp )<recman>.flat;
-
-    $!recman = Pakku::Recman.new: :$!fetch, store => $!home.add( '.index' ), :@recman, :$refresh;
-
-  }
-
   @recman.map( -> $recman { log '🐝', header => 'CNF', msg => 'recman', comment => $recman<name> ~ ' ' ~ ( $recman<mirrors> // $recman<location> // '' ).List.map( { redact ~$_ } ).join( ' ' ) } );
 
   @!repo = $*REPO.repo-chain.grep( CompUnit::Repository::Installation );

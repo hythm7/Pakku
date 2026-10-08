@@ -136,7 +136,7 @@ is $urls.recommend( spec => spec( 'Fixture::Bar' ) )<source>, ~$fixtures.add( 'm
 # --- Pakku::Recman: dispatch by priority, lazily ---
 
 my @config =
-  %( name => 'legacy',  location => 'http://recman.pakku.org', priority => 1, active => True ),
+  %( name => 'badtype', type => 'http', location => 'http://recman.example', priority => 1, active => True ),
   %( name => 'nodir',   type => 'local', location => ~$tmp.add( 'nope' ), priority => 1, active => True ),
   %( name => 'off',     type => 'ecosystem', mirrors => [ ~$fixtures ~ '/' ], priority => 0, active => False ),
   %( name => 'second',  type => 'ecosystem', mirrors => [ ~$fixtures ~ '/' ], priority => 2, active => True, refresh => 1 ),
@@ -145,7 +145,7 @@ my @config =
 
 my $recman = Pakku::Recman.new: :$fetch, store => $tmp.add( 'dispatch' ), recman => @config;
 
-is-deeply $recman.names, ( 'first', 'second', 'strings' ), 'dispatcher: legacy, missing-directory and inactive entries are dropped, the rest sorted by priority';
+is-deeply $recman.names, ( 'first', 'second', 'strings' ), 'dispatcher: unknown-type, missing-directory and inactive entries are dropped, the rest sorted by priority';
 ok $recman.recommend( spec => spec( 'Fixture::Foo' ) )<source> ~~ IO::Path, 'dispatcher: the first recman answers';
 nok $tmp.add( 'dispatch' ).add( 'second' ).e, 'dispatcher: the second recman was not touched';
 nok $recman.recommend( spec => spec( 'Fixture::Nope' ) ).defined, 'dispatcher: Nil when nobody has it';

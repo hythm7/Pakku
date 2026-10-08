@@ -21,8 +21,7 @@ submethod BUILD ( Pakku::Fetch :$fetch, IO::Path :$store, :@recman!, :$refresh )
 
       my $name = %r<name> // 'recman';
 
-      my $type = %r<type>
-        // ( %r<mirrors> ?? 'ecosystem' !! ( %r<location> // '' ).starts-with( 'http' ) ?? 'legacy' !! 'local' );
+      my $type = %r<type> // ( %r<mirrors> ?? 'ecosystem' !! 'local' );
 
       given $type {
 
@@ -54,8 +53,7 @@ submethod BUILD ( Pakku::Fetch :$fetch, IO::Path :$store, :@recman!, :$refresh )
         }
 
         default {
-          # the old recman.pakku.org protocol is gone
-          log '🐞', header => 'REC', msg => ~$name, comment => "{ %r<location> // $type }: recman protocol no longer supported, run: pakku config recman reset";
+          log '🐞', header => 'REC', msg => ~$name, comment => "$type: no such recman type! (ecosystem or local)";
           Empty;
         }
       }
