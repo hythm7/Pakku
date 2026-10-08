@@ -306,7 +306,17 @@ multi method satisfy ( Pakku::Spec::Any:D :$spec! ) {
 
   log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
 
-  self!die( X::Pakku::Spec.new: msg => ~$spec );
+  self!die( self!no-alternative: $spec );
+
+}
+
+# alternatives nobody can meet; when none of them is a Raku dist there is nothing pakku could add: say so,
+# as for a single bin or native library
+method !no-alternative ( Pakku::Spec::Any:D $spec --> X::Pakku::Spec:D ) {
+
+  my $foreign = so $spec.spec.all ~~ Pakku::Spec::Bin | Pakku::Spec::Native | Pakku::Spec::Perl;
+
+  X::Pakku::Spec.new: msg => ~$spec, |( comment => 'none is here and none is a Raku dist, install one of them yourself' if $foreign );
 
 }
 
@@ -402,7 +412,7 @@ method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, B
 
       without $pick {
         log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
-        self!die( X::Pakku::Spec.new: msg => ~$spec );
+        self!die( self!no-alternative: $spec );
         return;
       }
 

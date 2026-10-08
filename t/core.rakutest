@@ -40,6 +40,23 @@ nok $core.satisfied( spec => Pakku::Spec.new( 'rakudo:ver<-42>' ) ), 'Raku depen
 dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<native>, :name<archive> } ) ) }, 'Native dependency no satisfy';
 dies-ok  { $core.satisfy( spec => Pakku::Spec.new( { :from<bin>,    :name<raku>    } ) ) }, 'Binary dependency no satisfy';
 
+# alternatives of things pakku can not add: one that is here is enough, none is an error
+my %missing = any => [ 'nosuchlib:ver<4>:from<native>', 'nosuchlib:from<native>', 'nosuchtool:from<bin>' ];
+my %present = any => [ 'nosuchlib:from<native>', 'nosuchtool:from<bin>', 'raku:from<bin>' ];
+
+nok $core.satisfied( spec => Pakku::Spec.new( %missing ) ), 'native and binary alternatives, all missing: not satisfied';
+ok  $core.satisfied( spec => Pakku::Spec.new( %present ) ), 'native and binary alternatives, one present: satisfied';
+
+throws-like { $core.get-deps( Pakku::Meta.new( %( name => 'Dev::Needy', version => '1', depends => [ %missing ] ) ) ) }, X::Pakku::Spec, comment => / 'install one of them yourself' /, 'a dist that requires them is refused, and told why';
+lives-ok    { $core.get-deps( Pakku::Meta.new( %( name => 'Dev::Needy', version => '1', depends => [ %present ] ) ) ) }, 'a dist that requires them is fine when one is here';
+
+# Pakku's own requirements, as its META6.json states them
+my $own = Pakku::Meta.new: Rakudo::Internals::JSON.from-json: $*PROGRAM.parent.parent.add( 'META6.json' ).slurp;
+
+is +$own.deps( :deps ), 2, 'Pakku requires an archive library and something that fetches';
+ok $core.satisfied( :spec( $_ ) ), "Pakku's requirement is met here: { .gist }" for $own.deps( :deps );
+is +$own.recommends, 2, 'Pakku recommends git and a sha1 tool';
+
 my $meta;
 lives-ok { $meta = $core.satisfy( spec => Pakku::Spec.new( { any => <Fixture::Nope Fixture::Foo Fixture::Baz> } ) ) }, 'Can satisfy a dependency from the fixture recman';
 is $meta.name, 'Fixture::Foo', 'first available alternative wins';

@@ -7,7 +7,12 @@
   "depends": {
     "runtime": {
       "requires": [
-        { "any": [ "archive:ver<13>:from<native>", "archive:from<native>", "archiveint:from<native>" ] }
+        { "any": [ "archive:ver<13>:from<native>", "archive:from<native>", "archiveint:from<native>" ] },
+        { "any": [ "curl:ver<4>:from<native>", "curl:from<native>", "curl:from<bin>", "wget:from<bin>" ] }
+      ],
+      "recommends": [
+        "git:from<bin>",
+        { "any": [ "sha1sum:from<bin>", "shasum:from<bin>", "certutil:from<bin>" ] }
       ]
     }
   },
