@@ -39,7 +39,8 @@ Released
   .. celastrina.6       Pakku that learned bars, spinners and showing what it is precompiling.
 
   chou        2026-10   Chou (蝶) is simply "butterfly" in Japanese. The ecosystem release:
-  .. chou.2             Pakku moved to where the dists live (fez and REA).
+  .. chou.3             Pakku moved to where the dists live (fez and REA). And chou chews:
+                        this is the release that eats bugs, a few with every chou.N.
 
 
 The logs are a journey too

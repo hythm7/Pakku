@@ -1,5 +1,16 @@
 Revision history for Pakku
 
+chou.3  2026-10-08
+
+  - Pakku could refuse to start after adding itself (Missing or wrong version of dependency
+    ... CompUnit::Repository::Staging, or SC not yet resolved on older Rakudos): a staged
+    install precompiles Pakku::Core without recording that it needs Staging
+    (rakudo/rakudo#5199). Staging is now loaded when a stage is needed, not with `use`,
+    and bin/pakku loads nothing first.
+  - Adding a release that was added before no longer deploys precompiled files that are
+    outdated on arrival: what the target and the home repo still held under the same ids
+    is dropped before the stage compiles. The first run after such an add recompiles nothing.
+
 chou.2  2026-10-08
 
   - `pakku update` (and `pakku state clean`) removed the release it had just added, whenever
