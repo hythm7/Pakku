@@ -1,31 +1,59 @@
-ava
-bellona
-caria
-celastrina
-chou
-clytia
-cressida
-cynthia
-euthalia
-farasha
-flutura
-julia
-kelebek
-kimani
-kocho
-luna
-mariposa
-niobe
-nova
-paloma
-pandora
-parvana
-selene
-teter
-theona
-tullia
-vanessa
-vesta
-vlinder
-yara
-zina
+Pakku version names
+===================
+
+Pakku releases are butterflies 🦋
+
+A release gets a name instead of a number: the name of a butterfly, or the word "butterfly"
+in one of the many languages that have a pretty one.
+
+How a name is chosen
+
+  - Names go in alphabetical order. ava, then bellona, then caria ... so a newer Pakku always
+    sorts after an older one, and `pakku update` (and Raku's Version) know which way is up.
+    celastrina < chou works for the same reason: two names may share a letter, as long as the
+    second one sorts after the first.
+
+  - For the next letter there are always a few butterflies to pick from. The one that fits what
+    the release is about wins: the name is chosen before the work starts, with the work in mind.
+
+  - What comes after a release (fixes, answers to issues, small features) keeps the name and
+    counts: chou.1, chou.2 ... A new name is for a new direction.
+
+
+Released
+
+  pupa        2020-09   Before the names: the experimenting years. Not a butterfly yet, the
+                        transformation was still going on inside.
+
+  ava         2022-12   Where the journey begins. The first real Pakku: reimagined from the
+                        ground up.
+
+  bellona     2023-03   A meadow fritillary, named after a goddess who does not leave the field.
+                        Pakku kept flying: JSON config, runtime / test / build dependencies
+                        told apart, tests running side by side.
+
+  caria       2023-05   A metalmark, and Pakku carrying on: recommendation managers reworked
+  .. caria.13           (local ones too), a search that forgives, the `contained` option.
+
+  celastrina  2023-09   The pretty one. Celastrina are the little azure blues, and this is the
+  .. celastrina.6       Pakku that learned bars, spinners and showing what it is precompiling.
+
+  chou        2026-10   Chou (蝶) is simply "butterfly" in Japanese. The ecosystem release:
+                        Pakku moved to where the dists live (fez and REA).
+
+
+The logs are a journey too
+
+  What Pakku prints follows the same story. A line that made it is a butterfly 🦋 or a
+  fairy 🧚: it has its wings. The caterpillar 🐛 is the debug output, still on its way. The
+  bee 🐝 is the busy one: every little thing done, in order, for those who ask for all of it.
+  The ladybug 🐞 wears its colors to be noticed, so that is the warning. And an error is a
+  cricket 🦗: the one that did not transform.
+
+
+Waiting in the garden
+
+  clytia    cressida  cynthia   euthalia  farasha   flutura   julia     kelebek
+  kimani    kocho     luna      mariposa  niobe     nova      paloma    pandora
+  parvana   selene    teter     theona    tullia    vanessa   vesta     vlinder
+  yara      zina

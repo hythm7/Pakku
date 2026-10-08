@@ -680,6 +680,12 @@ or specify the repo in the command e.g. `pakku add to home dist`
 `pakku add dist` asks the ecosystem for `dist`, `pakku add ./dist` adds the directory. A path
 starts with `./` or `/` (your shell expands `~`), a tarball ends with `.tar.gz`, a git repository with `.git`.
 
+Version names
+=============
+Pakku releases are butterflies 🦋 `ava`, `bellona`, `caria`, `celastrina`, `chou` ... in alphabetical
+order, so the newest always sorts last. The why and the what of each name, and why an error is a
+cricket 🦗, is in [versions](versions).
+
 Credits
 =======
 Thanks to `Panda` and `Zef` for `Pakku` inspiration.
