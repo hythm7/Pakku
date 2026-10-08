@@ -1,6 +1,8 @@
 unit class Pakku::Log;
 
-my Lock::Async $lock .= new;
+# one lock for everything that draws: a bar or spinner is erased, the line is written and the bar is
+# drawn again as one step, and a bar is retired as one step. Reentrant, as log calls hide and show.
+my Lock $lock .= new;
 
 enum Color is export ( :reset(0) :black(30) :red(31) :green(32) :yellow(33) :blue(34) :magenta(35) :cyan(36) :white(37) );
 
@@ -160,14 +162,19 @@ my class Bar {
   }
 
   method activate   ( ) {
-    $!active = True;
-    $!percent = 0;
-    self.show;
+    $lock.protect: {
+      $!active = True;
+      $!percent = 0;
+      self.show;
+    }
   }
 
+  # erasing and retiring are one step: a show from another thread in between would leave a bar nobody erases
   method deactivate ( ) {
-    self.hide;
-    $!active = False;
+    $lock.protect: {
+      self.hide;
+      $!active = False;
+    }
   }
 
   method show( ) {
@@ -242,36 +249,56 @@ my class Spinner {
   }
 
   method activate   ( ) {
-    $!active = True;
-    $!current-frame-index = 0;
-    self.show;
+    $lock.protect: {
+      $!active = True;
+      $!current-frame-index = 0;
+      self.show;
+    }
   }
 
   method deactivate ( ) {
-    self.hide;
-    $!active = False;
+    $lock.protect: {
+      self.hide;
+      $!active = False;
+    }
   }
 
   method next ( ) { 
     
-    self.hide;
+    $lock.protect: {
 
-    $!current-frame-index = ( $!current-frame-index + 1 ) mod +@!frame;
-    self.show;
+      self.hide;
+
+      $!current-frame-index = ( $!current-frame-index + 1 ) mod +@!frame;
+      self.show;
+
+    }
     
   }
 
   method show ( ) {
 
-    $!level.msg: :$!header, msg => ~@!frame[ $!current-frame-index ];
+    $lock.protect: {
+
+      return unless $!active;
+
+      $!level.msg: :$!header, msg => ~@!frame[ $!current-frame-index ];
+
+    }
   }
 
   method hide (  ) {
 
-    my $space = @!frame[ $!current-frame-index ].chars + @!frame[ $!current-frame-index ].uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
+    $lock.protect: {
 
-    print "\r";
-    print " " x $space ~ "\b \b" x $space;
+      return unless $!active;
+
+      my $space = @!frame[ $!current-frame-index ].chars + @!frame[ $!current-frame-index ].uniprops( 'East_Asian_Width' ).grep( 'W' ) + $!header.chars + 7;
+
+      print "\r";
+      print " " x $space ~ "\b \b" x $space;
+
+    }
 
   }
 
@@ -370,6 +397,9 @@ submethod BUILD (
 
   proto log ( | ) {
 
+    $lock.lock;
+    LEAVE $lock.unlock;
+
     if $!bar.active {
 
       $!bar.hide;
@@ -425,6 +455,9 @@ submethod BUILD (
 
   sub out ( Str:D $msg ) is export {
 
+    $lock.lock;
+    LEAVE $lock.unlock;
+
     if $!bar.active {
 
       $!bar.hide;
@@ -448,6 +481,9 @@ submethod BUILD (
 
   sub ofun ( Str:D :$header = 'FUN', Str:D :$msg = '-Ofun' ) is export {
 
+    $lock.lock;
+    LEAVE $lock.unlock;
+
     if $!bar.active {
 
       $!bar.hide;
@@ -467,6 +503,9 @@ submethod BUILD (
   }
 
   sub nofun ( Str:D :$header = 'FUN' , Str:D :$msg = 'Nofun' ) is export {
+
+    $lock.lock;
+    LEAVE $lock.unlock;
 
     if $!bar.active {
 
