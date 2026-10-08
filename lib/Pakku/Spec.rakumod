@@ -47,15 +47,31 @@ my constant @REGEX-CODE = <Block Interpolation Assertion::InterpolatedBlock Asse
                            Assertion::Callable Assertion::InterpolatedVar Assertion::Recurse>;
 my constant @RULES = <alpha alnum digit xdigit space blank upper lower punct cntrl graph print ident ws wb ww same before after>;
 
+my constant @CURRYING = '|', '&', '^', '&&', '||', '^^', '//', 'and', 'or', 'xor';
+
+my sub has-whatever ( $node --> Bool:D ) {
+  my $found = False;
+  my sub walk ( $n ) { $found = True if $n ~~ RakuAST::Term::Whatever | RakuAST::WhateverCode::Argument; $n.visit-children( &walk ) unless $found }
+  walk $node;
+  $found;
+}
+
 my sub validate ( $node, Str:D $text --> Nil ) {
 
   my sub refuse ( Str $why ) { die X::Pakku::Spec.new: msg => "($text)", comment => "$why: not a version/auth/api selector" }
 
+  # (* > 1) & (* < 2) is not two selectors joined: Raku curries both stars into one code that takes two
+  # values; v1 | (* > 2) curries into a code that returns a junction, true for every version
+  my sub refuse-curry ( $infix, *@operand ) {
+    refuse "star code joined with { $infix.operator } (Raku curries it into one code: write all(* > 1, * < 2), any(...), none(...) or a range)"
+      if $infix ~~ RakuAST::Infix and $infix.operator eq any @CURRYING and @operand.first( &has-whatever );
+  }
+
   given $node {
     when RakuAST::StatementList                 { refuse 'more than one statement' unless .statements == 1 }
     when RakuAST::Statement::Expression         { }
-    when RakuAST::ApplyInfix                    { }
-    when RakuAST::ApplyListInfix                { }
+    when RakuAST::ApplyInfix                    { refuse-curry .infix, .left, .right }
+    when RakuAST::ApplyListInfix                { refuse-curry .infix, |.operands }
     when RakuAST::Infix                         { refuse "operator { .operator }" unless .operator eq any @INFIX }
     when RakuAST::ApplyPrefix                   { }
     when RakuAST::Prefix                        { refuse "operator { .operator }" unless .operator eq any @PREFIX }
@@ -67,7 +83,7 @@ my sub validate ( $node, Str:D $text --> Nil ) {
     when RakuAST::RatLiteral                    { }
     when RakuAST::NumLiteral                    { }
     when RakuAST::StrLiteral                    { }
-    when RakuAST::QuotedString                  { }
+    when RakuAST::QuotedString                  { refuse 'a quoted string that runs a command' if .processors.grep( 'exec' ); refuse "quote processor { .processors.join( ':' ) }" if .processors.grep( * ne any <words val quotewords> ) }
     when RakuAST::QuotedRegex                   { }
     when RakuAST::Circumfix::Parentheses        { }
     when RakuAST::SemiList                      { }
@@ -112,16 +128,16 @@ my sub selector ( Str:D $text, Bool:D :$versions = False ) {
 
   my $selector = EVAL $ast;
 
-  # (* < 2) & (* > 1) is fine, * < 2 & * > 1 is one code with two stars: it can never match one version
-  die X::Pakku::Spec.new: msg => "($text)", comment => "a selector takes one value, this one takes { $selector.arity } (use parens: (* > 1) & (* < 2))"
-    if $selector ~~ Code and $selector.arity > 1;
+  # 1 < * < * is one code with two stars: it can never match one version (.WHAT does not autothread a junction)
+  die X::Pakku::Spec.new: msg => "($text)", comment => "a selector takes one value, this one takes { $selector.arity } (write all(* > 1, * < 2), any(...) or a range)"
+    if $selector.WHAT ~~ Code and $selector.arity > 1;
 
   $selector;
 
 }
 
 # the <...> form: Version semantics (1.2 is a prefix, + and * wildcards), auth with * globs
-my sub version-matcher ( Str:D $text ) { Version.new: $text.subst( / ^ 'v' <?before \d> /, '' ) }
+my sub version-matcher ( Str:D $text ) { Version.new: $text }   # v2.0 is not 2.0 for Rakudo either: the v is a part
 
 my sub auth-matcher ( Str:D $text ) {
 
@@ -138,15 +154,19 @@ my class CodeText { has Str:D $.text is required }
 
 # Rakudo's own matcher: candidates() smartmatches these, we only stop the base
 # class from coercing a selector into a Version
+# is there a matcher? `with` and `//` would ask a junction, which answers with a junction (none(v1) is "false"
+# when asked if it is defined); .WHAT does not autothread. An Any selector means no constraint, like no matcher.
+my sub present ( Mu $matcher --> Bool:D ) { not $matcher.WHAT =:= Any }   # Mu: a junction argument must not autothread the call
+
 class Pakku::DependencySpecification is CompUnit::DependencySpecification {
 
   has $.ver-selector;
   has $.auth-selector;
   has $.api-selector;
 
-  method version-matcher { $!ver-selector  // callsame }
-  method auth-matcher    { $!auth-selector // callsame }
-  method api-matcher     { $!api-selector  // callsame }
+  method version-matcher { present( $!ver-selector  ) ?? $!ver-selector  !! callsame }
+  method auth-matcher    { present( $!auth-selector ) ?? $!auth-selector !! callsame }
+  method api-matcher     { present( $!api-selector  ) ?? $!api-selector  !! callsame }
 
 }
 
@@ -236,9 +256,9 @@ class Pakku::Spec::Raku does Spec {
   multi method ACCEPTS ( ::?CLASS:D: %h --> Bool:D ) {
 
     # a selector that dies on a value (1e3 against a version, say) simply does not match it
-    with $!ver-matcher  { return False unless try version( %h<ver> // %h<version> ) ~~ $_ }
-    with $!auth-matcher { return False unless try ( %h<auth> // '' )                ~~ $_ }
-    with $!api-matcher  { return False unless try version( %h<api> )                ~~ $_ }
+    if present $!ver-matcher  { return False unless try version( %h<ver> // %h<version> ) ~~ $!ver-matcher  }
+    if present $!auth-matcher { return False unless try ( %h<auth> // '' )                ~~ $!auth-matcher }
+    if present $!api-matcher  { return False unless try version( %h<api> )                ~~ $!api-matcher  }
 
     True;
 
@@ -253,6 +273,7 @@ class Pakku::Spec::Native does Spec { }
 class Pakku::Spec::Perl   does Spec { }
 
 # S22 alternatives: the first one the recommendation manager can provide wins
+# alternatives: one of them (S22 "any")
 class Pakku::Spec::Any {
 
   has @.spec is required;
@@ -266,6 +287,23 @@ class Pakku::Spec::Any {
   multi method ACCEPTS ( ::?CLASS:D: $topic --> Bool:D ) { so @!spec.first( -> $spec { $topic ~~ $spec } ) }
 
   submethod TWEAK ( ) { $!id = sha1 @!spec.map( *.id ).join( ',' ) }
+
+}
+
+# a group: all of them (S22: a list inside the alternatives, or inside depends, is a list of dependencies)
+class Pakku::Spec::All {
+
+  has @.spec is required;
+
+  has Str $.id is built( False );
+
+  method name ( ) { 'all(' ~ @!spec.map( *.name ).join( ' & ' ) ~ ')' }
+  method gist ( ) { 'all(' ~ @!spec.map( *.gist ).join( ' & ' ) ~ ')' }
+  method Str  ( ) { self.gist }
+
+  multi method ACCEPTS ( ::?CLASS:D: $topic --> Bool:D ) { not @!spec.first( -> $spec { not $topic ~~ $spec } ) }
+
+  submethod TWEAK ( ) { $!id = sha1 'all:' ~ @!spec.map( *.id ).join( ',' ) }
 
 }
 
@@ -323,13 +361,15 @@ class Pakku::Spec {
 
   }
 
-  multi method new ( @spec! ) { Pakku::Spec::Any.new: spec => @spec.map( { self.new: $_ } ).Array }
+  multi method new ( @spec! ) { Pakku::Spec::All.new: spec => @spec.map( { self.new: $_ } ).Array }
 
   multi method new ( %spec! ) {
 
-    return self.new: %spec<any>.List if %spec<any>;
+    return Pakku::Spec::Any.new: spec => %spec<any>.List.map( { self.new: $_ } ).Array if %spec<any>;
 
     my %h = %spec;
+
+    %h<ver> //= $_ with %h<version>:delete;   # version and ver are the same key, before the adverbs of name are merged
 
     # S22 hash form: "name" may itself be a use string with adverbs; explicit keys win
     if %h<name> ~~ Str and %h<name>.contains( ':' ) {
@@ -342,8 +382,6 @@ class Pakku::Spec {
     }
 
     die X::Pakku::Spec.new: msg => %h.raku, comment => 'no name!' unless %h<name>;
-
-    %h<ver> //= $_ with %h<version>:delete;
 
     # (...) values from the grammar become selectors; everything else is a string
     for <ver auth api> -> $key {

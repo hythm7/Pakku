@@ -51,4 +51,10 @@ my @deps = $core.get-deps( $core.satisfy( spec => Pakku::Spec.new( 'Fixture::Bar
 ok @deps.map( *.name ).grep( 'Fixture::Foo' ), 'get-deps resolves Fixture::Bar -> Fixture::Foo';
 ok @deps.map( *.name ).first( 'Fixture::Qux' | 'Fixture::Baz' ), 'get-deps resolves one alternative of the any-group';
 
+# S22: a group inside the alternatives is taken whole, and only when all of it can be met
+my @group = $core.get-deps( Pakku::Meta.new( %( name => 'Dev::Group', version => '1', depends => [ { any => [ 'Fixture::Nope', [ 'Fixture::Foo', 'Fixture::Baz' ] ] } ] ) ) );
+ok @group.map( *.name ).grep( 'Fixture::Foo' ) && @group.map( *.name ).grep( 'Fixture::Baz' ), 'a group inside any resolves every member';
+my @first = $core.get-deps( Pakku::Meta.new( %( name => 'Dev::First', version => '1', depends => [ { any => [ [ 'Fixture::Foo', 'Fixture::Nope' ], 'Fixture::Baz' ] } ] ) ) );
+ok @first.map( *.name ).grep( 'Fixture::Baz' ) && not @first.map( *.name ).grep( 'Fixture::Foo:ver<0.3>' ), 'a group with a member nobody has is passed over for the next alternative';
+
 done-testing;

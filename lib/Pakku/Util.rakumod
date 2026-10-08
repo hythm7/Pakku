@@ -103,7 +103,7 @@ sub meta-file ( IO::Path:D $dir --> IO::Path ) is export {
 # A Version from META data: a leading 'v' is tolerated, absent means 0 (as Rakudo's repos do).
 sub version ( $v --> Version:D ) is export {
 
-  Version.new( ( $v // 0 ).Str.subst( / ^ 'v' <?before \d> /, '' ) );
+  Version.new( ( $v // 0 ).Str );   # a leading v is a version part for Rakudo: so it is here
 
 }
 

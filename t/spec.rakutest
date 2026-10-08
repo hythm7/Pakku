@@ -163,10 +163,12 @@ for (
 
 }
 
-ok { name => 'Foo', version => 'v0.0.5' } ~~ Pakku::Spec.new( 'Foo:ver<0.0.5>' ), 'a leading v in a META version is tolerated';
+ok  { name => 'Foo', version => 'v0.0.5' } ~~ Pakku::Spec.new( 'Foo:ver<v0.0.5>' ), 'a leading v is a version part, as it is for Rakudo';
+nok { name => 'Foo', version => 'v0.0.5' } ~~ Pakku::Spec.new( 'Foo:ver<0.0.5>' ),  'so v0.0.5 is not 0.0.5 (use agrees)';
 
 for 'Foo:ver({ .substr(0,5) eq "cpan:" })', 'Foo:ver(say "pwned"; v1)', 'Foo:auth($*HOME)', 'Foo:ver(Version.new("1"))', 'Foo:ver(* > )',
-    'Foo:ver(* < 2 & * > 1)',
+    'Foo:ver(* < 2 & * > 1)', 'Foo:ver((* >= 1.2) & (* < 2))', 'Foo:ver(v1.2 | (* > v2))', 'Foo:ver(* > 1 && * < 2)', 'Foo:ver(* > 1 or * < 2)',
+    'Foo:auth(qx{true})', 'Foo:auth(qqx{true})', 'Foo:auth(Q:x{true})', 'Foo:auth(q:x{true})', 'Foo:auth(q:w:x{true})',
     'Foo:auth(/ (a+)+ b /)', 'Foo:auth(/ [ a | aa ]* b /)', 'Foo:auth(/ $<x>=[ a+ ]+ /)',
     'Foo:auth(/ { say 1 } /)', 'Foo:auth(/ <{ "x" }> /)', 'Foo:auth(/ <?{ 1 }> /)', 'Foo:auth(/ <&say> /)', 'Foo:auth(/ $*CWD /)', 'Foo:auth(/ <~~> /)', 'Foo:auth(/ <EVAL> /)' -> $bad {
   throws-like { Pakku::Spec.new: $bad }, X::Pakku::Spec, "$bad is refused";
@@ -177,6 +179,23 @@ ok  %( name => 'Foo', auth => 'zef:abc' ) ~~ Pakku::Spec.new( 'Foo:auth(/ ^ zef 
 nok %( name => 'Foo', auth => 'cpan:ABC' ) ~~ Pakku::Spec.new( 'Foo:auth(/ ^ zef ":" <[a..z]>+ $ /)' ), 'and does not match what it should not';
 ok  %( name => 'Foo', auth => 'zef:abc' ) ~~ Pakku::Spec.new( 'Foo:auth(/ <alpha>+ /)' ),          'built-in named rules are fine';
 ok  %( name => 'Foo', auth => 'cpan:ABC' ) ~~ Pakku::Spec.new( 'Foo:auth(/ ^ [ zef | cpan ] ":" /)' ), 'an unquantified group is fine';
+
+# star code is joined with all( ), any( ), none( ), never with & or |
+ok  %( name => 'Foo', ver => '1.5' ) ~~ Pakku::Spec.new( 'Foo:ver(all(* >= 1.2, * < 2))' ), 'all( ) joins star code';
+nok %( name => 'Foo', ver => '2.5' ) ~~ Pakku::Spec.new( 'Foo:ver(all(* >= 1.2, * < 2))' ), 'and means both';
+ok  %( name => 'Foo', auth => 'zef:a' )  ~~ Pakku::Spec.new( 'Foo:auth(any(/^zef/, "cpan:x"))' ), 'a junction of a regex and a string: the regex side';
+ok  %( name => 'Foo', auth => 'cpan:x' ) ~~ Pakku::Spec.new( 'Foo:auth(any(/^zef/, "cpan:x"))' ), 'and the string side';
+nok %( name => 'Foo', auth => 'cpan:y' ) ~~ Pakku::Spec.new( 'Foo:auth(any(/^zef/, "cpan:x"))' ), 'and neither';
+ok  %( name => 'Foo', ver => '1.5' ) ~~ Pakku::Spec.new( 'Foo:ver(none(v1.2))' ), 'none( ) of a literal';
+nok %( name => 'Foo', ver => '1.2' ) ~~ Pakku::Spec.new( 'Foo:ver(none(v1.2))' ), 'excludes that literal';
+
+# S22: a list inside the alternatives is a group of dependencies, all of them
+is Pakku::Spec.new( %( any => [ 'Sereal', [ 'Archive::Compress', 'Archive::Zlib' ] ] ) ).gist, 'any(Sereal | all(Archive::Compress & Archive::Zlib))', 'a list inside any is a group';
+is Pakku::Spec.new( [ 'A', 'B' ] ).gist, 'all(A & B)', 'a nested list is a group';
+ok  Pakku::Spec.new( [ 'Foo:ver<1+>', 'Foo:auth<zef:a>' ] ).ACCEPTS( %( name => 'Foo', ver => '2', auth => 'zef:a' ) ), 'a group accepts what every member accepts';
+nok Pakku::Spec.new( [ 'Foo:ver<1+>', 'Foo:auth<zef:a>' ] ).ACCEPTS( %( name => 'Foo', ver => '2', auth => 'zef:b' ) ), 'and nothing less';
+
+is Pakku::Spec.new( %( name => 'Foo:ver<1>', version => '2' ) ).gist, 'Foo:ver<2>', 'an explicit version key wins over the adverb in name, like ver does';
 nok %( name => 'Foo', ver => '1' ) ~~ Pakku::Spec.new( 'Foo:ver(* > 1e3)' ), 'a selector that dies on a value does not match it';
 
 # --- S22 hash form and alternatives ---

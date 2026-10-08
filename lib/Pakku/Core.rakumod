@@ -59,6 +59,7 @@ multi sub provided-by ( Pakku::Meta:D $meta, Pakku::Spec::Raku:D $spec --> Bool:
   ( $meta.name eq $spec.name or ( $meta.meta<provides> // {} ){ $spec.name }:exists ) and $spec.ACCEPTS( $meta.meta );
 }
 multi sub provided-by ( Pakku::Meta:D $meta, Pakku::Spec::Any:D $spec --> Bool:D ) { so $spec.spec.first( { provided-by $meta, $_ } ) }
+multi sub provided-by ( Pakku::Meta:D $meta, Pakku::Spec::All:D $spec --> Bool:D ) { not $spec.spec.first( { not provided-by $meta, $_ } ) }
 multi sub provided-by ( $, $ --> Bool:D ) { False }
 
 
@@ -274,6 +275,13 @@ multi method satisfy ( :$spec! where Pakku::Spec::Bin | Pakku::Spec::Native | Pa
 
 }
 
+# a group is not one dist: its members are resolved one by one (see !resolve)
+multi method satisfy ( Pakku::Spec::All:D :$spec! ) {
+
+  self!die( X::Pakku::Spec.new: msg => ~$spec, comment => 'a group of dependencies, not one dist' );
+
+}
+
 # alternatives: the first one the recman can recommend, in the order written (S22)
 multi method satisfy ( Pakku::Spec::Any:D :$spec! ) {
 
@@ -336,6 +344,24 @@ multi method satisfied ( Pakku::Spec::Perl:D :$spec! --> Bool:D ) {
 
 multi method satisfied ( Pakku::Spec::Any:D :$spec!, :@repo = @!repo --> Bool:D ) { so $spec.spec.first( -> $spec { samewith :$spec, :@repo } ) }
 
+multi method satisfied ( Pakku::Spec::All:D :$spec!, :@repo = @!repo --> Bool:D ) { not $spec.spec.first( -> $spec { not samewith :$spec, :@repo } ) }
+
+
+# can this spec be met: installed already, or the recman (or the cache) has it; a group needs all its members
+method !resolvable ( $spec --> Bool:D ) {
+
+  given $spec {
+    when Pakku::Spec::All  { not .spec.first( -> $member { not self!resolvable( $member ) } ) }
+    when Pakku::Spec::Any  { so  .spec.first( -> $member { self!resolvable( $member ) } ) }
+    when Pakku::Spec::Raku {
+      so self.satisfied( :$spec )
+        || ( $!recman and ( try $!recman.recommend( :$spec ) ).defined )
+        || ( $!cache  and $!cache.recommend( :$spec ).defined )
+    }
+    default { self.satisfied( :$spec ) }
+  }
+
+}
 
 # the dependencies of a dist, as the dists to install for them (see !resolve)
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False, :@exclude ) {
@@ -356,6 +382,28 @@ method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, B
   my sub resolve ( $spec, Bool:D :$top = False ) {
 
     return if %done{ $spec.id }++;
+
+    # a group: every member on its own (S22: a list inside the alternatives is a list of dependencies)
+    if $spec ~~ Pakku::Spec::All { resolve $_ for $spec.spec; return }
+
+    # alternatives: the first one that can be met, in the order written (S22); a group counts when all of it can
+    if $spec ~~ Pakku::Spec::Any {
+
+      return if not $top and not $contained and self.satisfied( :$spec );
+
+      my $pick = $spec.spec.first( -> $alternative { self!resolvable( $alternative ) } );
+
+      without $pick {
+        log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
+        self!die( X::Pakku::Spec.new: msg => ~$spec );
+        return;
+      }
+
+      resolve $pick, :$top;
+      return;
+
+    }
+
     return if $spec ~~ Pakku::Spec::Raku and $spec.name eq any @excluded;
     return if @meta.first( -> $meta { provided-by $meta, $spec } );
     return if not $top and not ( $contained and $spec ~~ Pakku::Spec::Raku | Pakku::Spec::Any ) and self.satisfied( :$spec );

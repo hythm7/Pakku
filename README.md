@@ -472,7 +472,8 @@ dist:api<2>
 dist:ver(* > 1.2)           # a selector: anything Raku can smartmatch a version against
 dist:ver(1.2 .. 2)          # a range, numbers inside ver( ) and api( ) are versions
 dist:ver(v1.2 | v1.4)       # a junction
-dist:ver((* >= 1.2) & (* < 2))
+dist:ver(all(* >= 1.2, * < 2))  # both; any( ) and none( ) likewise
+dist:ver(v1.2 ..^ v2)           # or a range
 dist:auth(/^ zef /)         # a regex
 dist:ver(Any)               # anything, really
 </pre>
@@ -481,15 +482,19 @@ Selectors are parsed and evaluated by Raku itself, with one rule: they are data,
 Literals, versions, ranges, junctions, regexes, `*` and the comparison and junction operators
 are welcome; blocks, calls and variables are refused, because a spec also comes from other
 people's META files and from the ecosystem index, and nobody wants `pakku search` running
-somebody else's code. Quote the spec in a shell: `pakku add 'dist:ver(* > 1.2)'`. One `*` per
-selector: `* > 1 & * < 2` is a single piece of code with two stars, write `(* > 1) & (* < 2)`.
+somebody else's code. Quote the spec in a shell: `pakku add 'dist:ver(* > 1.2)'`. One `*` per selector: `* > 1 & * < 2`,
+and `(* > 1) & (* < 2)` too, is a single piece of code with two stars as far as Raku is concerned
+(junction and logical operators curry), so Pakku refuses it; write `all(* > 1, * < 2)`, `any(...)`,
+`none(...)` or a range.
 
 The same specs work in `META6.json` `depends`, in every form S22 describes: plain strings, the hash
 form (`name`, `ver`, `auth`, `api`, `from`, `hints`), `any` alternatives (the first one the ecosystem
 can serve wins), `runtime` / `build` / `test` phases with `requires` / `recommends` / `suggests`
-(only `requires` are required), `by-distro.name`, `by-kernel.name`, `by-env.VAR`, `by-raku.version`
-and friends, and `:from<bin>`, `:from<native>`, `:from<Perl5>` for what Pakku can check but not
-install.
+(only `requires` are required), a list inside the alternatives (all of those), one dependency object
+as the whole `depends`, `by-distro.name`, `by-kernel.name`, `by-env.VAR`, `by-raku.version` and friends,
+and `:from<bin>`, `:from<native>`, `:from<Perl5>` for what Pakku can check but not install. A version
+with a leading `v` is what Rakudo makes of it: `v2.0` is a different version from `2.0`, for `pakku` and
+for `use` alike.
 
 > [!NOTE]
 > Rakudo itself still turns the selector of a `use dist:ver(...)` into a plain string at run time.

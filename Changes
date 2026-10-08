@@ -55,8 +55,9 @@ chou  2026-10-07
       every libarchive return value and removes half extracted dists.
     - Dependency resolution: one visited set per run, `exclude` by name, a spec satisfied by a
       dist chosen earlier in the same run (one Foo for Foo:ver<0.2+> and a bare Foo),
-      recommends/suggests are no longer hard requirements, Int apis match, leading `v` versions
-      match and sort, `any` groups after the first are not dropped.
+      recommends/suggests are no longer hard requirements, Int apis match, `any` groups after the
+      first are not dropped; a version with a leading `v` means what it means to Rakudo (a part),
+      so Pakku and `use` agree.
     - Builders get their META as JSON (the .raku literal was parsed as a block, every dist with
       a `builder` failed to build).
     - `pakku update` no longer removes another author's dist of the same name; an installed
@@ -88,7 +89,13 @@ chou  2026-10-07
       named with 40 hex digits (GitHub commit archives) rejected as checksum mismatches, an absent
       index hiding the cache behind "could not satisfy", a 300 s cap on index downloads, regexes
       with quantified groups (catastrophic backtracking) and code inside regexes accepted as
-      selectors, credentials in the debug log of the curl/wget/git command lines.
+      selectors, credentials in the debug log of the curl/wget/git command lines. A second pass on
+      the spec machinery: qx{ } strings in a selector ran a command at parse time; `(* > 1) & (* < 2)`
+      (as the README itself advised) is one curried code and is now refused with the right advice
+      (all(* > 1, * < 2)); a junction mixing code and literals crashed the arity check; a list inside
+      `any` was read as more alternatives instead of a group that must all be satisfied; `depends`
+      given as one dependency object (S22's by-vm example) or one `any` yielded no dependencies;
+      an explicit `version` key lost to a `:ver<>` adverb inside `name`.
 
   Internals
     - Pakku::Util, Pakku::Fetch, Pakku::Curl, Pakku::Collapse, Pakku::Recman::Index,

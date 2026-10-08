@@ -101,7 +101,16 @@ submethod TWEAK ( ) {
 
     when Positional  { self!add: 'runtime', $_ }
 
-    when Associative { for <runtime test build> -> $phase { with .{ $phase } { self!add: $phase, $_ } } }
+    when Associative {
+
+      if .keys.any eq any <runtime test build> { for <runtime test build> -> $phase { with .{ $phase } { self!add: $phase, $_ } } }
+
+      # one dependency object (S22's by-vm example: the only dependency, picked by the running VM)
+      elsif .<name> or .<any> { self!add: 'runtime', [ $_ ] }
+
+      else { log '🐞', header => 'MTA', msg => $!dist, comment => 'depends: not a list, a phase object or a dependency, ignored!' }
+
+    }
 
   }
 
@@ -113,9 +122,21 @@ method !add ( Str:D $phase, $deps ) {
 
     when Positional  { %!deps{ $phase }<requires>.append: .List }
 
-    when Associative { for <requires recommends suggests> -> $level { with .{ $level } { %!deps{ $phase }{ $level }.append: .List } } }
+    when Associative {
 
-    default { die X::Pakku::Meta.new: msg => $!dist, comment => "$phase dependencies must be a list or an object!" }
+      if .keys.any eq any <requires recommends suggests> {
+        for <requires recommends suggests> -> $level {
+          with .{ $level } { $_ ~~ Positional ?? %!deps{ $phase }{ $level }.append( .List ) !! %!deps{ $phase }{ $level }.push( $_ ) }
+        }
+      }
+
+      elsif .<name> or .<any> { %!deps{ $phase }<requires>.push: $_ }   # one dependency object
+
+      else { log '🐞', header => 'MTA', msg => $!dist, comment => "$phase dependencies: not a list, a level object or a dependency, ignored!" }
+
+    }
+
+    default { log '🐞', header => 'MTA', msg => $!dist, comment => "$phase dependencies: not a list or an object, ignored!" }
 
   }
 

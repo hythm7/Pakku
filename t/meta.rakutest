@@ -156,6 +156,14 @@ throws-like { Pakku::Meta.new( $dir ) }, X::Pakku::Meta, 'invalid JSON dies with
 my $g = Pakku::Meta.new( { name => 'X', version => '1', depends => [ 'Zed', { any => [ 'elinks:from<bin>', 'lynx:from<bin>' ] }, 'Abc' ], provides => { 'X' => 'lib/X.rakumod' } } ).gist( :details ).subst( / \e \[ \d+ m /, '', :g );
 is $g, "MTA: ｢X:ver<1>:auth<>:api<>｣\nDEP: ｢Abc｣\nDEP: ｢Zed｣\nDEP: ｢any(elinks:from<bin> | lynx:from<bin>)｣\nPRV: ｢X｣", 'details gist: no stray spaces, alternatives on one line';
 
+# depends as one dependency object (S22's by-vm example), as one any object, a phase or a level given as one object
+is Pakku::Meta.new( %( name => 'V', version => '1', depends => %( name => %( 'by-vm.name' => %( moar => 'Low::Level::Backend::MoarVM', jvm => 'Low::Level::Backend::JVM', '' => 'Low::Level::Backend::Generic' ) ) ) ) ).deps( :deps ).map( *.name ).join( ' ' ),
+  $*VM.name eq 'moar' ?? 'Low::Level::Backend::MoarVM' !! $*VM.name eq 'jvm' ?? 'Low::Level::Backend::JVM' !! 'Low::Level::Backend::Generic', 'depends as one dependency object picked by the VM (S22)';
+is Pakku::Meta.new( %( name => 'V', version => '1', depends => %( any => [ 'A', 'B' ] ) ) ).deps( :deps ).head.gist, 'any(A | B)', 'depends as one any object';
+is Pakku::Meta.new( %( name => 'V', version => '1', depends => %( runtime => %( name => 'A' ) ) ) ).deps( :deps ).map( *.name ).join, 'A', 'a phase given as one dependency object';
+is Pakku::Meta.new( %( name => 'V', version => '1', depends => %( runtime => %( requires => %( name => 'A' ) ) ) ) ).deps( :deps ).map( *.name ).join, 'A', 'a level given as one dependency object';
+is Pakku::Meta.new( %( name => 'V', version => '1', depends => [ 'A', [ 'B', 'C' ] ] ) ).deps( :deps ).map( *.gist ).join( ' ' ), 'A all(B & C)', 'a list inside depends is a group';
+
 # "" is what a by-* default leaves behind (File::Which); a broken spec string is skipped with a warning
 is Pakku::Meta.new( %( name => 'Dev::Odd', version => '1', depends => [ '', 'Fixture::Foo', 'Broken:ver(' ] ) ).deps( :deps ).map( *.name ).join( ' ' ), 'Fixture::Foo', 'an empty dependency is no dependency, a broken one is skipped';
 
