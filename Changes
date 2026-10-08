@@ -1,5 +1,21 @@
 Revision history for Pakku
 
+chou.1  2026-10-08
+
+  chou met three operating systems and came back with notes.
+
+  - `pakku add 'dist:ver<1.2+>'` (any :ver / :auth / :api on the command line) no longer
+    dies on Rakudo 2026.09.
+  - Apple Silicon: fetching works. libcurl's options do not survive NativeCall there, so the
+    curl binary does the fetching on those Macs.
+  - Windows: the index is no longer refreshed on every run (Rakudo reads file dates as 1969
+    there, a refresh now writes its own time down), a fez tarball's SHA-1 is read from
+    sha1sum's Windows output instead of failing as a mismatch, BIN lines show up, and the
+    sweep of old temporary directories keeps its hands off what it can not date.
+  - A pakku that reinstalled itself could refuse to start (Missing or wrong version of
+    dependency ... CompUnit::Repository::Staging). bin/pakku loads Staging first again.
+  - CI runs the whole suite, network included, on Linux, macOS and Windows.
+
 chou  2026-10-07
 
   The ecosystem release. recman.pakku.org is gone; Pakku now lives where the dists live.
