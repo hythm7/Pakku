@@ -1,5 +1,3 @@
-use CompUnit::Repository::Staging;
-
 use X::Pakku;
 use Pakku::Log;
 use Pakku::Spec;
@@ -15,6 +13,13 @@ use Pakku::Grammar::Cmd;
 unit role Pakku::Core;
 
 my constant IS-WIN = Rakudo::Internals.IS-WIN();
+
+# CompUnit::Repository::Staging is loaded when first needed, never with `use`, and is no type in a signature here.
+# A staged install precompiles in a process whose repo chain holds a Staging repo: the class is loaded
+# before the module is compiled, so `use` records no dependency on it, and the precompiled Pakku::Core
+# then dies wherever Staging is not loaded already (Missing or wrong version of dependency /
+# SC not yet resolved, https://github.com/rakudo/rakudo/issues/5199).
+my sub staging ( ) { state $class = do { require ::( 'CompUnit::Repository::Staging' ); ::( 'CompUnit::Repository::Staging' ) } }
 
 has %!cnf;
 
@@ -126,10 +131,10 @@ method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$t
 }
 
 method test (
-  CompUnit::Repository::Staging:D :$stage!,
-  Distribution::Locally:D         :$dist!,
-  Bool                            :$xtest,
-                                  :$repo,
+                          :$stage!,
+  Distribution::Locally:D :$dist!,
+  Bool                    :$xtest,
+                          :$repo,
   ) {
 
   my @dir = <tests t>;
@@ -186,9 +191,9 @@ method test (
 }
 
 method build (
-  CompUnit::Repository::Staging:D :$stage!,
-  Distribution::Locally:D         :$dist!,
-                                  :$repo,
+                          :$stage!,
+  Distribution::Locally:D :$dist!,
+                          :$repo,
   ) {
 
   my $prefix  = $dist.prefix.absolute.IO;
@@ -560,7 +565,21 @@ method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Boo
 
   }
 
-  $stage.install: $dist, :$precompile;
+  if $precompile {
+
+    # twice: the first install only tells which units the dist has, so that what other repos of the chain
+    # still hold precompiled under the same ids is dropped before anything is compiled against it
+    $stage.install: $dist, :!precompile;
+
+    self!forget-precomp: $stage, $dist;
+
+    $stage.install: $dist, :precompile, :force;
+
+  } else {
+
+    $stage.install: $dist, :!precompile;
+
+  }
 
   .close for @tap;
 
@@ -569,6 +588,28 @@ method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Boo
   log '🧚', header => 'STG', msg => ~$dist;
 
   self.test: :$stage, :$dist, :$xtest, :$repo if $test;
+
+}
+
+# A unit's id comes from the dist's identity and the unit's name: adding the same release again gives the
+# same ids. What an earlier install of it left precompiled in the other repos of the chain (the target, and
+# the home repo, where Rakudo recompiles what it finds outdated) would be picked up while the stage compiles,
+# and the staged files would end up compiled against units that are not the staged ones: outdated on arrival.
+method !forget-precomp ( $stage, Distribution::Locally:D $dist --> Nil ) {
+
+  my $meta-file = $stage.prefix.add( 'dist' ).add( $dist.id );
+
+  return unless $meta-file.f;
+
+  my @id = Rakudo::Internals::JSON.from-json( $meta-file.slurp ).<provides>.values.map( *.values.head.<file> );
+
+  my $compiler = CompUnit::PrecompilationId.new-without-check: $*RAKU.compiler.id;
+
+  for $stage.repo-chain.grep( CompUnit::Repository::Installation ).grep( * !=== $stage ) -> $repo {
+
+    for @id -> $id { try $repo.precomp-store.delete: $compiler, CompUnit::PrecompilationId.new-without-check( $id ) }
+
+  }
 
 }
 
@@ -645,7 +686,7 @@ method !stage-dists (
   # (a custom path) goes first, so a serial add's later dists find the ones deployed before them
   my $next = @!repo.first( *.prefix eq $repo.prefix ) ?? $*REPO !! $repo;
 
-  my $stage := CompUnit::Repository::Staging.new:
+  my $stage := staging.new:
     prefix    => $!stage.add( now.Num ),
     name      => $repo.name,
     next-repo => $next;

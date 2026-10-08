@@ -3,10 +3,6 @@
 $*OUT.out-buffer = 0;
 $*ERR.out-buffer = 0;
 
-# Staging is loaded here, before Pakku: a pakku that reinstalled itself has been seen to die at startup with
-# "Missing or wrong version of dependency ... (CompUnit::Repository::Staging)" (from Pakku::Core) without it
-use CompUnit::Repository::Staging;
-
 use Pakku;
 
 Pakku.metamorph.fly;

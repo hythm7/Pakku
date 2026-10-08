@@ -2,9 +2,6 @@
 
 use Test;
 
-# needed otherwise get 'SC not yet resolved error'
-use CompUnit::Repository::Staging;
-
 use Pakku;
 
 # Serial add into a custom repo: each dist is deployed before the next is staged, so the tests of

@@ -57,4 +57,9 @@ ok @group.map( *.name ).grep( 'Fixture::Foo' ) && @group.map( *.name ).grep( 'Fi
 my @first = $core.get-deps( Pakku::Meta.new( %( name => 'Dev::First', version => '1', depends => [ { any => [ [ 'Fixture::Foo', 'Fixture::Nope' ], 'Fixture::Baz' ] } ] ) ) );
 ok @first.map( *.name ).grep( 'Fixture::Baz' ) && not @first.map( *.name ).grep( 'Fixture::Foo:ver<0.3>' ), 'a group with a member nobody has is passed over for the next alternative';
 
+# rakudo/rakudo#5199: a module precompiled in a staged install that says `use CompUnit::Repository::Staging`
+# does not load afterwards unless Staging is loaded already. Pakku loads it at runtime.
+my @uses = Rakudo::Internals.DIR-RECURSE( ~$*PROGRAM.parent.parent.add( 'lib' ) ).grep( *.ends-with: '.rakumod' ).grep( { .IO.slurp ~~ / ^^ \h* [ use | need ] \h+ 'CompUnit::Repository::Staging' / } );
+is-deeply @uses, [], 'no module of Pakku loads CompUnit::Repository::Staging at compile time';
+
 done-testing;
