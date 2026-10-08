@@ -9,11 +9,12 @@ on:
 jobs:
   raku:
     strategy:
+      fail-fast: false
       matrix:
         os:
           - windows-latest
         raku-version:
-          - '2025.06'
+          - '2025.06.1'
           - 'latest'
     runs-on: ${{ matrix.os }}
     steps:
