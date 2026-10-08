@@ -23,7 +23,10 @@ raku -I. bin/pakku add .
 zef install Pakku
 
 # <b>Upgrade</b>
-pakku add Pakku
+pakku update Pakku
+
+# <b>Upgrade from chou or chou.1</b> (their update cleans too much, see Changes)
+pakku update noclean Pakku
 </pre>
 
 Usage

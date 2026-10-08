@@ -1,5 +1,14 @@
 Revision history for Pakku
 
+chou.2  2026-10-08
+
+  - `pakku update` (and `pakku state clean`) removed the release it had just added, whenever
+    the new version starts like the old one: 1.2 -> 1.2.1, or chou -> chou.1, Pakku itself
+    included. To Raku ver<1.2> is a prefix, and cleaning asked for ver<1.2>. Cleaning now
+    removes the one dist it names.
+    Coming from chou or chou.1: `pakku update noclean Pakku`.
+  - README: upgrading is `pakku update Pakku` (`pakku add Pakku` is happy with the Pakku it finds).
+
 chou.1  2026-10-08
 
   chou met three operating systems and came back with notes.
