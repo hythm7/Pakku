@@ -131,7 +131,7 @@ $rea.mkdir;
 my @index = Rakudo::Internals::JSON.from-json( $fixtures.add( 'index.json' ).slurp ).List;
 $rea.add( 'META.json' ).spurt: Rakudo::Internals::JSON.to-json( @index.map( { my %m = $_; %m<source-url> = ~$fixtures.add( %m<path> ); %m<path>:delete; %m } ).Array );
 my $urls = Pakku::Recman::Ecosystem.new: name => 'rea', mirrors => [ ~$rea ~ '/' ], index => 'META.json', source => 'source-url', refresh => 24, store => $tmp.add( 'rea-store' ), :$fetch;
-is $urls.recommend( spec => spec( 'Fixture::Bar' ) )<source>, ~$fixtures.add( 'mirror' ).add( 'Bar-1.0.tar.gz' ), 'ecosystem: source-url mode uses the entry url as is';
+is $urls.recommend( spec => spec( 'Fixture::Bar' ) )<source>, ~$fixtures.add( 'mirror/Bar-1.0.tar.gz' ), 'ecosystem: source-url mode uses the entry url as is';
 
 # --- Pakku::Recman: dispatch by priority, lazily ---
 

@@ -31,6 +31,6 @@ my $inst = CompUnit::Repository::Installation.new: prefix => $repo;
 
 ok $inst.candidates( 'Fixture::Bar' ), 'Fixture::Bar is installed';
 ok $inst.candidates( 'Fixture::Foo' ), 'its dependency too';
-ok $repo.add( 'bin' ).add( 'bar' ).e, 'bin wrapper for bar was deployed';
+ok $repo.add( 'bin' ).dir.first( *.basename eq 'bar' | 'bar.bat' ), 'bin wrapper for bar was deployed';
 
 done-testing;

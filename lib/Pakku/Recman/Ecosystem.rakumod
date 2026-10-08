@@ -43,7 +43,15 @@ method !bucket-file ( Str:D $hh --> IO::Path:D ) { self!derived.add( 'by-name' )
 
 my sub bucket-of ( Str:D $name --> Str:D ) { sha1( $name ).substr( 0, 2 ).lc }
 
-method age ( --> Duration ) { self.index-file.e ?? now - self.index-file.modified !! Duration }
+# since the last refresh: the mirror file is written by every refresh, the index file may carry
+# the date of where it came from (a copy from a directory mirror keeps it on Windows)
+method age ( --> Duration ) {
+
+  return Duration unless self.index-file.e;
+
+  now - ( self!mirror-file.e ?? self!mirror-file !! self.index-file ).modified;
+
+}
 
 method stale ( --> Bool:D ) {
 

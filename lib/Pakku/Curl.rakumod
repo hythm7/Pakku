@@ -67,9 +67,12 @@ my Bool $initialized = False;
 
 # Windows ships curl.exe but no libcurl.dll (and a foreign libcurl would not
 # share our C runtime's FILE*), so the binding is POSIX only.
+# Not on Apple Silicon either: curl_easy_setopt is variadic, its arguments travel on the stack
+# there and NativeCall hands them over in registers (curl: (3) URL using bad/illegal format).
 method available ( ::?CLASS:U: --> Bool:D ) {
 
   return False if IS-WIN;
+  return False if $*KERNEL.name eq 'darwin' and $*KERNEL.hardware ~~ / arm64 | aarch64 /;
 
   so try lib;
 
