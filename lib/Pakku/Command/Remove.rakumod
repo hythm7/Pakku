@@ -4,7 +4,9 @@ use Pakku::Spec;
 unit role Pakku::Command::Remove;
 
 
-multi method fly ( 'remove', :@spec!, Str :$from ) {
+# exact: the spec is the identity of one installed dist, and only that dist goes. A version in a spec is
+# a prefix (ver<1.2> is also 1.2.1, ver<chou> also chou.1): cleaning the older release must not take the new one along
+multi method fly ( 'remove', :@spec!, Str :$from, Bool:D :$exact = False ) {
 
   log '🧚', header => 'RMV', msg => ~@spec;
 
@@ -21,6 +23,8 @@ multi method fly ( 'remove', :@spec!, Str :$from ) {
 
         my $spec = Pakku::Spec.new: $str;
         my @dist = $repo.candidates( $spec.dependency-specification );
+
+        @dist .= grep( { .Str eq $str } ) if $exact;
 
         log '🐛', header => 'SPC', msg => ~$spec, comment => "{ $repo.prefix}: not added!" unless @dist;
 

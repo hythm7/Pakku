@@ -42,4 +42,25 @@ ok ( $repo.add( 'bin' ).d and $repo.add( 'bin' ).dir.first( *.basename eq 'bar' 
 my $meta = $inst.candidates( 'Fixture::Bar' ).head.meta;
 is $meta<ver>, '1.0', 'installed Fixture::Bar has the expected version';
 
+# cleaning an older release: ver<1.2> is a prefix of 1.2.1, the exact remove takes the one dist it was given
+for '1.2', '1.2.1' -> $ver {
+
+  my $dir = $tmp.add( "solo-$ver" );
+
+  $dir.add( 'lib' ).add( 'Fixture' ).mkdir;
+  $dir.add( 'lib' ).add( 'Fixture' ).add( 'Solo.rakumod' ).spurt: "unit module Fixture::Solo;\n";
+  $dir.add( 'META6.json' ).spurt: Rakudo::Internals::JSON.to-json: %( name => 'Fixture::Solo', version => $ver, auth => 'zef:fixture', provides => %( 'Fixture::Solo' => 'lib/Fixture/Solo.rakumod' ) );
+
+  lives-ok { $pakku.fly: 'add', path => $dir, to => ~$repo, :!test }, "add Fixture::Solo $ver from a path";
+
+}
+
+my @solo = $inst.candidates( 'Fixture::Solo' ).map( *.Str ).sort;
+
+is +@solo, 2, 'both releases of Fixture::Solo are installed';
+
+lives-ok { $pakku.fly: 'remove', spec => [ @solo.first( *.contains: 'ver<1.2>' ) ], from => ~$repo, :exact }, 'exact remove of the older release';
+
+is-deeply $inst.candidates( 'Fixture::Solo' ).map( *.meta<ver>.Str ).List, ( '1.2.1', ), 'the newer release, whose version starts the same, is still there';
+
 done-testing;

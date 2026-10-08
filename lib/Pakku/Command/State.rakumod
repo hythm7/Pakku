@@ -82,7 +82,7 @@ multi method fly (
             log '🦋', header => 'CLN', msg => ~$spec;
 
             unless self!dont {
-              samewith 'remove', spec => $meta.dist.Array if $clean;
+              samewith 'remove', spec => $meta.dist.Array, :exact if $clean;
             }
 
           } );

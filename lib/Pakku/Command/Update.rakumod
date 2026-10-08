@@ -75,7 +75,7 @@ multi method fly (
 
     my @cln = self.state( :!updates ).values.grep( *.<cln> ).map( *.<meta>.Str );
 
-    samewith 'remove', spec => @cln if @cln;
+    samewith 'remove', spec => @cln, :exact if @cln;
 
   }
 
