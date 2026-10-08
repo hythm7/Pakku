@@ -1,1 +1,0 @@
-use Test; use Fixture::Foo; use Fixture::Foo::Util; is foo, 'foo 0.2', 'foo 0.2'; is util, 'util 0.2', 'util'; done-testing;

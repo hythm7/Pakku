@@ -1,4 +1,0 @@
-{ "name": "Fixture::Bar", "version": "1.0", "auth": "zef:a", "api": "1", "description": "Fixture Bar: deps with a version range and an any-group, a bin script and a resource", "license": "Artistic-2.0",
-  "provides": { "Fixture::Bar": "lib/Fixture/Bar.rakumod" },
-  "depends": [ "Fixture::Foo:ver<0.2+>:auth<zef:a>", { "any": [ "Fixture::Qux", "Fixture::Baz" ] } ],
-  "resources": [ "bar.txt" ], "tags": ["fixture"] }

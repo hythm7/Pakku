@@ -1,2 +1,0 @@
-{ "name": "Fixture::Foo", "version": "0.2", "auth": "zef:a", "api": "0", "description": "Fixture Foo 0.2", "license": "Artistic-2.0",
-  "provides": { "Fixture::Foo": "lib/Fixture/Foo.rakumod", "Fixture::Foo::Util": "lib/Fixture/Foo/Util.rakumod" }, "depends": [], "tags": ["fixture"] }
