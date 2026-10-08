@@ -579,7 +579,8 @@ method !deploy ( $stage, $repo, Bool:D :$reset = False ) {
 
   $stage.deploy;
 
-  my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str, file => *.ends-with( none <-m -j -js -m.bat -j.bat -js.bat> ) ).sort;
+  # one line per script: not the per-backend wrappers (-m, -j, -js) nor the .raku / .bat variants Rakudo writes
+  my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str, file => { not .IO.extension and not .ends-with( any <-m -j -js> ) } ).sort;
 
   log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
 

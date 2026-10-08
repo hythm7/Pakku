@@ -148,7 +148,7 @@ noprecomp           → no precompile
 <b>pakku add exclude Dep1 dist</b>                     # add dist and exclude Dep1 from dependencies
 <b>pakku add noprecomp notest  dist</b>                # add dist without testing and no precompilation
 <b>pakku add contained to   /opt/MyApp dist</b>        # add dist and all transitive deps to custom repo
-<b>pakku add to   vendor     dist1 dist2</b>           # add dist1 and dist2 to vendor repo even if they are installed
+<b>pakku add to   vendor     dist1 dist2</b>           # add dist1 and dist2 to vendor repo (force: even if they are installed elsewhere)
 <b>pakku add ./dist</b>                                # a directory with a META6.json
 <b>pakku add ./dist-1.0.tar.gz</b>                     # a tarball
 <b>pakku add https://host/dist-1.0.tar.gz</b>          # a tarball by URL
