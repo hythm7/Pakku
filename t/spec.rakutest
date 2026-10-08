@@ -224,7 +224,7 @@ isnt $any.id, Pakku::Spec.new( { any => [ 'A:ver<2>', 'B' ] } ).id, 'different a
 
 my $repo = CompUnit::Repository::Installation.new: prefix => $*TMPDIR.add( 'pakku-spec-test-' ~ $*PID );
 END { run 'rm', '-rf', $repo.prefix if $repo.prefix.e }
-$repo.install: Distribution::Path.new( $*PROGRAM.parent.add( 'fixtures' ).add( 'dists' ).add( 'Foo-0.2' ) );
+$repo.install: Distribution::Path.new( $*PROGRAM.parent.parent.add('fixtures').add( 'dists' ).add( 'Foo-0.2' ) );
 
 for 'Fixture::Foo', 'Fixture::Foo:ver<0.1+>', 'Fixture::Foo:ver(* > 0.1)', 'Fixture::Foo:ver(v0.1..*)', 'Fixture::Foo:auth(/^zef/)', 'Fixture::Foo:auth<zef:*>', 'Fixture::Foo:api(* >= 0)' -> $text {
   ok $repo.candidates( Pakku::Spec.new( $text ).dependency-specification ), "$text finds the installed Fixture::Foo 0.2";

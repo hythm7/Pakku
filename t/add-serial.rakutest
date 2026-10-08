@@ -10,7 +10,7 @@ use Pakku;
 # Serial add into a custom repo: each dist is deployed before the next is staged, so the tests of
 # Fixture::Bar must find Fixture::Foo in the custom repo, which is not in this process's chain.
 # (Its own process: a custom repo is registered as 'custom-lib', once per process.)
-my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+my $fixtures = $*PROGRAM.parent.parent.add('fixtures').add('dists').absolute;
 my $tmp      = $*TMPDIR.add( 'pakku-add-serial-test-' ~ $*PID );
 my $home     = $tmp.add('home');
 my $repo     = $tmp.add('repo');

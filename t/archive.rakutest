@@ -8,7 +8,7 @@ use Pakku::Archive;
 
 Pakku::Log.new: verbose => 'nothing';
 
-my $fixtures = $*PROGRAM.parent.add( 'fixtures' );
+my $fixtures = $*PROGRAM.parent.parent.add('fixtures');
 my $tmp      = $*TMPDIR.add( 'pakku-archive-test-' ~ $*PID );
 
 $tmp.mkdir;

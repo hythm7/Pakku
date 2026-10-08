@@ -10,7 +10,7 @@ use Pakku::Util;
 
 # End-to-end through an ecosystem index with tarballs: fetch + extract + install.
 # (Its own process: a custom repo is registered as 'custom-lib', once per process.)
-my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+my $fixtures = $*PROGRAM.parent.parent.add('fixtures').add('dists').absolute;
 my $tmp      = $*TMPDIR.add( 'pakku-add-eco-test-' ~ $*PID );
 
 $tmp.mkdir;

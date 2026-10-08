@@ -8,7 +8,7 @@ use CompUnit::Repository::Staging;
 use Pakku;
 
 # End-to-end: add Fixture::Bar (and its dependencies) from the offline fixture recman into a temporary repo.
-my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+my $fixtures = $*PROGRAM.parent.parent.add('fixtures').add('dists').absolute;
 my $tmp      = $*TMPDIR.add( 'pakku-add-test-' ~ $*PID );
 my $home     = $tmp.add('home');
 my $repo     = $tmp.add('repo');

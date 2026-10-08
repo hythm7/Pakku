@@ -12,7 +12,7 @@ use Pakku::Recman::Ecosystem;
 
 Pakku::Log.new: verbose => 'nothing';
 
-my $fixtures = $*PROGRAM.parent.add( 'fixtures' ).absolute.IO;
+my $fixtures = $*PROGRAM.parent.parent.add('fixtures').absolute.IO;
 my $tmp      = $*TMPDIR.add( 'pakku-recman-test-' ~ $*PID );
 
 $tmp.mkdir;

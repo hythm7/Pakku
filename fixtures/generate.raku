@@ -1,5 +1,5 @@
 #!/usr/bin/env raku
-# Regenerates t/fixtures/mirror/*.tar.gz and t/fixtures/index.json from t/fixtures/dists.
+# Regenerates fixtures/mirror/*.tar.gz and fixtures/index.json from fixtures/dists.
 # Dev-time tool only (needs a `tar` binary); the generated files are committed.
 my $here   = $*PROGRAM.parent;
 my $dists  = $here.add('dists');

@@ -4,8 +4,8 @@ use Test;
 
 use Pakku::Core;
 
-# A Core wired to the offline fixture ecosystem under t/fixtures (no network, see GitHub issue #40).
-my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+# A Core wired to the offline fixture ecosystem under fixtures (no network, see GitHub issue #40).
+my $fixtures = $*PROGRAM.parent.parent.add('fixtures').add('dists').absolute;
 
 my $core;
 
