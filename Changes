@@ -96,6 +96,11 @@ chou  2026-10-07
       `any` was read as more alternatives instead of a group that must all be satisfied; `depends`
       given as one dependency object (S22's by-vm example) or one `any` yielded no dependencies;
       an explicit `version` key lost to a `:ver<>` adverb inside `name`.
+    - From an end-to-end run before release: a self install from a clone ran the test fixtures'
+      own tests (fixtures live outside t/ now); a pakku reinstalling itself over its own files
+      could segfault (deploy copied over memory mapped precompiled files: files are now written
+      next to their destination and renamed over it); BIN lines named every wrapper variant;
+      File::Which's `{ "name": "" }` default dependency warned on every state/update/info.
 
   Internals
     - Pakku::Util, Pakku::Fetch, Pakku::Curl, Pakku::Collapse, Pakku::Recman::Index,

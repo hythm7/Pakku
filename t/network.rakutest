@@ -16,7 +16,7 @@ Pakku::Log.new: verbose => ( %*ENV<PAKKU_TEST_VERBOSE> // 'nothing' ), :!pretty,
 
 my $tmp = $*TMPDIR.add( 'pakku-network-test-' ~ $*PID );
 
-END { run 'rm', '-rf', $tmp if $tmp.e }
+END { run 'rm', '-rf', $tmp if $tmp.defined and $tmp.e }   # skip-all leaves $tmp unset
 
 my $fetch = Pakku::Fetch.new;
 

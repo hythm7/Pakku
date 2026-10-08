@@ -14,6 +14,8 @@ use Pakku::Grammar::Cmd;
 
 unit role Pakku::Core;
 
+my constant IS-WIN = Rakudo::Internals.IS-WIN();
+
 has %!cnf;
 
 has IO::Path $!home;
@@ -577,7 +579,7 @@ method !deploy ( $stage, $repo, Bool:D :$reset = False ) {
 
   try $stage.remove-artifacts; # trying for Windows
 
-  $stage.deploy;
+  self!move-in: $stage, $repo;
 
   # one line per script: not the per-backend wrappers (-m, -j, -js) nor the .raku / .bat variants Rakudo writes
   my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str, file => { not .IO.extension and not .ends-with( any <-m -j -js> ) } ).sort;
@@ -592,6 +594,32 @@ method !deploy ( $stage, $repo, Bool:D :$reset = False ) {
 
     $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id ).mkdir;
     $stage.prefix.add( 'dist' ).mkdir;
+
+  }
+
+}
+
+# what Rakudo's Staging.deploy does, with one difference: every file is written next to its
+# destination and renamed over it. A plain copy truncates the old file in place, and a running
+# raku (this very pakku, reinstalling itself) has those precompiled files memory mapped: segfault.
+method !move-in ( $stage, $repo --> Nil ) {
+
+  my $from    = $stage.prefix.absolute;
+  my $relpath = $from.chars;
+  my $to      = $repo.prefix;
+
+  for Rakudo::Internals.DIR-RECURSE( $from ) -> $path {
+
+    my $destination = $to.add( $path.substr( $relpath ) );
+    my $part        = $destination.sibling( $destination.basename ~ ".$*PID.part" );
+
+    $destination.parent.mkdir;
+
+    $path.IO.copy: $part;
+
+    try unlink $destination if IS-WIN;   # rename over an existing file is not atomic there
+
+    $part.rename: $destination;
 
   }
 
@@ -883,8 +911,16 @@ method repo-from-spec ( Str :$spec ) { repo-from-spec $spec }
 
 method clear ( ) {
 
-  try remove-dir $!tmp   if $!tmp.d;
-  try remove-dir $!stage if $!stage.d;
+  for $!tmp, $!stage -> $dir {
+
+    next unless $dir.d;
+
+    # a child may still hold a file for a moment (a precompilation just finished): try again
+    for 1 .. 3 { last if try { remove-dir $dir; True }; sleep 0.2 }
+
+    log '🐛', header => 'CLR', msg => ~$dir, comment => 'could not remove!' if $dir.d;
+
+  }
 
 }
 

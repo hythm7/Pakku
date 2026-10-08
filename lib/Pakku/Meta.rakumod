@@ -45,7 +45,8 @@ method !specs ( *@phase, Str:D :$level = 'requires' ) {
 
   @phase
     ==> map( { ( %!deps{ $_ }{ $level } // [] ).Slip } )
-    ==> grep( { not ( $_ ~~ Str and .trim eq '' ) } )   # "" is S22 for "nothing here" (a by-* default)
+    ==> grep( { not ( $_ ~~ Str and .trim eq '' ) } )                                               # "" is S22 for "nothing here" (a by-* default)
+    ==> grep( { not ( $_ ~~ Associative and not .<any> and ( .<name> // '' ) ~~ Str and ( .<name> // '' ).trim eq '' ) } )   # { "name": "" } likewise (File::Which)
     ==> map( -> $dep {
       my $spec = try Pakku::Spec.new: $dep;
       log '🐞', header => 'MTA', msg => $!dist, comment => "dependency { $dep.raku } skipped: { $!.message.lines.head }" without $spec;
