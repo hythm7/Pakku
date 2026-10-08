@@ -581,8 +581,12 @@ method !deploy ( $stage, $repo, Bool:D :$reset = False ) {
 
   self!move-in: $stage, $repo;
 
-  # one line per script: not the per-backend wrappers (-m, -j, -js) nor the .raku / .bat variants Rakudo writes
-  my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str, file => { not .IO.extension and not .ends-with( any <-m -j -js> ) } ).sort;
+  # one line per script: not the per-backend wrappers (-m, -j, -js) nor the .raku / .bat / .exe variants Rakudo writes
+  my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str )
+    .map( { .IO.basename.subst: / '.' [ raku | bat | exe ] $ /, '' } )
+    .grep( { not .ends-with( any <-m -j -js> ) } )
+    .unique
+    .sort;
 
   log '🐛', header => 'BIN', msg => ~$repo.prefix.add( 'bin' ), comment => 'binaries added!' if @bin;
 
@@ -931,7 +935,15 @@ method sweep ( ) {
 
     next unless $dir.d;
 
-    for $dir.dir.grep( *.d ) -> $old { try remove-dir $old if now - $old.modified > 86400 }
+    for $dir.dir.grep( *.d ) -> $old {
+
+      my $modified = $old.modified;
+
+      next if $modified < Instant.from-posix( 946684800 );   # a date before 2000 is no date (Rakudo on Windows): not ours to judge
+
+      try remove-dir $old if now - $modified > 86400;
+
+    }
 
   }
 

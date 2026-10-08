@@ -24,6 +24,8 @@ jobs:
           raku-version: ${{ matrix.raku-version }}
       - name: Test
         run: prove -e 'raku -I.' --ext .rakutest t
+        env:
+          PAKKU_TEST_NETWORK: 1
       - name: Add Pakku
         run: raku -I. bin/pakku nobar nospinner verbose all add .
       - name: Add a dist from fez

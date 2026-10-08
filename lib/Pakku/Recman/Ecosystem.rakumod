@@ -34,6 +34,7 @@ has Lock $!lock .= new;
 method index-file ( --> IO::Path:D ) { $!store.add: 'index.json' }
 method !lock-file ( --> IO::Path:D ) { $!store.add: 'index.lock' }
 method !mirror-file ( --> IO::Path:D ) { $!store.add: 'mirror' }
+method !stamp-file  ( --> IO::Path:D ) { $!store.add: 'refreshed' }
 
 method !derived     ( --> IO::Path:D ) { $!store.add: 'derived' }
 method !format-file ( --> IO::Path:D ) { self!derived.add: 'format' }
@@ -43,15 +44,19 @@ method !bucket-file ( Str:D $hh --> IO::Path:D ) { self!derived.add( 'by-name' )
 
 my sub bucket-of ( Str:D $name --> Str:D ) { sha1( $name ).substr( 0, 2 ).lc }
 
-# since the last refresh: the mirror file is written by every refresh, the index file may carry
-# the date of where it came from (a copy from a directory mirror keeps it on Windows)
-method age ( --> Duration ) {
+# since the last refresh, which writes its time down: file dates can not be trusted everywhere
+# (Rakudo on Windows reads them as 1969). An index from before the stamp falls back to its date.
+method refreshed ( --> Instant ) {
 
-  return Duration unless self.index-file.e;
+  return Instant unless self.index-file.e;
 
-  now - ( self!mirror-file.e ?? self!mirror-file !! self.index-file ).modified;
+  my $stamp = self!stamp-file.e ?? ( try self!stamp-file.slurp.trim.Int ) !! Nil;
+
+  $stamp ?? Instant.from-posix( $stamp ) !! self.index-file.modified;
 
 }
+
+method age ( --> Duration ) { self.refreshed.defined ?? now - self.refreshed !! Duration }
 
 method stale ( --> Bool:D ) {
 
@@ -100,6 +105,7 @@ method refresh ( Bool:D :$force = False --> Bool:D ) {
       $part.rename: self.index-file;
 
       self!mirror-file.spurt: $mirror;
+      self!stamp-file.spurt:  ~time;
 
       self!derive: $list, :$mirror;
 
@@ -112,7 +118,7 @@ method refresh ( Bool:D :$force = False --> Bool:D ) {
     die X::Pakku::Index.new: msg => $!name, comment => 'no index and refresh failed, check network or run: pakku refresh'
       unless self.index-file.e;
 
-    log '🐞', header => 'IDX', msg => $!name, comment => "refresh failed, using index from { self.index-file.modified.DateTime.truncated-to( 'minute' ) }";
+    log '🐞', header => 'IDX', msg => $!name, comment => "refresh failed, using index from { self.refreshed.DateTime.truncated-to( 'minute' ) }";
 
     False;
 
