@@ -723,7 +723,8 @@ method !verify ( IO::Path:D $archive, Str:D $expected --> Nil ) {
 
   my $out = run( |@cmd, :out, :err ).out.slurp( :close );
 
-  my $got = $out.lines.map( *.lc.subst( / \s /, '', :g ) ).first( / ^ <xdigit> ** 40 / ).?substr( 0, 40 );
+  # sha1sum starts the line with a backslash when the path has one (Windows), certutil may space the bytes
+  my $got = $out.lines.map( { .lc.subst( / \s /, '', :g ) ~~ / ^ '\\'? ( <xdigit> ** 40 ) / ?? ~$0 !! Empty } ).head;
 
   without $got {
     log '🐛', header => 'FTC', msg => ~$archive, comment => 'no sha1 from ' ~ @cmd.head ~ ', not verified';
