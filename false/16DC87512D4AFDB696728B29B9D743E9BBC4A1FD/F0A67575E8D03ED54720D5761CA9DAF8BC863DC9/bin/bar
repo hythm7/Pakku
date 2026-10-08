@@ -1,0 +1,3 @@
+#!/usr/bin/env raku
+use Fixture::Bar;
+say bar;

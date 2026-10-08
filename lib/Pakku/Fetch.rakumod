@@ -9,7 +9,7 @@ unit class Pakku::Fetch;
 
 constant IS-WIN = Rakudo::Internals.IS-WIN();
 
-has Int:D $.timeout         = 300;
+has Int:D $.timeout         = 0;     # whole transfer, 0 = none: a stall (no data for 60 s) ends it instead
 has Int:D $.connect-timeout = 30;
 has Str   $.backend;                     # libcurl | curl | wget ; probed lazily unless given
 
@@ -76,7 +76,7 @@ method clone ( ::?CLASS:D: Str:D :$url!, IO::Path:D :$dst! --> IO::Path:D ) {
 
 method !git ( *@cmd --> Nil ) {
 
-  log '🐛', header => 'FTC', msg => ~@cmd;
+  log '🐛', header => 'FTC', msg => @cmd.map( { redact ~$_ } ).join( ' ' );
 
   my $proc = run |@cmd, :out, :err;
 
@@ -128,12 +128,13 @@ method !shell ( Str:D $tool, Str:D :$url!, IO::Path:D :$dst!, Int:D :$timeout! -
 
   my @cmd = $tool.starts-with( 'curl' )
     ?? ( $tool, '--silent', '--show-error', '--fail', '--location',
-         '--max-time', $timeout, '--connect-timeout', $!connect-timeout,
+         |( '--max-time', $timeout if $timeout ), '--connect-timeout', $!connect-timeout,
+         '--speed-limit', '1', '--speed-time', '60',
          '--user-agent', $agent, '--output', ~$dst, $url )
-    !! ( $tool, '--quiet', "--timeout=$timeout", '--tries=1',
+    !! ( $tool, '--quiet', |( "--timeout=$timeout" if $timeout ), "--connect-timeout=$!connect-timeout", '--read-timeout=60', '--tries=1',
          "--user-agent=$agent", '-O', ~$dst, $url );
 
-  log '🐛', header => 'FTC', msg => ~@cmd;
+  log '🐛', header => 'FTC', msg => @cmd.map( { redact ~$_ } ).join( ' ' );
 
   my $proc = run |@cmd, :err;
 

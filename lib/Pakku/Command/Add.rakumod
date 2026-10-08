@@ -84,7 +84,7 @@ multi method fly (
 
   self!check-provides: $meta, $path;
 
-  my @meta = self!resolve: $meta.deps( :$deps ), :$deps, :$contained, exclude => @exclude.map( { Pakku::Spec.new: $_ } );
+  my @meta = self!resolve: $meta.deps( :$deps ), :$deps, :$contained, :!top, exclude => @exclude.map( { Pakku::Spec.new: $_ } );
 
   my @dist = self!fetch-dists: @meta;
 

@@ -52,6 +52,18 @@ my class Pakku {
   has Any   $.norecman;
   has Str   $.verbose;
   has Int() $.cores;
+  has Bool  $.refresh;
+
+  submethod TWEAK ( ) {
+
+    # cache, recman and norecman take a boolean or a path / a name: the words true and false are booleans
+    $!cache    = boolish( $!cache );
+    $!recman   = boolish( $!recman );
+    $!norecman = boolish( $!norecman );
+
+    die "cores: a positive integer!" if $!cores.defined and $!cores <= 0;
+
+  }
 
 }
 
@@ -103,6 +115,8 @@ my class Remove {
 my class Download { }
 
 my class Info { }
+
+my class Refresh { }
 
 my class Nuke { }
 
@@ -198,6 +212,7 @@ my class Config {
   has List     $.list;
   has Download $.download;
   has Info     $.info;
+  has Refresh  $.refresh;
   has Nuke     $.nuke;
   has State    $.state;
   has Recman   $.recman;
@@ -240,6 +255,8 @@ my class Config {
 
         log '🦋', header => 'REC', msg => ~$recman-name;
 
+        %!configuration{ $module } //= [];
+
         my $index = quietly %!configuration{ $module }.first( *.<name> eq $recman-name, :k );
 
         if defined $index {
@@ -261,11 +278,20 @@ my class Config {
 
         log '🦋', header => 'LOG', msg => ~$log-level;
 
+        %!configuration{ $module } //= {};
+        %!configuration{ $module }{ $log-level } //= {};   # a level unset earlier, or never written
+
         %config-key := %!configuration{ $module }{ $log-level }
 
       }
 
-      default { %config-key := %!configuration{ $module } }
+      default {
+
+        %!configuration{ $module } //= {};   # a module unset earlier, or missing from an older config file
+
+        %config-key := %!configuration{ $module }
+
+      }
 
     }
 

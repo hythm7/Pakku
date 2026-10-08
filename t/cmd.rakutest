@@ -219,9 +219,9 @@ my @tests = (
   "help refresh" =>
     ${:cmd("help"), :help(${:cmd("refresh")})},
   "refresh" =>
-    ${:cmd("refresh")},
+    ${:refresh(${}), :cmd("refresh")},
   "rfr" =>
-    ${:cmd("refresh")},
+    ${:refresh(${}), :cmd("refresh")},
   "refresh rea" =>
     ${:cmd("refresh"), :refresh(${:recman("rea")})},
   "refresh fez rea" =>

@@ -25,6 +25,9 @@ my $pakku;
 
 lives-ok { $pakku = Pakku.new: :%cnf }, 'Create Pakku with the fixture recman';
 
+lives-ok { $pakku.fly: 'refresh' },                        'refresh with no recman names dispatches';
+lives-ok { $pakku.fly: 'refresh', recman => [ 'fixture' ] }, 'refresh with a recman name dispatches';
+
 lives-ok { $pakku.fly: 'add', spec => [ 'Fixture::Bar' ], to => ~$repo }, 'add Fixture::Bar to a temporary repo';
 
 my $inst = CompUnit::Repository::Installation.new: prefix => $repo;

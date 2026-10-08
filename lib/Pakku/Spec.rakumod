@@ -75,6 +75,7 @@ my sub validate ( $node, Str:D $text --> Nil ) {
     when RakuAST::Call::Name                    { refuse "call to { .name.canonicalize }" unless .name.canonicalize eq any <any all one none> }
     when RakuAST::Name                          { }
     when RakuAST::Regex::Assertion::Named       { refuse "<{ .name.canonicalize }> in a regex" unless .name.canonicalize eq any @RULES }
+    when RakuAST::Regex::QuantifiedAtom         { refuse 'a quantified group in a regex (it can backtrack forever)' if .atom ~~ RakuAST::Regex::Group | RakuAST::Regex::CapturingGroup | RakuAST::Regex::NamedCapture }
     default                                     {
       my $kind = .^name.subst( 'RakuAST::', '' );
       refuse $kind unless $kind.starts-with( 'Regex::' );
@@ -234,9 +235,10 @@ class Pakku::Spec::Raku does Spec {
   # does a META (hash) satisfy this spec? name is not compared, so provides can be matched too
   multi method ACCEPTS ( ::?CLASS:D: %h --> Bool:D ) {
 
-    with $!ver-matcher  { return False unless version( %h<ver> // %h<version> ) ~~ $_ }
-    with $!auth-matcher { return False unless ( %h<auth> // '' )                ~~ $_ }
-    with $!api-matcher  { return False unless version( %h<api> )                ~~ $_ }
+    # a selector that dies on a value (1e3 against a version, say) simply does not match it
+    with $!ver-matcher  { return False unless try version( %h<ver> // %h<version> ) ~~ $_ }
+    with $!auth-matcher { return False unless try ( %h<auth> // '' )                ~~ $_ }
+    with $!api-matcher  { return False unless try version( %h<api> )                ~~ $_ }
 
     True;
 

@@ -7,10 +7,16 @@ use Pakku::Recman::Index;
 # An ecosystem published as a JSON array of METAs (fez, REA, a darkpan):
 # the index is downloaded into the store, refreshed lazily when stale, and
 # every lookup is local. Nothing is fetched or parsed until first use.
+#
+# The index is 10 to 20 MB of JSON and takes seconds to parse, so it is parsed
+# once per refresh into a derived form under <store>/derived: names.json,
+# provides.json (unit => dist names) and 256 by-name buckets keyed by the first
+# two hex digits of the name's SHA-1. A lookup reads one small file.
 unit class Pakku::Recman::Ecosystem;
   also does Pakku::Recman::Index;
 
 constant IS-WIN = Rakudo::Internals.IS-WIN();
+constant FORMAT = '2';   # bump when the derived layout changes: an old store is re-derived
 
 has Str:D        @.mirrors is required;      # base URLs ending in '/', or local directories (tests, darkpans)
 has Str:D        $.index   = 'index.json';   # relative to each mirror: fez index.json, REA META.json
@@ -19,14 +25,23 @@ has              $.refresh = 1;              # hours between refreshes; True = a
 has IO::Path:D   $.store   is required;      # ~/.pakku/.index/<name>
 has Pakku::Fetch $.fetch   is required;
 
-has %!meta;       # dist name => [ metas ]
-has %!provides;   # unit      => [ metas ]
-has Bool $!loaded = False;
-has      $!list;  # the parsed index, between refresh and load
+has %!bucket;     # hh   => { dist name => [ metas ] }, read on demand
+has %!provides;   # unit => [ dist names ], read once
+has $!names;      # [ dist names ], read once
+has Bool $!ready = False;
+has Lock $!lock .= new;
 
 method index-file ( --> IO::Path:D ) { $!store.add: 'index.json' }
 method !lock-file ( --> IO::Path:D ) { $!store.add: 'index.lock' }
 method !mirror-file ( --> IO::Path:D ) { $!store.add: 'mirror' }
+
+method !derived     ( --> IO::Path:D ) { $!store.add: 'derived' }
+method !format-file ( --> IO::Path:D ) { self!derived.add: 'format' }
+method !names-file  ( --> IO::Path:D ) { self!derived.add: 'names.json' }
+method !units-file  ( --> IO::Path:D ) { self!derived.add: 'provides.json' }
+method !bucket-file ( Str:D $hh --> IO::Path:D ) { self!derived.add( 'by-name' ).add: "$hh.json" }
+
+my sub bucket-of ( Str:D $name --> Str:D ) { sha1( $name ).substr( 0, 2 ).lc }
 
 method age ( --> Duration ) { self.index-file.e ?? now - self.index-file.modified !! Duration }
 
@@ -78,8 +93,7 @@ method refresh ( Bool:D :$force = False --> Bool:D ) {
 
       self!mirror-file.spurt: $mirror;
 
-      $!list   = $list;
-      $!loaded = False;
+      self!derive: $list, :$mirror;
 
       log '🧚', header => 'IDX', msg => $!name, comment => "{ $list.elems } dists";
 
@@ -98,17 +112,11 @@ method refresh ( Bool:D :$force = False --> Bool:D ) {
 
 }
 
-method !load ( --> Nil ) {
+# the derived index from a parsed index list, written next to the old one and swapped in
+method !derive ( $list, Str:D :$mirror --> Nil ) {
 
-  self.refresh;
-
-  die X::Pakku::Index.new: msg => $!name, comment => 'no local index, run: pakku refresh' unless self.index-file.e;
-
-  my $list = $!list // lock-file self!lock-file, :shared, { Rakudo::Internals::JSON.from-json: self.index-file.slurp };
-
-  my $mirror = self!mirror-file.e ?? self!mirror-file.slurp.trim !! @!mirrors.head;
-
-  %!meta = (); %!provides = ();
+  my %bucket;
+  my %provides;
 
   for $list.List -> $raw {
 
@@ -123,25 +131,149 @@ method !load ( --> Nil ) {
       next;
     }
 
-    my %meta = self.normalise( $raw, :$source ) orelse next;
+    my $normal = self.normalise( $raw, :$source );
 
-    %!meta{ %meta<name> }.push: %meta;
+    next without $normal;
 
-    %!provides{ $_ }.push: %meta for ( %meta<provides> // {} ).keys;
+    my %meta := $normal;
+
+    # fez names a tarball after its SHA-1: remember it, Core.fetch checks the download (J)
+    %meta<sha1> = ~$0.lc if $!source eq 'path' and $source ~~ / ( <xdigit> ** 40 ) '.tar.gz' $ /;
+
+    %bucket{ bucket-of %meta<name> }{ %meta<name> }.push: %meta;
+
+    %provides{ $_ }{ %meta<name> } = True for ( %meta<provides> // {} ).keys;
 
   }
 
-  $!list   = Nil;
-  $!loaded = True;
+  my $new = $!store.add: "derived.$*PID.part";
+  my $old = $!store.add: "derived.$*PID.old";
 
-  log '🐛', header => 'IDX', msg => $!name, comment => "{ %!meta.elems } names, { %!provides.elems } units";
+  try remove-dir $new if $new.e;
+
+  $new.add( 'by-name' ).mkdir;
+
+  for %bucket.kv -> $hh, %names { $new.add( 'by-name' ).add( "$hh.json" ).spurt: Rakudo::Internals::JSON.to-json: %names }
+
+  $new.add( 'names.json' ).spurt:    Rakudo::Internals::JSON.to-json: %bucket.values.map( *.keys.Slip ).sort.List;
+  $new.add( 'provides.json' ).spurt: Rakudo::Internals::JSON.to-json: %provides.map( { .key => .value.keys.sort.List } ).Hash;
+  $new.add( 'format' ).spurt:        FORMAT;
+
+  # swap: a reader sees the old files or the new ones, never a half written set
+  {
+    CATCH { default { log '🐞', header => 'IDX', msg => $!name, comment => "derived index not replaced: { .message }"; try remove-dir $new; return } }
+
+    self!derived.rename( $old ) if self!derived.e;
+    $new.rename: self!derived;
+  }
+
+  try remove-dir $old if $old.e;
+
+  %!bucket = (); %!provides = (); $!names = Nil;
+
+  $!ready = True;
+
+  log '🐛', header => 'IDX', msg => $!name, comment => "{ %bucket.values.map( *.elems ).sum } names, { %provides.elems } units";
 
 }
 
-method by-name     ( Str:D $name ) { self!load unless $!loaded; ( %!meta{ $name }     // Empty ).List }
-method by-provides ( Str:D $unit ) { self!load unless $!loaded; ( %!provides{ $unit } // Empty ).List }
-method names       ( )             { self!load unless $!loaded; %!meta.keys.List }
-method units       ( )             { self!load unless $!loaded; %!provides.keys.List }
+# the derived index is there and current, or is made from the stored index (offline)
+method !prepare ( --> Nil ) {
+
+  return if $!ready;
+
+  self.refresh;
+
+  die X::Pakku::Index.new: msg => $!name, comment => 'no local index, run: pakku refresh' unless self.index-file.e;
+
+  my sub current ( --> Bool:D ) {
+    self!format-file.e and self!format-file.slurp.trim eq FORMAT and self!names-file.e and self!units-file.e
+  }
+
+  unless current() {
+
+    lock-file self!lock-file, {
+
+      unless current() {
+
+        log '🐛', header => 'IDX', msg => $!name, comment => 'deriving the index';
+
+        my $mirror = self!mirror-file.e ?? self!mirror-file.slurp.trim !! @!mirrors.head;
+
+        self!derive: Rakudo::Internals::JSON.from-json( self.index-file.slurp ), :$mirror;
+
+      }
+
+    }
+
+  }
+
+  $!ready = True;
+
+}
+
+method !json ( IO::Path:D $file ) {
+
+  # a refresh in another process may swap the derived directory under us: one retry
+  my $text = try $file.slurp;
+
+  without $text { sleep 0.2; $text = try $file.slurp }
+
+  $text.defined ?? ( try Rakudo::Internals::JSON.from-json: $text ) !! Nil;
+
+}
+
+method !load-provides ( --> Nil ) {
+
+  $!lock.protect: { %!provides = ( self!json( self!units-file ) // {} ) unless %!provides }
+
+}
+
+method !names-of ( Str:D $unit ) {
+
+  self!load-provides;
+
+  ( %!provides{ $unit } // Empty ).List;
+
+}
+
+method by-name ( Str:D $name ) {
+
+  self!prepare;
+
+  my $hh = bucket-of $name;
+
+  my %names := $!lock.protect: { %!bucket{ $hh } //= ( self!bucket-file( $hh ).e ?? ( self!json( self!bucket-file( $hh ) ) // {} ) !! {} ) };
+
+  ( %names{ $name } // Empty ).List;
+
+}
+
+method by-provides ( Str:D $unit ) {
+
+  self!prepare;
+
+  self!names-of( $unit ).map( { self.by-name( $_ ).grep( -> %meta { ( %meta<provides> // {} ){ $unit }:exists } ).Slip } ).List;
+
+}
+
+method names ( ) {
+
+  self!prepare;
+
+  $!lock.protect: { $!names //= ( self!json( self!names-file ) // [] ).List };
+
+}
+
+method units ( ) {
+
+  self!prepare;
+
+  self!load-provides;
+
+  %!provides.keys.List;
+
+}
 
 # a miss on an index older than ten minutes is worth one refresh: the dist may be brand new
 method refresh-on-miss ( Pakku::Spec::Raku:D :$spec! ) {

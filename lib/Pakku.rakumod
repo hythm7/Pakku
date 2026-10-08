@@ -57,7 +57,7 @@ proto method fly ( | ) {
 
 multi method fly ( ) {
 
-  self.clear;
+  self.sweep;
 
   my $cmd = %!cnf<cmd>;
 

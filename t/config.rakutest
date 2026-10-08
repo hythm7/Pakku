@@ -129,6 +129,24 @@ is-deeply from-json(slurp $config-file )<log>{ $log-level }<color>, Any, 'confir
 lives-ok { $config.fly( 'config', :module<log>, :operation<unset>, :$log-level ) }, 'unset log level';
 quietly is-deeply from-json(slurp $config-file )<log>{ $log-level }, Any, 'confirm unset log level in config file';
 
+lives-ok { $config.fly( 'config', :module<add>, :operation<unset> ) }, 'unset a whole module';
+@option = :xtest;
+lives-ok { $config.fly( 'config', :module<add>, :@option ) }, 'set an option in a module that was unset';
+is-deeply from-json(slurp $config-file )<add><xtest>, True, 'confirm the module was recreated';
+@option = cores => '0';
+throws-like { $config.fly( 'config', :module<pakku>, :@option ) }, X::Pakku::Cnf, 'cores 0 is refused';
+@option = cache => 'false';
+lives-ok { $config.fly( 'config', :module<pakku>, :@option ) }, 'set cache false';
+is-deeply from-json(slurp $config-file )<pakku><cache>, False, 'cache false is stored as a boolean, not a path';
+@option = cache => '/tmp/pakku-cache';
+lives-ok { $config.fly( 'config', :module<pakku>, :@option ) }, 'set cache to a path';
+is-deeply from-json(slurp $config-file )<pakku><cache>, '/tmp/pakku-cache', 'a cache path stays a path';
+@option = :!refresh;
+lives-ok { $config.fly( 'config', :module<pakku>, :@option ) }, 'disable refresh';
+is-deeply from-json(slurp $config-file )<pakku><refresh>, False, 'confirm refresh in config file';
+@option = color => 'blue';
+lives-ok { $config.fly( 'config', :module<log>, log-level => 'nothing-here', :@option ) }, 'set an option of a log level that does not exist yet';
+
 lives-ok { $config.fly( 'config', :module<pakku>, :operation<reset> ) }, 'reset config module';
 
 lives-ok { $config.fly( 'config', :operation<reset> ) }, 'reset config';

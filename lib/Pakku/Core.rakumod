@@ -62,23 +62,32 @@ multi sub provided-by ( Pakku::Meta:D $meta, Pakku::Spec::Any:D $spec --> Bool:D
 multi sub provided-by ( $, $ --> Bool:D ) { False }
 
 
+# what a test or build child sees: the stage first, then the target repo when it is not in this process's
+# chain (a custom path), so a serial add's later dists find the ones deployed before them
+method !rakulib ( $stage, $repo --> Str:D ) {
+
+  join ',', $stage.path-spec, ( "inst#{ $repo.prefix.absolute }" if $repo and not @!repo.first( *.prefix eq $repo.prefix ) );
+
+}
+
 # run a command, stream its output to the log, kill it after $timeout seconds of silence (0: never);
 # the clock starts with the process, so a child that never prints is caught too
 method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$timeout = 420 --> Int:D ) {
 
-  my $proc = Proc::Async.new: @cmd;
+  my $proc = Proc::Async.new: @cmd, :enc<utf8-c8>;   # a stray byte in a test's output is not a reason to die
 
   log '🐛', header => $header, msg => ~$proc.command;
 
   my $last = now;
   my Int $exitcode;
+  my $tick = $timeout ?? min( 42, $timeout ) !! 42;
 
   react {
 
-    whenever $proc.stdout.lines { $last = now; log '🐝', :$header, msg => $_, :!msg-delimit }
-    whenever $proc.stderr.lines { $last = now; log '🐞', :$header, msg => $_, :!msg-delimit }
+    whenever $proc.stdout.lines { $last = now; log '🐝', :$header, msg => $_, :!msg-delimit; QUIT { default { log '🐞', :$header, msg => $what, comment => "output lost: { .message }" } } }
+    whenever $proc.stderr.lines { $last = now; log '🐞', :$header, msg => $_, :!msg-delimit; QUIT { default { log '🐞', :$header, msg => $what, comment => "output lost: { .message }" } } }
 
-    whenever Supply.interval( 42, 42 ) {
+    whenever Supply.interval( $tick, $tick ) {
 
       my $quiet = now - $last;
 
@@ -99,7 +108,7 @@ method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$t
 
     whenever $proc.start( :$cwd, :%*ENV ) {
 
-      $exitcode //= .exitcode;
+      $exitcode //= .exitcode || ( .signal ?? 128 + .signal !! 0 );   # a crash is a failure, whatever the exit code says
 
       done;
 
@@ -117,6 +126,7 @@ method test (
   CompUnit::Repository::Staging:D :$stage!,
   Distribution::Locally:D         :$dist!,
   Bool                            :$xtest,
+                                  :$repo,
   ) {
 
   my @dir = <tests t>;
@@ -134,7 +144,7 @@ method test (
 
   return unless @test;
 
-  %*ENV<RAKULIB> = $stage.path-spec;
+  %*ENV<RAKULIB> = self!rakulib( $stage, $repo );
 
   my Int $timeout   = ( %!cnf<test><timeout> // 420 ).Int;
   my     $failed    = False;
@@ -175,6 +185,7 @@ method test (
 method build (
   CompUnit::Repository::Staging:D :$stage!,
   Distribution::Locally:D         :$dist!,
+                                  :$repo,
   ) {
 
   my $prefix  = $dist.prefix.absolute.IO;
@@ -200,7 +211,7 @@ method build (
 
   }
 
-  %*ENV<RAKULIB> = $stage.path-spec;
+  %*ENV<RAKULIB> = self!rakulib( $stage, $repo );
 
   my $exitcode = self!run: @cmd, cwd => $prefix, header => 'BLD', what => ~$dist, timeout => ( %!cnf<build><timeout> // 420 ).Int;
 
@@ -217,11 +228,17 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
 
   log '🐛', header => 'SPC', msg => ~$spec, comment => 'satisfying!';
 
-  # the index is local and newest-first; the cache only answers when it can not (norecman, offline)
-  my $meta = try Pakku::Meta.new(
-    ( $!recman.recommend( :$spec )      if $!recman ) //
-    ( $!cache.recommend( :$spec ).?meta if $!cache  )
-  );
+  # the index is local and newest-first; the cache only answers when it can not (norecman, offline, no index yet)
+  my $found = do {
+    CATCH { when X::Pakku::Index { self!no-index( $_ ); Nil } }
+    $!recman.recommend( :$spec ) if $!recman;
+  }
+
+  $found //= $!cache.recommend( :$spec ).?meta if $!cache;
+
+  my $meta = $found ?? ( try Pakku::Meta.new: $found ) !! Nil;
+
+  log '🐛', header => 'MTA', msg => ~$spec, comment => $!.message with $!;
 
   unless $meta {
 
@@ -234,6 +251,17 @@ multi method satisfy ( Pakku::Spec::Raku:D :$spec! ) {
   log '🧚', header => 'MTA', msg => ~$meta;
 
   $meta;
+
+}
+
+has Bool $!no-index-told = False;
+
+# no usable index (offline without one, every mirror failed): said once, then the cache has its chance
+method !no-index ( X::Pakku::Index:D $x --> Nil ) {
+
+  log '🐞', header => 'IDX', msg => $x.msg, comment => $x.comment unless $!no-index-told;
+
+  $!no-index-told = True;
 
 }
 
@@ -312,14 +340,14 @@ multi method satisfied ( Pakku::Spec::Any:D :$spec!, :@repo = @!repo --> Bool:D 
 # the dependencies of a dist, as the dists to install for them (see !resolve)
 method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False, :@exclude ) {
 
-  self!resolve: $meta.deps( :$deps ), :$deps, :$contained, :@exclude;
+  self!resolve: $meta.deps( :$deps ), :$deps, :$contained, :@exclude, :!top;
 
 }
 
 # the dists to install for @spec: dependencies first, each one once, nothing that is already
 # installed (unless contained); a spec may be satisfied by a dist chosen earlier in this very
 # resolution, so Foo:ver<0.2+> and a bare Foo end up as one Foo (B17)
-method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude --> Array ) {
+method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, Bool:D :$top = True --> Array ) {
 
   my @meta;
   my %done;
@@ -338,11 +366,11 @@ method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude --
 
     resolve $_ for $meta.deps( :$deps );
 
-    @meta.push: $meta unless $top and $deps ~~ 'only';
+    @meta.push: $meta unless ( $top and $deps ~~ 'only' ) or @meta.first( *.Str eq $meta.Str );   # a cycle may name it twice
 
   }
 
-  resolve $_, :top for @spec;
+  resolve $_, :$top for @spec;
 
   @meta;
 
@@ -363,7 +391,7 @@ method !fetch-dist ( Pakku::Meta:D $meta, IO::Path:D :$tmp = $!tmp ) {
 
   } else {
 
-    self.fetch: src => $meta.source, dst => $path;
+    self.fetch: src => $meta.source, dst => $path, sha1 => $meta.meta<sha1>;
 
     $!cache.cache: :$path if $!cache;
 
@@ -398,6 +426,7 @@ method !watch-recursive ( IO::Path:D $start --> Supply:D ) {
 
     my sub file ( IO::Path:D $file, Bool:D :$emit ) {
       return if $file.extension;                       # precomp files have none; .lock, .repo-id ... do
+      return unless $file.f;                           # a directory, or already gone again
       emit $file.Str if $emit and not %seen{ $file.Str };
       %seen{ $file.Str } = True;
     }
@@ -430,9 +459,9 @@ method !watch-recursive ( IO::Path:D $start --> Supply:D ) {
 }
 
 # install one dist into the staging repo, with its build before and its tests after
-method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile! ) {
+method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile!, :$repo ) {
 
-  self.build: :$stage, :$dist if $build;
+  self.build: :$stage, :$dist, :$repo if $build;
 
   my $precomp-dir = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
   my $dist-dir    = $stage.prefix.add: 'dist';
@@ -489,7 +518,7 @@ method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Boo
 
   log '🧚', header => 'STG', msg => ~$dist;
 
-  self.test: :$stage, :$dist, :$xtest if $test;
+  self.test: :$stage, :$dist, :$xtest, :$repo if $test;
 
 }
 
@@ -531,14 +560,18 @@ method !stage-dists (
   Bool:D :$deploy     = True,
   ) {
 
+  # precompilation in the stage resolves modules through the chain: a target repo outside it
+  # (a custom path) goes first, so a serial add's later dists find the ones deployed before them
+  my $next = @!repo.first( *.prefix eq $repo.prefix ) ?? $*REPO !! $repo;
+
   my $stage := CompUnit::Repository::Staging.new:
     prefix    => $!stage.add( now.Num ),
     name      => $repo.name,
-    next-repo => $*REPO;
+    next-repo => $next;
 
   for @dist -> $dist {
 
-    self!stage-dist: $stage, $dist, :$build, :$test, :$xtest, :$precompile;
+    self!stage-dist: $stage, $dist, :$build, :$test, :$xtest, :$precompile, :$repo;
 
     self!deploy( $stage, $repo, :reset ) if $serial and $deploy;
 
@@ -553,7 +586,7 @@ method !stage-dists (
 # stage a dist with its dependencies, without deploying, and do something with it there: test it, build it
 method !try-out ( Pakku::Meta:D $meta, &do, :$dist is copy, Bool:D :$build = True, Bool:D :$build-target = $build ) {
 
-  my @meta = self!resolve: $meta.deps( :deps );
+  my @meta = self!resolve: $meta.deps( :deps ), :!top;
 
   log '🦋', header => 'DEP', msg => ~$_ for @meta;
 
@@ -645,7 +678,7 @@ method !install-repo ( Str:D $spec, Str:D $what ) {
 }
 
 
-multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
+multi method fetch ( Str:D :$src!, IO::Path:D :$dst!, :$sha1 ) {
 
   log '🐛', header => 'FTC', msg => ~$src;
 
@@ -658,7 +691,7 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst! ) {
   # index sources are already valid URLs (REA's are even pre-encoded): never re-encode them
   retry { $!fetch.download: url => $src, dst => $archive, progress => $!degree == 1 };
 
-  self!verify( $archive, ~$0 ) if $src ~~ / ( <xdigit> ** 40 ) '.tar.gz' $ /;
+  self!verify( $archive, $_ ) with $sha1;   # fez names its tarballs after their SHA-1, the index said so
 
   log '🐛', header => 'EXT', msg => ~$archive;
 
@@ -806,6 +839,19 @@ method clear ( ) {
 
 }
 
+# what runs that crashed or were killed left behind; another process's directories are its own
+method sweep ( ) {
+
+  for $!home.add( '.tmp' ), $!home.add( '.stage' ) -> $dir {
+
+    next unless $dir.d;
+
+    for $dir.dir.grep( *.d ) -> $old { try remove-dir $old if now - $old.modified > 86400 }
+
+  }
+
+}
+
 method !cnf ( ) { %!cnf }
 
 submethod BUILD ( :%!cnf! ) {
@@ -831,11 +877,11 @@ submethod BUILD ( :%!cnf! ) {
 
   log '🐝', header => 'CNF', msg => 'home', comment => ~$!home;
 
-  $!stage  = $!home.add( '.stage' );
+  $!stage  = $!home.add( '.stage' ).add( $*PID );   # one per process: another pakku must not clear it
 
   log '🐝', header => 'CNF', msg => 'stage', comment => ~$!stage;
 
-  my $cache-conf = %!cnf<pakku><cache>; 
+  my $cache-conf = bool-word %!cnf<pakku><cache>;
   my $cache-dir  = $!home.add( '.cache' ); 
 
   with $cache-conf {
@@ -846,7 +892,7 @@ submethod BUILD ( :%!cnf! ) {
 
   log '🐝', header => 'CNF', msg => 'cache', comment => ~$cache-dir;
 
-  $!tmp = $!home.add( '.tmp' );
+  $!tmp = $!home.add( '.tmp' ).add( $*PID );
 
   log '🐝', header => 'CNF', msg => 'tmp', comment => ~$!tmp;
 
@@ -872,8 +918,9 @@ submethod BUILD ( :%!cnf! ) {
 
   log '🐝', header => 'CNF', msg => 'degree', comment => ~$!degree;
 
-  my $recman   = %!cnf<pakku><recman>;
-  my $norecman = %!cnf<pakku><norecman>;
+  my $recman   = bool-word %!cnf<pakku><recman>;
+  my $norecman = bool-word %!cnf<pakku><norecman>;
+  my $refresh  = bool-word %!cnf<pakku><refresh>;
 
   my @recman = ( %!cnf<recman> // [] ).flat;
 
@@ -882,7 +929,7 @@ submethod BUILD ( :%!cnf! ) {
 
   $!fetch  = Pakku::Fetch.new;
 
-  $!recman = Pakku::Recman.new: :$!fetch, store => $!home.add( '.index' ), :@recman, refresh => %!cnf<pakku><refresh> if @recman;
+  $!recman = Pakku::Recman.new: :$!fetch, store => $!home.add( '.index' ), :@recman, :$refresh if @recman;
 
   # an old config file may list only the retired recman.pakku.org: fall back to the built-in ecosystems
   if @recman and not $!recman.names and not ( $recman ~~ Str or $norecman ) {
@@ -891,7 +938,7 @@ submethod BUILD ( :%!cnf! ) {
 
     @recman = Rakudo::Internals::JSON.from-json( %?RESOURCES<config.json>.slurp )<recman>.flat;
 
-    $!recman = Pakku::Recman.new: :$!fetch, store => $!home.add( '.index' ), :@recman, refresh => %!cnf<pakku><refresh>;
+    $!recman = Pakku::Recman.new: :$!fetch, store => $!home.add( '.index' ), :@recman, :$refresh;
 
   }
 
@@ -932,9 +979,10 @@ method metamorph ( ) {
   my %default = Rakudo::Internals::JSON.from-json: %?RESOURCES<config.json>.slurp;
 
 
-  if %cnf<pakku><config>:exists {
+  # a config file named on the command line or by PAKKU_CONFIG must exist, unless this very run creates it
+  if %cnf<pakku><config>:exists and not ( %cmd<cmd> eq 'config' and ( %cmd<config><operation> // '' ) eq 'new' ) {
 
-    die X::Pakku::Cnf.new: msg => ~%cnf<pakku><config> unless %cnf<pakku><config>.IO.f;
+    die X::Pakku::Cnf.new: msg => ~%cnf<pakku><config>, comment => 'no such config file! to create: pakku config <path> config new' unless %cnf<pakku><config>.IO.f;
 
   }
 
@@ -962,6 +1010,12 @@ method metamorph ( ) {
 
 # borrowed from Hash::Merge:cpan:TYIL to fix #6
 # deep merge, the source wins; a hash only merges into a hash (a null in a config file replaces, it does not crash)
+# "true" and "false" in a config file written by hand (or by an older pakku) mean the booleans
+my sub bool-word ( $value ) {
+  return $value unless $value ~~ Str:D;
+  $value.lc eq 'true' ?? True !! $value.lc eq 'false' ?? False !! $value;
+}
+
 my sub hashmerge ( %merge-into, %merge-source ) {
 
   for %merge-source.keys -> $key {
@@ -986,6 +1040,10 @@ my sub repo-from-spec ( Str $spec ) {
   my $repo = CompUnit::RepositoryRegistry.repository-for-spec( $repo-spec );
 
   CompUnit::RepositoryRegistry.register-name( $name, $repo );
+
+  # a repo outside the chain gets the chain behind it, so what is installed there can load its
+  # dependencies from home/site/core (Rakudo hands out one object per prefix: set it, do not recreate it)
+  $repo.next-repo = $*REPO unless $repo.next-repo.defined;
 
   $repo;
 }

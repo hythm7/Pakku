@@ -693,6 +693,7 @@ class Pakku::Grammar::CmdActions {
 
     %cmd<cmd>             = 'refresh';
     %cmd<pakku>           = $<pakkuopt>».made.hash if defined $<pakkuopt>;
+    %cmd<refresh>         = {};
     %cmd<refresh><recman> = $<recman-names><recman-name>».Str.Array if $<recman-names>;
 
     make %cmd;

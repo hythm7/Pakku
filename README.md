@@ -71,9 +71,17 @@ for a server.
 A dist missing from an index older than ten minutes makes Pakku refresh once and look again, so a
 dist uploaded a minute ago is not left waiting for the hour to pass.
 
+An index is 10 to 20 MB of JSON. Pakku parses it once per refresh into small files under
+`~/.pakku/.index/<name>/derived` (the names, the provided modules, and the METAs in 256 buckets by
+name), so a lookup reads a few kilobytes and `pakku search` answers in the time it takes to start.
+
 **Being careful:**
 
-🦋 A fez tarball is named after its SHA-1, Pakku checks the download when `sha1sum`, `shasum` or `certutil` is around.
+🦋 A fez tarball is named after its SHA-1 (the index says which), Pakku checks the download when `sha1sum`, `shasum` or `certutil` is around.
+
+🦋 Downloads are not capped: a transfer that stalls for a minute is given up, a slow one is not.
+
+🦋 Every pakku process works in its own `.tmp` and `.stage` directory under `~/.pakku`, so two of them can run at once.
 
 🦋 Archives are unpacked with suspicion: entries that try to escape the dist directory, links, device
 files and lies about sizes are refused, and a half extracted dist is removed.

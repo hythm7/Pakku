@@ -40,6 +40,18 @@ is $local.search( spec => spec( 'foo' ), :relaxed, :!latest, :1count ).elems, 1,
 is $local.search( spec => spec( 'fixture' ), :relaxed, :!latest, :666count ).map( *<name> ).unique.elems, 4, 'local: relaxed search matches several names';
 is $local.search( spec => spec( 'Nope' ), :relaxed, :!latest, :666count ).elems, 0, 'local: nothing found is an empty list';
 
+# a META without a version is skipped, the rest of the directory still serves
+my $odd = $tmp.add( 'odd' );
+$odd.add( 'NoVersion' ).mkdir;
+$odd.add( 'NoVersion' ).add( 'META6.json' ).spurt: '{ "name": "Dev::NoVersion", "auth": "zef:x", "provides": {} }';
+$odd.add( 'Good' ).mkdir;
+$odd.add( 'Good' ).add( 'META6.json' ).spurt: '{ "name": "Dev::Good", "version": "1.0", "auth": "zef:x", "provides": {} }';
+
+my $odd-recman;
+lives-ok { $odd-recman = Pakku::Recman::Local.new: name => 'odd', location => $odd }, 'local: a META without a version does not kill the recman';
+is $odd-recman.recommend( spec => spec( 'Dev::Good' ) )<ver>, '1.0', 'local: the other dists are still there';
+nok $odd-recman.recommend( spec => spec( 'Dev::NoVersion' ) ).defined, 'local: the version-less one is not';
+
 # --- Recman::Ecosystem: an index with tarballs, served here from a local directory mirror ---
 
 my $fetch = Pakku::Fetch.new;
@@ -68,6 +80,27 @@ is $eco.recommend( spec => spec( 'Fixture::Baz:api<1>' ) )<api>, '1', 'ecosystem
 nok $eco.recommend( spec => spec( 'Fixture::Baz:auth<zef:a>' ) ).defined, 'ecosystem: an auth-less entry does not match an auth constraint';
 is $eco.search( spec => spec( 'Fixture::Foo' ), :!relaxed, :!latest, :666count ).grep( *<ver> eq '0.2' ).elems, 1, 'ecosystem: the duplicated index entry is collapsed';
 is $eco.search( spec => spec( 'fixture' ), :relaxed, :latest, :666count ).elems, 5, 'ecosystem: latest search, one row per name and auth';
+
+# --- the derived index: made at refresh, remade offline when missing or outdated ---
+
+my $derived = $tmp.add( 'store' ).add( 'derived' );
+
+ok $derived.add( 'format' ).e && $derived.add( 'names.json' ).e && $derived.add( 'provides.json' ).e && $derived.add( 'by-name' ).d, 'derived: refresh writes names, provides and by-name buckets';
+
+run 'rm', '-rf', $derived;
+
+my $offline = ecosystem( refresh => False );
+
+is $offline.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.3', 'derived: a missing derived index is made from the stored index, offline';
+ok $derived.add( 'format' ).e, 'derived: and is back on disk';
+
+$derived.add( 'format' ).spurt: '0';
+
+my $outdated = ecosystem( refresh => False );
+
+is $outdated.recommend( spec => spec( 'Fixture::Foo::Util' ) )<ver>, '0.2', 'derived: an outdated derived index is remade (lookup by provided unit)';
+is $derived.add( 'format' ).slurp.trim, Pakku::Recman::Ecosystem::FORMAT, 'derived: with the current format';
+is $outdated.search( spec => spec( 'fixture' ), :relaxed, :latest, :666count ).elems, 5, 'derived: search reads names and provides';
 
 # refresh policy
 my $never = ecosystem( refresh => False, store => $tmp.add( 'never' ) );

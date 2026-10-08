@@ -1,0 +1,1 @@
+use Test; use Fixture::Bar; ok bar.starts-with('bar with foo'), 'bar'; done-testing;

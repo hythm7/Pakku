@@ -15,7 +15,11 @@ chou  2026-10-07
     - HTTPS through a NativeCall libcurl binding, with the curl or wget binary as fallback
       (curl.exe on Windows). Pakku::HTTP and the recman.pakku.org protocol are gone; an old
       config entry is ignored with a hint to run `pakku config recman reset`.
-    - fez tarballs are verified against the SHA-1 in their name when a sha1 tool is around.
+    - fez tarballs are verified against the SHA-1 in their name when a sha1 tool is around (the
+      index marks them; a tarball you name yourself is never second-guessed).
+    - Each index is parsed once per refresh into a derived form (names, provides, 256 by-name
+      buckets) under ~/.pakku/.index/<name>/derived: lookups read kilobytes, not 20 MB.
+    - Downloads have no total time cap; a transfer that stalls for 60 s is given up.
 
   Specs (S11 / S22)
     - `<...>` adverbs are strings with Raku's rules (ver<1.2> is a prefix, ver<1.2+>, ver<1.*>,
@@ -73,6 +77,18 @@ chou  2026-10-07
       decide "already added" against the target repo, build logs BLD.
     - Pakku loads on hosts without libarchive or libcurl (native libraries are resolved when
       used, with a hint when missing); dlopen uses RTLD_NOW only.
+    - Found by review before release: `pakku refresh` with no name, `config set` on a module missing
+      from the file, `config <path> config new`, `set cache false` / `set recman true` stored as
+      strings, `cores 0`, a test or build killed by a signal counted as passed, one non-UTF-8 byte of
+      test output aborting the run, timeouts below 42 s, every pakku process clearing the others'
+      .tmp/.stage, a dist's own dependencies treated as top-level requests on path adds (installed
+      native and unindexed deps were fatal), an empty dependency string (File::Which) breaking
+      state/update/info, a dependency cycle staging a dist twice, serial adds into a custom repo not
+      seeing the deps deployed before, a META without a version killing a whole recman, tarballs
+      named with 40 hex digits (GitHub commit archives) rejected as checksum mismatches, an absent
+      index hiding the cache behind "could not satisfy", a 300 s cap on index downloads, regexes
+      with quantified groups (catastrophic backtracking) and code inside regexes accepted as
+      selectors, credentials in the debug log of the curl/wget/git command lines.
 
   Internals
     - Pakku::Util, Pakku::Fetch, Pakku::Curl, Pakku::Collapse, Pakku::Recman::Index,

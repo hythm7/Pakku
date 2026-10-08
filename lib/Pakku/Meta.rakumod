@@ -45,7 +45,13 @@ method !specs ( *@phase, Str:D :$level = 'requires' ) {
 
   @phase
     ==> map( { ( %!deps{ $_ }{ $level } // [] ).Slip } )
-    ==> map( { Pakku::Spec.new: $_ } )
+    ==> grep( { not ( $_ ~~ Str and .trim eq '' ) } )   # "" is S22 for "nothing here" (a by-* default)
+    ==> map( -> $dep {
+      my $spec = try Pakku::Spec.new: $dep;
+      log '🐞', header => 'MTA', msg => $!dist, comment => "dependency { $dep.raku } skipped: { $!.message.lines.head }" without $spec;
+      $spec;
+    } )
+    ==> grep( *.defined )
     ==> unique( as => *.Str );
 
 }

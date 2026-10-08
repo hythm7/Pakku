@@ -2,7 +2,11 @@
 
 use Test;
 
+use Pakku::Log;
+
 use Pakku::Meta;
+
+Pakku::Log.new: verbose => 'nothing';
 
 my %meta := 
 {
@@ -151,5 +155,8 @@ throws-like { Pakku::Meta.new( $dir ) }, X::Pakku::Meta, 'invalid JSON dies with
 
 my $g = Pakku::Meta.new( { name => 'X', version => '1', depends => [ 'Zed', { any => [ 'elinks:from<bin>', 'lynx:from<bin>' ] }, 'Abc' ], provides => { 'X' => 'lib/X.rakumod' } } ).gist( :details ).subst( / \e \[ \d+ m /, '', :g );
 is $g, "MTA: ｢X:ver<1>:auth<>:api<>｣\nDEP: ｢Abc｣\nDEP: ｢Zed｣\nDEP: ｢any(elinks:from<bin> | lynx:from<bin>)｣\nPRV: ｢X｣", 'details gist: no stray spaces, alternatives on one line';
+
+# "" is what a by-* default leaves behind (File::Which); a broken spec string is skipped with a warning
+is Pakku::Meta.new( %( name => 'Dev::Odd', version => '1', depends => [ '', 'Fixture::Foo', 'Broken:ver(' ] ) ).deps( :deps ).map( *.name ).join( ' ' ), 'Fixture::Foo', 'an empty dependency is no dependency, a broken one is skipped';
 
 done-testing;

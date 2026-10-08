@@ -40,7 +40,11 @@ submethod TWEAK ( ) {
       next;
     }
 
-    my %meta = self.normalise( $raw, source => $dir ) orelse next;
+    my $normal = self.normalise( $raw, source => $dir );
+
+    next without $normal;
+
+    my %meta := $normal;
 
     %!meta{ %meta<name> }.push: %meta;
 

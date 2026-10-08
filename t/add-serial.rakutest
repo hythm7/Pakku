@@ -1,0 +1,36 @@
+#!/usr/bin/env raku
+
+use Test;
+
+# needed otherwise get 'SC not yet resolved error'
+use CompUnit::Repository::Staging;
+
+use Pakku;
+
+# Serial add into a custom repo: each dist is deployed before the next is staged, so the tests of
+# Fixture::Bar must find Fixture::Foo in the custom repo, which is not in this process's chain.
+# (Its own process: a custom repo is registered as 'custom-lib', once per process.)
+my $fixtures = $*PROGRAM.parent.add('fixtures').add('dists').absolute;
+my $tmp      = $*TMPDIR.add( 'pakku-add-serial-test-' ~ $*PID );
+my $home     = $tmp.add('home');
+my $repo     = $tmp.add('repo');
+
+$home.mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+my %cnf =
+  pakku  => %( home => $home, cache => False, verbose => ( %*ENV<PAKKU_TEST_VERBOSE> // 'nothing' ), pretty => False, bar => False, spinner => False, async => False ),
+  recman => [ %( name => 'fixture', location => $fixtures, priority => 1, active => True ), ];
+
+my $pakku = Pakku.new: :%cnf;
+
+lives-ok { $pakku.fly: 'add', spec => [ 'Fixture::Bar' ], to => ~$repo, :serial }, 'serial add of Fixture::Bar into a custom repo';
+
+my $inst = CompUnit::Repository::Installation.new: prefix => $repo;
+
+ok $inst.candidates( 'Fixture::Bar' ), 'Fixture::Bar is installed';
+ok $inst.candidates( 'Fixture::Foo' ), 'its dependency too';
+ok $repo.add( 'bin' ).add( 'bar' ).e, 'bin wrapper for bar was deployed';
+
+done-testing;
