@@ -516,8 +516,12 @@ grammar Pakku::Grammar::Cmd {
   token spec-key:sym<version> { <sym> }
 
   proto token spec-value { * }
-  token spec-value:sym<angles> { '<' ~ '>' $<val>=[ .*? <~~>? ] }
-  token spec-value:sym<parens> { '(' ~ ')' $<val>=[ .*? <~~>? ] }
+  token spec-value:sym<angles> { '<' $<val>=<angled>   '>' }
+  token spec-value:sym<parens> { '(' $<val>=<balanced> ')' }
+
+  # named recursion, as in Pakku::Spec: Rakudo 2026.09 dies on <~~> inside a proto token
+  token angled   { [ <-[<>]> | '<' <angled>   '>' ]* }
+  token balanced { [ <-[()]> | '(' <balanced> ')' ]* }
 
   token nukes { <nukable>+ % \h }
 

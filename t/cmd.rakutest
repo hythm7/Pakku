@@ -258,6 +258,14 @@ my @tests = (
     ${:add(${:path("./Foo-1.0.tar.gz".IO)}), :cmd("add")},
   "info Foo" =>
     ${:cmd("info"), :info(${:spec("Foo")})},
+  "search Pakku:ver<chou>" =>
+    ${:cmd("search"), :search(${:spec("Pakku:ver<chou>")})},
+  "add Foo:ver(* > 0.2):auth(/^zef/)" =>
+    ${:add(${:spec("Foo:ver(* > 0.2):auth(/^zef/)")}), :cmd("add")},
+  "add Foo:ver(any(1,2)):auth<zef:x> Bar:api<1>" =>
+    ${:add(${:spec($["Foo:ver(any(1,2)):auth<zef:x>", "Bar:api<1>"])}), :cmd("add")},
+  "info Foo:auth<a<b>c>" =>
+    ${:cmd("info"), :info(${:spec("Foo:auth<a<b>c>")})},
   "i Foo Bar" =>
     ${:cmd("info"), :info(${:spec($["Foo", "Bar"])})},
   "help info" =>
