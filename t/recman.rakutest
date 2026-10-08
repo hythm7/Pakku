@@ -69,7 +69,8 @@ my $foo = $eco.recommend( spec => spec( 'Fixture::Foo' ) );
 
 is $foo<ver>, '0.3', 'ecosystem: newest version';
 ok $tmp.add( 'store' ).add( 'index.json' ).e, 'ecosystem: the index was stored on first use';
-nok $eco.stale, 'ecosystem: fresh after the refresh';
+nok $eco.stale, 'ecosystem: fresh after the refresh'
+  or diag "age: { $eco.age }, now: { now.DateTime }, store: { $tmp.add( 'store' ).dir.map( { .basename ~ ' ' ~ .modified.DateTime } ).sort }";
 is $foo<source>, ~$fixtures ~ '/mirror/Foo-0.3.tar.gz', 'ecosystem: source is mirror ~ path';
 is $foo<recman>, 'fix', 'ecosystem: the meta remembers its recman';
 
