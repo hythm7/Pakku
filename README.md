@@ -104,10 +104,6 @@ not set), `mirrors` and an `index` file name (`index.json`) with a `source` (`pa
 it, or `source-url`, as REA does it) for ecosystems, a `location` for local ones, `refresh` hours,
 a `priority` (lower first) and `active`.
 
-> [!NOTE]
-> A config file that still lists the retired `recman.pakku.org` works: Pakku ignores the entry,
-> uses the built-in ecosystems, and asks for a `pakku config recman reset`.
-
 
 ## Pakku Commands
 
