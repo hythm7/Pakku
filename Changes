@@ -13,8 +13,8 @@ chou  2026-10-07
     - Resolution, search and info are local: no server round trips, newest release first,
       versions honoured by local recmans too.
     - HTTPS through a NativeCall libcurl binding, with the curl or wget binary as fallback
-      (curl.exe on Windows). Pakku::HTTP and the recman.pakku.org protocol are gone; an old
-      config entry is ignored with a hint to run `pakku config recman reset`.
+      (curl.exe on Windows). Pakku::HTTP and the recman.pakku.org protocol are gone; a config
+      still listing it wants a `pakku config recman reset`.
     - fez tarballs are verified against the SHA-1 in their name when a sha1 tool is around (the
       index marks them; a tarball you name yourself is never second-guessed).
     - Each index is parsed once per refresh into a derived form (names, provides, 256 by-name
