@@ -17,6 +17,9 @@ chou.4
     it, as zef does.
   - Adding to a path took the dependencies already there for missing, and added another
     release next to them (Foo 0.3 beside Foo 0.2), which the dists before then loaded.
+  - The progress bar no longer flickers: it was erased and drawn again for every log line,
+    also the ones the verbosity level does not print (every line a test prints, at the
+    default level). Adding App::Mi6 wrote 2.2MB to the terminal, now 208KB.
   - Dists with a "builder" in META6.json (Distribution::Builder::MakeFromJSON and kin,
     Raylib::Bindings for one) failed to build since chou: You can't adverb ... The META
     was pasted into the builder's code instead of read when it runs. The builder now gets
