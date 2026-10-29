@@ -582,19 +582,20 @@ method !forget-precomp ( $stage, Distribution::Locally:D $dist --> Nil ) {
 
 # Rakudo names home, site, vendor and core in every process, and no other repo: an inst#name(...)# spec
 # names nothing, and the name a staging repo needs for a path ('custom-lib') is Pakku's own.
+# Ask before the stage exists: a staging repo takes its target's name over, and the target then has none.
 my sub named ( $repo --> Bool:D ) { so $repo.name ~~ any <home site vendor core> }
 
 # move the staged dists into the target repo; reset keeps the staging repo for the next dist (serial).
 # What a stage precompiled names its sources by the repo's name (site#sources/...): a process that loads
 # from a target with no name to it can not find them, takes every unit with a dependency for outdated and
 # compiles it again. Such a target gets the dists installed and precompiled in it instead, as zef does.
-method !deploy ( $stage, $repo, @dist, Bool:D :$reset = False, Bool:D :$precompile = True ) {
+method !deploy ( $stage, $repo, @dist, Bool:D :$named!, Bool:D :$reset = False, Bool:D :$precompile = True ) {
 
   return if $!dont;
 
   try $stage.remove-artifacts; # trying for Windows
 
-  if named $repo { self!move-in: $stage, $repo }
+  if $named { self!move-in: $stage, $repo }
   else           { self!side-by-side: $repo, @dist, :!build, :!test, :!xtest, :$precompile, :$repo, header => 'ADD' }
 
   # one line per script: not the per-backend wrappers (-m, -j, -js) nor the .raku / .bat / .exe variants Rakudo writes
@@ -662,6 +663,8 @@ method !stage-dists (
   # (a custom path) goes first, so a serial add's later dists find the ones deployed before them
   my $next = @!repo.first( *.prefix eq $repo.prefix ) ?? $*REPO !! $repo;
 
+  my $named = named $repo;
+
   my $stage := staging.new:
     prefix    => $!stage.add( now.Num ),
     name      => $repo.name,
@@ -670,7 +673,7 @@ method !stage-dists (
   $!halted = Nil;
 
   # a target with no name gets precompiled at deploy: the stage precompiles only for the tests then
-  my $stage-precompile = $precompile && ( named( $repo ) || $test );
+  my $stage-precompile = $precompile && ( $named || $test );
 
   if $serial {
 
@@ -680,7 +683,7 @@ method !stage-dists (
 
       self.test: :$stage, :$dist, :$xtest, :$repo if $test;
 
-      self!deploy( $stage, $repo, [ $dist ], :reset, :$precompile ) if $deploy;
+      self!deploy( $stage, $repo, [ $dist ], :$named, :reset, :$precompile ) if $deploy;
 
     }
 
@@ -688,7 +691,7 @@ method !stage-dists (
 
     self!side-by-side: $stage, @dist, :$build, :$test, :$xtest, precompile => $stage-precompile, :$repo;
 
-    self!deploy( $stage, $repo, @dist, :$precompile ) if $deploy and @dist;
+    self!deploy( $stage, $repo, @dist, :$named, :$precompile ) if $deploy and @dist;
 
   }
 
@@ -715,12 +718,16 @@ method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$
 
     start {
 
+      my Bool $through;   # staged, and tested: what the bar counts (not what a halt passed over)
+
       CATCH { default { my $x = $_; $!stage-lock.protect: { $!halted //= $x } } }
 
       LEAVE {
         @vow[ $i ].keep: True if @staged[ $i ].status ~~ Planned;   # what waits for it goes on, and sees the halt
-        bar.percent: ++⚛$done / @dist * 100;
-        bar.show;
+        if $through {
+          bar.percent: ++⚛$done / @dist * 100;
+          bar.show;
+        }
       }
 
       await @after[ $i ].map: { @staged[ $_ ] };
@@ -732,6 +739,8 @@ method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$
         @vow[ $i ].keep: True;
 
         self.test: :$stage, :$dist, :$xtest, :$repo, :!bar if $test and not $!halted;
+
+        $through = not $!halted;
 
       }
 

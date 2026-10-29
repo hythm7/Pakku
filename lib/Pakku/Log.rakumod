@@ -395,28 +395,37 @@ submethod BUILD (
 
   $!warn.msg: header => 'CNF', msg => ~$verbose, comment => 'unknown log level' unless LogLevel::{ $verbose }; 
 
-  proto log ( | ) {
+  proto log ( $prefix, | ) {
 
-    $lock.lock;
-    LEAVE $lock.unlock;
+    # a level that is off prints nothing: leave the bar be, or it is redrawn for every line a test prints.
+    # (the lock in a block of its own: a LEAVE fires on any way out of its block, this return too)
+    return without %( '🐝' => $!all, '🐛' => $!debug, '🦋' => $!now, '🧚' => $!info, '🐞' => $!warn, '🦗' => $!error ){ $prefix };
 
-    if $!bar.active {
+    {
 
-      $!bar.hide;
-      {*}
-      $!bar.show;
+      $lock.lock;
+      LEAVE $lock.unlock;
 
-    } elsif $!spinner.active {
+      if $!bar.active {
 
-      $!spinner.hide;
-      {*}
-      $!spinner.show;
-     
-    } else {
+        $!bar.hide;
+        {*}
+        $!bar.show;
 
-      {*}
+      } elsif $!spinner.active {
+
+        $!spinner.hide;
+        {*}
+        $!spinner.show;
+
+      } else {
+
+        {*}
+
+      }
 
     }
+
   }
 
   multi sub log ( '🐝', *%opt ) is export {

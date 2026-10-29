@@ -23,7 +23,13 @@ my %env = %*ENV, HOME => ~$tmp;
 
 %env<RAKULIB>:delete;
 
-my sub pakku ( *@arg ) { run( $*EXECUTABLE, '-I', $root, $root.add( 'bin' ).add( 'pakku' ), |@arg, :%env ).exitcode }
+# exit code and what it said at info level
+my sub pakku ( *@arg ) {
+  my $proc = run $*EXECUTABLE, '-I', $root, $root.add( 'bin' ).add( 'pakku' ), 'nopretty', 'verbose', 'info', |@arg, :%env, :out, :err;
+  my $out  = $proc.out.slurp( :close );
+  diag $out ~ $proc.err.slurp( :close ) if %*ENV<PAKKU_TEST_VERBOSE>;
+  $proc.exitcode, $out;
+}
 
 # the precompiled files of a repo, by content (Windows reads modification times as 1969)
 my sub precomp ( IO::Path:D $repo ) {
@@ -39,11 +45,16 @@ my sub load ( IO::Path:D $repo, *@lib ) {
 my sub recompiled ( IO::Path:D $repo, %before ) { precomp( $repo ).grep( { not ( %before{ .key }:exists and %before{ .key } eqv .value ) } ).map( *.key ).List }
 
 # the path first: each add gets the whole tree (an add to home would satisfy the path's dependencies from home)
-for ( ~$tmp.add( 'custom' ), $tmp.add( 'custom' ), ( "-Iinst#{ $tmp.add( 'custom' ) }", ) ), ( 'home', $tmp.add( '.raku' ), () ) -> ( $to, $repo, @lib ) {
+# a path gets its dists installed in it at deploy (ADD: ｢dist｣), a repo every process names the stage moved in
+for ( ~$tmp.add( 'custom' ), $tmp.add( 'custom' ), ( "-Iinst#{ $tmp.add( 'custom' ) }", ), True ), ( 'home', $tmp.add( '.raku' ), (), False ) -> ( $to, $repo, @lib, $in-place ) {
 
   subtest "add to $to", {
 
-    is pakku( 'add', 'to', $to, 'Fixture::Bar' ), 0, 'add Fixture::Bar, with Fixture::Foo and Fixture::Qux beside each other';
+    my ( $exitcode, $out ) = pakku 'add', 'to', $to, 'Fixture::Bar';
+
+    is $exitcode, 0, 'add Fixture::Bar, with Fixture::Foo and Fixture::Qux beside each other';
+
+    is so( $out ~~ / 'ADD: ｢Fixture::Foo:' / ), $in-place, $in-place ?? 'installed in the path itself' !! 'the stage moved in, not installed and precompiled again';
 
     my %first = precomp $repo;
 
@@ -52,7 +63,7 @@ for ( ~$tmp.add( 'custom' ), $tmp.add( 'custom' ), ( "-Iinst#{ $tmp.add( 'custom
     is-deeply load( $repo, |@lib ), ( ), 'every unit loads';
     is-deeply recompiled( $repo, %first ), ( ), 'and loading recompiled nothing';
 
-    is pakku( 'add', 'to', $to, 'Fixture::Baz' ), 0, 'add Fixture::Baz into the same repo: its id changes';
+    is pakku( 'add', 'to', $to, 'Fixture::Baz' ).head, 0, 'add Fixture::Baz into the same repo: its id changes';
 
     my @foo = $repo.add( 'dist' ).dir.grep( { Rakudo::Internals::JSON.from-json( .slurp )<name> eq 'Fixture::Foo' } );
 
