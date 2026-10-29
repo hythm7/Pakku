@@ -60,4 +60,43 @@ lives-ok { $pakku.fly: 'remove', spec => [ @solo.first( *.contains: 'ver<1.2>' )
 
 is-deeply $inst.candidates( 'Fixture::Solo' ).map( *.meta<ver>.Str ).List, ( '1.2.1', ), 'the newer release, whose version starts the same, is still there';
 
+# a dist with a builder: the META reaches the builder whole, nested hashes and all, as MakeFromJSON reads them
+# (the ' in the directory name: paths go into the builder's code, and must stay strings there)
+my $built = $tmp.add( "it's built" );
+
+$built.add( 'lib' ).add( 'Fixture' ).add( 'Built' ).mkdir;
+$built.add( 'lib' ).add( 'Fixture' ).add( 'Built.rakumod' ).spurt: "unit module Fixture::Built;\n";
+$built.add( 'lib' ).add( 'Fixture' ).add( 'Built' ).add( 'Builder.rakumod' ).spurt: q:to/BUILDER/;
+  unit class Fixture::Built::Builder;
+  has %.meta;
+  method build ( $dir ) { $dir.IO.add( 'built' ).spurt: %!meta<build><makefile-variables><run>.join: ' ' }
+  BUILDER
+$built.add( 'META6.json' ).spurt: Rakudo::Internals::JSON.to-json: %(
+  name     => 'Fixture::Built',
+  version  => '1',
+  auth     => 'zef:fixture',
+  builder  => 'Fixture::Built::Builder',
+  build    => %( makefile-variables => %( run => [ 'raku', 'configure.raku' ] ) ),
+  provides => %( 'Fixture::Built' => 'lib/Fixture/Built.rakumod', 'Fixture::Built::Builder' => 'lib/Fixture/Built/Builder.rakumod' ),
+);
+
+lives-ok { $pakku.fly: 'add', path => $built, to => ~$repo, :!test }, 'add a dist that has a builder';
+
+is ( $built.add( 'built' ).e ?? $built.add( 'built' ).slurp !! Nil ), 'raku configure.raku', 'the builder ran and read the META it was given';
+ok $inst.candidates( 'Fixture::Built' ), 'the dist with a builder is installed';
+
+# a dist with a Build.rakumod, from a directory whose name has a ' too
+my $build = $tmp.add( "it's a Build" );
+
+$build.add( 'lib' ).mkdir;
+$build.add( 'lib' ).add( 'Fixture-Build.rakumod' ).spurt: "unit module Fixture::Build;\n";
+$build.add( 'Build.rakumod' ).spurt: q:to/BUILD/;
+  class Build { method build ( $dir ) { $dir.IO.add( 'built' ).spurt: $dir } }
+  BUILD
+$build.add( 'META6.json' ).spurt: Rakudo::Internals::JSON.to-json: %( name => 'Fixture::Build', version => '1', auth => 'zef:fixture', provides => %( 'Fixture::Build' => 'lib/Fixture-Build.rakumod' ) );
+
+lives-ok { $pakku.fly: 'add', path => $build, to => ~$repo, :!test }, 'add a dist that has a Build.rakumod';
+
+is ( $build.add( 'built' ).e ?? $build.add( 'built' ).slurp !! Nil ), ~$build, 'Build.rakumod ran, and was given its directory';
+
 done-testing;

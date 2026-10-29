@@ -206,16 +206,17 @@ method build (
 
   my @cmd = $*EXECUTABLE.absolute;
 
+  # paths go into the code as .raku literals: a ' in a path (the home, a local dist) ended the quote
   if $builder {
 
     # the META travels as JSON: its .raku needed the parser to guess block or hash, and it guessed block (C10)
     %*ENV<PAKKU_META> = Rakudo::Internals::JSON.to-json: $dist.meta;
 
-    @cmd.append: '-I', $prefix, '-e', "require $builder; my %meta := Rakudo::Internals::JSON.from-json( %*ENV<PAKKU_META> ); ::( '$builder' ).new( :%meta ).build( '$prefix' );";
+    @cmd.append: '-I', $prefix, '-e', "require $builder; my %meta := Rakudo::Internals::JSON.from-json( \%*ENV<PAKKU_META> ); ::( '$builder' ).new( :%meta ).build( {$prefix.Str.raku} );";
 
   } else {
 
-    @cmd.append: '-e', "require '$file'; ::( 'Build' ).new.build( '$prefix' );"; # -I $prefix breaks Linenoise Build
+    @cmd.append: '-e', "require {$file.Str.raku}; ::( 'Build' ).new.build( {$prefix.Str.raku} );"; # -I $prefix breaks Linenoise Build
 
   }
 

@@ -1,5 +1,14 @@
 Revision history for Pakku
 
+chou.4
+
+  - Dists with a "builder" in META6.json (Distribution::Builder::MakeFromJSON and kin,
+    Raylib::Bindings for one) failed to build since chou: You can't adverb ... The META
+    was pasted into the builder's code instead of read when it runs. The builder now gets
+    the parsed META, as zef gives it.
+  - A ' in a path (the Pakku home, a local dist) no longer fails every build: it ended
+    the quote around the path in the build's code. Builders and Build.rakumod both.
+
 chou.3  2026-10-08
 
   - Pakku could refuse to start after adding itself (Missing or wrong version of dependency
