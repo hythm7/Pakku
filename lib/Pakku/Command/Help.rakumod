@@ -84,7 +84,7 @@ method !add-help ( ) {
   %add<opt>.push: ( 'notest'          => 'bypass test' );
   %add<opt>.push: ( 'xtest'           => 'xtest distribution' );
   %add<opt>.push: ( 'noxtest'         => 'bypass xtest' );
-  %add<opt>.push: ( 'serial'          => 'add distribution in serial order' );
+  %add<opt>.push: ( 'serial'          => 'add distribution in serial order, each deployed before the next' );
   %add<opt>.push: ( 'noserial'        => 'no serial' );
   %add<opt>.push: ( 'contained'       => 'add distribution and all transitive deps regardless installed ones' );
   %add<opt>.push: ( 'nocontained'     => 'no contained' );
@@ -403,13 +403,13 @@ method !pakku-help ( ) {
   %pakku<opt>.push: ( 'refresh'          => 'refresh ecosystem indexes first' );
   %pakku<opt>.push: ( 'norefresh'        => 'never refresh ecosystem indexes (offline)' );
   %pakku<opt>.push: ( 'cache <path>'     => 'use path as the cache directory' );
-  %pakku<opt>.push: ( 'noasync'          => 'dont run asynchronously' );
+  %pakku<opt>.push: ( 'noasync'          => 'a dist\'s test files take turns' );
   %pakku<opt>.push: ( 'dont'             => 'do everything but dont do it' );
-  %pakku<opt>.push: ( 'async'            => 'run asynchronously when possible' );
+  %pakku<opt>.push: ( 'async'            => 'also run a dist\'s test files side by side' );
   %pakku<opt>.push: ( 'yolo'             => 'dont stop on Pakku exceptions' );
   %pakku<opt>.push: ( 'please'           => 'be nice to butterflies' );
   %pakku<opt>.push: ( 'verbose <level>'  => 'verbose level <nothing error warn info now debug all>' );
-  %pakku<opt>.push: ( 'cores   <number>'  => 'number of cores to use in async mode' );
+  %pakku<opt>.push: ( 'cores   <number>'  => 'how many fetches, builds, precompilations and tests run at once' );
   %pakku<opt>.push: ( 'config  <path>'   => 'specify config file' );
 
   help %pakku;

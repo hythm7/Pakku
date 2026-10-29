@@ -34,6 +34,10 @@ has Bool $!force;
 has Bool $!yolo;
 
 
+has Channel $!slots;        # one token per child process that may run: as many as cores
+has Lock    $!stage-lock;   # what changes the staging repo in this process, one at a time
+has         $!halted;       # the first failure while dists stage side by side: nothing new starts
+
 has Pakku::Log    $!log;
 has Pakku::Cache  $!cache;
 has Pakku::Fetch  $!fetch;
@@ -79,8 +83,14 @@ method !rakulib ( $stage, $repo --> Str:D ) {
 }
 
 # run a command, stream its output to the log, kill it after $timeout seconds of silence (0: never);
-# the clock starts with the process, so a child that never prints is caught too
-method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$timeout = 420 --> Int:D ) {
+# the clock starts with the process, so a child that never prints is caught too.
+# The environment is the child's own (dists stage side by side, %*ENV is the whole process's), and a child
+# waits for a slot: no more of them at once than cores. &out takes the stdout lines instead of the log.
+method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$timeout = 420, :%env = %*ENV, :&out --> Int:D ) {
+
+  await $!slots;
+
+  LEAVE $!slots.send: True;
 
   my $proc = Proc::Async.new: @cmd, :enc<utf8-c8>;   # a stray byte in a test's output is not a reason to die
 
@@ -92,7 +102,7 @@ method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$t
 
   react {
 
-    whenever $proc.stdout.lines { $last = now; log '🐝', :$header, msg => $_, :!msg-delimit; QUIT { default { log '🐞', :$header, msg => $what, comment => "output lost: { .message }" } } }
+    whenever $proc.stdout.lines { $last = now; &out ?? out( $_ ) !! log '🐝', :$header, msg => $_, :!msg-delimit; QUIT { default { log '🐞', :$header, msg => $what, comment => "output lost: { .message }" } } }
     whenever $proc.stderr.lines { $last = now; log '🐞', :$header, msg => $_, :!msg-delimit; QUIT { default { log '🐞', :$header, msg => $what, comment => "output lost: { .message }" } } }
 
     whenever Supply.interval( $tick, $tick ) {
@@ -114,7 +124,7 @@ method !run ( @cmd, IO::Path:D :$cwd!, Str:D :$header!, Str:D :$what!, Int:D :$t
 
     }
 
-    whenever $proc.start( :$cwd, :%*ENV ) {
+    whenever $proc.start( :$cwd, ENV => %env ) {
 
       $exitcode //= .exitcode || ( .signal ?? 128 + .signal !! 0 );   # a crash is a failure, whatever the exit code says
 
@@ -135,6 +145,7 @@ method test (
   Distribution::Locally:D :$dist!,
   Bool                    :$xtest,
                           :$repo,
+  Bool:D                  :$bar = True,   # its own bar; not when dists stage side by side
   ) {
 
   my @dir = <tests t>;
@@ -152,30 +163,34 @@ method test (
 
   return unless @test;
 
-  %*ENV<RAKULIB> = self!rakulib( $stage, $repo );
+  my %env = %*ENV, RAKULIB => self!rakulib( $stage, $repo );
 
   my Int $timeout   = ( %!cnf<test><timeout> // 420 ).Int;
-  my     $failed    = False;
-  my     $processed = 0;
+  my            $failed    = False;
+  my atomicint  $processed = 0;
 
-  bar.header: 'TST';
-  bar.length: $dist.Str.chars;
-  bar.sym:    $dist.Str;
-  bar.activate;
+  if $bar {
+    bar.header: 'TST';
+    bar.length: $dist.Str.chars;
+    bar.sym:    $dist.Str;
+    bar.activate;
+  }
 
-  # one failure is enough: tests already running finish, no new one starts (C5)
+  # one failure is enough: tests already running finish, no new one starts (C5); another dist's failure too
   sink @test.hyper( :$!degree :1batch ).map( -> $test {
 
-    unless $failed {
+    unless $failed or $!halted {
 
       log '🦋', header => 'TST', msg => $test.basename;
 
-      my $exitcode = self!run: [ $*EXECUTABLE, $test.relative( $prefix ) ], cwd => $prefix, header => 'TST', what => $test.basename, :$timeout;
+      my $exitcode = self!run: [ $*EXECUTABLE, $test.relative( $prefix ) ], cwd => $prefix, header => 'TST', what => $test.basename, :$timeout, :%env;
 
-      $processed += 1;
+      $processed⚛++;
 
-      bar.percent: $processed / @test * 100;
-      bar.show;
+      if $bar {
+        bar.percent: $processed / @test * 100;
+        bar.show;
+      }
 
       if $exitcode { $failed = True; log '🦗', header => 'TST', msg => $test.basename }
 
@@ -183,10 +198,10 @@ method test (
 
   } );
 
-  bar.deactivate;
+  bar.deactivate if $bar;
 
-  if $failed { self!die( X::Pakku::Test.new: msg => ~$dist ) }
-  else       { log '🧚', header => 'TST', msg => ~$dist }
+  if    $failed                { self!die( X::Pakku::Test.new: msg => ~$dist ) }
+  elsif $processed == +@test   { log '🧚', header => 'TST', msg => ~$dist }
 
 }
 
@@ -205,12 +220,13 @@ method build (
   log '🦋', header => 'BLD', msg => ~$dist;
 
   my @cmd = $*EXECUTABLE.absolute;
+  my %env = %*ENV, RAKULIB => self!rakulib( $stage, $repo );
 
   # paths go into the code as .raku literals: a ' in a path (the home, a local dist) ended the quote
   if $builder {
 
     # the META travels as JSON: its .raku needed the parser to guess block or hash, and it guessed block (C10)
-    %*ENV<PAKKU_META> = Rakudo::Internals::JSON.to-json: $dist.meta;
+    %env<PAKKU_META> = Rakudo::Internals::JSON.to-json: $dist.meta;
 
     @cmd.append: '-I', $prefix, '-e', "require $builder; my %meta := Rakudo::Internals::JSON.from-json( \%*ENV<PAKKU_META> ); ::( '$builder' ).new( :%meta ).build( {$prefix.Str.raku} );";
 
@@ -220,9 +236,7 @@ method build (
 
   }
 
-  %*ENV<RAKULIB> = self!rakulib( $stage, $repo );
-
-  my $exitcode = self!run: @cmd, cwd => $prefix, header => 'BLD', what => ~$dist, timeout => ( %!cnf<build><timeout> // 420 ).Int;
+  my $exitcode = self!run: @cmd, cwd => $prefix, header => 'BLD', what => ~$dist, timeout => ( %!cnf<build><timeout> // 420 ).Int, :%env;
 
   if $exitcode { self!die( X::Pakku::Build.new: msg => ~$dist ) }
   else         { log '🧚', header => 'BLD', msg => ~$dist }
@@ -443,7 +457,7 @@ method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, B
 }
 
 # a dist's files, from the cache or the ecosystem, as a Distribution ready to stage
-method !fetch-dist ( Pakku::Meta:D $meta, IO::Path:D :$tmp = $!tmp ) {
+method !fetch-dist ( Pakku::Meta:D $meta, IO::Path:D :$tmp = $!tmp, Bool:D :$progress = True ) {
 
   log '🦋', header => 'FTC', msg => ~$meta;
 
@@ -457,7 +471,7 @@ method !fetch-dist ( Pakku::Meta:D $meta, IO::Path:D :$tmp = $!tmp ) {
 
   } else {
 
-    self.fetch: src => $meta.source, dst => $path, sha1 => $meta.meta<sha1>;
+    self.fetch: src => $meta.source, dst => $path, sha1 => $meta.meta<sha1>, :$progress;
 
     $!cache.cache: :$path if $!cache;
 
@@ -469,10 +483,12 @@ method !fetch-dist ( Pakku::Meta:D $meta, IO::Path:D :$tmp = $!tmp ) {
 
 }
 
-# all of them, in parallel; a failed fetch ends the run, unless yolo
+# all of them, side by side whatever async says (downloads are not tests); a failed fetch ends the run, unless yolo
 method !fetch-dists ( @meta --> Array ) {
 
-  my @fetched = @meta.hyper( degree => $!degree, :1batch ).map( -> $meta { ( try self!fetch-dist: $meta ) // $! } );
+  my $progress = @meta == 1;   # a download's own bar, when it is the only one
+
+  my @fetched = @meta.hyper( degree => $!cores, :1batch ).map( -> $meta { ( try self!fetch-dist: $meta, :$progress ) // $! } );
 
   for @fetched.grep( Exception ) { $_ ~~ X::Pakku ?? self!die( $_ ) !! .rethrow }
 
@@ -482,125 +498,64 @@ method !fetch-dists ( @meta --> Array ) {
 
 }
 
-# precomp files land in directories that appear as the stage fills: watch each one as it shows up,
-# and list what landed in it before the watch was armed (the first file of a bucket, C6)
-method !watch-recursive ( IO::Path:D $start --> Supply:D ) {
-
-  my %seen;
-
-  supply {
-
-    my sub file ( IO::Path:D $file, Bool:D :$emit ) {
-      return if $file.extension;                       # precomp files have none; .lock, .repo-id ... do
-      return unless $file.f;                           # a directory, or already gone again
-      emit $file.Str if $emit and not %seen{ $file.Str };
-      %seen{ $file.Str } = True;
-    }
-
-    my sub watch ( IO::Path:D $dir, Bool:D :$emit ) {
-
-      whenever $dir.watch -> $e {
-
-        CATCH { default { .so } }
-
-        next unless $e.event ~~ FileRenamed;
-
-        my $path = $e.path.IO;
-
-        if $path.d { watch $path.resolve, :emit; next }
-
-        file $path, :emit;
-
-      }
-
-      # already there: what was created before this watch (silently for the start directory, those are older dists)
-      for $dir.dir -> $entry { $entry.d ?? watch( $entry.resolve, :$emit ) !! file( $entry, :$emit ) }
-
-    }
-
-    watch $start, :!emit;
-
-  }
-
-}
-
-# install one dist into the staging repo, with its build before and its tests after
-method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile!, :$repo ) {
+# install one dist into the staging repo, built before and precompiled after (its tests: see !stage-dists)
+method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Bool:D :$precompile!, :$repo ) {
 
   self.build: :$stage, :$dist, :$repo if $build;
 
-  my $precomp-dir = $stage.prefix.add( 'precomp' ).add( $*RAKU.compiler.id );
-  my $dist-dir    = $stage.prefix.add: 'dist';
-
-  $precomp-dir.mkdir;
-  $dist-dir.mkdir;
-
-  my @tap;
-
-  if $precompile {
-
-    bar.header: 'STG';
-    bar.length: $dist.Str.chars;
-    bar.sym:    $dist.Str;
-    bar.activate;
-
-    my $processed      = 0;
-    my $total          = +$dist.meta<provides>.keys || 1;
-    my $dist-meta-file = $dist-dir.add( $dist.id );
-
-    my %hash-to-name;
-
-    # the dist's META lands in dist/<id> during install: it maps precomp hashes back to module names
-    @tap.push: $dist-dir.watch.tap( -> $event {
-
-      if $event.path ~~ $dist-meta-file and $event.event ~~ FileChanged {
-
-        my %provides = try Rakudo::Internals::JSON.from-json( $dist-meta-file.slurp ).<provides>;
-
-        %provides.map( { %hash-to-name{ .value.values.head.<file> } = .key } );
-
-      }
-
-    } );
-
-    @tap.push: self!watch-recursive( $precomp-dir ).tap( -> $path {
-
-      log '🦋', header => 'CMP', msg => %hash-to-name{ $path.IO.basename } // $path.IO.basename;
-
-      $processed += 1;
-
-      bar.percent: $processed / $total * 100;
-      bar.show;
-
-    } );
-
-  }
-
-  if $precompile {
-
-    # twice: the first install only tells which units the dist has, so that what other repos of the chain
-    # still hold precompiled under the same ids is dropped before anything is compiled against it
-    $stage.install: $dist, :!precompile;
-
-    self!forget-precomp: $stage, $dist;
-
-    $stage.install: $dist, :precompile, :force;
-
-  } else {
+  # installed without precompiling first: that tells which units the dist has, so that what other repos of
+  # the chain still hold precompiled under the same ids is dropped before anything is compiled against it.
+  # Rakudo's install writes the repo's index: one dist at a time in this process
+  $!stage-lock.protect: {
 
     $stage.install: $dist, :!precompile;
 
+    self!forget-precomp: $stage, $dist if $precompile;
+
   }
 
-  .close for @tap;
-
-  bar.deactivate if $precompile;
+  self!precompile: $stage, $dist, :$repo if $precompile;
 
   log '🧚', header => 'STG', msg => ~$dist;
 
-  self.test: :$stage, :$dist, :$xtest, :$repo if $test;
+}
+
+# what Rakudo's install does to precompile a dist (the same calls, in the same order), in a child of its own:
+# in this process every precompilation waits for the store's lock and $*REPO is the process's, so dists
+# precompile side by side only as children. The child names each unit before compiling it. A unit that
+# says `no precompilation` is no failure (precompile returns False, install goes on); a compile error dies.
+my constant PRECOMPILE = q:to/RAKU/.subst( / \n \s* /, ' ', :g );
+  my $dist-id = @*ARGS.head;
+  my $repo    = $*REPO;
+  my $precomp = $repo.precomp-repository;
+  exit unless $precomp.may-precomp;
+  my $*DISTRIBUTION = CompUnit::Repository::Distribution.new( $repo.distribution( $dist-id ), :$repo, :$dist-id );
+  my $*RESOURCES    = Distribution::Resources.new( :$repo, :$dist-id );
+  my $compiler-id   = CompUnit::PrecompilationId.new-without-check( $*RAKU.compiler.id );
+  my %provides      = $repo.distribution( $dist-id ).meta<provides>;
+  for %provides.sort { $precomp.store.delete: $compiler-id, CompUnit::PrecompilationId.new-without-check( .value.values[0]<file> ) };
+  my %done;
+  for %provides.sort -> $unit {
+    my $id     = $unit.value.values[0]<file>;
+    next if %done{ $id }++;
+    my $source = $repo.prefix.add( 'sources' ).add( $id );
+    put $unit.key;
+    $precomp.precompile( $source, CompUnit::PrecompilationId.new-without-check( $id ), source-name => "{ $repo.name }#{ $source.relative( $repo.prefix ) } ({ $unit.key })" );
+  };
+  RAKU
+
+method !precompile ( $stage, Distribution::Locally:D $dist, :$repo ) {
+
+  my %env = %*ENV, RAKULIB => self!rakulib( $stage, $repo );
+
+  my $exitcode = self!run: [ $*EXECUTABLE.absolute, '-e', PRECOMPILE, dist-id( $dist ) ], cwd => $stage.prefix, header => 'CMP', what => ~$dist, :0timeout, :%env, out => -> $unit { log '🦋', header => 'CMP', msg => $unit };
+
+  self!die( X::Pakku::Stage.new: msg => ~$dist, comment => 'could not precompile!' ) if $exitcode;
 
 }
+
+# the id Rakudo's install files a dist under (it reads auth from authority or author too)
+my sub dist-id ( Distribution:D $dist --> Str:D ) { CompUnit::Repository::Distribution.new( $dist ).id }
 
 # A unit's id comes from the dist's identity and the unit's name: adding the same release again gives the
 # same ids. What an earlier install of it left precompiled in the other repos of the chain (the target, and
@@ -608,7 +563,7 @@ method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Boo
 # and the staged files would end up compiled against units that are not the staged ones: outdated on arrival.
 method !forget-precomp ( $stage, Distribution::Locally:D $dist --> Nil ) {
 
-  my $meta-file = $stage.prefix.add( 'dist' ).add( $dist.id );
+  my $meta-file = $stage.prefix.add( 'dist' ).add( dist-id $dist );
 
   return unless $meta-file.f;
 
@@ -681,7 +636,8 @@ method !move-in ( $stage, $repo --> Nil ) {
 
 }
 
-# a staging repo named after the target: dists are built, installed and tested there, then deployed
+# a staging repo named after the target: dists are built, installed and tested there, then deployed.
+# serial: one dist after the other, each deployed before the next one starts
 method !stage-dists (
   @dist,
          :$repo!,
@@ -702,17 +658,98 @@ method !stage-dists (
     name      => $repo.name,
     next-repo => $next;
 
-  for @dist -> $dist {
+  $!halted = Nil;
 
-    self!stage-dist: $stage, $dist, :$build, :$test, :$xtest, :$precompile, :$repo;
+  if $serial {
 
-    self!deploy( $stage, $repo, :reset ) if $serial and $deploy;
+    for @dist -> $dist {
+
+      self!stage-dist: $stage, $dist, :$build, :$precompile, :$repo;
+
+      self.test: :$stage, :$dist, :$xtest, :$repo if $test;
+
+      self!deploy( $stage, $repo, :reset ) if $deploy;
+
+    }
+
+  } else {
+
+    self!side-by-side: $stage, @dist, :$build, :$test, :$xtest, :$precompile, :$repo;
+
+    self!deploy( $stage, $repo ) if $deploy and @dist;
 
   }
 
-  self!deploy( $stage, $repo ) if $deploy and not $serial and @dist;
-
   $stage;
+
+}
+
+# a dist stages once the dists it depends on are staged, and its tests run while later dists stage.
+# The first failure lets what runs finish and starts nothing new; then it ends the run (yolo: no failure)
+method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile!, :$repo ) {
+
+  my @after  = self!after: @dist;
+  my @staged = Promise.new xx @dist;
+  my @vow    = @staged.map: *.vow;
+
+  my atomicint $done = 0;
+
+  bar.header: 'STG';
+  bar.length: +@dist;
+  bar.sym;
+  bar.activate;
+
+  my @job = @dist.kv.map: -> $i, $dist {
+
+    start {
+
+      CATCH { default { my $x = $_; $!stage-lock.protect: { $!halted //= $x } } }
+
+      LEAVE {
+        @vow[ $i ].keep: True if @staged[ $i ].status ~~ Planned;   # what waits for it goes on, and sees the halt
+        bar.percent: ++⚛$done / @dist * 100;
+        bar.show;
+      }
+
+      await @after[ $i ].map: { @staged[ $_ ] };
+
+      unless $!halted {
+
+        self!stage-dist: $stage, $dist, :$build, :$precompile, :$repo;
+
+        @vow[ $i ].keep: True;
+
+        self.test: :$stage, :$dist, :$xtest, :$repo, :!bar if $test and not $!halted;
+
+      }
+
+    }
+
+  }
+
+  await @job;
+
+  bar.deactivate;
+
+  .rethrow with $!halted;
+
+}
+
+# for each dist, the dists before it that it depends on, in any phase: what it waits for. Only those before it:
+# the order is the one a serial install takes, and a dependency cycle then waits for nothing
+method !after ( @dist --> List:D ) {
+
+  my @meta = @dist.map: { $_ ~~ Pakku::Meta ?? $_ !! Pakku::Meta.new( .meta ) };
+
+  my sub leaves ( $spec ) { $spec ~~ Pakku::Spec::Any | Pakku::Spec::All ?? $spec.spec.map( &leaves ).Slip !! $spec }
+
+  @meta.keys.map( -> $i {
+
+    my @spec = @meta[ $i ].deps( :deps ).map: &leaves;
+
+    ( ^$i ).grep( -> $j { @spec.first( -> $spec { provided-by @meta[ $j ], $spec } ) } ).List
+
+  } ).List;
 
 }
 
@@ -729,7 +766,7 @@ method !try-out ( Pakku::Meta:D $meta, &do, :$dist is copy, Bool:D :$build = Tru
 
   my $stage = self!stage-dists: @dist, repo => CompUnit::RepositoryRegistry.repository-for-name( 'home' ), :$build, :!test, :!precompile, :!deploy;
 
-  self!stage-dist: $stage, $dist, build => $build-target, :!test, :!xtest, :!precompile;
+  self!stage-dist: $stage, $dist, build => $build-target, :!precompile;
 
   do( $stage, $dist ) unless $!dont;
 
@@ -812,7 +849,7 @@ method !install-repo ( Str:D $spec, Str:D $what ) {
 }
 
 
-multi method fetch ( Str:D :$src!, IO::Path:D :$dst!, :$sha1 ) {
+multi method fetch ( Str:D :$src!, IO::Path:D :$dst!, :$sha1, Bool:D :$progress = True ) {
 
   log '🐛', header => 'FTC', msg => ~$src;
 
@@ -823,7 +860,7 @@ multi method fetch ( Str:D :$src!, IO::Path:D :$dst!, :$sha1 ) {
   my $archive = $dst.add( $dst.basename ~ '.tar.gz' );
 
   # index sources are already valid URLs (REA's are even pre-encoded): never re-encode them
-  retry { $!fetch.download: url => $src, dst => $archive, progress => $!degree == 1 };
+  retry { $!fetch.download: url => $src, dst => $archive, :$progress };
 
   self!verify( $archive, $_ ) with $sha1;   # fez names its tarballs after their SHA-1, the index said so
 
@@ -1065,6 +1102,11 @@ submethod BUILD ( :%!cnf! ) {
   log '🐝', header => 'CNF', msg => 'cores', comment => ~$!cores;
 
   $!degree = %!cnf<pakku><async> ?? $!cores !! 1;
+
+  $!slots      = Channel.new;
+  $!stage-lock = Lock.new;
+
+  $!slots.send: True for ^$!cores;
 
   log '🐝', header => 'CNF', msg => 'degree', comment => ~$!degree;
 

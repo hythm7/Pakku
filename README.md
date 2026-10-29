@@ -110,6 +110,11 @@ a `priority` (lower first) and `active`.
 ### add
 Install distributions
 
+Butterflies fly side by side: dists are fetched all at once, a dist is built and precompiled as soon as
+the dists it depends on are, and its tests run while the next ones are staged. A dist's own test files
+take turns, unless `async`. Nothing is deployed until all of them are through. `cores` says how many fly
+at once, `serial` lines them up one by one.
+
 **options:**
 
 <pre>
@@ -122,7 +127,7 @@ exclude < Spec >    → exclude Spec
 test                → test distribution
 xtest               → xTest distribution
 build               → build distribution
-serial              → add distributions in serial order
+serial              → add distributions in serial order, each one deployed before the next one starts
 contained           → add distributions and all transitive deps (regardless if they are installed)
 precomp             → precompile distribution 
 to < repo >         → add distribution to repo < home site vendor core /path/to/MyApp >
@@ -419,12 +424,12 @@ Get help on a specific command
 <pre>
 pretty              → use colors
 force               → use force
-async               → run asynchronously (disabled by default because some dists tests are not async safe) 
+async               → also run a dist's test files side by side (disabled by default because some dists tests are not async safe) 
 dont                → do everything but dont do it (dry run)
 bar                 → use progress bar
 spinner             → use spinner
 verbose  < level >  → verbosity < nothing error warn info now debug all >
-cores    < number > → number of cores used when run in async mode
+cores    < number > → how many fetches, builds, precompilations and tests run at once (cores 1: one at a time)
 config   < path >   → specify config file
 cache    < path >   → cache downloaded dists there
 recman              → enable all recommendation managers
@@ -437,7 +442,7 @@ nopretty            → no colors
 noforce             → no force
 nobar               → no progress bar
 nospinner           → no spinner
-noasync             → dont run asynchronously
+noasync             → a dist's test files take turns
 nocache             → disable cache
 yolo                → proceed if error occured (eg. test failure)
 please              → be nice to butterflies

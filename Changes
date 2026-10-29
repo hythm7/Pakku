@@ -2,6 +2,14 @@ Revision history for Pakku
 
 chou.4
 
+  - Butterflies fly side by side. Dists are fetched all at once (async or not), each dist is
+    built and precompiled as soon as the dists it depends on are, and its tests run while
+    the next ones stage. Adding App::Mi6 and its 23 dependencies: 100s -> 33s, fetching
+    them uncached 8s -> 0.7s. A dist's own test files still take turns unless async;
+    `cores` says how much runs at once, `serial` keeps the old order.
+  - Precompiling happens in a child per dist, with the calls Rakudo's install makes. What
+    is deployed loads as it is: nothing is compiled again on first use, also after more
+    dists were added to the repo (t/add-precomp.rakutest).
   - Dists with a "builder" in META6.json (Distribution::Builder::MakeFromJSON and kin,
     Raylib::Bindings for one) failed to build since chou: You can't adverb ... The META
     was pasted into the builder's code instead of read when it runs. The builder now gets
