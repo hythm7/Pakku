@@ -1,6 +1,6 @@
 Revision history for Pakku
 
-chou.4
+chou.4  2026-10-29
 
   - Butterflies fly side by side. Dists are fetched all at once (async or not), each dist is
     built and precompiled as soon as the dists it depends on are, and its tests run while

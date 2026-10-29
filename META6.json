@@ -69,5 +69,5 @@
     "raku"
     ],
   "test-depends": [ ],
-  "version": "chou.3"
+  "version": "chou.4"
 }
