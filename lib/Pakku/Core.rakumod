@@ -78,7 +78,7 @@ multi sub provided-by ( $, $ --> Bool:D ) { False }
 # chain (a custom path), so a serial add's later dists find the ones deployed before them
 method !rakulib ( $stage, $repo --> Str:D ) {
 
-  join ',', $stage.path-spec, ( "inst#{ $repo.prefix.absolute }" if $repo and not @!repo.first( *.prefix eq $repo.prefix ) );
+  join ',', $stage.path-spec, ( "inst#{ $repo.prefix.absolute }" if $repo and $repo.prefix ne $stage.prefix and not @!repo.first( *.prefix eq $repo.prefix ) );
 
 }
 
@@ -380,17 +380,17 @@ multi method satisfied ( Pakku::Spec::All:D :$spec!, :@repo = @!repo --> Bool:D 
 
 
 # can this spec be met: installed already, or the recman (or the cache) has it; a group needs all its members
-method !resolvable ( $spec --> Bool:D ) {
+method !resolvable ( $spec, :@repo = @!repo --> Bool:D ) {
 
   given $spec {
-    when Pakku::Spec::All  { not .spec.first( -> $member { not self!resolvable( $member ) } ) }
-    when Pakku::Spec::Any  { so  .spec.first( -> $member { self!resolvable( $member ) } ) }
+    when Pakku::Spec::All  { not .spec.first( -> $member { not self!resolvable( $member, :@repo ) } ) }
+    when Pakku::Spec::Any  { so  .spec.first( -> $member { self!resolvable( $member, :@repo ) } ) }
     when Pakku::Spec::Raku {
-      so self.satisfied( :$spec )
+      so self.satisfied( :$spec, :@repo )
         || ( $!recman and ( try $!recman.recommend( :$spec ) ).defined )
         || ( $!cache  and $!cache.recommend( :$spec ).defined )
     }
-    default { self.satisfied( :$spec ) }
+    default { self.satisfied( :$spec, :@repo ) }
   }
 
 }
@@ -403,9 +403,9 @@ method get-deps ( Pakku::Meta:D $meta, :$deps = True, Bool:D :$contained = False
 }
 
 # the dists to install for @spec: dependencies first, each one once, nothing that is already
-# installed (unless contained); a spec may be satisfied by a dist chosen earlier in this very
+# installed in @repo (unless contained); a spec may be satisfied by a dist chosen earlier in this very
 # resolution, so Foo:ver<0.2+> and a bare Foo end up as one Foo (B17)
-method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, Bool:D :$top = True --> Array ) {
+method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, Bool:D :$top = True, :@repo = @!repo --> Array ) {
 
   my @meta;
   my %done;
@@ -421,9 +421,9 @@ method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, B
     # alternatives: the first one that can be met, in the order written (S22); a group counts when all of it can
     if $spec ~~ Pakku::Spec::Any {
 
-      return if not $top and not $contained and self.satisfied( :$spec );
+      return if not $top and not $contained and self.satisfied( :$spec, :@repo );
 
-      my $pick = $spec.spec.first( -> $alternative { self!resolvable( $alternative ) } );
+      my $pick = $spec.spec.first( -> $alternative { self!resolvable( $alternative, :@repo ) } );
 
       without $pick {
         log '🐞', header => 'SPC', msg => ~$spec, comment => 'could not satisfy!';
@@ -438,7 +438,7 @@ method !resolve ( @spec, :$deps = True, Bool:D :$contained = False, :@exclude, B
 
     return if $spec ~~ Pakku::Spec::Raku and $spec.name eq any @excluded;
     return if @meta.first( -> $meta { provided-by $meta, $spec } );
-    return if not $top and not ( $contained and $spec ~~ Pakku::Spec::Raku | Pakku::Spec::Any ) and self.satisfied( :$spec );
+    return if not $top and not ( $contained and $spec ~~ Pakku::Spec::Raku | Pakku::Spec::Any ) and self.satisfied( :$spec, :@repo );
 
     my $meta = self.satisfy: :$spec;
 
@@ -498,8 +498,9 @@ method !fetch-dists ( @meta --> Array ) {
 
 }
 
-# install one dist into the staging repo, built before and precompiled after (its tests: see !stage-dists)
-method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Bool:D :$precompile!, :$repo ) {
+# install one dist into the staging repo, built before and precompiled after (its tests: see !stage-dists);
+# or into a target the stage can not be moved into (see !deploy). A release added again replaces itself
+method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Bool:D :$precompile!, :$repo, Str:D :$header = 'STG' ) {
 
   self.build: :$stage, :$dist, :$repo if $build;
 
@@ -508,7 +509,7 @@ method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Boo
   # Rakudo's install writes the repo's index: one dist at a time in this process
   $!stage-lock.protect: {
 
-    $stage.install: $dist, :!precompile;
+    $stage.install: $dist, :!precompile, :force;
 
     self!forget-precomp: $stage, $dist if $precompile;
 
@@ -516,7 +517,7 @@ method !stage-dist ( $stage, Distribution::Locally:D $dist, Bool:D :$build!, Boo
 
   self!precompile: $stage, $dist, :$repo if $precompile;
 
-  log '🧚', header => 'STG', msg => ~$dist;
+  log '🧚', :$header, msg => ~$dist;
 
 }
 
@@ -540,7 +541,7 @@ my constant PRECOMPILE = q:to/RAKU/.subst( / \n \s* /, ' ', :g );
     next if %done{ $id }++;
     my $source = $repo.prefix.add( 'sources' ).add( $id );
     put $unit.key;
-    $precomp.precompile( $source, CompUnit::PrecompilationId.new-without-check( $id ), source-name => "{ $repo.name }#{ $source.relative( $repo.prefix ) } ({ $unit.key })" );
+    $precomp.precompile( $source, CompUnit::PrecompilationId.new-without-check( $id ), source-name => ( $repo.name ?? "{ $repo.name }#{ $source.relative( $repo.prefix ) }" !! ~$source ) ~ " ({ $unit.key })" );
   };
   RAKU
 
@@ -579,14 +580,22 @@ method !forget-precomp ( $stage, Distribution::Locally:D $dist --> Nil ) {
 
 }
 
-# move the staged dists into the target repo; reset keeps the staging repo for the next dist (serial)
-method !deploy ( $stage, $repo, Bool:D :$reset = False ) {
+# Rakudo names home, site, vendor and core in every process, and no other repo: an inst#name(...)# spec
+# names nothing, and the name a staging repo needs for a path ('custom-lib') is Pakku's own.
+my sub named ( $repo --> Bool:D ) { so $repo.name ~~ any <home site vendor core> }
+
+# move the staged dists into the target repo; reset keeps the staging repo for the next dist (serial).
+# What a stage precompiled names its sources by the repo's name (site#sources/...): a process that loads
+# from a target with no name to it can not find them, takes every unit with a dependency for outdated and
+# compiles it again. Such a target gets the dists installed and precompiled in it instead, as zef does.
+method !deploy ( $stage, $repo, @dist, Bool:D :$reset = False, Bool:D :$precompile = True ) {
 
   return if $!dont;
 
   try $stage.remove-artifacts; # trying for Windows
 
-  self!move-in: $stage, $repo;
+  if named $repo { self!move-in: $stage, $repo }
+  else           { self!side-by-side: $repo, @dist, :!build, :!test, :!xtest, :$precompile, :$repo, header => 'ADD' }
 
   # one line per script: not the per-backend wrappers (-m, -j, -js) nor the .raku / .bat / .exe variants Rakudo writes
   my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str )
@@ -660,23 +669,26 @@ method !stage-dists (
 
   $!halted = Nil;
 
+  # a target with no name gets precompiled at deploy: the stage precompiles only for the tests then
+  my $stage-precompile = $precompile && ( named( $repo ) || $test );
+
   if $serial {
 
     for @dist -> $dist {
 
-      self!stage-dist: $stage, $dist, :$build, :$precompile, :$repo;
+      self!stage-dist: $stage, $dist, :$build, precompile => $stage-precompile, :$repo;
 
       self.test: :$stage, :$dist, :$xtest, :$repo if $test;
 
-      self!deploy( $stage, $repo, :reset ) if $deploy;
+      self!deploy( $stage, $repo, [ $dist ], :reset, :$precompile ) if $deploy;
 
     }
 
   } else {
 
-    self!side-by-side: $stage, @dist, :$build, :$test, :$xtest, :$precompile, :$repo;
+    self!side-by-side: $stage, @dist, :$build, :$test, :$xtest, precompile => $stage-precompile, :$repo;
 
-    self!deploy( $stage, $repo ) if $deploy and @dist;
+    self!deploy( $stage, $repo, @dist, :$precompile ) if $deploy and @dist;
 
   }
 
@@ -686,7 +698,7 @@ method !stage-dists (
 
 # a dist stages once the dists it depends on are staged, and its tests run while later dists stage.
 # The first failure lets what runs finish and starts nothing new; then it ends the run (yolo: no failure)
-method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile!, :$repo ) {
+method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile!, :$repo, Str:D :$header = 'STG' ) {
 
   my @after  = self!after: @dist;
   my @staged = Promise.new xx @dist;
@@ -694,7 +706,7 @@ method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$
 
   my atomicint $done = 0;
 
-  bar.header: 'STG';
+  bar.header: $header;
   bar.length: +@dist;
   bar.sym;
   bar.activate;
@@ -715,7 +727,7 @@ method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$
 
       unless $!halted {
 
-        self!stage-dist: $stage, $dist, :$build, :$precompile, :$repo;
+        self!stage-dist: $stage, $dist, :$build, :$precompile, :$repo, :$header;
 
         @vow[ $i ].keep: True;
 

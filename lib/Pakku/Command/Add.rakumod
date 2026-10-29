@@ -36,7 +36,7 @@ multi method fly (
     return;
   }
 
-  my @meta = self!resolve: @top, :$deps, :$contained, exclude => @exclude.map( { Pakku::Spec.new: $_ } );
+  my @meta = self!resolve: @top, :$deps, :$contained, exclude => @exclude.map( { Pakku::Spec.new: $_ } ), repo => self!deps-in( $repo );
 
   unless @meta {
     log '🧚', header => 'ADD', msg => ~@spec, comment => 'nothing to add!';
@@ -84,7 +84,7 @@ multi method fly (
 
   self!check-provides: $meta, $path;
 
-  my @meta = self!resolve: $meta.deps( :$deps ), :$deps, :$contained, :!top, exclude => @exclude.map( { Pakku::Spec.new: $_ } );
+  my @meta = self!resolve: $meta.deps( :$deps ), :$deps, :$contained, :!top, exclude => @exclude.map( { Pakku::Spec.new: $_ } ), repo => self!deps-in( $repo );
 
   my @dist = self!fetch-dists: @meta;
 
@@ -104,6 +104,10 @@ method !where-to-look ( $repo, Bool:D :$contained ) {
   self!repo;
 
 }
+
+# where a dependency counts as there: the chain, and the target when it is outside it (a path), whose
+# dists load with the chain behind them; otherwise a second release of a dependency lands next to the first
+method !deps-in ( $repo ) { ( $repo, |self!repo ).unique( as => *.prefix.Str ) }
 
 # issue #36: a module file under lib/ that is not in provides is invisible to the loader
 method !check-provides ( Pakku::Meta:D $meta, IO::Path:D $path ) {

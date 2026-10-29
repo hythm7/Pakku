@@ -10,6 +10,13 @@ chou.4
   - Precompiling happens in a child per dist, with the calls Rakudo's install makes. What
     is deployed loads as it is: nothing is compiled again on first use, also after more
     dists were added to the repo (t/add-precomp.rakutest).
+  - Adding to a path (`to /path/to/MyApp`): every unit with a dependency was compiled again
+    the first time it was loaded (-I inst#/path/to/MyApp), 44 of App::Mi6's 75. Precompiled
+    files name their sources by the repo's name, and only home, site, vendor and core have
+    one in the process that loads. A path now gets its dists installed and precompiled in
+    it, as zef does.
+  - Adding to a path took the dependencies already there for missing, and added another
+    release next to them (Foo 0.3 beside Foo 0.2), which the dists before then loaded.
   - Dists with a "builder" in META6.json (Distribution::Builder::MakeFromJSON and kin,
     Raylib::Bindings for one) failed to build since chou: You can't adverb ... The META
     was pasted into the builder's code instead of read when it runs. The builder now gets
