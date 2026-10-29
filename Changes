@@ -8,6 +8,10 @@ chou.4
     the parsed META, as zef gives it.
   - A ' in a path (the Pakku home, a local dist) no longer fails every build: it ended
     the quote around the path in the build's code. Builders and Build.rakumod both.
+  - META6.json says what Pakku fetches with: libcurl, or the curl or wget binary, next to
+    libarchive. git and a sha1 tool are recommended.
+  - When none of a dist's alternatives is here and all are native libraries or binaries,
+    Pakku says so: none is a Raku dist, install one of them yourself.
 
 chou.3  2026-10-08
 
