@@ -1,5 +1,12 @@
 Revision history for Pakku
 
+chou.6
+
+  - Adding to a path (`to /path/to/MyApp`) is faster: each dist goes into the path as soon as
+    it and what it depends on are tested, while the rest still stage. Precompiling in the path
+    no longer waits for the end. App::Mi6 with its 23 dependencies: 49s -> 42s. When a test
+    fails after all, what went into the path in that run is taken back.
+
 chou.5  2026-10-29
 
   - `pakku update` right after a release could need a second run: within an hour of the

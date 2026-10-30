@@ -588,15 +588,16 @@ my sub named ( $repo --> Bool:D ) { so $repo.name ~~ any <home site vendor core>
 # move the staged dists into the target repo; reset keeps the staging repo for the next dist (serial).
 # What a stage precompiled names its sources by the repo's name (site#sources/...): a process that loads
 # from a target with no name to it can not find them, takes every unit with a dependency for outdated and
-# compiles it again. Such a target gets the dists installed and precompiled in it instead, as zef does.
-method !deploy ( $stage, $repo, @dist, Bool:D :$named!, Bool:D :$reset = False, Bool:D :$precompile = True ) {
+# compiles it again. Such a target gets the dists installed and precompiled in it instead, as zef does: each
+# one as soon as it is tested (see !side-by-side), or here when serial.
+method !deploy ( $stage, $repo, @dist, Bool:D :$named!, Bool:D :$added = False, Bool:D :$reset = False, Bool:D :$precompile = True ) {
 
   return if $!dont;
 
   try $stage.remove-artifacts; # trying for Windows
 
-  if $named { self!move-in: $stage, $repo }
-  else           { self!side-by-side: $repo, @dist, :!build, :!test, :!xtest, :$precompile, :$repo, header => 'ADD' }
+  if    $named     { self!move-in: $stage, $repo }
+  elsif not $added { self!side-by-side: $repo, @dist, :!build, :!test, :!xtest, :$precompile, :$repo, header => 'ADD' }
 
   # one line per script: not the per-backend wrappers (-m, -j, -js) nor the .raku / .bat / .exe variants Rakudo writes
   my @bin = Rakudo::Internals.DIR-RECURSE( $stage.prefix.add( 'bin' ).Str )
@@ -689,9 +690,12 @@ method !stage-dists (
 
   } else {
 
-    self!side-by-side: $stage, @dist, :$build, :$test, :$xtest, precompile => $stage-precompile, :$repo;
+    # a target with no name gets each dist as soon as it is tested (dont: nothing gets anywhere)
+    my $into = $repo if $deploy and not $named and not $!dont;
 
-    self!deploy( $stage, $repo, @dist, :$named, :$precompile ) if $deploy and @dist;
+    self!side-by-side: $stage, @dist, :$build, :$test, :$xtest, precompile => $stage-precompile, :$repo, :$into, into-precompile => $precompile;
+
+    self!deploy( $stage, $repo, @dist, :$named, added => $into.defined, :$precompile ) if $deploy and @dist;
 
   }
 
@@ -701,11 +705,17 @@ method !stage-dists (
 
 # a dist stages once the dists it depends on are staged, and its tests run while later dists stage.
 # The first failure lets what runs finish and starts nothing new; then it ends the run (yolo: no failure)
-method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile!, :$repo, Str:D :$header = 'STG' ) {
+# $into: a target with no name (see !deploy) gets each dist as soon as it is tested and what it depends on is
+# there, while the others still stage; if one fails after all, what went in this run is taken back.
+method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$xtest!, Bool:D :$precompile!, :$repo, Str:D :$header = 'STG', :$into, Bool:D :$into-precompile = $precompile ) {
 
   my @after  = self!after: @dist;
   my @staged = Promise.new xx @dist;
   my @vow    = @staged.map: *.vow;
+  my @added  = Promise.new xx @dist;
+  my @signed = @added.map: *.vow;
+
+  my @rollback;
 
   my atomicint $done = 0;
 
@@ -723,7 +733,8 @@ method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$
       CATCH { default { my $x = $_; $!stage-lock.protect: { $!halted //= $x } } }
 
       LEAVE {
-        @vow[ $i ].keep: True if @staged[ $i ].status ~~ Planned;   # what waits for it goes on, and sees the halt
+        @vow[ $i ].keep: True    if @staged[ $i ].status ~~ Planned;   # what waits for it goes on, and sees the halt
+        @signed[ $i ].keep: True if @added[ $i ].status  ~~ Planned;
         if $through {
           bar.percent: ++⚛$done / @dist * 100;
           bar.show;
@@ -740,6 +751,14 @@ method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$
 
         self.test: :$stage, :$dist, :$xtest, :$repo, :!bar if $test and not $!halted;
 
+        if $into.defined and not $!halted {
+
+          await @after[ $i ].map: { @added[ $_ ] };
+
+          self!add-into: $into, $dist, precompile => $into-precompile, :$repo, :@rollback unless $!halted;
+
+        }
+
         $through = not $!halted;
 
       }
@@ -752,7 +771,40 @@ method !side-by-side ( $stage, @dist, Bool:D :$build!, Bool:D :$test!, Bool:D :$
 
   bar.deactivate;
 
-  .rethrow with $!halted;
+  with $!halted {
+
+    self!take-back: $into, @rollback if @rollback;
+
+    .rethrow;
+
+  }
+
+}
+
+# a tested dist into a target with no name, remembered for taking back. A release that was there already (added
+# again, forced) is replaced and not remembered: what it replaced is gone, there is nothing to go back to
+method !add-into ( $into, Distribution::Locally:D $dist, Bool:D :$precompile!, :$repo, :@rollback! ) {
+
+  my $there = $into.prefix.add( 'dist' ).add( dist-id $dist ).e;
+
+  self!stage-dist: $into, $dist, :!build, :$precompile, :$repo, header => 'ADD';
+
+  $!stage-lock.protect: { @rollback.push: $dist unless $there };
+
+}
+
+# what went into a target with no name before a failure leaves again, the last one first
+method !take-back ( $into, @dist --> Nil ) {
+
+  for @dist.reverse -> $dist {
+
+    my $installed = $into.distribution: dist-id $dist;   # meta<files> as installed: what uninstall goes by
+
+    $!stage-lock.protect: { $into.uninstall: $installed };
+
+    log '🐞', header => 'ADD', msg => ~$dist, comment => 'taken back!';
+
+  }
 
 }
 

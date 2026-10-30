@@ -1,0 +1,50 @@
+#!/usr/bin/env raku
+
+use Test;
+
+# A path gets each dist as soon as it is tested, while the others still stage (see !deploy). When one fails after
+# all, what went into the path in this run leaves again: the path holds nothing of a failed add.
+# A child pakku (a failure ends its run) with HOME in a temporary directory and the fixture recman.
+my $root = $*PROGRAM.parent.parent.absolute.IO;
+my $tmp  = $*TMPDIR.add( 'pakku-add-rollback-test-' ~ $*PID );
+my $path = $tmp.add( 'custom' );
+
+$tmp.add( '.pakku' ).mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+$tmp.add( '.pakku' ).add( 'config.json' ).spurt: Rakudo::Internals::JSON.to-json: %(
+  pakku  => %( cache => False, pretty => False, bar => False, spinner => False ),
+  recman => [ %( name => 'fixture', location => ~$root.add( 'fixtures' ).add( 'dists' ), priority => 1, active => True ), ],
+);
+
+my %env = %*ENV, HOME => ~$tmp;
+
+%env<RAKULIB>:delete;
+
+# a dist that needs Fixture::Foo, and whose test fails: late, so Fixture::Foo is in the path by then
+my $fails = $tmp.add( 'fails' );
+
+$fails.add( 'lib' ).add( 'Dev' ).mkdir;
+$fails.add( 't' ).mkdir;
+$fails.add( 'lib' ).add( 'Dev' ).add( 'Fails.rakumod' ).spurt: "unit module Dev::Fails;\nuse Fixture::Foo;\n";
+$fails.add( 't' ).add( 'fails.rakutest' ).spurt: "use Test;\nsleep 3;\nok False, 'fails on purpose';\ndone-testing;\n";
+$fails.add( 'META6.json' ).spurt: Rakudo::Internals::JSON.to-json: %(
+  name     => 'Dev::Fails',
+  version  => '1',
+  auth     => 'zef:dev',
+  depends  => [ 'Fixture::Foo:ver<0.2>:auth<zef:a>' ],
+  provides => %( 'Dev::Fails' => 'lib/Dev/Fails.rakumod' ),
+);
+
+my $proc = run $*EXECUTABLE, '-I', $root, $root.add( 'bin' ).add( 'pakku' ), 'nopretty', 'verbose', 'info', 'add', 'to', ~$path, ~$fails, :%env, :out, :err;
+my $out  = $proc.out.slurp( :close ) ~ $proc.err.slurp( :close );
+
+diag $out if %*ENV<PAKKU_TEST_VERBOSE>;
+
+is $proc.exitcode, 1, 'the add fails: Dev::Fails fails its test';
+ok $out ~~ / 'ADD: ｢Fixture::Foo:ver<0.2>' .*? 'taken back!' /, 'Fixture::Foo, tested and in the path by then, is taken back' or diag $out;
+is-deeply ( $path.add( 'dist' ).d ?? $path.add( 'dist' ).dir.map( *.basename ).List !! () ), ( ), 'the path holds no dist';
+is-deeply ( $path.add( 'sources' ).d ?? $path.add( 'sources' ).dir.map( *.basename ).List !! () ), ( ), 'and no source';
+
+done-testing;
