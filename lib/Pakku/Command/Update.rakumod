@@ -21,22 +21,27 @@ multi method fly (
 
   my @want = @spec || self!installed;
 
-  my %state = self.state: :updates;
+  # the installed releases each spec names
+  my @named = @want.sort.map( { Pakku::Spec.new: $_ } ).map( -> $spec {
+    $spec => self!repo.map( { .candidates( $spec.dependency-specification ).Slip } ).grep( *.defined ).List
+  } );
+
+  # `pakku update Pakku` is about Pakku: only what the specs name is looked up, and cleaned after.
+  # `pakku update` names everything that is added
+  my %state = self.state: :updates, |( only => @named.map( *.value.map( *.Str ).Slip ).List if @spec );
 
   my @add;
 
-  for @want.sort.map( { Pakku::Spec.new: $_ } ) -> $spec {
+  for @named -> ( :key( $spec ), :value( @candy ) ) {
 
     log '🐛', header => 'SPC', msg => ~$spec;
-
-    my @candy = self!repo.map( { .candidates( $spec.dependency-specification ).Slip } ).grep( *.defined ).map( *.Str );
 
     unless @candy {
       log '🐞', header => 'SPC', msg => ~$spec, comment => 'not added!';
       next;
     }
 
-    for @candy -> $dist {
+    for @candy.map( *.Str ) -> $dist {
 
       my $state = %state{ $dist } or next;
 
@@ -73,7 +78,9 @@ multi method fly (
 
   if $clean and not self!dont {
 
-    my @cln = self.state( :!updates ).values.grep( *.<cln> ).map( *.<meta>.Str );
+    my @name = @named.map( *.value.map( *.meta<name> ).Slip ).unique;
+
+    my @cln = self.state( :!updates ).values.grep( *.<cln> ).map( *.<meta> ).grep( { not @spec or .name eq any @name } ).map( *.Str );
 
     samewith 'remove', spec => @cln, :exact if @cln;
 

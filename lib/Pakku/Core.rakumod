@@ -926,7 +926,9 @@ my sub older ( Pakku::Meta:D $a, Pakku::Meta:D $b --> Bool:D ) {
 
 }
 
-method state ( :$updates = True ) {
+# what is installed, what it needs and what needs it; with updates, what is newer for the dists in $only (a list of
+# them; all of them without one): an ecosystem is asked about those only
+method state ( :$updates = True, :$only ) {
 
   my %state;
 
@@ -961,7 +963,7 @@ method state ( :$updates = True ) {
 
       my @upd;
 
-      if $updates and $!recman {
+      if $updates and $!recman and ( not $only.defined or ~$meta eq any $only.list ) {
 
         my $spec  = Pakku::Spec.new: $meta.name ~ ( ":auth<{ $meta.auth }>" if $meta.auth );
         my $found = $!recman.recommend: :$spec;

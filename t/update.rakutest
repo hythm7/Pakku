@@ -1,0 +1,59 @@
+#!/usr/bin/env raku
+
+use Test;
+
+# `pakku update Spec` is about what Spec names, `pakku update` about everything added: an ecosystem is asked
+# about those only (an unrelated dist on no index was a miss, and refreshed the index too late), and only their
+# older releases are cleaned. A child pakku with HOME in a temporary directory, the fixture recman, the 'home'
+# repo; the rest of the chain is this machine's, so what would touch it runs dry (dont).
+my $root = $*PROGRAM.parent.parent.absolute.IO;
+my $tmp  = $*TMPDIR.add( 'pakku-update-test-' ~ $*PID );
+
+$tmp.add( '.pakku' ).mkdir;
+
+END { run 'rm', '-rf', $tmp if $tmp.e }
+
+$tmp.add( '.pakku' ).add( 'config.json' ).spurt: Rakudo::Internals::JSON.to-json: %(
+  pakku  => %( cache => False, pretty => False, bar => False, spinner => False ),
+  recman => [ %( name => 'fixture', location => ~$root.add( 'fixtures' ).add( 'dists' ), priority => 1, active => True ), ],
+);
+
+my %env = %*ENV, HOME => ~$tmp;
+
+%env<RAKULIB>:delete;
+
+# exit code and the debug log
+my sub pakku ( *@arg ) {
+  my $proc = run $*EXECUTABLE, '-I', $root, $root.add( 'bin' ).add( 'pakku' ), 'verbose', 'debug', |@arg, :%env, :out, :err;
+  my $out  = $proc.out.slurp( :close ) ~ $proc.err.slurp( :close );
+  diag $out if %*ENV<PAKKU_TEST_VERBOSE>;
+  $proc.exitcode, $out;
+}
+
+# the dists the run asked an ecosystem about
+my sub asked ( Str:D $out ) { $out.lines.grep( / 'REC: ｢' / ).map( { ~( $_ ~~ / '｢' <( [ <-[:｣]>+ ]+ % '::' )> / ) } ).unique.sort.List }
+
+my sub installed ( Str:D $name ) {
+  $tmp.add( '.raku' ).add( 'dist' ).dir.map( { Rakudo::Internals::JSON.from-json: .slurp } ).grep( *.<name> eq $name ).map( *.<ver> ).sort.List
+}
+
+is pakku( 'add', 'notest', 'to', 'home', 'Fixture::Foo:ver<0.1>:auth<zef:a>', 'Fixture::Qux' ).head, 0, 'Fixture::Foo 0.1 and Fixture::Qux, which needs a Fixture::Foo';
+
+my ( $exitcode, $out ) = pakku 'update', 'notest', 'in', 'home', 'Fixture::Foo';
+
+is $exitcode, 0, 'update Fixture::Foo';
+is-deeply asked( $out ), ( 'Fixture::Foo', ), 'only Fixture::Foo was looked up, not Fixture::Qux';
+ok installed( 'Fixture::Foo' ).grep( '0.2' ), 'and Fixture::Foo was updated to 0.2';
+is-deeply $out.lines.grep( / 'RMV: ｢' / ).grep( { not / 'Fixture::Foo' / } ).List, ( ), 'what was cleaned is a Fixture::Foo, nothing else';
+
+( $exitcode, $out ) = pakku 'update', 'notest', 'in', 'home', 'Fixture::Nope';
+
+is $exitcode, 0, 'update of a dist that is not added';
+is-deeply asked( $out ), ( ), 'looks up nothing';
+
+# its exit code is this machine's: a dist in its site repo may want what the fixture recman does not have
+( $exitcode, $out ) = pakku 'dont', 'update', 'notest', 'in', 'home';
+
+ok asked( $out ).grep( 'Fixture::Qux' ) && asked( $out ).grep( 'Fixture::Foo' ), 'looks up everything that is added' or diag asked( $out );
+
+done-testing;
