@@ -9,6 +9,12 @@ my @tests = (
     ${:add(${:path("./dist".IO)}), :cmd("add")},
   "add /path/to/dist" =>
     ${:add(${:path("/path/to/dist".IO)}), :cmd("add")},
+  "add C:\\Users\\me\\dist" =>
+    ${:add(${:path("C:\\Users\\me\\dist".IO)}), :cmd("add")},
+  "add to C:\\lib C:/Users/me/dist" =>
+    ${:add(${:path("C:/Users/me/dist".IO), :to("C:\\lib")}), :cmd("add")},
+  "add A::B" =>
+    ${:add(${:spec("A::B")}), :cmd("add")},
   "add /path/to/dist" =>
     ${:add(${:path("/path/to/dist".IO)}), :cmd("add")},
   "add nodeps" =>

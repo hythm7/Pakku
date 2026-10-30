@@ -6,6 +6,8 @@ chou.6
     it and what it depends on are tested, while the rest still stage. Precompiling in the path
     no longer waits for the end. App::Mi6 with its 23 dependencies: 49s -> 42s. When a test
     fails after all, what went into the path in that run is taken back.
+  - Windows: `pakku add C:\path\to\dist` (a path that starts with a drive) was refused as an
+    unknown command, also for build and test. Such a path is a path now.
 
 chou.5  2026-10-29
 

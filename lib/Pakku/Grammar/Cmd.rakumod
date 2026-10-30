@@ -1,11 +1,11 @@
 grammar Pakku::Grammar::Cmd {
 
   proto rule TOP { * }
-  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> 'spec'? [ <url> || <specs> || <path> ] }
+  rule TOP:sym<add>      { :my @*exclude; <pakkuopt>* % <.space> <add>       <addopt>*      % <.space> 'spec'? [ <url> || <path> || <specs> ] }
   rule TOP:sym<update>  { :my @*exclude; <pakkuopt>* % <.space> <update>   <updateopt>*  % <.space> 'spec'? <specs>? }
 
-  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build-cmd> <buildopt>*   % <.space> 'spec'? [ <spec> || <path> ] }
-  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test-cmd>  <testopt>*    % <.space> 'spec'? [ <spec> || <path> ] }
+  rule TOP:sym<build>    { <pakkuopt>* % <.space> <build-cmd> <buildopt>*   % <.space> 'spec'? [ <path> || <spec> ] }
+  rule TOP:sym<test>     { <pakkuopt>* % <.space> <test-cmd>  <testopt>*    % <.space> 'spec'? [ <path> || <spec> ] }
   rule TOP:sym<remove>   { <pakkuopt>* % <.space> <remove>   <removeopt>*   % <.space> 'spec'?   <specs>            }
   rule TOP:sym<download> { <pakkuopt>* % <.space> <download> <downloadopt>* % <.space> 'spec'?   <specs>            }
   rule TOP:sym<search>   { <pakkuopt>* % <.space> <search>   <searchopt>*   % <.space> 'spec'?   <specs>            }
@@ -499,7 +499,9 @@ grammar Pakku::Grammar::Cmd {
   token specs { <spec>+ % \h }
 
   token spec { <name> <spec-pair>* }
-  token path { <[./\\]> <[ a..z A..Z 0..9 \-_.!~*'<>():@&=+$,/\\ ]>* }
+  # ./dist, /path, \\server or a Windows drive (C:\dist, C:/dist): a name like A::B has no slash after its colon,
+  # so a command tries a path before a spec (a spec would take the C of C:\dist and stop there)
+  token path { [ <[./\\]> || <[a..z A..Z]> ':' <[/\\]> ] <[ a..z A..Z 0..9 \-_.!~*'<>():@&=+$,/\\ ]>* }
 
   # a tarball or a git repository: https://host/Foo.tar.gz, https://host/x/y.git#tag, git@host:x/y.git
   token url  { [ \w+ '://' | 'git@' ] <-[\s]>+ }
