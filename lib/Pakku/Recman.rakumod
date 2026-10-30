@@ -85,6 +85,9 @@ method search (
 
 }
 
+# every ecosystem's index no older than $seconds when it is next used (see Ecosystem.fresh-within)
+method fresh-within ( Real:D $seconds --> Nil ) { .fresh-within: $seconds for @!recman.grep( Pakku::Recman::Ecosystem ) }
+
 method refresh ( :@name ) {
 
   my @ecosystem = @!recman.grep( Pakku::Recman::Ecosystem ).grep( -> $r { !@name or $r.name eq any @name } );

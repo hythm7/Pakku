@@ -30,6 +30,7 @@ has %!provides;   # unit => [ dist names ], read once
 has $!names;      # [ dist names ], read once
 has Bool $!ready = False;
 has Lock $!lock .= new;
+has      $!within;   # seconds: what this run asked of the index's age (see fresh-within)
 
 method index-file ( --> IO::Path:D ) { $!store.add: 'index.json' }
 method !lock-file ( --> IO::Path:D ) { $!store.add: 'index.lock' }
@@ -63,7 +64,17 @@ method stale ( --> Bool:D ) {
   return True   unless self.index-file.e;
   return $!refresh if $!refresh ~~ Bool;
 
-  self.age > $!refresh * 3600;
+  self.age > min $!refresh * 3600, $!within // Inf;
+
+}
+
+# this run wants an index no older than $seconds, whatever the refresh hours say: who asks for what is newest
+# (update) would not see a release from the last hour. Checked when the index is next used, so a fallback
+# ecosystem still waits for a miss; norefresh still means no network.
+method fresh-within ( Real:D $seconds --> Nil ) {
+
+  $!within = $seconds;
+  $!ready  = False;
 
 }
 

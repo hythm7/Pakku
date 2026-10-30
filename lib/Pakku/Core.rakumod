@@ -937,6 +937,10 @@ method state ( :$updates = True ) {
     ==> map( { Pakku::Meta.new: .meta } )
     ==> my @meta;
 
+    # updates are what is newest: an index older than ten minutes is refreshed first, as a miss would be.
+    # Otherwise a release from the last hour is not seen, and a miss later in this run refreshes too late
+    $!recman.fresh-within: 600 if $updates and $!recman;
+
     spinner.header: 'STT';
     spinner.frames: @meta.map( *.Str );
     spinner.activate;

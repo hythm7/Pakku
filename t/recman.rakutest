@@ -134,6 +134,60 @@ $rea.add( 'META.json' ).spurt: Rakudo::Internals::JSON.to-json( @index.map( { my
 my $urls = Pakku::Recman::Ecosystem.new: name => 'rea', mirrors => [ ~$rea ~ '/' ], index => 'META.json', source => 'source-url', refresh => 24, store => $tmp.add( 'rea-store' ), :$fetch;
 is $urls.recommend( spec => spec( 'Fixture::Bar' ) )<source>, ~$fixtures.add( 'mirror/Bar-1.0.tar.gz' ), 'ecosystem: source-url mode uses the entry url as is';
 
+# --- a new release: Fixture::Foo 0.3 comes out on a mirror whose index we change ---
+
+my $moving = $tmp.add( 'moving' );
+
+$moving.mkdir;
+
+my @all    = Rakudo::Internals::JSON.from-json( $fixtures.add( 'index.json' ).slurp ).List;
+my @before = @all.grep( { not ( .<name> eq 'Fixture::Foo' and .<version> eq '0.3' ) } );
+
+my sub release ( Bool:D $out ) { $moving.add( 'index.json' ).spurt: Rakudo::Internals::JSON.to-json( $out ?? @all !! @before ) }
+
+# a refresh in the middle of a run (a miss forces one): the lookups after it answer from the new index
+release False;
+
+my $midrun = ecosystem( mirrors => [ ~$moving ~ '/' ], store => $tmp.add( 'midrun' ) );
+
+is $midrun.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.2', 'release: before it, Fixture::Foo 0.2';
+
+release True;
+
+ok $midrun.refresh( :force ), 'release: the index is refreshed in the middle of the run';
+is $midrun.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.3', 'release: and the run sees it, not what it read before the refresh';
+
+# a run that asks for what is newest (update) gets an index of minutes, whatever the refresh hours say
+release False;
+
+my $within = $tmp.add( 'within' );
+
+is ecosystem( mirrors => [ ~$moving ~ '/' ], store => $within ).recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.2', 'within: an index from before the release';
+
+$within.add( 'refreshed' ).spurt: ~( time - 1800 );   # half an hour ago
+
+release True;
+
+my $plain = ecosystem( mirrors => [ ~$moving ~ '/' ], store => $within );
+
+nok $plain.stale, 'within: half an hour old is fresh, with refresh => 1 (hours)';
+is $plain.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.2', 'within: a run that does not ask does not see the release';
+
+my $asks = ecosystem( mirrors => [ ~$moving ~ '/' ], store => $within );
+
+$asks.fresh-within: 600;
+
+ok $asks.stale, 'within: a run that asks for ten minutes finds half an hour stale';
+is $asks.recommend( spec => spec( 'Fixture::Foo' ) )<ver>, '0.3', 'within: and sees the release';
+
+$within.add( 'refreshed' ).spurt: ~( time - 1800 );
+
+my $offline-within = ecosystem( mirrors => [ ~$moving ~ '/' ], store => $within, refresh => False );
+
+$offline-within.fresh-within: 600;
+
+nok $offline-within.stale, 'within: norefresh still means no network';
+
 # --- Pakku::Recman: dispatch by priority, lazily ---
 
 my @config =
@@ -152,6 +206,13 @@ nok $tmp.add( 'dispatch' ).add( 'second' ).e, 'dispatcher: the second recman was
 nok $recman.recommend( spec => spec( 'Fixture::Nope' ) ).defined, 'dispatcher: Nil when nobody has it';
 ok $tmp.add( 'dispatch' ).add( 'second' ).add( 'index.json' ).e, 'dispatcher: the fallback ecosystem loaded its index on the miss';
 is $recman.search( spec => spec( 'Fixture::Bar' ), :!relaxed, :!latest, :666count ).elems, 3, 'dispatcher: search aggregates every recman';
+my $lazy = Pakku::Recman.new: :$fetch, store => $tmp.add( 'lazy' ), recman => @config;
+
+$lazy.fresh-within: 600;
+
+ok $lazy.recommend( spec => spec( 'Fixture::Foo' ) )<source> ~~ IO::Path, 'dispatcher: asked for a fresh index, the first recman answers';
+nok $tmp.add( 'lazy' ).add( 'second' ).e, 'dispatcher: and the fallback ecosystem is still not touched';
+
 is $recman.refresh( name => [ 'second' ] ).elems, 1, 'dispatcher: refresh by name';
 is $recman.refresh.elems, 2, 'dispatcher: refresh all ecosystems';
 

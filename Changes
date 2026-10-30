@@ -1,5 +1,12 @@
 Revision history for Pakku
 
+chou.5
+
+  - `pakku update` right after a release could need a second run: within an hour of the
+    last refresh the index was taken as current, and a dist on no ecosystem's index (a
+    miss) refreshed it in the middle of the run, after the dists before were checked.
+    Looking for updates now refreshes an index older than ten minutes first.
+
 chou.4  2026-10-29
 
   - Butterflies fly side by side. Dists are fetched all at once (async or not), each dist is
