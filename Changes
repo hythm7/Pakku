@@ -1,6 +1,6 @@
 Revision history for Pakku
 
-chou.5
+chou.5  2026-10-29
 
   - `pakku update` right after a release could need a second run: within an hour of the
     last refresh the index was taken as current, and a dist on no ecosystem's index (a
